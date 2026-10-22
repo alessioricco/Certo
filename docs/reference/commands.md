@@ -75,6 +75,11 @@ command (unless `CERTO_SAVE_STATE` is off). When `CERTO_PROJECTS_DIR` is
 not the default, that command starts with `CERTO_PROJECTS_DIR=...` so a
 copy-paste resume uses the same projects folder.
 
+**Project creation.** With `--project`, configuration checks run before
+Certo creates a missing project folder or records it as Certo-created.
+A configuration error leaves existing project folders and the
+`.certo-created-projects` registry unchanged.
+
 **State.** Every run keeps its state in the project's `.certo/` folder,
 which git ignores. See [Resume an interrupted run](../guides/resume-a-run.md#the-certo-folder).
 

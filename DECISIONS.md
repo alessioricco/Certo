@@ -891,3 +891,7 @@ considered and live-verification detail: `docs/ROADMAP.txt`.
   2026-10-22): the folder a run without `--project` works in
   (`CERTO_WORKSPACE`), so its `.certo/skills/` can be managed too. Any
   other name is still a project in `CERTO_PROJECTS_DIR`.
+- **Select a project path before checking configuration; create it only
+  after the checks pass** (issue #26). Model files may live in an existing
+  project folder. Deferring creation avoids rollback and leaves existing
+  folders and the Certo-created registry untouched on configuration errors.

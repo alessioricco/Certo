@@ -578,10 +578,6 @@ def main(argv: list[str] | None = None) -> int:
         if args.resume and not os.path.isdir(project_dir):
             print(f"Error: nothing to resume: {project_dir} doesn't exist.", file=sys.stderr)
             return 1
-        created = not os.path.exists(project_dir)
-        os.makedirs(project_dir, exist_ok=True)
-        if created:
-            record_created_project(cfg.projects_dir, args.project)
         cfg = replace(cfg, workspace=project_dir)
 
     resume_from = None
@@ -638,6 +634,12 @@ def main(argv: list[str] | None = None) -> int:
         except ValueError as exc:
             print(f"Configuration error: {exc}", file=sys.stderr)
             return 1
+
+    if args.project is not None:
+        created = not os.path.exists(cfg.workspace)
+        os.makedirs(cfg.workspace, exist_ok=True)
+        if created:
+            record_created_project(cfg.projects_dir, args.project)
 
     # After every check that can refuse the run, so it only shows for a run
     # that starts.
