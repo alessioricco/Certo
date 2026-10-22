@@ -167,9 +167,12 @@ limitation below.
   if the task mentions Python (or a Python tool such as pytest). Otherwise
   packages the agent installs may land outside the project's environment,
   and imports can fail during verification until they are installed again.
-- **A Node project whose `test` script finds no test files counts as
-  verified.** `node --test` and some other runners exit successfully when
-  there is nothing to run. See
+- **A Node project whose extra `npm test` check finds no test files
+  cannot change the verdict.** When `npm test` is the main check,
+  `node --test` exiting 0 with zero tests now counts as "nothing to
+  verify" (verdict `inconclusive`); but an extra `npm test` (alongside a
+  `build` main check) that runs no tests leaves the verdict untouched,
+  because an extra check can only turn a pass into a failure. See
   [Verification by language](reference/verification-by-language.md#node-in-detail).
 - **Escalation climbs only on a verification signal or a provider
   failure.** In a project with nothing to check, each rung ends
