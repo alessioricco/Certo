@@ -109,6 +109,9 @@ before it reads the model files. Problems in them are reported the same
 way for every command: errors stop the run, warnings are printed (see
 [Checks](../reference/models-yaml.md#checks)).
 
+With `--project NAME`, a model-file configuration error leaves no new
+project folder or registry entry. An existing project folder is kept.
+
 ## How a model is chosen
 
 1. **Classify the task.** Certo looks for each profile's `triggers` in the

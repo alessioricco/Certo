@@ -308,11 +308,6 @@ database).
   Since 0.1.20 they have their own files; the old sections are still read
   with a warning. Remove that path (and the tests that use the old layout
   through `write_model_files`) a version or two later.
-- **A configuration error after `--project` leaves an empty project
-  folder.** `main()` creates the folder and records it in
-  `.certo-created-projects` before the `--escalate`/`--auto-model`
-  model-file checks, which need its path (model files can live there).
-  Open for contributors: [#26](https://github.com/alessioricco/certo/issues/26).
 - **Third-party skills: narrow license detection, `SKILL.md` only.** Eight
   permissive licenses are recognised; anything else is `unknown` and needs
   acknowledgement. Legacy single-file upstream skills can't be installed.

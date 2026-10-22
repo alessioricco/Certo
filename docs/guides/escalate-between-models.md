@@ -54,6 +54,9 @@ cp <examples>/escalation.yaml.example ~/.config/certo/escalation.yaml
 Only models enabled in `models.yaml` are ever used; a rung whose model
 isn't enabled there is skipped.
 
+With `--project NAME`, a model-file configuration error leaves no new
+project folder or registry entry. An existing project folder is kept.
+
 ### An explicit ladder
 
 Write the order yourself, under `escalation.ladders` in

@@ -849,3 +849,7 @@ considered and live-verification detail: `docs/ROADMAP.txt`.
   `override_llm()`. Validation stays out of `override_llm` itself so
   catalog swaps that clear a key can still set a base URL in the same
   call. No flag and no setting still yields the same error as before.
+- **Select a project path before checking configuration; create it only
+  after the checks pass** (issue #26). Model files may live in an existing
+  project folder. Deferring creation avoids rollback and leaves existing
+  folders and the Certo-created registry untouched on configuration errors.

@@ -249,6 +249,64 @@ def test_project_flag_creates_subfolder_and_overrides_workspace(monkeypatch, tmp
     assert calls["cfg"].workspace == expected
     assert calls["project"] == "myapp"
     assert (tmp_path / "myapp").is_dir()
+    assert (tmp_path / ".certo-created-projects").read_text() == "myapp\n"
+
+
+@pytest.mark.parametrize(
+    ("options", "error"),
+    [
+        (["--auto-model"], "No models_list.yaml found"),
+        (["--escalate"], "No models_list.yaml found"),
+        (["--acceptance-checks", "not json"], "--acceptance-checks must be valid JSON"),
+    ],
+)
+@pytest.mark.parametrize("existing_registry", [False, True])
+def test_project_configuration_error_creates_no_folder_or_registry_entry(
+    monkeypatch, tmp_path, capsys, options, error, existing_registry
+):
+    projects_dir = tmp_path / "projects"
+    registry = projects_dir / ".certo-created-projects"
+    if existing_registry:
+        projects_dir.mkdir()
+        registry.write_text("earlier\n")
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(cli, "load_config", lambda: _cfg(projects_dir=str(projects_dir)))
+    monkeypatch.setattr(cli, "run_task", _fail_if_called)
+
+    assert cli.main(["hi", "--project", "leap", *options]) == 1
+
+    captured = capsys.readouterr()
+    assert f"Configuration error: {error}" in captured.err
+    assert captured.out == ""
+    assert not (projects_dir / "leap").exists()
+    if existing_registry:
+        assert registry.read_text() == "earlier\n"
+    else:
+        assert not projects_dir.exists()
+
+
+@pytest.mark.parametrize("mode", ["--auto-model", "--escalate"])
+@pytest.mark.parametrize("with_file", [False, True])
+def test_project_configuration_error_preserves_existing_folder(
+    monkeypatch, tmp_path, capsys, mode, with_file
+):
+    project_dir = tmp_path / "leap"
+    project_dir.mkdir()
+    if with_file:
+        (project_dir / "notes.txt").write_text("keep me\n")
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(cli, "load_config", lambda: _cfg(projects_dir=str(tmp_path)))
+    monkeypatch.setattr(cli, "run_task", _fail_if_called)
+
+    assert cli.main(["hi", "--project", "leap", mode]) == 1
+
+    assert "Configuration error: No models_list.yaml found" in capsys.readouterr().err
+    assert project_dir.is_dir()
+    assert not (tmp_path / ".certo-created-projects").exists()
+    if with_file:
+        assert (project_dir / "notes.txt").read_text() == "keep me\n"
+    else:
+        assert list(project_dir.iterdir()) == []
 
 
 def test_a_run_starts_with_the_banner(monkeypatch, tmp_path, capsys):
@@ -1199,6 +1257,28 @@ def _auto_model_cfg(tmp_path, **overrides):
     )
 
 
+@pytest.mark.parametrize("mode", ["--auto-model", "--escalate"])
+def test_project_can_use_model_files_inside_existing_folder(monkeypatch, tmp_path, mode):
+    project_dir = tmp_path / "leap"
+    project_dir.mkdir()
+    cfg = replace(_auto_model_cfg(project_dir, projects_dir=str(tmp_path)), workspace=str(tmp_path))
+    calls = []
+
+    def fake_run_task(task, cfg=None, **kwargs):
+        assert project_dir.is_dir()
+        calls.append(cfg)
+        return _fake_result()
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(cli, "load_config", lambda: cfg)
+    monkeypatch.setattr(cli, "run_task", fake_run_task)
+
+    assert cli.main(["hi", "--project", "leap", mode]) == 0
+
+    assert calls[0].workspace == str(project_dir)
+    assert not (tmp_path / ".certo-created-projects").exists()
+
+
 def test_auto_model_flag_off_by_default(monkeypatch):
     calls = {}
 
@@ -1297,6 +1377,8 @@ def test_auto_model_without_a_catalog_prints_only_the_error(monkeypatch, tmp_pat
     assert "Continue with" not in captured.err
     assert "Certo" not in captured.out
     assert not (tmp_path / "leap" / ".certo").exists()
+    assert not (tmp_path / "leap").exists()
+    assert not (tmp_path / ".certo-created-projects").exists()
 
 
 def test_auto_model_with_broken_model_files_prints_only_the_error(monkeypatch, tmp_path, capsys):
