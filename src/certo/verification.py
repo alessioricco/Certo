@@ -56,13 +56,12 @@ PYTEST_NO_TESTS_COLLECTED = 5
 
 # `node --test`'s zero-test summary when it finds no test files — the runner
 # exits 0 all the same, so a successful `npm test` whose output carries this
-# marker is "skipped", not "passed" (issue #23). The bare "tests 0" matches
-# the summary line in both reporters: TAP ("# tests 0", the one used without
-# a terminal) and the spec reporter ("\u2139 tests 0", what Node 22+/26
-# prints even through a pipe). A test file deliberately printing the exact
-# string could masquerade as a zero-test run, but that errs toward
-# "inconclusive", never toward a false "verified".
-NODE_TEST_NO_TESTS_MARKER = "tests 0"
+# marker is "skipped", not "passed" (issue #23). These match the summary
+# line in both reporters: TAP ("# tests 0", the one used without a terminal)
+# and the spec reporter ("\u2139 tests 0", what Node 22+/26 prints even
+# through a pipe). Whole-line matching prevents a test file that happens to
+# print the substring from being misread.
+NODE_TEST_NO_TESTS_MARKERS = ("# tests 0", "\u2139 tests 0")
 
 # `_SKIP_DIRS` (large, irrelevant directories such as node_modules and the
 # project's own `.venv`/`venv`) and `_MAX_SCAN_DEPTH` live in project_env.py,
@@ -392,7 +391,8 @@ def execute_check(
             output="",
         )
     passed = result.returncode == 0
-    if passed and any(m in output for m in spec.no_work_markers):
+    output_lines = [line.strip() for line in output.splitlines()]
+    if passed and any(m in output_lines for m in spec.no_work_markers):
         return CheckOutcome(
             name=spec.name,
             command=command_str,
@@ -864,11 +864,7 @@ def _node_plan(root: str, runner: CommandRunner) -> list[CheckSpec]:
         # subprocess calls. `build` isn't a watch-mode command, so it's
         # left out of this.
         env = {"CI": "true"} if use_ci_env else None
-        no_work = (
-            (NODE_TEST_NO_TESTS_MARKER,)
-            if key == "test" and primary
-            else ()
-        )
+        no_work = NODE_TEST_NO_TESTS_MARKERS if key == "test" and primary else ()
         return CheckSpec(
             name=name,
             primary=primary,
@@ -876,9 +872,7 @@ def _node_plan(root: str, runner: CommandRunner) -> list[CheckSpec]:
             cwd=root,
             env=env,
             no_work_markers=no_work,
-            no_work_reason="no tests ran (node --test found no test files)"
-            if no_work
-            else None,
+            no_work_reason="no tests ran (node --test found no test files)" if no_work else None,
         )
 
     specs = [spec_for(primary_key, primary=True, use_ci_env=primary_key != "build")]
