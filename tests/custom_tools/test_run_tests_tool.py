@@ -20,6 +20,7 @@ from certo.custom_tools.run_tests_tool import RunTestsAction, RunTestsExecutor
 from certo.verification import (
     CheckOutcome,
     CheckSpec,
+    NODE_TEST_NO_TESTS_MARKERS,
     ProjectDetection,
     PythonEnvState,
     VerificationRun,
@@ -1585,7 +1586,7 @@ def test_execute_check_reports_skipped_on_a_successful_no_work_run(tmp_path):
         primary=True,
         command=[sys.executable, "-c", "print('# tests 0'); import sys; sys.exit(0)"],
         cwd=str(tmp_path),
-        no_work_markers=("tests 0",),
+        no_work_markers=NODE_TEST_NO_TESTS_MARKERS,
         no_work_reason="no tests ran (node --test found no test files)",
     )
 
@@ -1605,7 +1606,7 @@ def test_execute_check_matches_the_spec_reporter_summary(tmp_path):
         primary=True,
         command=[sys.executable, "-c", "print('\u2139 tests 0'); import sys; sys.exit(0)"],
         cwd=str(tmp_path),
-        no_work_markers=("tests 0",),
+        no_work_markers=NODE_TEST_NO_TESTS_MARKERS,
         no_work_reason="no tests ran (node --test found no test files)",
     )
 
@@ -1620,12 +1621,22 @@ def test_execute_check_keeps_a_real_pass_without_the_marker(tmp_path):
         primary=True,
         command=[sys.executable, "-c", "print('# tests 4'); import sys; sys.exit(0)"],
         cwd=str(tmp_path),
-        no_work_markers=("tests 0",),
+        no_work_markers=NODE_TEST_NO_TESTS_MARKERS,
     )
 
     outcome = execute_check(spec)
 
     assert outcome.status == "passed"
+
+
+def test_a_passing_run_that_prints_the_marker_text_stays_passed(tmp_path):
+    spec = CheckSpec(
+        name="npm test",
+        primary=True,
+        command=[sys.executable, "-c", "print('contests 0'); import sys; sys.exit(0)"],
+        cwd=str(tmp_path),
+        no_work_markers=NODE_TEST_NO_TESTS_MARKERS,
+    )
 
 
 def test_no_work_marker_never_downgrades_a_failing_run(tmp_path):
@@ -1634,7 +1645,7 @@ def test_no_work_marker_never_downgrades_a_failing_run(tmp_path):
         primary=True,
         command=[sys.executable, "-c", "print('# tests 0'); import sys; sys.exit(1)"],
         cwd=str(tmp_path),
-        no_work_markers=("tests 0",),
+        no_work_markers=NODE_TEST_NO_TESTS_MARKERS,
     )
 
     outcome = execute_check(spec)
@@ -1650,7 +1661,7 @@ def test_node_plan_primary_test_spec_detects_a_zero_test_run(tmp_path):
     assert len(plan) == 1
     assert plan[0].name == "npm test"
     assert plan[0].primary is True
-    assert plan[0].no_work_markers == ("tests 0",)
+    assert plan[0].no_work_markers == NODE_TEST_NO_TESTS_MARKERS
     assert plan[0].no_work_reason == "no tests ran (node --test found no test files)"
 
 
