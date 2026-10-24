@@ -101,6 +101,7 @@ code. Every verdict and its exit code is in
 
 ## Related
 
+- [Verify before every commit](verify-before-commit.md): run the same checks from a git hook
 - [Make your project checkable](make-a-project-checkable.md)
 - What runs for each language: [Verification by language](../reference/verification-by-language.md)
 - [How verification works](../concepts/how-verification-works.md)
