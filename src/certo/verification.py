@@ -56,6 +56,15 @@ from certo.project_env import (
 # "Test verification".
 PYTEST_NO_TESTS_COLLECTED = 5
 
+# `node --test`'s zero-test summary when it finds no test files — the runner
+# exits 0 all the same, so a successful `npm test` whose output carries this
+# marker is "skipped", not "passed" (issue #23). These match the summary
+# line in both reporters: TAP ("# tests 0", the one used without a terminal)
+# and the spec reporter ("\u2139 tests 0", what Node 22+/26 prints even
+# through a pipe). Whole-line matching prevents a test file that happens to
+# print the substring from being misread.
+NODE_TEST_NO_TESTS_MARKERS = ("# tests 0", "\u2139 tests 0")
+
 # `_SKIP_DIRS` (large, irrelevant directories such as node_modules and the
 # project's own `.venv`/`venv`) and `_MAX_SCAN_DEPTH` live in project_env.py,
 # shared with its own walks. The depth bound exists because a scaffolded
@@ -295,6 +304,15 @@ class CheckSpec:
     # command: `clippy`". The check is then "unavailable", not "failed".
     missing_tool_markers: tuple[str, ...] = ()
     missing_tool_reason: str | None = None
+    # Text that, in the output of a *successful* run, means the tool ran but
+    # found nothing to verify — `node --test`'s TAP reporter prints
+    # "# tests 0" and still exits 0 when no test files exist. The check is
+    # then "skipped" rather than "passed", so a project with no tests
+    # cannot end `verified` with nothing tested (the pytest analogue is
+    # `skip_exit_codes`; Jest, Vitest and Mocha already exit nonzero on an
+    # empty test run, so only the built-in runner needs the marker today).
+    no_work_markers: tuple[str, ...] = ()
+    no_work_reason: str | None = None
     # A check whose result is already known at planning time — a pure
     # static check (e.g. an AST-based structural check) needs no subprocess
     # at all. `execute_check` returns this directly when set; `command`
@@ -406,6 +424,18 @@ def execute_check(
             output=output[-4000:],
         )
     passed = result.returncode == 0
+    output_lines = [line.strip() for line in output.splitlines()]
+    if passed and any(m in output_lines for m in spec.no_work_markers):
+        return CheckOutcome(
+            name=spec.name,
+            command=command_str,
+            primary=spec.primary,
+            status="skipped",
+            exit_code=result.returncode,
+            project_root=spec.cwd,
+            summary=spec.no_work_reason or f"{spec.name}: ran, but found nothing to verify",
+            output=output[-4000:],
+        )
     if not passed and any(m in output for m in spec.missing_tool_markers):
         return CheckOutcome(
             name=spec.name,
@@ -870,7 +900,16 @@ def _node_plan(root: str, runner: CommandRunner) -> list[CheckSpec]:
         # subprocess calls. `build` isn't a watch-mode command, so it's
         # left out of this.
         env = {"CI": "true"} if use_ci_env else None
-        return CheckSpec(name=name, primary=primary, command=command, cwd=root, env=env)
+        no_work = NODE_TEST_NO_TESTS_MARKERS if key == "test" and primary else ()
+        return CheckSpec(
+            name=name,
+            primary=primary,
+            command=command,
+            cwd=root,
+            env=env,
+            no_work_markers=no_work,
+            no_work_reason="no tests ran (node --test found no test files)" if no_work else None,
+        )
 
     specs = [spec_for(primary_key, primary=True, use_ci_env=primary_key != "build")]
     if primary_key != "test" and test:

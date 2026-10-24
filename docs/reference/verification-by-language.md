@@ -109,11 +109,16 @@ the scripts as they are; it doesn't read jest or vitest settings.
 If `package.json` has neither a `build` nor a real `test` script, the main
 check is `unavailable` and the verdict is `inconclusive`.
 
-**Known gap:** Certo goes by the script's exit code. Some test runners,
-including `node --test`, exit successfully when they find no test files,
-so a project with `"test": "node --test"` and no tests at all is
-`verified`. Ask the agent for tests, or check that `npm test` really runs
-some.
+When the main check is `npm test` and the runner exits successfully but
+the output shows that no test ran, the check is `skipped` and the verdict
+is `inconclusive`, not `verified` — the same treatment pytest's
+"no tests collected" exit code already gets. Certo looks for
+`node --test`'s zero-test summary line (in either of its two reporters:
+`# tests 0` for TAP and `ℹ tests 0` for the spec reporter); Jest,
+Vitest and Mocha already exit nonzero on an empty test run, so they
+fail the check on their own. An extra `npm test` check that runs zero tests (when
+`npm run build` is the main check) still does not change the verdict,
+because an extra check can only turn a pass into a failure.
 
 ## Missing tools
 

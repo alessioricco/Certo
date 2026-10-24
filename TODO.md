@@ -101,10 +101,6 @@ first item is the suggested next one.
 - **Run-the-app verification.** Start a server and probe an HTTP
   endpoint; build a frontend and load it in a headless browser (the SDK
   ships a browser tool) for a blank page or console errors.
-- **Node: "no tests" counts as verified.** `node --test` exits 0 with no
-  test files, so `npm test` passes. Found by the first bench integration
-  run (2026-10-16). Documented, not fixed. Open for contributors:
-  [#23](https://github.com/alessioricco/certo/issues/23).
 - **Node: detect jest/vitest/mocha.** Today `build`/`test` scripts run as
   opaque commands; the runner and its results aren't parsed.
 - **Node: infer ESLint/`tsc` from config**, as `_ruff_configured()` does
