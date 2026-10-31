@@ -40,6 +40,7 @@ CSV_FIELDS = (
     "cost",
     "cost_known",
     "retries_used",
+    "tool_call_reminders",
     "final_rung",
     "independent_status",
     "error",
@@ -256,6 +257,7 @@ def arm_rows(meta: dict[str, Any], records: list[dict[str, Any]]) -> list[dict[s
                 else "-",
                 "Tokens in / out": f"{sum(r['tokens_in'] for r in mine):,} / "
                 f"{sum(r['tokens_out'] for r in mine):,}",
+                "Tool-call reminders": str(sum(r.get("tool_call_reminders", 0) for r in mine)),
                 "Cost": _cost(mine) if mine else "-",
                 "Cost per solved task": _cost_per_solved(mine),
                 **(_independent_columns(mine) if independent else {}),
@@ -431,6 +433,11 @@ def render_markdown(meta: dict[str, Any], records: list[dict[str, Any]]) -> str:
         ),
         "- **Errors:** the run stopped with an error (for example, the provider failed).",
         "- **Median time:** wall time of one run, including Certo's checks and retries.",
+        (
+            "- **Tool-call reminders:** how many times the agent wrote a tool call as text "
+            "instead of making it, and Certo sent it back (`CERTO_TOOL_CALL_REMINDERS`), "
+            "added up over the arm's runs. An escalation run counts every rung's own."
+        ),
         "- **Cost:** from LiteLLM's prices; `+ unknown` when a model has no price.",
         (
             "- **Effort:** the reasoning effort the model ran at; `default` when none was "

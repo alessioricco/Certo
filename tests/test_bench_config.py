@@ -278,12 +278,27 @@ def test_single_strategy_runs_the_normal_pipeline_with_the_arm_model(tmp_path):
 
     def fake_stream(task, *, cfg):
         seen.update(task=task, model=cfg.model)
-        return SimpleNamespace(verification_state="verified", retries_used=1, run_summary=None)
+        return SimpleNamespace(
+            verification_state="verified", retries_used=1, tool_call_reminders=2, run_summary=None
+        )
 
     ctx = RunContext("do it", "/ws", cfg.catalog, "/iso", fake_stream)
     result = STRATEGIES["single"].run(ctx, cfg.arms[1].params)
     assert seen == {"task": "do it", "model": "anthropic/claude-sonnet-5-5"}
-    assert result == AttemptResult("verified", 1, None, ("cloud",))
+    assert result == AttemptResult("verified", 1, None, ("cloud",), tool_call_reminders=2)
+
+
+def test_single_strategy_defaults_tool_call_reminders_when_the_outcome_lacks_it(tmp_path):
+    """A fake outcome from an older test, or one that never names the field,
+    still gets a real AttemptResult: a missing count is 0, not an error."""
+    cfg = load_bench_config(_write(tmp_path, VALID))
+
+    def fake_stream(task, *, cfg):
+        return SimpleNamespace(verification_state="verified", retries_used=0, run_summary=None)
+
+    ctx = RunContext("do it", "/ws", cfg.catalog, "/iso", fake_stream)
+    result = STRATEGIES["single"].run(ctx, cfg.arms[1].params)
+    assert result.tool_call_reminders == 0
 
 
 def test_a_new_strategy_is_one_registry_entry(tmp_path, monkeypatch):
@@ -363,6 +378,7 @@ def _escalation_outcome(final_rung, names):
     return SimpleNamespace(
         verification_state="verified",
         retries_used=0,
+        tool_call_reminders=sum(r.tool_call_reminders for r in rungs),
         run_summary=None,
         rungs=rungs,
         final_rung=final_rung,
@@ -391,6 +407,33 @@ def test_escalate_strategy_runs_an_explicit_ladder(tmp_path):
         ("local-coder", False),
         ("cloud", True),
     ]
+    assert result.tool_call_reminders == 0
+
+
+def test_escalate_strategy_sums_tool_call_reminders_over_every_rung(tmp_path):
+    from certo.escalation import RungResult
+
+    cfg = load_bench_config(_write(tmp_path, ESCALATE))
+    rungs = (
+        RungResult(1, "local-coder", "x/l", "no_progress", 1, 1.0, None, tool_call_reminders=2),
+        RungResult(2, "cloud", "x/c", "verified", 0, 1.0, None, tool_call_reminders=1),
+    )
+    outcome = SimpleNamespace(
+        verification_state="verified",
+        retries_used=0,
+        tool_call_reminders=sum(r.tool_call_reminders for r in rungs),
+        run_summary=None,
+        rungs=rungs,
+        final_rung=2,
+    )
+
+    def fake_stream(task, *, cfg, ladder):
+        return outcome
+
+    ctx = RunContext("do it", "/ws", cfg.catalog, "/iso", fake_stream, cfg.model_catalog)
+    result = STRATEGIES["escalate"].run(ctx, cfg.arms[0].params)
+
+    assert result.tool_call_reminders == 3
 
 
 def test_escalate_strategy_derives_a_ladder_per_task(tmp_path):

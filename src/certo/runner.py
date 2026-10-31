@@ -301,6 +301,10 @@ class TaskOutcome:
     # Files the whole run created, modified or deleted in the project
     # folder (stream_task). None when the run didn't go through it.
     files_changed: FileChanges | None = None
+    # How many times _remind_text_tool_call sent the agent back after it
+    # wrote a tool call as text (see CERTO_TOOL_CALL_REMINDERS). An
+    # escalation run sums every rung's own count (RungResult below).
+    tool_call_reminders: int = 0
 
     @property
     def success(self) -> bool:
@@ -695,6 +699,11 @@ def _outcome_for_run_result(
 # Per conversation: how many tool-call reminders were sent, and the id of
 # the last message reminded about (`_remind_text_tool_call`).
 _TOOL_CALL_REMINDERS: weakref.WeakKeyDictionary[Any, tuple[int, str]] = weakref.WeakKeyDictionary()
+
+
+def _reminders_sent(conversation: Conversation) -> int:
+    """How many tool-call reminders this conversation has been sent so far."""
+    return _TOOL_CALL_REMINDERS.get(conversation, (0, ""))[0]
 
 
 def _remind_text_tool_call(
@@ -1971,6 +1980,7 @@ def _stream_task(
                 )
         if model_chain is not None:
             outcome = replace(outcome, model_decisions=tuple(model_chain.decisions))
+        outcome = replace(outcome, tool_call_reminders=_reminders_sent(conversation))
         if state_writer is not None:
             state_writer.finish(outcome)
         _checkpoint(cfg, f"finished: {outcome.verification_state}")
@@ -2742,6 +2752,7 @@ def _stream_escalation(
                     reasoning_effort=rung_cfg.reasoning_effort,
                     verdict=outcome.verification_state if outcome is not None else None,
                     retries_used=outcome.retries_used if outcome is not None else 0,
+                    tool_call_reminders=_reminders_sent(conversation),
                     duration_seconds=duration,
                     summary=summarize_run(duration, rung_metrics, efforts),
                     failure=failure,
@@ -2900,6 +2911,7 @@ def _stream_escalation(
         rungs=tuple(rungs),
         final_rung=final_rung,
         model_decisions=tuple(decisions),
+        tool_call_reminders=sum(r.tool_call_reminders for r in rungs),
         run_summary=summarize_run(
             time.monotonic() - run_started, per_model_metrics, efforts, io.condensed[0]
         ),

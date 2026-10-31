@@ -333,6 +333,13 @@ def test_one_model_at_two_efforts_is_told_apart_by_its_effort(tmp_path):
     assert _rung("verified").described == "m (x/m, effort default)"
 
 
+def test_to_dict_carries_the_rungs_own_tool_call_reminders():
+    rung = RungResult(1, "m", "x/m", "verified", 0, 1.0, None, tool_call_reminders=2)
+
+    assert rung.to_dict()["tool_call_reminders"] == 2
+    assert _rung("verified").to_dict()["tool_call_reminders"] == 0
+
+
 def test_a_restarted_handoff_says_the_changes_were_undone():
     from certo.escalation import handoff_message
 
