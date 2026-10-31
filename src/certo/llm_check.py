@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass
-
+from . import context_window
 from litellm.exceptions import NotFoundError as LiteLLMNotFoundError
 from openhands.sdk import Message, TextContent
 from openhands.sdk.agent.utils import make_llm_completion
@@ -119,6 +119,13 @@ class LLMCheckResult:
     error_kind: str | None = None
     error: str | None = None
     hint: str | None = None
+    # Ollama-only; None for every cloud model (nothing changes for them).
+    ollama_version: str | None = None
+    context_tokens: int | None = None
+    # "CERTO_LLM_CONTEXT_TOKENS" or "server" — where context_tokens came from.
+    context_source: str | None = None
+    tokens_per_second: float | None = None
+    context_warning: str | None = None  # the run's own warning text, if any
 
 
 def _scrub(text: str, secret: str | None) -> str:
@@ -140,6 +147,7 @@ def _build_check_llm(cfg: Config, timeout: int):
 
 def _failure(cfg: Config, exc: Exception, started: float) -> LLMCheckResult:
     kind, hint = "error", None
+    latency = time.monotonic() - started
     if isinstance(exc, _SetupError):
         exc = exc.original
         kind, hint = "setup", _SETUP_HINT
@@ -151,7 +159,8 @@ def _failure(cfg: Config, exc: Exception, started: float) -> LLMCheckResult:
         ok=False,
         model=cfg.model,
         base_url=cfg.base_url,
-        latency_seconds=time.monotonic() - started,
+        latency_seconds=latency,
+        **_ollama_details(cfg, timeout=5),
         error_kind=kind,
         error=_scrub(f"{type(exc).__name__}: {exc}", cfg.api_key),
         hint=hint,
@@ -191,6 +200,7 @@ def check_llm(cfg: Config, *, timeout: int = DEFAULT_TIMEOUT_SECONDS) -> LLMChec
         latency_seconds=latency,
         reply=reply,
         **_usage(response),
+        **_extra_details(cfg, response, latency),
         error_kind=None if reply else "no_reply",
         error=None if reply else "The model answered, but with no text content.",
         hint=None,
@@ -216,13 +226,15 @@ def check_tool_calling(cfg: Config, *, timeout: int = DEFAULT_TIMEOUT_SECONDS) -
         return _failure(cfg, exc, started)
     calls = response.message.tool_calls or []
     reply = calls[0].name if calls else ""
+    latency = time.monotonic() - started
     return LLMCheckResult(
         ok=bool(calls),
         model=cfg.model,
         base_url=cfg.base_url,
-        latency_seconds=time.monotonic() - started,
+        latency_seconds=latency,
         reply=reply,
         **_usage(response),
+        **_extra_details(cfg, response, latency),
         error_kind=None if calls else "no_tool_call",
         error=None if calls else "The model answered without calling a tool.",
         hint=None,
@@ -247,7 +259,7 @@ def explain(result: LLMCheckResult, provider: str | None = None) -> str:
     if result.ok:
         return "ok: reachable, tool calling works."
     text = (result.error or "").lower()
-    ollama = result.model.split("/", 1)[0] in ("ollama", "ollama_chat")
+    ollama = _is_ollama(result.model)
     name = result.model.split("/", 1)[-1]
     who = provider or "the provider"
 
@@ -305,3 +317,83 @@ def explain(result: LLMCheckResult, provider: str | None = None) -> str:
     if result.error_kind == "setup":
         return f"Certo can't use this model as configured: {result.error}"
     return f"The check failed: {result.error}"
+
+
+def _is_ollama(model: str) -> bool:
+    return model.split("/", 1)[0] in ("ollama", "ollama_chat")
+
+
+def _ollama_details(cfg: Config, *, timeout: int | None = None) -> dict:
+    """Version, effective context window (and its source), and the run's
+    own small-window warning. Never raises: a check must still report
+    the request result if the server can't answer this.
+
+    `timeout` overrides the probe timeout; the failure path passes a
+    short one (5s) so a down server can't stall a check that is supposed
+    to fail fast. Without it, the caller's full model timeout is used."""
+    if not _is_ollama(cfg.model):
+        return {}
+    t = timeout or (cfg.llm_timeout_seconds or 600)
+    details: dict = {}
+    try:
+        details["ollama_version"] = context_window.ollama_version(cfg.base_url, t)
+    except Exception:  # noqa: BLE001 - best effort
+        pass
+    try:
+        tokens = context_window.known_context_tokens(cfg.model, cfg.llm_context_tokens, cfg.base_url, t)
+        source = "CERTO_LLM_CONTEXT_TOKENS" if cfg.llm_context_tokens else "server"
+        if tokens:
+            details["context_tokens"] = tokens
+            details["context_source"] = source
+            if cfg.context_warn_tokens and tokens < cfg.context_warn_tokens:
+                details["context_warning"] = context_window.small_window_warning(
+                    cfg.model,
+                    tokens,
+                    cfg.context_warn_tokens,
+                    bool(cfg.llm_context_tokens),
+                    cfg.condense,
+                )
+    except Exception:  # noqa: BLE001
+        pass
+    return details
+
+
+def _extra_details(cfg: Config, response, latency: float) -> dict:
+    """Kwargs to add on top of `_usage(response)`: the Ollama-only fields
+    (empty for cloud models) and tokens/second when the response reports
+    completion tokens. Never raises — a broken metrics read must not turn
+    a passing check into a failure."""
+    details = _ollama_details(cfg)
+    try:
+        usage = response.metrics.accumulated_token_usage
+        if usage and usage.completion_tokens and latency > 0:
+            details["tokens_per_second"] = usage.completion_tokens / latency
+    except Exception:  # noqa: BLE001 - display-only
+        pass
+    return details
+
+
+def detail_lines(result: LLMCheckResult) -> list[str]:
+    """The extra context lines `certo check` prints for a local (Ollama)
+    model: server version, the context window the run will use and where it
+    came from, the test request's time and tokens/second, and — separately —
+    the same small-window warning a run emits. Empty for cloud models, so
+    their output is unchanged."""
+    if not _is_ollama(result.model):
+        return []
+    parts: list[str] = []
+    if result.ollama_version:
+        parts.append(f"Ollama {result.ollama_version}")
+    if result.context_tokens:
+        window = f"context window {result.context_tokens:,} tokens"
+        if result.context_source:
+            window += f" (from {result.context_source})"
+        parts.append(window)
+    timing = f"{result.latency_seconds:.1f}s"
+    if result.tokens_per_second:
+        timing += f", {result.tokens_per_second:.1f} tok/s"
+    parts.append(timing)
+    lines = [" · ".join(parts)]
+    if result.context_warning:
+        lines.append(result.context_warning)
+    return lines

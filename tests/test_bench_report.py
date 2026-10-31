@@ -85,12 +85,13 @@ def test_arm_table():
     assert local[5:9] == ["1", "1", "0", "1"]  # fooled, caught, unconfirmed, errors
     assert local[9] == "2m 10s"  # median of 300, 200, 60, 60
     assert local[10] == "4,000 / 400"
+    assert local[11] == "0"  # tool-call reminders: none of these records set any
     # A local model is free, although older records said its cost was unknown.
-    assert local[11] == "$0.0000"
+    assert local[12] == "$0.0000"
     cloud = _row(markdown, "cloud")
     assert cloud[3] == "3/3 (100%)"
     assert cloud[5:9] == ["0", "1", "1", "0"]
-    assert cloud[11] == "$1.2500"
+    assert cloud[12] == "$1.2500"
 
 
 def test_header_records_where_and_what_was_run():
@@ -218,8 +219,8 @@ def test_single_arms_keep_their_columns_and_get_no_rung_section():
     header = next(ln for ln in markdown.splitlines() if ln.startswith("| Arm |"))
     assert header == (
         "| Arm | Strategy | Models | Hidden tests passed | Verified | Fooled | Caught | "
-        "Unconfirmed passes | Errors | Median time | Tokens in / out | Cost | "
-        "Cost per solved task |"
+        "Unconfirmed passes | Errors | Median time | Tokens in / out | Tool-call reminders | "
+        "Cost | Cost per solved task |"
     )
     assert "Which rung produced the final result" not in markdown.split("## What the")[0]
 

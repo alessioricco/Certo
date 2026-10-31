@@ -233,6 +233,13 @@ In `results.md`, per arm:
   tests passed, for example because the agent wrote no tests. Some
   "caught" runs are in fact unconfirmed passes.
 - **Median time, tokens and cost.**
+- **Tool-call reminders:** how often the agent wrote a tool call as text
+  instead of making it, and Certo sent it back
+  ([`CERTO_TOOL_CALL_REMINDERS`](../reference/configuration.md), see also
+  [Troubleshooting](../troubleshooting.md#the-run-ends-at-once-with-a-tool-call-as-the-agents-last-message)),
+  added up over the arm's runs. An escalation run counts every rung's own.
+  Each run's count is also in `runs/*.json` and in the
+  `tool_call_reminders` column of `results.csv`.
 - **Cost per solved task:** the arm's total cost divided by the runs whose
   hidden tests passed. The fair way to compare a cheap model that solves
   less with an expensive one that solves more.

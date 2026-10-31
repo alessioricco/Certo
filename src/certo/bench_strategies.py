@@ -67,6 +67,9 @@ class AttemptResult:
     independent_tests: Any = None
     # Auto only: the task profile the task was classified as.
     task_profile: str | None = None
+    # How many tool-call reminders the run's conversation(s) were sent
+    # (TaskOutcome.tool_call_reminders; summed over rungs for an escalation).
+    tool_call_reminders: int = 0
 
 
 class Strategy(Protocol):
@@ -193,6 +196,7 @@ class SingleStrategy:
             run_summary=outcome.run_summary,
             models_used=(entry.name,),
             independent_tests=getattr(outcome, "independent_tests", None),
+            tool_call_reminders=getattr(outcome, "tool_call_reminders", 0),
         )
 
 
@@ -253,6 +257,7 @@ class EscalateStrategy:
             rungs=rungs,
             final_rung=outcome.final_rung,
             independent_tests=getattr(outcome, "independent_tests", None),
+            tool_call_reminders=getattr(outcome, "tool_call_reminders", 0),
         )
 
 
@@ -309,6 +314,7 @@ class AutoStrategy:
             models_used=used,
             independent_tests=getattr(outcome, "independent_tests", None),
             task_profile=decisions[0].task_profile if decisions else None,
+            tool_call_reminders=getattr(outcome, "tool_call_reminders", 0),
         )
 
 

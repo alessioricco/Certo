@@ -18,6 +18,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from types import SimpleNamespace
 from typing import ClassVar
 
+from certo.config import Config
 import pytest
 from dotenv import dotenv_values
 from openhands.sdk.llm.message import MessageToolCall
@@ -1417,3 +1418,125 @@ def test_explain_does_not_claim_the_setting_is_in_dot_env(result):
     text = explain(result, "Anthropic")
     assert ".env" not in text
     assert "in your settings" in text
+
+
+# =============================================================================
+# #35: run_check prints the Ollama version/window/tok-s header, and stays
+# byte-identical for cloud models. check_tool_calling is monkeypatched: no
+# network, no key.
+# =============================================================================
+
+
+def _run_check_cfg(**overrides) -> Config:
+    """A Config for run_check tests. Named with a prefix so it never
+    collides with a future generic _cfg in this file."""
+    base = {
+        "model": "openai/gpt-4o",
+        "api_key": "sk-test",
+        "base_url": None,
+        "workspace": ".",
+        "max_iterations": 10,
+        "confirm_mode": "never",
+        "execution": "local",
+    }
+    base.update(overrides)
+    return Config(**base)
+
+
+def _llm_result(**kwargs) -> LLMCheckResult:
+    """An LLMCheckResult for run_check tests. Named _llm_result, not
+    _result: this file already has a _result helper at ~line 843 with a
+    different signature, and redefining it would break that one."""
+    defaults = dict(ok=True, model="openai/gpt-4o", base_url=None, latency_seconds=1.2)
+    defaults.update(kwargs)
+    return LLMCheckResult(**defaults)
+
+
+def _run_check(monkeypatch, cfg, result):
+    """Run init_cmd.run_check with load_config and check_tool_calling mocked.
+    Returns (ok, the text written to `out`)."""
+    monkeypatch.setattr(init_cmd, "load_config", lambda env: cfg)
+    monkeypatch.setattr(init_cmd, "check_tool_calling", lambda cfg, *, timeout: result)
+    out = io.StringIO()
+    ok = init_cmd.run_check(None, out)
+    return ok, out.getvalue()
+
+
+def test_run_check_cloud_output_is_byte_identical(monkeypatch):
+    """If this fails, certo check gained a stray '1.2s' line for cloud
+    models — the opposite of the issue's 'nothing changes for cloud models'."""
+    ok, text = _run_check(
+        monkeypatch,
+        _run_check_cfg(model="openai/gpt-4o"),
+        _llm_result(model="openai/gpt-4o", latency_seconds=1.2),
+    )
+    assert ok is True
+    assert text.count("\n") == 1
+    assert text.startswith("Checking the model openai/gpt-4o...")
+    assert text.rstrip().endswith("tool calling works.")
+
+
+def test_run_check_ollama_prints_header_and_verdict_on_own_line(monkeypatch):
+    ok, text = _run_check(
+        monkeypatch,
+        _run_check_cfg(model="ollama/llama3"),
+        _llm_result(
+            model="ollama/llama3",
+            latency_seconds=1.8,
+            ollama_version="0.5.7",
+            context_tokens=65536,
+            context_source="server",
+            tokens_per_second=41.2,
+        ),
+    )
+    assert ok is True
+    lines = text.rstrip().splitlines()
+    assert len(lines) == 3
+    assert lines[0].startswith("Checking the model ollama/llama3")
+    assert "Ollama 0.5.7" in lines[1]
+    assert "65,536 tokens (from server)" in lines[1]
+    assert "41.2 tok/s" in lines[1]
+    assert lines[2].startswith("ok:")
+
+
+def test_run_check_ollama_includes_warning(monkeypatch):
+    ok, text = _run_check(
+        monkeypatch,
+        _run_check_cfg(model="ollama/llama3"),
+        _llm_result(
+            model="ollama/llama3",
+            latency_seconds=1.9,
+            ollama_version="0.5.7",
+            context_tokens=8192,
+            context_source="server",
+            tokens_per_second=39.7,
+            context_warning=(
+                "Certo: ollama/llama3's context window is below CERTO_CONTEXT_WARN_TOKENS."
+            ),
+        ),
+    )
+    assert ok is True
+    assert "below CERTO_CONTEXT_WARN_TOKENS" in text
+    lines = text.rstrip().splitlines()
+    assert len(lines) == 4  # Checking... / header / warning / verdict
+
+
+def test_run_check_failure_still_shows_details(monkeypatch):
+    ok, text = _run_check(
+        monkeypatch,
+        _run_check_cfg(model="ollama/llama3"),
+        _llm_result(
+            ok=False,
+            model="ollama/llama3",
+            latency_seconds=0.2,
+            ollama_version="0.5.7",
+            context_tokens=8192,
+            context_source="server",
+            error_kind="setup",
+            error="Context window 8192 is below the minimum of 16384",
+        ),
+    )
+    assert ok is False
+    assert "Ollama 0.5.7" in text
+    assert "8,192" in text
+    assert "can't use this model as configured" in text

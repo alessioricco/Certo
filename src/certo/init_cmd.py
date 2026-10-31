@@ -14,7 +14,6 @@ printed or logged.
 """
 
 from __future__ import annotations
-
 import argparse
 import getpass
 import json
@@ -39,7 +38,7 @@ from .config import (
     load_settings_files,
     user_settings_path,
 )
-from .llm_check import check_tool_calling, explain
+from .llm_check import check_tool_calling, detail_lines, explain
 
 DEFAULT_FOLDER = "certo-workspace"
 # Where `certo init` saves the settings.
@@ -493,6 +492,11 @@ def run_check(
     wait = " (a local model may take a minute to load)" if local else ""
     print(f"Checking the model {cfg.model}{wait}...", end=" ", file=out, flush=True)
     result = check_tool_calling(cfg, timeout=timeout)
+    details = detail_lines(result)
+    if details:
+        print(file=out)  # end the "Checking the model ..." line
+        for line in details:
+            print(line, file=out)
     print(explain(result, _provider_name(cfg.model)), file=out)
     return result.ok
 

@@ -210,6 +210,7 @@ def _combined_attempt(attempts: list[AttemptResult]) -> AttemptResult:
     return AttemptResult(
         verification_state=last.verification_state,
         retries_used=sum(a.retries_used for a in attempts),
+        tool_call_reminders=sum(a.tool_call_reminders for a in attempts),
         run_summary=combine_summaries(summaries) if summaries else None,
         models_used=tuple(dict.fromkeys(m for a in attempts for m in a.models_used)),
         rungs=tuple(r for a in attempts for r in a.rungs),
@@ -348,6 +349,9 @@ def execute_run(
         "cost": round(summary.total_cost, 6) if summary else 0.0,
         "cost_known": summary.cost_complete if summary else True,
         "retries_used": attempt.retries_used if attempt else 0,
+        # How often the agent wrote a tool call as text instead of making it
+        # (CERTO_TOOL_CALL_REMINDERS); summed over rungs for an escalation.
+        "tool_call_reminders": attempt.tool_call_reminders if attempt else 0,
         # How often older steps were summarized (the context window filled up).
         "condensations": summary.condensations if summary else 0,
         # Escalation only: every rung that ran, and which one gave the verdict.

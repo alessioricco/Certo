@@ -156,6 +156,7 @@ def test_a_run_is_isolated_graded_and_recorded(tmp_path, project_venv, capsys):
     )
     assert (record["tokens_in"], record["tokens_out"], record["cost"]) == (1000, 50, 0.25)
     assert record["retries_used"] == 1
+    assert record["tool_call_reminders"] == 0
     assert record["models"] == [
         {"name": "cloud-a", "model": "anthropic/test-model-a", "reasoning_effort": None}
     ]
@@ -970,6 +971,19 @@ def test_a_milestones_arm_stops_at_the_first_milestone_not_verified(tmp_path, pr
     (record,) = _records(out)
     assert record["verdict"] == "retry_exhausted"
     assert [m["verdict"] for m in record["milestones"]] == ["retry_exhausted"]
+
+
+def test_combined_attempt_sums_tool_call_reminders_over_every_milestone():
+    from certo.bench_strategies import AttemptResult
+
+    attempts = [
+        AttemptResult("verified", 0, None, ("cloud-a",), tool_call_reminders=1),
+        AttemptResult("verified", 1, None, ("cloud-a",), tool_call_reminders=2),
+    ]
+
+    combined = bench._combined_attempt(attempts)
+
+    assert combined.tool_call_reminders == 3
 
 
 def test_an_arm_without_milestones_gets_the_whole_task_and_every_check(tmp_path, project_venv):

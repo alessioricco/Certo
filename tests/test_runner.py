@@ -765,6 +765,17 @@ def test_tool_call_reminders_0_turns_them_off():
     assert conversation.sent_messages == []
 
 
+def test_reminders_sent_counts_them_for_the_benchmark():
+    conversation = _FakeConversation(events_after_run=[_agent_says(_TEXT_CALL) for _ in range(5)])
+    assert runner._reminders_sent(conversation) == 0
+
+    runner._run_conversation_once(conversation, _cfg(tool_call_reminders=2), lambda _m: None, None)
+
+    assert runner._reminders_sent(conversation) == 2
+    # A conversation never reminded (a model that makes real tool calls) reads 0.
+    assert runner._reminders_sent(_FakeConversation()) == 0
+
+
 def test_the_same_text_call_is_not_reminded_twice():
     # After the reminder the run adds nothing: the last agent message is
     # still the one already reminded about.
