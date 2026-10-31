@@ -51,9 +51,8 @@ first item is the suggested next one.
 - **Re-verify the "confident but wrong" fixes live**: #1, #3, #5 and #6
   for Java in `ARCHITECTURE.md` say "not re-verified live" (#2, #4 and #6
   for Go/Rust were, 2026-10-19; #10, 2026-10-31). #1 and #5 are hard to
-  trigger on purpose. Also never seen live:
-  a climb inside a milestone (`--milestones --escalate`), and
-  `--resume` after Ctrl-C mid-run.
+  trigger on purpose. Also never seen live: a climb inside a milestone
+  (`--milestones --escalate`). `--resume` after Ctrl-C was, 2026-10-31.
 - **Move the historical planning docs into `docs/history/`**
   (`docs/KICKOFF.md`, `docs/SPEC.md`, `docs/ROADMAP.txt`), so readers
   don't take them for current docs; fix every reference. Starter issue:
@@ -344,6 +343,11 @@ database).
 
 ## Smaller bugs
 
+- **An interrupted run's cost isn't recorded.** After Ctrl-C the
+  `.certo/RUNS.md` entry has no time, tokens or cost line (seen live,
+  `docs/benchmark/resume-after-ctrl-c-0.1.27.md`): `record_run` gets no
+  outcome, so what was spent before the interrupt is lost. Done when the
+  entry shows the time, tokens and cost spent until Ctrl-C.
 - **`certo skills`: turn an official skill off**, globally or for one
   project (later, agreed 2026-10-22). Today a third-party skill can only
   replace one.
