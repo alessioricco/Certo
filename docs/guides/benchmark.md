@@ -206,7 +206,7 @@ Each benchmark writes a folder, by default `bench-results/<date-time>/`:
 | `results.md` | The summary to read and share. |
 | `results.csv` | One row per run, for a spreadsheet, with each model's reasoning effort (`reasoning_efforts`). |
 | `cost.json` | The real total cost, the cost per model and reasoning effort, and the plan's estimate. |
-| `runs/*.json` | Every detail of each run. A run that ends with an error keeps its `error` and still records the tokens, cost and condensations it used up to the error (0 when it failed before any model call), so a long run that lost its server doesn't look free. |
+| `runs/*.json` | Every detail of each run. A run that ends with an error keeps its `error` and still records the tokens, cost and condensations it used up to the error (0 when it failed before any model call; in milestones, the earlier milestones' too), so a long run that lost its server doesn't look free. |
 | `runs/transcripts/<run>.json` | The run's whole conversation: the agent's messages, the tools' output and Certo's notes. Read it to see why a run ended as it did. `seconds` says when each message arrived, counted from `started_at`: it shows where a long run spent its time. |
 | `workspaces/<run>/` | The code each run left behind (without `.venv` and `node_modules`). |
 | `meta.json` | Certo version, date, hardware, task set, the benchmark itself, the plan's cost estimate, and the Ollama setup (below). |

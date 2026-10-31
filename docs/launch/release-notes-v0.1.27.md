@@ -122,6 +122,8 @@ The original build plan, kickoff prompt and roadmap snapshot are now in
   and costs at the end, under the whole run's totals. Each milestone's
   are now listed under its verdict.
 - **An interrupted run's cost.** A run stopped by Ctrl-C or an error now
-  has its time, tokens and cost up to the stop in `.certo/RUNS.md`.
+  has its time, tokens and cost up to the stop in `.certo/RUNS.md`. In
+  the benchmark, a run in milestones that stops on an error now also
+  counts the milestones before it.
 - **Security updates** in the lock file: authlib 1.9.1, dnspython 2.9.1,
   litellm 1.100.4, joserfc 1.7.7, pyasn1 0.6.5 and pypdf 6.21.4.

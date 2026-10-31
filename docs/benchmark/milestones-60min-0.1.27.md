@@ -100,7 +100,8 @@ milestone 4 used before the error. Milestones 1 to 3 used about
 1,384,000 in and 129,000 out (from the log). When a milestone stops on
 an error, the benchmark record keeps only that milestone's usage. The
 cost is $0 on this local model, but on a paid model the record would
-show too little. This is in `TODO.md`.
+show too little. Fixed after this run: the record now adds up every
+milestone that ran.
 
 ## What to try next
 

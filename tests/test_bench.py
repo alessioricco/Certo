@@ -908,14 +908,17 @@ class FakeMilestoneModel:
     """runner.stream_task for a milestone task: every call writes the
     reference solution and gives the next verdict."""
 
-    def __init__(self, make_venv, tmp_path, verdicts=("verified",)):
+    def __init__(self, make_venv, tmp_path, verdicts=("verified",), raise_on=()):
         self.make_venv = make_venv
         self.reference = tmp_path / "tasks" / "calc" / "reference" / "calc.py"
         self.verdicts = list(verdicts)
+        self.raise_on = raise_on
         self.calls: list[SimpleNamespace] = []
 
     def __call__(self, task_text, *, cfg, on_message=None, acceptance_checks=None):
         self.calls.append(SimpleNamespace(task=task_text, cfg=cfg, checks=acceptance_checks))
+        if len(self.calls) in self.raise_on:
+            raise self.raise_on[len(self.calls)]
         workspace = Path(cfg.workspace)
         shutil.copy(self.reference, workspace / "calc.py")
         if on_message is not None:
@@ -970,6 +973,26 @@ def test_a_milestones_arm_stops_at_the_first_milestone_not_verified(tmp_path, pr
     (record,) = _records(out)
     assert record["verdict"] == "retry_exhausted"
     assert [m["verdict"] for m in record["milestones"]] == ["retry_exhausted"]
+
+
+def test_a_milestone_that_fails_keeps_the_usage_of_the_ones_before(tmp_path, project_venv):
+    # milestones-60min-0.1.27.md, repeat 3: milestone 4 lost the model
+    # server and the record had only milestone 4's tokens.
+    crashed = RuntimeError("provider down")
+    crashed.run_summary = RunSummary(
+        duration_seconds=60.0,
+        models=(ModelUsage(model="m", prompt_tokens=7_000, completion_tokens=300, cost=0.05),),
+    )
+    arms = "  - {name: m, strategy: single, model: cloud-a, milestones: true}\n"
+    out = tmp_path / "out"
+    model = FakeMilestoneModel(project_venv, tmp_path, raise_on={2: crashed})
+    _run(_milestone_bench(tmp_path, arms), out, model)
+
+    (record,) = _records(out)
+    assert record["error"] == "RuntimeError: provider down"
+    assert record["tokens_in"] == 1_000 + 7_000
+    assert record["tokens_out"] == 50 + 300
+    assert record["cost"] == pytest.approx(0.1 + 0.05)
 
 
 def test_an_arm_without_milestones_gets_the_whole_task_and_every_check(tmp_path, project_venv):

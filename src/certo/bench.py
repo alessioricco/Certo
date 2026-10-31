@@ -266,9 +266,9 @@ def execute_run(
         started_at = _now()
         start = time.monotonic()
         attempt, error, failed_summary = None, None, None
+        attempts: list[AttemptResult] = []
         try:
             if in_milestones:
-                attempts = []
                 left = None
                 for milestone in plan.milestones:
                     checks["now"] = checks_up_to(plan, milestone.number)
@@ -302,6 +302,11 @@ def execute_run(
             # the exception it raises: a run that worked for 31 minutes and
             # then lost its model server counts what it spent, not zeros.
             failed_summary = getattr(exc, "run_summary", None)
+            # In milestones, the milestones that ended before it count too.
+            spent = [a.run_summary for a in attempts if a.run_summary is not None]
+            if failed_summary is not None:
+                spent.append(failed_summary)
+            failed_summary = combine_summaries(spent) if spent else None
         wall = time.monotonic() - start
         write_transcript(out_dir, planned.run_id, messages, seconds, started_at)
         graded = grade(planned.task, workspace)

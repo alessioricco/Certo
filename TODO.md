@@ -14,12 +14,6 @@ first item is the suggested next one.
 
 ## Before the next release
 
-- **Bench: a milestone that errors drops the earlier milestones' usage.**
-  In `bench.py`'s `execute_run`, an exception keeps only the failed
-  milestone's `run_summary`, not the `attempts` before it (found in
-  `docs/benchmark/milestones-60min-0.1.27.md`, repeat 3: 69K tokens
-  recorded, about 1.45M used). Done when the record adds them up, with
-  a test.
 - **A longer time budget from `certo init` for Ollama?** The mazeman
   sample took 41 minutes on `qwen3.8:27b` (2026-10-22), past the default
   30-minute `CERTO_MAX_TASK_SECONDS`; it ended `verified` only because the
