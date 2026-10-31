@@ -126,6 +126,20 @@ Each milestone climbs its own [ladder](escalate-between-models.md),
 starting on the first rung: a milestone that the first model solves
 never costs a bigger one, even when an earlier milestone needed it.
 
+Under each milestone's verdict, Certo lists the rungs that milestone
+ran. Here the first rung's key was wrong on purpose, so each milestone
+moved to the second:
+
+```text
+Milestone 1 of 2: verified
+  Rungs:
+    1. claude-haiku-5-5 (anthropic/claude-haiku-5-5, effort high): provider or run failure, 0 fix attempts, 1.3s, 0 tokens, $0.0000
+    2. claude-sonnet-5-5 (anthropic/claude-sonnet-5-5, effort high): verified, 0 fix attempts, 24.7s, 132,863 tokens, $0.0687
+  Final result from rung 2 (claude-sonnet-5-5).
+```
+
+The run summary at the end adds up every milestone.
+
 `certo --resume --escalate` starts the first milestone not `verified`
 again on the first rung, in a fresh conversation, with the files as
 they are and Certo's record of how the last try ended (its verdict and

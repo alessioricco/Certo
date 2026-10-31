@@ -2497,6 +2497,47 @@ def test_milestones_climb_a_ladder_each_from_its_first_rung(monkeypatch, tmp_pat
     assert all(call["resume_from"] is None for call in calls)
 
 
+def test_milestones_print_each_milestones_rungs_under_its_verdict(monkeypatch, tmp_path, capsys):
+    from certo.escalation import RungResult
+    from certo.run_summary import RunSummary
+    from model_file_helpers import model_file_config
+
+    rungs = iter(
+        [
+            (
+                RungResult(1, "local", "ollama/q", "no_progress", 1, 60.0, RunSummary(60.0)),
+                RungResult(2, "mid", "openai/m", "verified", 0, 30.0, RunSummary(30.0)),
+            ),
+            (RungResult(1, "local", "ollama/q", "verified", 0, 20.0, RunSummary(20.0)),),
+        ]
+    )
+    calls: list = []
+    run_one = _milestone_run_task(calls, ["verified", "verified"])
+
+    def fake(task, **kwargs):
+        result = run_one(task, **kwargs)
+        ran = next(rungs)
+        result.outcome = replace(result.outcome, rungs=ran, final_rung=ran[-1].number)
+        return result
+
+    monkeypatch.setattr(
+        cli,
+        "load_config",
+        lambda: _milestone_cfg(tmp_path, **model_file_config(tmp_path, _ESCALATION_CATALOG)),
+    )
+    monkeypatch.setattr(cli, "run_task", fake)
+
+    assert cli.main(["--milestones", "--escalate", _milestone_file(tmp_path)]) == 0
+
+    out = capsys.readouterr().out
+    first, second = out.split("Milestone 1 of 2: verified")[1].split("Milestone 2 of 2: verified")
+    assert "  Final result from rung 2 (mid)." in first
+    assert "  Final result from rung 1 (local)." in second.split("Milestones:")[0]
+    # The end of the run covers every milestone: no rung list of the last one alone.
+    assert "Rungs:" not in out.split("Milestones:")[-1]
+    assert out.count("Rungs:") == 2
+
+
 def test_milestones_pass_independent_tests_on_to_each_milestone(monkeypatch, tmp_path):
     calls: list = []
     monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))

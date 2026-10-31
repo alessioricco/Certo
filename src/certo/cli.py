@@ -934,7 +934,8 @@ def _main(argv: list[str]) -> int:
         print("\nRun summary:")
         for line in outcome.run_summary.format_lines():
             print(f"  {line}")
-    if outcome.rungs:
+    # In milestone mode each milestone's rungs were printed under its verdict.
+    if outcome.rungs and milestone_state is None:
         for line in format_rung_lines(outcome.rungs, outcome.final_rung):
             print(f"  {line}")
     failing = outcome.verification_state in _FAILING_STATES or (
@@ -969,14 +970,15 @@ def _run_milestones(
 ):
     """Milestone mode: run each milestone not yet verified, in order, each
     in its own conversation, and stop at the first that isn't `verified`.
-    Returns the last milestone's outcome with the run summary of all of
-    them. `.certo/milestones.json` records each verdict as it comes."""
+    Returns the last milestone's outcome with the run summary and the
+    rungs of all of them. `.certo/milestones.json` records each verdict as it comes."""
     from .checkpoints import safe_snapshot
 
     workspace = cfg.workspace
     ensure_state_dir(workspace)
     total = len(state.plan)
     summaries = []
+    ran = []  # every milestone's rungs: the final outcome has only the last one's
     number = state.next_number()
     outcome = None
     first = True
@@ -1020,6 +1022,10 @@ def _run_milestones(
                 pass
         record_run(outcome.verification_state, outcome)
         print(f"Milestone {number} of {total}: {outcome.verification_state}", flush=True)
+        if outcome.rungs:
+            for line in format_rung_lines(outcome.rungs, outcome.final_rung):
+                print(f"  {line}")
+            ran.extend(outcome.rungs)
         if outcome.independent_tests is not None:
             from .independent_tests import report_line
 
@@ -1034,6 +1040,8 @@ def _run_milestones(
         print(f"  {line}")
     if summaries:
         outcome = replace(outcome, run_summary=combine_summaries(summaries))
+    if ran:
+        outcome = replace(outcome, rungs=tuple(ran))
     return outcome
 
 

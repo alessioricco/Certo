@@ -51,8 +51,8 @@ first item is the suggested next one.
 - **Re-verify the "confident but wrong" fixes live**: #1, #3, #5 and #6
   for Java in `ARCHITECTURE.md` say "not re-verified live" (#2, #4 and #6
   for Go/Rust were, 2026-10-19; #10, 2026-10-31). #1 and #5 are hard to
-  trigger on purpose. Also never seen live: a climb inside a milestone
-  (`--milestones --escalate`). `--resume` after Ctrl-C was, 2026-10-31.
+  trigger on purpose. A climb inside a milestone (`--milestones
+  --escalate`) and `--resume` after Ctrl-C were seen live, 2026-10-31.
 - **Move the historical planning docs into `docs/history/`**
   (`docs/KICKOFF.md`, `docs/SPEC.md`, `docs/ROADMAP.txt`), so readers
   don't take them for current docs; fix every reference. Starter issue:

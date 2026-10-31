@@ -86,5 +86,10 @@ per milestone. See
   tool-result block such as `{"type": "tool_result", "tool_use_id":
   "call_1", ...}`. `qwen3.8:27b` ended two of three milestone runs this
   way in the local benchmark.
+- With `--milestones --escalate`, the run summary at the end listed only
+  the last milestone's rungs, under the totals of the whole run, and the
+  README note in a project Certo created named only the models of the
+  last milestone. Each milestone's rungs are now listed under its
+  verdict, and the note names every model that wrote code.
 - Security updates in the lock file: authlib 1.9.1, dnspython 2.9.1
   and litellm 1.100.4.
