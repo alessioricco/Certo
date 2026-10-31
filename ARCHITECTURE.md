@@ -663,7 +663,7 @@ rule 2):
   should exclude only `system`/`user`, not filter to `assistant`.
 
 **The "confident but wrong agent" family** — variants found live (plus
-one requested proactively), each root-caused and fixed; see `docs/ROADMAP.txt`
+one requested proactively), each root-caused and fixed; see `docs/history/ROADMAP.txt`
 for full transcripts if a fix needs revisiting:
 
 1. **Plain-text reply ends a run exactly like `finish`, no error** — the SDK

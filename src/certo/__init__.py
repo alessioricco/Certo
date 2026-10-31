@@ -1,6 +1,6 @@
 """Certo — a coding-agent harness built on the OpenHands SDK.
 
-Implementation is built out per docs/SPEC.md. Modules to add:
+Implementation is built out per docs/history/SPEC.md. Modules to add:
 config, llm, tools, agent, runner, cli, and custom_tools/.
 """
 

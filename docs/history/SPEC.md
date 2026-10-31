@@ -1,7 +1,7 @@
 # Build Spec — Certo on the OpenHands SDK
 
 The canonical build plan for this repo. Claude Code implements it milestone by
-milestone (section 11). Project memory and guardrails are in ../CLAUDE.md.
+milestone (section 11). Project memory and guardrails are in ../../CLAUDE.md.
 
 > IMPORTANT: the OpenHands SDK is young (public since Nov 2025) and its API still
 > moves. Verify symbols against the live docs and the SDK's `examples/` before
@@ -56,8 +56,10 @@ certo/
 ├── .env.example
 ├── pyproject.toml
 ├── docs/
-│   ├── SPEC.md            # this file
-│   └── KICKOFF.md
+│   └── history/
+│       ├── SPEC.md        # this file
+│       ├── KICKOFF.md
+│       └── ROADMAP.txt
 ├── .claude/
 │   ├── settings.json
 │   └── commands/          # /next-milestone, /verify-sdk, /add-tool

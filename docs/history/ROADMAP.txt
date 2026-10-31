@@ -2,14 +2,14 @@
 
 Internal planning memory: what's implemented, what's left, known limitations,
 and why key decisions were made. This is **not** user docs — see `MANUAL.md`
-for how to actually use the harness, and `docs/SPEC.md` for the original
+for how to actually use the harness, and `docs/history/SPEC.md` for the original
 build plan. This file is the living, evolving companion to that static plan.
 
 > **Maintenance note:** update this file whenever milestone status changes, an
 > optional feature is built or explicitly deferred, or a new limitation is
 > discovered. Keep entries terse — outcome + one-line why. See `CLAUDE.md`.
 
-## Milestone status (docs/SPEC.md section 11)
+## Milestone status (docs/history/SPEC.md section 11)
 
 | # | Milestone | Status |
 |---|---|---|

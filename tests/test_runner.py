@@ -1971,7 +1971,7 @@ def test_stream_task_wires_max_iterations_to_conversation(monkeypatch):
     # Regression guard: CERTO_MAX_ITERATIONS was parsed/validated by
     # config.py from Milestone 1 onward but never actually passed to
     # Conversation(...), so every run silently used the SDK's own default
-    # (500) regardless of .env — contrary to docs/SPEC.md section 12's
+    # (500) regardless of .env — contrary to docs/history/SPEC.md section 12's
     # acceptance criterion ("CERTO_MAX_ITERATIONS reliably bounds runaway
     # loops"). Found only by reading runner.py directly, not by any test —
     # this asserts the kwarg is actually threaded through, so a future

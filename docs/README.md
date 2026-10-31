@@ -212,4 +212,4 @@ How to work on Certo itself, run its tests and make a release is in
 [ROADMAP.md](../ROADMAP.md), what's left to do in [TODO.md](../TODO.md),
 and the reasons behind design decisions in
 [DECISIONS.md](../DECISIONS.md). The
-original build plan is [SPEC.md](SPEC.md).
+original build plan is [SPEC.md](history/SPEC.md).

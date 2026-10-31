@@ -1,6 +1,6 @@
 # Kickoff — running this build in Claude Code
 
-This repo is already seeded with `CLAUDE.md`, `docs/SPEC.md`, `.claude/` config,
+This repo is already seeded with `CLAUDE.md`, `docs/history/SPEC.md`, `.claude/` config,
 and the folder skeleton. You do **not** need to run `/init` — the memory file is
 written. Just start Claude Code in the project root and drive it milestone by
 milestone.
@@ -9,7 +9,7 @@ milestone.
 
 Milestone 1 (config + tests) is already implemented and passing. Start here:
 
-> Read CLAUDE.md and docs/SPEC.md. Confirm you understand the goal, the golden
+> Read CLAUDE.md and docs/history/SPEC.md. Confirm you understand the goal, the golden
 > rules, and the milestone plan. Verify Milestone 1 is green by running
 > `pip install -e ".[dev]"` (or install openhands-sdk + openhands-tools together)
 > and `pytest -q`. Then implement **Milestone 2** only: `llm.py`, `tools.py`,

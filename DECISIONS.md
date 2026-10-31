@@ -8,10 +8,10 @@ says so ("supersedes ...") rather than editing it away.
 > **Full history:** every entry through 2026-09-20 is a compressed
 > summary. The complete narrative (alternatives considered,
 > live-verification transcripts, exact quotes) lives in
-> `docs/ROADMAP.txt` (a frozen snapshot) and in git history.
+> `docs/history/ROADMAP.txt` (a frozen snapshot) and in git history.
 
 Each entry is the decision plus the load-bearing reason. Full alternatives
-considered and live-verification detail: `docs/ROADMAP.txt`.
+considered and live-verification detail: `docs/history/ROADMAP.txt`.
 
 - **Acceptance criteria: `file_exists`/`file_contains` only, no
   command-exec kind.** An unauthenticated server caller triggering
@@ -265,7 +265,7 @@ considered and live-verification detail: `docs/ROADMAP.txt`.
   unversioned, since they're only per-run telemetry keys. The
   third-party skills lockfile never carried the old name.
   The GitHub repo is renamed (`alessioricco/certo`) and Certo is on PyPI
-  since 0.1.0; `docs/launch/github-rename.md` is the historical checklist. `docs/ROADMAP.txt` is a
+  since 0.1.0; `docs/launch/github-rename.md` is the historical checklist. `docs/history/ROADMAP.txt` is a
   frozen snapshot, so it keeps the old names on purpose.
 - **Live entrypoint-ordering/smoke-run test built its own throwaway
   `tmp_path` fixture, not `projects/hanoi/` or anything under `projects/`**
