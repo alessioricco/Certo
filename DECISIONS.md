@@ -1482,3 +1482,12 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   spreadsheet on a local model stays open in `TODO.md`. This closes the
   project review's plan; the next release after 0.1.27 is 0.2, which
   starts the MCP server.
+
+- **Tool-call reminders are counted in a row** (the Author, 2026-10-31;
+  supersedes "at most N per run" in the 0.1.26 entry). A real tool call
+  after a reminder starts the count again. Found in
+  `docs/benchmark/expenses-0.1.27.md`: qwen3.8 slipped 4 times in 5 tries
+  with a real call between, and the per-conversation count stopped it
+  with 31 minutes left. The limit is for a model that never recovers;
+  one that recovers keeps going, still bounded by the time, cost and
+  step limits. Cloud models never get reminders, so they can't change.

@@ -525,8 +525,9 @@ given design was chosen.
   `runner._remind_text_tool_call`, called in `_run_conversation_once`
   after each `conversation.run()`, sends `REMINDER` and runs again when
   the run FINISHED on such a `MessageEvent`: at most
-  `CERTO_TOOL_CALL_REMINDERS` per conversation (`_TOOL_CALL_REMINDERS`,
-  weak-keyed), once per event id, never past the deadline or the cost
+  `CERTO_TOOL_CALL_REMINDERS` in a row per conversation
+  (`_TOOL_CALL_REMINDERS`, weak-keyed; an agent `ActionEvent` after the
+  last reminded event starts the count again), once per event id, never past the deadline or the cost
   limit. Tool parameters come from `agent.tools_map[*].action_type`
   (initialized after a run), `DEFAULT_TOOLS` when unreadable.
 - **`cost_limit.py`** — `CERTO_MAX_TASK_COST` during a run: a per-conversation

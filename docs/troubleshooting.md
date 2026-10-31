@@ -330,11 +330,12 @@ written as text, such as `{"command": "view", "path": "..."}`, and
 Certo prints:
 
 ```
-Certo: the agent wrote a tool call as text instead of making it, so nothing ran. Asking it to make the call (1 of 3).
+Certo: the agent wrote a tool call as text instead of making it, so nothing ran. Asking it to make the call (1 of 3 in a row).
 ```
 
-When the model keeps doing it, the run ends after the last reminder,
-often within a minute, with `inconclusive` or `unchanged`.
+When the model keeps doing it without making a real call in between,
+the run ends after the last reminder, often within a minute, with
+`inconclusive` or `unchanged`.
 
 **Cause:** the model wrote its tool call as plain text instead of making
 a real tool call, so the agent framework took it as the final answer.
@@ -345,8 +346,10 @@ context window; `gemma4:31b-it-qat`, `qwen3-coder:30b` and the cloud
 models never did.
 
 **Fix:** Certo sends the call back to the agent, up to
-`CERTO_TOOL_CALL_REMINDERS` times per run (default 3, see
+`CERTO_TOOL_CALL_REMINDERS` times in a row (default 3, see
 [Configuration](reference/configuration.md#limits-and-verification)).
+When the agent makes a real call after a reminder, the count starts
+again, so a model that slips now and then keeps going.
 In Certo's [reminder benchmark](benchmark/reminders-0.1.26.md),
 `qwen3.8` made one real call after most reminders, then went back to
 writing calls as text, so no run was saved. If runs still end this way,

@@ -69,14 +69,10 @@ first item is the suggested next one.
   in the spreadsheet task that a chain of 200 cells must work (hidden
   `test_m2_a_long_chain` is stricter than the text); then Certo
   planning the milestones itself.
-- **Tool-call reminders: count only the ones in a row?** Certo sends at
-  most `CERTO_TOOL_CALL_REMINDERS` (3) per conversation. In
-  `docs/benchmark/expenses-0.1.27.md` repeat 1, qwen3.8 wrote 4 tool
-  calls as text in 5 tries at the start of milestone 4, with one real
-  call between them; the fourth ended the run as `unchanged` with 31
-  minutes left. Resetting the count after a real call would let it go
-  on. A behaviour change: decide with the Author, and measure on a
-  local and a cloud model. Related: #39 / PR #41 (counting them).
+- **Measure the reminders counted in a row** (built 2026-10-31). qwen3.8
+  on `app-tasks/expenses` in milestones (as `expenses-0.1.27.md`), and
+  Haiku to show cloud runs don't change. Done when the record is in
+  `docs/benchmark/`.
 - **A harder app task** (`app-tasks`, next `apps-` version). Haiku and
   Sonnet both pass the spreadsheet 111/111 in one go, so it doesn't
   separate cloud models: a task that does would show the ladder climbing

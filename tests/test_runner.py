@@ -214,7 +214,8 @@ class _FakeConversation:
         if self._statuses_after_run:
             self.state.execution_status = self._statuses_after_run.pop(0)
         if self._events_after_run:
-            self.state.events.append(self._events_after_run.pop(0))
+            added = self._events_after_run.pop(0)
+            self.state.events.extend(added if isinstance(added, list) else [added])
 
 
 def _task_list_event(*items: dict) -> ObservationEvent:
@@ -744,7 +745,9 @@ def test_a_run_that_ends_on_a_tool_call_written_as_text_is_sent_back_once():
 
     assert conversation.run_calls == 2
     assert conversation.sent_messages == [runner.TOOL_CALL_REMINDER]
-    assert any("tool call as text" in n and "(1 of 3)" in n for n in _notice_texts(notices))
+    assert any(
+        "tool call as text" in n and "(1 of 3 in a row)" in n for n in _notice_texts(notices)
+    )
 
 
 def test_tool_call_reminders_stop_at_the_limit():
@@ -754,6 +757,48 @@ def test_tool_call_reminders_stop_at_the_limit():
 
     assert conversation.run_calls == 3
     assert len(conversation.sent_messages) == 2
+
+
+def _agent_calls_a_tool():
+    from openhands.sdk.event import ActionEvent
+    from openhands.sdk.llm import MessageToolCall
+
+    call = MessageToolCall(id="c1", name="terminal", arguments="{}", origin="completion")
+    return ActionEvent(
+        source="agent",
+        thought=[],
+        tool_name="terminal",
+        tool_call_id="c1",
+        tool_call=call,
+        llm_response_id="r1",
+    )
+
+
+def test_a_real_tool_call_after_a_reminder_starts_the_count_again():
+    # expenses-0.1.27.md, repeat 1: text, text, text, a real call, text.
+    # The reminders worked, so the run goes on past the limit.
+    conversation = _FakeConversation(
+        events_after_run=[
+            _agent_says(_TEXT_CALL),
+            _agent_says(_TEXT_CALL),
+            [_agent_calls_a_tool(), _agent_says(_TEXT_CALL)],
+            _agent_says(_TEXT_CALL),
+            [_agent_calls_a_tool(), _agent_says("Done.")],
+        ]
+    )
+    notices: list = []
+
+    runner._run_conversation_once(conversation, _cfg(tool_call_reminders=2), notices.append, None)
+
+    assert len(conversation.sent_messages) == 4
+    assert conversation.run_calls == 5
+    counts = [n.split("(")[-1] for n in _notice_texts(notices) if "tool call as text" in n]
+    assert counts == [
+        "1 of 2 in a row).",
+        "2 of 2 in a row).",
+        "1 of 2 in a row).",
+        "2 of 2 in a row).",
+    ]
 
 
 def test_tool_call_reminders_0_turns_them_off():

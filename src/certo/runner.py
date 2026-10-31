@@ -699,11 +699,15 @@ def _remind_text_tool_call(
     """When the run just ended on a tool call the model wrote as text
     (text_tool_calls.py), tell the agent to make it as a real call and
     return True, so the caller runs the conversation again. At most
-    `CERTO_TOOL_CALL_REMINDERS` times per conversation, once per message,
-    and never past the deadline or the cost limit. A model that makes real
-    tool calls never gets here: the last message must be text that is, as
-    a whole, a call to one of the agent's tools."""
+    `CERTO_TOOL_CALL_REMINDERS` times in a row, once per message, and never
+    past the deadline or the cost limit. A real tool call since the last
+    reminder starts the count again: the reminder worked, and only a model
+    that never recovers is stopped. A model that makes real tool calls
+    never gets here: the last message must be text that is, as a whole, a
+    call to one of the agent's tools."""
     sent, last_id = _TOOL_CALL_REMINDERS.get(conversation, (0, ""))
+    if sent and _real_call_since(conversation, last_id):
+        sent = 0
     if sent >= cfg.tool_call_reminders:
         return False
     try:
@@ -724,10 +728,25 @@ def _remind_text_tool_call(
     _emit_notice(
         emit,
         "Certo: the agent wrote a tool call as text instead of making it, so "
-        f"nothing ran. Asking it to make the call ({sent} of {cfg.tool_call_reminders}).",
+        f"nothing ran. Asking it to make the call ({sent} of {cfg.tool_call_reminders} "
+        "in a row).",
     )
     conversation.send_message(TOOL_CALL_REMINDER)
     return True
+
+
+def _real_call_since(conversation: Conversation, event_id: str) -> bool:
+    """Whether the agent made a real tool call after the event `event_id`."""
+    try:
+        events = list(conversation.state.events)
+    except Exception:  # noqa: BLE001 - an event log that can't be read (Docker)
+        return False
+    for event in reversed(events):
+        if event.id == event_id:
+            return False
+        if isinstance(event, ActionEvent) and event.source == "agent":
+            return True
+    return False
 
 
 def _last_agent_event(events: Sequence[Event]) -> Event | None:

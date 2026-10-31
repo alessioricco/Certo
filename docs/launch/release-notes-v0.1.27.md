@@ -90,6 +90,16 @@ longer asks for `CERTO_LLM_MODEL` and `CERTO_LLM_API_KEY`: the model
 files name every model and its key. A plain `certo "task"` still needs
 them; `.env.example` now says which key goes with which model.
 
+## Changed: tool-call reminders count the ones in a row
+
+When a model writes a tool call as text, Certo reminds it to make the
+call, up to `CERTO_TOOL_CALL_REMINDERS` times (default 3). These are
+now counted in a row: a real tool call after a reminder starts the
+count again. Before, they were counted over the whole conversation, and
+a local model that slipped four times, with real work in between, was
+stopped with time left. See
+[Troubleshooting](../troubleshooting.md#the-run-ends-at-once-with-a-tool-call-as-the-agents-last-message).
+
 ## New: a line when a newer Certo is out
 
 When a newer version is on PyPI, `certo` says so in one line at the end
