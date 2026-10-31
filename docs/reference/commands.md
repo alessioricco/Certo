@@ -499,6 +499,15 @@ and (with `--models`) every model passes; 1 otherwise. `--models` without
 the model files is an error. With `--task`: 0 when the model files load,
 1 when they can't be found or read.
 
+For an Ollama model, `certo check` also reports the server version, the context window the model will run with, and the speed of the test request:
+
+```text
+Checking the model ollama/qwen3:8b (a local model may take a minute to load)... 
+Ollama 0.40.13 · context window 20,000 tokens (from CERTO_LLM_CONTEXT_TOKENS) · 24.5s
+Certo: ollama/qwen3:8b has a context window of 20,000 tokens (CERTO_LLM_CONTEXT_TOKENS), under CERTO_CONTEXT_WARN_TOKENS=32,768: when a long task fills it, older steps are summarized and the run goes on. For more room, set CERTO_LLM_CONTEXT_TOKENS=32768 (Certo then asks Ollama for that size), or start Ollama with OLLAMA_CONTEXT_LENGTH=32768. (CERTO_CONTEXT_WARN_TOKENS=0 turns this warning off.)
+ok: reachable, tool calling works.
+```
+
 ## `certo bench`
 
 Compare models and strategies on tasks graded by hidden tests.
