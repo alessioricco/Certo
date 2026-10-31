@@ -320,14 +320,6 @@ machine is free, then `scripts/fresh_env_grade.py` on `yaml-merge`. Done
 when the qwen arms are published, or an unhelpful skill is left out of
 the release.
 
-**`regrade_bench.py` can't regrade a Python task that needs a package.**
-Saved workspaces drop `.venv`, so grading again makes an empty one and
-the hidden tests fail on the import (seen on `yaml-merge`, 2026-10-31;
-the records keep their first grade, so nothing is lost). Install what
-the project declares first, as `scripts/fresh_env_grade.py` does. Done
-when a regrade of `setup-skills-cloud-0.1.27` gives `yaml-merge` the
-grades it had.
-
 **Make a project verifiable** (first; suggested order: the first two):
 - `cli-entry-points`: `__main__` guard last, a closed stdin doesn't hang,
   `--help` and non-interactive flags work.

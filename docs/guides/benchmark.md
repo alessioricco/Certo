@@ -259,7 +259,11 @@ arm's runs, such as `37/37` for milestone 1 and `12/29` for milestone 4.
 Each run's counts are in `runs/*.json`, under `hidden_tests.by_milestone`.
 A results folder made before Certo 0.1.27 can get them with
 `uv run python scripts/regrade_bench.py <results folder>`, from a
-checkout: it grades the saved projects again, with no model.
+checkout: it grades the saved projects again, with no model. A saved
+project doesn't keep its virtual environment, so for a Python task the
+script first installs what the project declares (`uv.lock`,
+`pyproject.toml` or `requirements*.txt`); this needs
+[uv](https://docs.astral.sh/uv/).
 
 **The real cost.** The **Cost** section of `results.md` (and `cost.json`)
 gives what the benchmark really spent, from the recorded runs, next to what

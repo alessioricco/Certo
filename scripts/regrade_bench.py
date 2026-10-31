@@ -7,6 +7,10 @@ record gets `hidden_tests.by_milestone`; its pass or fail stays as it was
 graded at the time, and a run whose new grade differs is printed. Then
 `results.md` and `results.csv` are written again. No model is called.
 
+A saved project has no `.venv`, so for a Python task that declares its
+packages (`uv.lock`, `pyproject.toml`, `requirements*.txt`) they are
+installed first, with uv (see `declared_env.py`).
+
     uv run python scripts/regrade_bench.py bench-results/milestones-local-0.1.27
 """
 
@@ -21,6 +25,7 @@ from pathlib import Path
 from certo.bench import hidden_record
 from certo.bench_report import write_report
 from certo.bench_tasks import BUILTIN_TASKS_DIR, grade, load_task
+from declared_env import declared, install
 
 
 def regrade(out_dir: Path) -> int:
@@ -38,6 +43,10 @@ def regrade(out_dir: Path) -> int:
         with tempfile.TemporaryDirectory(prefix="certo-regrade-") as tmp:
             workspace = Path(tmp) / "project"
             shutil.copytree(snapshot, workspace, symlinks=True)
+            if task.language == "python" and declared(workspace):
+                error = install(workspace)
+                if error:
+                    print(f"{record['run_id']}: could not install its packages: {error}")
             new = hidden_record(grade(task, workspace))
         if new["passed"] != record["hidden_tests"]["passed"]:
             changed += 1
