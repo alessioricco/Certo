@@ -72,6 +72,13 @@ before. Thanks to [@Tusharkanda](https://github.com/Tusharkanda)
 ([#40](https://github.com/alessioricco/certo/pull/40)). See
 [Commands](../reference/commands.md#certo-check).
 
+## Changed: the model files are enough for `--escalate` and `--auto-model`
+
+With `--escalate`, `--auto-model` or `CERTO_MODEL_SELECTION`, Certo no
+longer asks for `CERTO_LLM_MODEL` and `CERTO_LLM_API_KEY`: the model
+files name every model and its key. A plain `certo "task"` still needs
+them.
+
 ## Benchmark: tasks in milestones
 
 A benchmark arm with `milestones: true` runs a task written in

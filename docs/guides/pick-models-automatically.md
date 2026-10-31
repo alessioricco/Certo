@@ -104,10 +104,10 @@ certo "Fix the failing test in payments.py" --auto-model
 Or set `CERTO_MODEL_SELECTION=auto` in your settings. Where Certo finds
 the files is in the [reference](../reference/models-yaml.md#where-certo-looks).
 
-`CERTO_LLM_MODEL` must still be set: Certo checks the normal settings
-before it reads the model files. Problems in them are reported the same
-way for every command: errors stop the run, warnings are printed (see
-[Checks](../reference/models-yaml.md#checks)).
+`CERTO_LLM_MODEL` and `CERTO_LLM_API_KEY` aren't needed: the model
+files name every model and its key. Problems in them are reported the
+same way for every command: errors stop the run, warnings are printed
+(see [Checks](../reference/models-yaml.md#checks)).
 
 With `--project NAME`, a model-file configuration error leaves no new
 project folder or registry entry. An existing project folder is kept.

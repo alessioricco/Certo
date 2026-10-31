@@ -122,8 +122,8 @@ may name it) but skipped.
 
 Each model is complete on its own: settings it leaves empty are **not**
 taken from `CERTO_LLM_*`. A local model with no `api_key` never gets the
-key of another provider. `CERTO_LLM_MODEL` must still be set, because
-Certo checks the normal settings first.
+key of another provider. With `--escalate` or `--auto-model`,
+`CERTO_LLM_MODEL` and `CERTO_LLM_API_KEY` aren't needed.
 
 **Keys belong in the settings file.** Write `api_key: "${ANTHROPIC_API_KEY}"`
 and put the key itself in your settings file (`~/.config/certo/.env`, or

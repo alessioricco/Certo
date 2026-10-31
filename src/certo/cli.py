@@ -595,20 +595,23 @@ def _main(argv: list[str]) -> int:
         )
         # Apply --model/--api-key/--base-url/--reasoning-effort before the
         # required-field checks, so the flags alone can satisfy them (issue #11).
-        if has_llm_override:
-            with defer_llm_check():
-                cfg = load_config()
-            cfg = ensure_llm_configured(
-                override_llm(
-                    cfg,
-                    model=args.model,
-                    api_key=args.api_key,
-                    base_url=args.base_url,
-                    reasoning_effort=args.reasoning_effort,
-                )
-            )
-        else:
+        with defer_llm_check():
             cfg = load_config()
+        if has_llm_override:
+            cfg = override_llm(
+                cfg,
+                model=args.model,
+                api_key=args.api_key,
+                base_url=args.base_url,
+                reasoning_effort=args.reasoning_effort,
+            )
+        # With --escalate or --auto-model the model files name every model
+        # and its key, so CERTO_LLM_MODEL isn't needed (DECISIONS.md).
+        picked_from_files = (
+            args.escalate is not None or args.auto_model or cfg.model_selection != "manual"
+        )
+        if not picked_from_files:
+            cfg = ensure_llm_configured(cfg)
     except ConfigError as exc:
         print(f"Configuration error: {exc}", file=sys.stderr)
         return 1
@@ -1074,7 +1077,9 @@ def _models_that_ran(cfg, outcome) -> list[str]:
     if outcome.rungs:
         return [r.model for r in outcome.rungs if r.wrote_code]
     summary = outcome.run_summary
-    return [m.model for m in summary.models] if summary and summary.models else [cfg.model]
+    if summary and summary.models:
+        return [m.model for m in summary.models]
+    return [cfg.model] if cfg.model else []
 
 
 def _run_entry(
@@ -1094,11 +1099,12 @@ def _run_entry(
         models = [f"{i}. {rung.label}" for i, rung in enumerate(ladder.rungs, 1)]
         note = "escalation ladder"
     else:
-        models = (
-            [m.label for m in summary.models]
-            if summary and summary.models
-            else [model_label(cfg.model, cfg.reasoning_effort)]
-        )
+        if summary and summary.models:
+            models = [m.label for m in summary.models]
+        elif cfg.model:
+            models = [model_label(cfg.model, cfg.reasoning_effort)]
+        else:  # --auto-model stopped before it picked one
+            models = []
         note = "picked by --auto-model" if cfg.model_selection == "auto" else ""
     return RunEntry(
         task=task, ended=ended, started_at=started_at, models=models, summary=summary, note=note

@@ -74,10 +74,10 @@ tokens, $0.1734.
   Certo adds in a project it created used the same list. Now each
   milestone's rungs are printed under its verdict, and the note gets
   every milestone's models. The table above is from the second run.
-- **`--escalate` still needs `CERTO_LLM_MODEL` and a key**, though the
+- **`--escalate` still needed `CERTO_LLM_MODEL` and a key**, though the
   ladder picks every model: the first try stopped with a configuration
-  error. This was documented for `--auto-model` only; the escalation
-  guide now says it too.
+  error. Changed the same day: with `--escalate` or `--auto-model`
+  neither is needed now.
 - **Not tested here:** a climb because the first model's work failed its
   checks, inside a milestone. That path is the same as without
   milestones, which has run live before

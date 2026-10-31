@@ -54,9 +54,8 @@ cp <examples>/escalation.yaml.example ~/.config/certo/escalation.yaml
 Only models enabled in `models.yaml` are ever used; a rung whose model
 isn't enabled there is skipped.
 
-`CERTO_LLM_MODEL` (and its key, unless it has `CERTO_LLM_BASE_URL`)
-must still be set: Certo checks the normal settings before it reads the
-model files. The ladder then decides which model runs.
+`CERTO_LLM_MODEL` and `CERTO_LLM_API_KEY` aren't needed: the ladder
+decides which model runs, and the model files hold each one's key.
 
 With `--project NAME`, a model-file configuration error leaves no new
 project folder or registry entry. An existing project folder is kept.

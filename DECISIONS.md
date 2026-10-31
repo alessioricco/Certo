@@ -1464,3 +1464,11 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   typescript; they match the four Node benchmark tasks and nothing else
   bundled. "node" can also match an unrelated "node" (a tree's); kept,
   since a stray Node rule costs a few hundred tokens.
+
+- **The model files are enough for `--escalate` and `--auto-model`**
+  (2026-10-31, the Author's OK; supersedes "`CERTO_LLM_MODEL` must still
+  be set" in the model-file docs). In those modes every model and its
+  key come from the model files, so the CLI loads the settings with the
+  model check deferred and runs it only for a plain run. Found live: a
+  user with only model files got a configuration error asking for a
+  model the ladder would never use.

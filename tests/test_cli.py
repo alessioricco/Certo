@@ -5,6 +5,7 @@ these exercise only argument parsing and control flow.
 from __future__ import annotations
 
 import importlib.metadata
+import os
 import tomllib
 import urllib.error
 from dataclasses import replace
@@ -2150,6 +2151,50 @@ def test_escalate_prints_progress_and_asks_only_when_interactive(monkeypatch, tm
     assert calls[0]["on_notice"] is cli._print_progress
     assert calls[0]["on_escalate"] is None
     assert calls[1]["on_escalate"] is cli._confirm_escalation
+
+
+def _settings_without_a_model(monkeypatch, tmp_path, **extra):
+    """The real load_config, with no CERTO_LLM_* anywhere: no variable, no
+    .env in the folder, no user settings file. Only the model files."""
+    from model_file_helpers import model_file_config
+
+    for name in list(os.environ):
+        if name.startswith(("CERTO_", "LLM_")):
+            monkeypatch.delenv(name)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
+    monkeypatch.setenv("CERTO_WORKSPACE", str(tmp_path / "project"))
+    for field, path in model_file_config(tmp_path, _ESCALATION_CATALOG).items():
+        if path:
+            monkeypatch.setenv(f"CERTO_{field.upper()}", path)
+    for name, value in extra.items():
+        monkeypatch.setenv(name, value)
+
+
+@pytest.mark.parametrize(
+    ("argv", "env"),
+    [
+        (["do it", "--escalate"], {}),
+        (["--auto-model", "do it"], {}),
+        (["do it"], {"CERTO_MODEL_SELECTION": "escalate"}),
+    ],
+)
+def test_model_files_need_no_certo_llm_model(monkeypatch, tmp_path, argv, env):
+    _settings_without_a_model(monkeypatch, tmp_path, **env)
+    calls: list = []
+    monkeypatch.setattr(cli, "run_task", _recording_run_task(calls))
+
+    assert cli.main(argv) == 0
+    assert len(calls) == 1
+    assert calls[0]["cfg"].model == ""  # the model files pick every model
+
+
+def test_a_plain_run_still_needs_certo_llm_model(monkeypatch, tmp_path, capsys):
+    _settings_without_a_model(monkeypatch, tmp_path)
+    monkeypatch.setattr(cli, "run_task", _fail_if_called)
+
+    assert cli.main(["do it"]) == 1
+    assert "CERTO_LLM_MODEL is required" in capsys.readouterr().err
 
 
 @pytest.mark.parametrize(("answer", "climbs"), [("", True), ("y", True), ("n", False)])
