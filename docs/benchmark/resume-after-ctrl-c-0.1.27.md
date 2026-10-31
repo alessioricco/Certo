@@ -54,8 +54,9 @@ then said `"status": "finished"`, `"verdict": "verified"`,
   were the same. The installed command gets the signal once and printed
   no traceback.
 - **Not recorded: the cost before Ctrl-C.** The `interrupted` entry in
-  `.certo/RUNS.md` has no time, tokens or cost line, so the $0.0080
-  isn't written anywhere. Added to TODO.
+  `.certo/RUNS.md` had no time, tokens or cost line, so the $0.0080
+  wasn't written anywhere. Fixed the same day; the same interrupt then
+  gave `Time: 38.5s · Tokens: 140,213 · Cost: $0.0084`.
 
 ## Related
 

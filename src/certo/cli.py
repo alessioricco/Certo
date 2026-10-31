@@ -827,10 +827,10 @@ def _main(argv: list[str]) -> int:
     started_at = datetime.now(UTC)
     history = {"task": resume_from.task if resume_from is not None else (task or "")}
 
-    def record_run(ended: str, outcome=None) -> None:
+    def record_run(ended: str, outcome=None, summary=None) -> None:
         if not save_state:
             return
-        entry = _run_entry(cfg, ladder, history["task"], ended, started_at, outcome)
+        entry = _run_entry(cfg, ladder, history["task"], ended, started_at, outcome, summary)
         entry = replace(entry, resumed=resume_from is not None)
         try:
             append_run(cfg.workspace, entry)
@@ -877,14 +877,18 @@ def _main(argv: list[str]) -> int:
                 history=history,
                 record_run=record_run,
             )
-    except KeyboardInterrupt:
-        record_run("interrupted")
+    except KeyboardInterrupt as exc:
+        # The runner attaches the usage up to the interrupt to the exception.
+        record_run("interrupted", summary=getattr(exc, "run_summary", None))
         print("\nInterrupted.", file=sys.stderr)
         if save_state:
             print(f"Continue with: {resume_hint}", file=sys.stderr)
         return 130
     except Exception as exc:  # noqa: BLE001 - surfaced as a clean CLI error, not a traceback
-        record_run(f"error: {_first_line(str(exc) or type(exc).__name__)}")
+        record_run(
+            f"error: {_first_line(str(exc) or type(exc).__name__)}",
+            summary=getattr(exc, "run_summary", None),
+        )
         print(f"Error: {exc}", file=sys.stderr)
         if save_state:
             print(f"Continue with: {resume_hint}", file=sys.stderr)
@@ -1073,10 +1077,14 @@ def _models_that_ran(cfg, outcome) -> list[str]:
     return [m.model for m in summary.models] if summary and summary.models else [cfg.model]
 
 
-def _run_entry(cfg, ladder, task: str, ended: str, started_at: datetime, outcome) -> RunEntry:
+def _run_entry(
+    cfg, ladder, task: str, ended: str, started_at: datetime, outcome, summary=None
+) -> RunEntry:
     """What `.certo/RUNS.md` records about this run: the models that really
-    ran when the outcome says so, else the ones the settings name."""
-    summary = outcome.run_summary if outcome is not None else None
+    ran when the outcome says so, else the ones the settings name. A run
+    that stopped early has no outcome, only the `summary` of its usage."""
+    if outcome is not None:
+        summary = outcome.run_summary
     if outcome is not None and outcome.rungs:
         models = [f"{r.number}. {r.described}: {r.ended}" for r in outcome.rungs]
         note = "escalation" + (

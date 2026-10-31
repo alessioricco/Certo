@@ -2224,6 +2224,30 @@ def test_an_interrupted_run_is_recorded_too(monkeypatch, recorded_runs):
     assert [e.ended for e in recorded_runs] == ["interrupted"]
 
 
+@pytest.mark.parametrize(
+    ("error", "code", "ended"),
+    [(KeyboardInterrupt(), 130, "interrupted"), (RuntimeError("boom"), 1, "error: boom")],
+)
+def test_a_run_that_stopped_early_records_what_it_used(
+    monkeypatch, recorded_runs, error, code, ended
+):
+    from certo.run_summary import RunSummary
+
+    # As the runner does: the usage up to the stop travels on the exception.
+    error.run_summary = RunSummary(duration_seconds=41.0)
+
+    def _stop(*a, **k):
+        raise error
+
+    monkeypatch.setattr(cli, "load_config", lambda: _cfg())
+    monkeypatch.setattr(cli, "run_task", _stop)
+
+    assert cli.main(["do something"]) == code
+    (entry,) = recorded_runs
+    assert entry.ended == ended
+    assert entry.summary is error.run_summary
+
+
 def test_no_run_is_recorded_when_saving_state_is_off(monkeypatch, recorded_runs):
     monkeypatch.setattr(cli, "load_config", lambda: _cfg(save_state=False))
     monkeypatch.setattr(cli, "run_task", lambda *a, **k: _fake_result())

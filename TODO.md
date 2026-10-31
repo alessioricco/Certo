@@ -343,11 +343,6 @@ database).
 
 ## Smaller bugs
 
-- **An interrupted run's cost isn't recorded.** After Ctrl-C the
-  `.certo/RUNS.md` entry has no time, tokens or cost line (seen live,
-  `docs/benchmark/resume-after-ctrl-c-0.1.27.md`): `record_run` gets no
-  outcome, so what was spent before the interrupt is lost. Done when the
-  entry shows the time, tokens and cost spent until Ctrl-C.
 - **`certo skills`: turn an official skill off**, globally or for one
   project (later, agreed 2026-10-22). Today a third-party skill can only
   replace one.

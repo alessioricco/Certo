@@ -120,7 +120,8 @@ later:
 ```
 
 - The heading is when the run started, and how it ended: the verdict,
-  `interrupted`, or `error:` with the error.
+  `interrupted`, or `error:` with the error. A run stopped by Ctrl-C or
+  an error still has its time, tokens and cost up to that point.
 - With `--escalate`, there is one line per rung that ran, with its model
   and verdict. With `--auto-model`, the line says so.
 - Certo writes the entry after the run, never the agent. It names models,

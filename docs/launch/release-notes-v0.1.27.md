@@ -102,5 +102,8 @@ per milestone. See
   README note in a project Certo created named only the models of the
   last milestone. Each milestone's rungs are now listed under its
   verdict, and the note names every model that wrote code.
+- A run stopped by Ctrl-C or an error had no time, tokens or cost in
+  `.certo/RUNS.md`, so what it spent wasn't written anywhere. The entry
+  now has them, up to the stop.
 - Security updates in the lock file: authlib 1.9.1, dnspython 2.9.1,
   litellm 1.100.4, joserfc 1.7.7, pyasn1 0.6.5 and pypdf 6.21.4.
