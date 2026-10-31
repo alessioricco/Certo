@@ -98,7 +98,7 @@ The header decides when the agent gets the skill:
 | Header | The agent gets the skill when |
 |---|---|
 | `triggers: [...]` | one of the words appears in the task or the conversation (whole word, any case) |
-| `paths: [...]` | it works on a file that matches one of the patterns |
+| `paths: [...]` | it opens, creates or edits a file that matches one of the patterns with the file editor (reading the file in the terminal, or changing it with a command such as `pip install` or `npm install`, doesn't count) |
 | neither | always |
 
 A skill can also be a folder with a `SKILL.md` file, in the
@@ -150,7 +150,10 @@ Three kinds, by how they fire:
 **On words in the task** (`triggers:`), shown above.
 
 **When the agent works on certain files** (`paths:`), for rules about one
-kind of file. `python-deps.md`:
+kind of file. Only the file editor counts: a file the agent reads with
+`cat` or changes with a command doesn't fire the skill, so use words in
+the task instead when the rule matters before the agent edits the file.
+`python-deps.md`:
 
 ```markdown
 ---
@@ -364,9 +367,10 @@ And seven more:
   declared in the project's file and installed from it, into the
   project's own environment, with test tools as development
   dependencies;
-- `node-project-setup`, which fires when the agent touches a
-  `package.json`: a real `test` script, a `build` script when there is a
-  build step, the lockfile kept, and scaffolders run without prompts.
+- `node-project-setup`, which fires on node, node.js, nodejs, npm,
+  javascript or typescript: a real `test` script, a `build` script when
+  there is a build step, the lockfile kept, and scaffolders run without
+  prompts.
 
 The agent is also told to apply the lifecycle skills when they fit even if
 no trigger word appears, and to skip them for trivial changes.

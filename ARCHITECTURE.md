@@ -497,6 +497,15 @@ given design was chosen.
   adds `changes_note()` to the contract's limitations, plus
   `TaskOutcome.check_file_changes`. Pre-existing files only; report only.
 - **`deadline.py`** — `stop_at_deadline()`, see `runner.py` above.
+- **Path-triggered skills fire only on the file editor** (SDK
+  `LocalConversation._touched_rule_path`, openhands-sdk 1.47): a rule
+  fires when an `ObservationEvent`'s action has a `path` field matching
+  the glob, i.e. `file_editor` view/create/edit. `cat package.json` or
+  `npm install` in the terminal never fires it. Found 2026-10-31: the
+  path-triggered `node-project-setup` fired in 0 of 9 Haiku runs on the
+  Node tasks (the agent read `package.json` with `cat` and never edited
+  it), so it became keyword-triggered. `pin-dependencies` has the same
+  gap for `pip install`.
 - **`update_check.py`** — stdlib only. `cli.main` wraps `_main`: it
   starts `update_check.start()` before the command (not for `bench`;
   `certo-server` and `certo-admin` don't call it) and prints

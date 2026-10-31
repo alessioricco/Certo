@@ -305,10 +305,17 @@ Today there are 15 (eight `lifecycle/`, `git/commit-conventions`,
 `testing/pytest-conventions` and `testable-interactive-apps`,
 `python/python-environment`, `node/node-project-setup`).
 
+**`pin-dependencies` fires only when the file editor edits a dependency
+file** (2026-10-31, ARCHITECTURE.md): a `pip install` or `uv add` in the
+terminal never fires it. Decide whether it becomes keyword-triggered
+too, or folds into `python-environment`. Done when its rule reaches the
+agent before a dependency is added from the terminal.
+
 **Measure the two new skills before 0.1.27 is released.**
 `python-environment` and `node-project-setup` (2026-10-31) are written
 but not measured. `node-project-setup` fires on the Node benchmark
-tasks (`slugify`, `semver-order`, `room-bookings`): a `skills_off` arm
+tasks (`slugify`, `semver-order`, `room-bookings`, `token-bucket`;
+keyword-triggered since its path trigger never fired): a `skills_off` arm
 against the default on those, Haiku and qwen3.8. `python-environment`
 fires on no bundled task: it needs a task with a third-party package
 first. Done when both are measured, or the unmeasured one is left out

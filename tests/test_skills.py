@@ -260,10 +260,12 @@ def test_python_environment_fires_on_packaging_words_not_on_the_bundled_tasks():
         assert skill.match_trigger(task.read_text()) is None, task.parent.name
 
 
-def test_node_project_setup_fires_on_a_package_json_only():
+def test_node_project_setup_fires_on_the_node_tasks_only():
     skill = _real_catalog()["node-project-setup"]
 
-    assert skill.match_path_trigger("package.json") is not None
-    assert skill.match_path_trigger("web/package.json") is not None
-    assert skill.match_path_trigger("pyproject.toml") is None
-    assert skill.match_trigger("Write a Node.js module") is None
+    tasks = Path(certo.__file__).parent / "benchmark_tasks"
+    fired = {t.parent.name for t in tasks.glob("*/task.md") if skill.match_trigger(t.read_text())}
+    assert fired == {"room-bookings", "semver-order", "slugify", "token-bucket"}
+    assert skill.match_trigger("Build it with npm and TypeScript") is not None
+    assert skill.match_trigger("A tree with one root node per file") is not None  # a known false match
+    assert skill.match_trigger("Add a slugify function with pytest tests") is None

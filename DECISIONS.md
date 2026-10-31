@@ -1454,3 +1454,13 @@ considered and live-verification detail: `docs/ROADMAP.txt`.
   `docs/reference/commands.md` has a tool, and a test fails when one
   doesn't. Verify the MCP Python SDK (and spec features such as
   elicitation, roots and long-running tasks) before use (golden rule 2).
+
+- **`node-project-setup` fires on words, not on `package.json`**
+  (2026-10-31; supersedes "by path" in the entry above). Path rules fire
+  only when the file editor touches the file (ARCHITECTURE.md), and in 9
+  Haiku runs on the Node tasks it never did: the agent read
+  `package.json` with `cat`, and `npm init`/`npm install` change it from
+  the terminal. Triggers: node, node.js, nodejs, npm, javascript,
+  typescript; they match the four Node benchmark tasks and nothing else
+  bundled. "node" can also match an unrelated "node" (a tree's); kept,
+  since a stray Node rule costs a few hundred tokens.

@@ -1,12 +1,17 @@
 ---
 name: node-project-setup
-paths:
-  - "package.json"
-  - "**/package.json"
-description: Path-triggered rule (not a keyword skill) — fires when the agent touches a package.json, to keep the project's scripts checkable.
+triggers:
+  - node
+  - node.js
+  - nodejs
+  - npm
+  - javascript
+  - typescript
+description: Keep a Node project's package.json checkable, with a real test script, the lockfile and no prompts. Triggered when a task mentions Node, npm, JavaScript or TypeScript.
 ---
 
-This project has a `package.json`. Keep it checkable:
+When the project is a Node project (it has, or will have, a
+`package.json`), keep it checkable:
 
 - A real `test` script that runs at least one test and exits with an
   error when a test fails (`node --test`, or the project's test
