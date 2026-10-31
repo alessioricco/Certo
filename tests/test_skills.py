@@ -267,5 +267,6 @@ def test_node_project_setup_fires_on_the_node_tasks_only():
     fired = {t.parent.name for t in tasks.glob("*/task.md") if skill.match_trigger(t.read_text())}
     assert fired == {"room-bookings", "semver-order", "slugify", "token-bucket"}
     assert skill.match_trigger("Build it with npm and TypeScript") is not None
-    assert skill.match_trigger("A tree with one root node per file") is not None  # a known false match
+    # A known false match, kept on purpose (DECISIONS.md).
+    assert skill.match_trigger("A tree with one root node per file") is not None
     assert skill.match_trigger("Add a slugify function with pytest tests") is None
