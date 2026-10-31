@@ -764,5 +764,8 @@ for full transcripts if a fix needs revisiting:
    (`ImportError: OutOfStock`). Not known whether the agent stopped early
    or wrote elsewhere: bench kept no transcript. Fix (0.1.14): the
    `unchanged` verdict (`runner._require_a_change`), one follow-up first.
-   **Status: applied and unit-tested; not re-run live.**
+   **Status: verified live 2026-10-31** on Haiku with a task that needs no
+   change (`docs/benchmark/unchanged-live-0.1.27.md`): one follow-up, then
+   `unchanged`, exit 1 with `--require-verification`. The original
+   qwen idle run was not reproduced.
 

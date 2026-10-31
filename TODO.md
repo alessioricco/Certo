@@ -48,10 +48,10 @@ first item is the suggested next one.
   a cloud model (qwen3.8 is about 3× faster; gemma never wrote tool calls
   as text, qwen3.8's only failure mode). Bench it as three arms: each
   model alone, and the ladder.
-- **Re-verify the "confident but wrong" fixes live**: #1, #3, #5, #10
-  and #6 for Java in `ARCHITECTURE.md` say "not re-verified live" (#2, #4
-  and #6 for Go/Rust were, 2026-10-19). #1 and #5 are hard to trigger on
-  purpose; #10 is reachable from a benchmark task. Also never seen live:
+- **Re-verify the "confident but wrong" fixes live**: #1, #3, #5 and #6
+  for Java in `ARCHITECTURE.md` say "not re-verified live" (#2, #4 and #6
+  for Go/Rust were, 2026-10-19; #10, 2026-10-31). #1 and #5 are hard to
+  trigger on purpose. Also never seen live:
   a climb inside a milestone (`--milestones --escalate`), and
   `--resume` after Ctrl-C mid-run.
 - **Move the historical planning docs into `docs/history/`**
