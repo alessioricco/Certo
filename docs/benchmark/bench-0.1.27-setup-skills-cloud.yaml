@@ -1,0 +1,14 @@
+# The python-environment and node-project-setup skills on a cloud model
+# (Certo 0.1.27): claude-haiku-5-5 on the two skill tasks made for them
+# (skill-tasks/word-tally-node, skill-tasks/yaml-merge), with the skills
+# and without them (skills_off). Each task fires only one of the two.
+# Run it from the repository root with:
+#   certo bench --config docs/benchmark/bench-0.1.27-setup-skills-cloud.yaml
+# Every model below must be enabled in your models.yaml; see
+# docs/guides/write-a-benchmark-file.md.
+tasks_dir: skill-tasks
+tasks: [word-tally-node, yaml-merge]
+repeats: 5
+arms:
+  - {name: haiku-no-skills, strategy: single, model: claude-haiku-5-5, skills_off: [python-environment, node-project-setup]}
+  - {name: haiku-skills, strategy: single, model: claude-haiku-5-5}

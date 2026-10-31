@@ -311,15 +311,22 @@ terminal never fires it. Decide whether it becomes keyword-triggered
 too, or folds into `python-environment`. Done when its rule reaches the
 agent before a dependency is added from the terminal.
 
-**Measure the two new skills before 0.1.27 is released.**
-`python-environment` and `node-project-setup` (2026-10-31) are written
-but not measured. `node-project-setup` fires on the Node benchmark
-tasks (`slugify`, `semver-order`, `room-bookings`, `token-bucket`;
-keyword-triggered since its path trigger never fired): a `skills_off` arm
-against the default on those, Haiku and qwen3.8. `python-environment`
-fires on no bundled task: it needs a task with a third-party package
-first. Done when both are measured, or the unmeasured one is left out
-of the release.
+**Measure the two new skills on qwen3.8 before 0.1.27 is released.**
+Haiku is done (`docs/benchmark/setup-skills-0.1.27.md`: not worse on the
+four Node tasks and on the two skill tasks, nothing to fix there). Left:
+`docs/benchmark/bench-0.1.27-setup-skills-cloud.yaml` with
+`qwen3.8-27b-local` (and the Node tasks), at night or when the Ollama
+machine is free, then `scripts/fresh_env_grade.py` on `yaml-merge`. Done
+when the qwen arms are published, or an unhelpful skill is left out of
+the release.
+
+**`regrade_bench.py` can't regrade a Python task that needs a package.**
+Saved workspaces drop `.venv`, so grading again makes an empty one and
+the hidden tests fail on the import (seen on `yaml-merge`, 2026-10-31;
+the records keep their first grade, so nothing is lost). Install what
+the project declares first, as `scripts/fresh_env_grade.py` does. Done
+when a regrade of `setup-skills-cloud-0.1.27` gives `yaml-merge` the
+grades it had.
 
 **Make a project verifiable** (first; suggested order: the first two):
 - `cli-entry-points`: `__main__` guard last, a closed stdin doesn't hang,

@@ -20,4 +20,5 @@ arm with the skill against one with `skills_off`.
   `python-environment`: the hidden tests run in the agent's environment,
   so they can't see a package installed by hand and never declared;
   compare the arms on whether `pyyaml` is declared, and grade again in a
-  fresh environment built only from the project's files.
+  fresh environment built only from the project's files
+  (`scripts/fresh_env_grade.py`).

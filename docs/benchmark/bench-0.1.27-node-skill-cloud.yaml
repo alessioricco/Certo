@@ -1,0 +1,12 @@
+# The node-project-setup skill on a cloud model (Certo 0.1.27):
+# claude-haiku-5-5 on the four bundled Node tasks, where the skill fires
+# on the words node, npm, javascript..., with the skill and without it
+# (skills_off). Run it from the repository root with:
+#   certo bench --config docs/benchmark/bench-0.1.27-node-skill-cloud.yaml
+# Every model below must be enabled in your models.yaml; see
+# docs/guides/write-a-benchmark-file.md.
+tasks: [slugify, semver-order, room-bookings, token-bucket]
+repeats: 3
+arms:
+  - {name: haiku-no-skill, strategy: single, model: claude-haiku-5-5, skills_off: [node-project-setup]}
+  - {name: haiku-skill, strategy: single, model: claude-haiku-5-5}

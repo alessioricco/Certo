@@ -36,7 +36,7 @@ test('accented letters separate words', () => {
 });
 
 test('several files are one text, in order', () => {
-  const r = run(file('a b'), file('b c'));
+  const r = run(file('a b\n'), file('b c\n'));
   assert.equal(r.code, 0);
   assert.equal(r.out, '2 b\n1 a\n1 c\n');
 });
