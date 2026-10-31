@@ -114,6 +114,11 @@ runs. This is the step from "a small task" to "an app".
 *Success:* an app-scale benchmark task completed and verified in
 milestones, on a cloud model and on a local one.
 
+*Reached* (0.1.27, 2026-10-31): Haiku verified both app tasks in
+milestones, and `qwen3.8:27b` verified the smaller one in 2 of 3 runs.
+What's left (Certo planning the milestones itself, a larger app on a
+local model) is in `TODO.md`.
+
 ### 4. Every common language and framework
 
 Close the known gaps in today's languages, then add new ecosystems (.NET,
@@ -146,13 +151,12 @@ about ladders, profiles or the benchmark; time from install to first
 
 ## Now, next, later
 
-- **Now:** benchmark the current version on local and cloud models and
-  publish it; bench task set v2; finish the release chores.
-- **Next:** independent tests from the spec; milestone mode; the
-  pull-request CI; the first "make it verifiable" skills; the simple first
-  run.
-- **Later:** run-the-app verification, new ecosystems, the GitHub Action
-  and MCP server, local-model tuning.
+- **Now:** release 0.1.27 (milestone mode, experimental); then 0.2,
+  which starts the MCP server with every Certo command.
+- **Next:** independent tests from the spec; the pull-request CI; more
+  "make it verifiable" skills; the simple first run.
+- **Later:** run-the-app verification, new ecosystems, the GitHub Action,
+  local-model tuning.
 
 Meanwhile, keep the less central parts (the server's SQL and Redis
 stores, the OpenAI-compatible endpoint, third-party skills, Docker mode)

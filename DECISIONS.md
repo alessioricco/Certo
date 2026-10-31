@@ -1472,3 +1472,13 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   model check deferred and runs it only for a plain run. Found live: a
   user with only model files got a configuration error asking for a
   model the ladder would never use.
+
+- **Phase 3 is closed on the smaller app task** (the Author,
+  2026-10-31). The exit was an app-sized task `verified` in milestone
+  mode on a local model. Four spreadsheet runs on qwen3.8 got at best
+  through milestones 1-3 of 5, so a smaller app was added (`expenses`,
+  apps-2: entries, totals, JSON files, a command line; 80 hidden tests):
+  `verified` in 2 of 3 runs, 80/80 hidden, no run fooled. The
+  spreadsheet on a local model stays open in `TODO.md`. This closes the
+  project review's plan; the next release after 0.1.27 is 0.2, which
+  starts the MCP server.

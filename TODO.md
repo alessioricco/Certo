@@ -59,12 +59,10 @@ first item is the suggested next one.
 
 ## 2. Complex tasks
 
-- **Milestone mode: what's left.** The Phase 3 exit (an app-sized task
-  `verified` in milestone mode on a local model, with a published
-  record) was met on 2026-10-31: `app-tasks/expenses` (apps-2),
-  qwen3.8 `verified` in 2/3 runs, 80/80 hidden
-  (`docs/benchmark/expenses-0.1.27.md`); the Author confirms it closes
-  Phase 3, and the next release is then 0.2. The spreadsheet still
+- **Milestone mode: what's left.** Phase 3 closed on 2026-10-31 (the
+  Author): `app-tasks/expenses` (apps-2), qwen3.8 `verified` in 2/3
+  runs, 80/80 hidden (`docs/benchmark/expenses-0.1.27.md`). The
+  spreadsheet still
   stops at milestone 4 on qwen3.8 (`milestones-60min-0.1.27.md`). Left:
   a climb inside a milestone seen in a benchmark (only one live run,
   `milestones-escalate-0.1.27.md`); with the next `apps-` version, say
@@ -243,8 +241,8 @@ cut that first run's output from 2,949 lines to 1,021.)
   or a secret manager (1Password, Bitwarden, a cloud vault) instead.
   Decide which, and how a key is named, when someone asks for it.
 - **MCP server with every Certo command** (the Author, 2026-10-31: all
-  the commands, so a client can build a wrapper on top; 0.2 work, after
-  the Phase 3 exit). Design in DECISIONS.md ("The MCP server: every
+  the commands, so a client can build a wrapper on top; 0.2 work; Phase 3
+  closed 2026-10-31). Design in DECISIONS.md ("The MCP server: every
   command, on a shared core"). In order: (0) `certo.api`, one typed
   function per command, with the CLI and `certo-server` moved onto it;
   (1) the JSON result and `certo --json`; (2) `certo-mcp` over stdio,
