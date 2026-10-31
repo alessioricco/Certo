@@ -61,6 +61,17 @@ run, and only in a terminal: not in CI, a pipe or `certo bench`.
 `CERTO_UPDATE_CHECK=0` turns it off. See
 [Configuration](../reference/configuration.md#update-check).
 
+## New: Ollama details in `certo check`
+
+For an Ollama model, `certo check` now also prints the server version,
+the context window a run will get and where that number comes from
+(`CERTO_LLM_CONTEXT_TOKENS` or the server), and how long the test
+request took. When the window is below `CERTO_CONTEXT_WARN_TOKENS`, it
+prints the same warning a run does. Cloud models print what they did
+before. Thanks to [@Tusharkanda](https://github.com/Tusharkanda)
+([#40](https://github.com/alessioricco/certo/pull/40)). See
+[Commands](../reference/commands.md#certo-check).
+
 ## Benchmark: tasks in milestones
 
 A benchmark arm with `milestones: true` runs a task written in

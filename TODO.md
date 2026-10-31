@@ -204,9 +204,13 @@ first item is the suggested next one.
   release.
 - **Per-tier tuning for small models.** Shorter prompts and stricter
   tool-call repair, gated by model tier and measured on both tiers.
-- **`certo doctor` for Ollama**: model pulled, context size, thinking
-  mode, measured tokens per second. Open for contributors, as part of
-  `certo check`: [#35](https://github.com/alessioricco/certo/issues/35).
+- **`certo check` for Ollama, the rest.** Version, context window and
+  the small-window warning came with #40 (0.1.27). Still to do: run it
+  once against a real Ollama and put that output in
+  `docs/reference/commands.md` (the sample there is the contributor's);
+  then model pulled, thinking mode, and a real speed (Ollama's own
+  `eval_count`/`eval_duration`, not the request time, which includes
+  loading the model).
 - **Measured speed and context in the catalog**, filled from real runs,
   so ladders can weigh speed. A `speed` rating would count as capability
   today.

@@ -1486,7 +1486,6 @@ def test_run_check_ollama_prints_header_and_verdict_on_own_line(monkeypatch):
             ollama_version="0.5.7",
             context_tokens=65536,
             context_source="server",
-            tokens_per_second=41.2,
         ),
     )
     assert ok is True
@@ -1495,7 +1494,6 @@ def test_run_check_ollama_prints_header_and_verdict_on_own_line(monkeypatch):
     assert lines[0].startswith("Checking the model ollama/llama3")
     assert "Ollama 0.5.7" in lines[1]
     assert "65,536 tokens (from server)" in lines[1]
-    assert "41.2 tok/s" in lines[1]
     assert lines[2].startswith("ok:")
 
 
@@ -1509,7 +1507,6 @@ def test_run_check_ollama_includes_warning(monkeypatch):
             ollama_version="0.5.7",
             context_tokens=8192,
             context_source="server",
-            tokens_per_second=39.7,
             context_warning=(
                 "Certo: ollama/llama3's context window is below CERTO_CONTEXT_WARN_TOKENS."
             ),

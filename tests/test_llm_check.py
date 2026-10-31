@@ -311,29 +311,6 @@ def test_ollama_details_partial_when_only_version_fails(monkeypatch):
     assert details["context_tokens"] == 65536
 
 
-# --- _extra_details (tokens/second) ------------------------------------------
-
-
-def test_extra_details_computes_tokens_per_second(monkeypatch):
-    monkeypatch.setattr(context_window, "ollama_version", lambda *a, **k: "0.5.7")
-    monkeypatch.setattr(context_window, "ollama_context_tokens", lambda *a, **k: 65536)
-    details = llm_check._extra_details(
-        _cfg(model="ollama/llama3"), _response("OK", completion=20), latency=2.0
-    )
-    assert details["tokens_per_second"] == pytest.approx(10.0)
-    assert details["ollama_version"] == "0.5.7"
-
-
-def test_extra_details_no_tokens_per_second_when_zero_completion():
-    details = llm_check._extra_details(_cfg(), _response("OK", completion=0), latency=2.0)
-    assert "tokens_per_second" not in details
-
-
-def test_extra_details_no_division_by_zero_latency():
-    details = llm_check._extra_details(_cfg(), _response("OK", completion=20), latency=0.0)
-    assert "tokens_per_second" not in details
-
-
 # --- check_llm: the new fields land on the result ----------------------------
 
 
@@ -348,11 +325,10 @@ def test_check_llm_populates_ollama_fields(monkeypatch):
     assert result.ollama_version == "0.5.7"
     assert result.context_tokens == 65536
     assert result.context_source == "server"
-    assert result.tokens_per_second is not None
 
 
 def test_check_llm_cloud_model_has_no_ollama_fields(monkeypatch):
-    """Cloud model: probes are never touched; tok/s IS still computed."""
+    """Cloud model: probes are never touched."""
     _patch(monkeypatch, _response("OK"))
     ticks = iter(range(100, 10_000, 2))
     monkeypatch.setattr(llm_check.time, "monotonic", lambda: float(next(ticks)))
@@ -367,8 +343,6 @@ def test_check_llm_cloud_model_has_no_ollama_fields(monkeypatch):
     assert result.context_tokens is None
     assert result.context_source is None
     assert result.context_warning is None
-    # tokens_per_second is NOT Ollama-only — it is still computed:
-    assert result.tokens_per_second is not None
 
 
 # --- check_tool_calling: currently zero coverage in this file ----------------
@@ -384,7 +358,6 @@ def test_check_tool_calling_success_and_ollama_fields(monkeypatch):
     assert result.ok and result.reply == "finish"
     assert result.ollama_version == "0.5.7"
     assert result.context_tokens == 65536
-    assert result.tokens_per_second is not None
 
 
 def test_check_tool_calling_no_tool_is_a_failure(monkeypatch):
@@ -412,7 +385,6 @@ def test_setup_failure_still_reports_ollama_details(monkeypatch):
     assert result.error_kind == "setup"
     assert result.ollama_version == "0.5.7"
     assert result.context_tokens == 8192
-    assert result.tokens_per_second is None  # no response, no tok/s
 
 
 def test_failure_with_ollama_down_has_no_details(monkeypatch):
@@ -454,10 +426,9 @@ def test_detail_lines_ollama_success():
         ollama_version="0.5.7",
         context_tokens=32768,
         context_source="server",
-        tokens_per_second=41.2,
     )
     assert llm_check.detail_lines(result) == [
-        "Ollama 0.5.7 · context window 32,768 tokens (from server) · 1.8s, 41.2 tok/s"
+        "Ollama 0.5.7 · context window 32,768 tokens (from server) · 1.8s"
     ]
 
 
@@ -470,7 +441,6 @@ def test_detail_lines_env_override_source():
         ollama_version="0.5.7",
         context_tokens=8192,
         context_source="CERTO_LLM_CONTEXT_TOKENS",
-        tokens_per_second=41.2,
     )
     line = llm_check.detail_lines(result)[0]
     assert "(from CERTO_LLM_CONTEXT_TOKENS)" in line
@@ -486,7 +456,6 @@ def test_detail_lines_warning_on_its_own_line():
         ollama_version="0.5.7",
         context_tokens=8192,
         context_source="server",
-        tokens_per_second=41.2,
         context_warning="Certo: window is small",
     )
     lines = llm_check.detail_lines(result)

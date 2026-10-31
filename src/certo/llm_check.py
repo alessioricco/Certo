@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass
-from . import context_window
+
 from litellm.exceptions import NotFoundError as LiteLLMNotFoundError
 from openhands.sdk import Message, TextContent
 from openhands.sdk.agent.utils import make_llm_completion
@@ -28,6 +28,7 @@ from openhands.sdk.llm.exceptions.types import (
 )
 from openhands.sdk.tool.builtins import FinishTool
 
+from . import context_window
 from .config import Config
 from .llm import build_llm
 
@@ -124,7 +125,6 @@ class LLMCheckResult:
     context_tokens: int | None = None
     # "CERTO_LLM_CONTEXT_TOKENS" or "server" — where context_tokens came from.
     context_source: str | None = None
-    tokens_per_second: float | None = None
     context_warning: str | None = None  # the run's own warning text, if any
 
 
@@ -200,7 +200,7 @@ def check_llm(cfg: Config, *, timeout: int = DEFAULT_TIMEOUT_SECONDS) -> LLMChec
         latency_seconds=latency,
         reply=reply,
         **_usage(response),
-        **_extra_details(cfg, response, latency),
+        **_ollama_details(cfg),
         error_kind=None if reply else "no_reply",
         error=None if reply else "The model answered, but with no text content.",
         hint=None,
@@ -234,7 +234,7 @@ def check_tool_calling(cfg: Config, *, timeout: int = DEFAULT_TIMEOUT_SECONDS) -
         latency_seconds=latency,
         reply=reply,
         **_usage(response),
-        **_extra_details(cfg, response, latency),
+        **_ollama_details(cfg),
         error_kind=None if calls else "no_tool_call",
         error=None if calls else "The model answered without calling a tool.",
         hint=None,
@@ -360,25 +360,10 @@ def _ollama_details(cfg: Config, *, timeout: int | None = None) -> dict:
     return details
 
 
-def _extra_details(cfg: Config, response, latency: float) -> dict:
-    """Kwargs to add on top of `_usage(response)`: the Ollama-only fields
-    (empty for cloud models) and tokens/second when the response reports
-    completion tokens. Never raises — a broken metrics read must not turn
-    a passing check into a failure."""
-    details = _ollama_details(cfg)
-    try:
-        usage = response.metrics.accumulated_token_usage
-        if usage and usage.completion_tokens and latency > 0:
-            details["tokens_per_second"] = usage.completion_tokens / latency
-    except Exception:  # noqa: BLE001 - display-only
-        pass
-    return details
-
-
 def detail_lines(result: LLMCheckResult) -> list[str]:
     """The extra context lines `certo check` prints for a local (Ollama)
     model: server version, the context window the run will use and where it
-    came from, the test request's time and tokens/second, and — separately —
+    came from, the test request's time, and — separately —
     the same small-window warning a run emits. Empty for cloud models, so
     their output is unchanged."""
     if not _is_ollama(result.model):
@@ -391,10 +376,10 @@ def detail_lines(result: LLMCheckResult) -> list[str]:
         if result.context_source:
             window += f" (from {result.context_source})"
         parts.append(window)
-    timing = f"{result.latency_seconds:.1f}s"
-    if result.tokens_per_second:
-        timing += f", {result.tokens_per_second:.1f} tok/s"
-    parts.append(timing)
+    # The time alone: it includes loading the model and reading the prompt,
+    # and the answer is a short tool call, so tokens per second would read
+    # far below the model's real speed.
+    parts.append(f"{result.latency_seconds:.1f}s")
     lines = [" · ".join(parts)]
     if result.context_warning:
         lines.append(result.context_warning)
