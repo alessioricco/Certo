@@ -91,5 +91,5 @@ per milestone. See
   README note in a project Certo created named only the models of the
   last milestone. Each milestone's rungs are now listed under its
   verdict, and the note names every model that wrote code.
-- Security updates in the lock file: authlib 1.9.1, dnspython 2.9.1
-  and litellm 1.100.4.
+- Security updates in the lock file: authlib 1.9.1, dnspython 2.9.1,
+  litellm 1.100.4, joserfc 1.7.7, pyasn1 0.6.5 and pypdf 6.21.4.
