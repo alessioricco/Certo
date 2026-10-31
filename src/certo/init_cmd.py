@@ -115,7 +115,13 @@ def _active_lines(settings: Settings) -> list[str]:
         lines.append(f"CERTO_LLM_API_KEY={_quote(settings.api_key)}")
     elif settings.provider.key_env or (settings.provider.id == "other" and not settings.base_url):
         where = f" (get one at {settings.provider.key_url})" if settings.provider.key_url else ""
-        lines += [f"# Paste your API key after the ={where}.", "CERTO_LLM_API_KEY="]
+        lines.append(f"# Paste your API key after the ={where}.")
+        if settings.provider.key_env:
+            lines += [
+                "# Or name one you export in your shell, without pasting it:",
+                f"# CERTO_LLM_API_KEY=${{{settings.provider.key_env}}}",
+            ]
+        lines.append("CERTO_LLM_API_KEY=")
     if settings.base_url:
         lines.append(f"CERTO_LLM_BASE_URL={settings.base_url}")
     if settings.provider.llm_timeout_seconds:
@@ -145,7 +151,8 @@ def render_env(providers: list[Provider], settings: Settings | None = None) -> s
             *_active_lines(settings),
             "",
             "# To switch provider, comment out the lines above and uncomment",
-            "# the two lines of the provider you want.",
+            "# the two lines of the provider you want. The key goes with the",
+            "# model: an Anthropic key for anthropic/..., an OpenAI key for openai/...",
             "",
         ]
         others = [p for p in providers if p.id != settings.provider.id]

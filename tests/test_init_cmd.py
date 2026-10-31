@@ -813,6 +813,21 @@ def test_key_never_appears_in_output_or_logs(tmp_path, monkeypatch, caplog, caps
     assert SECRET not in repr(init_cmd.Settings(init_cmd.load_providers()[0], "m", api_key=SECRET))
 
 
+def test_a_settings_file_without_a_key_shows_how_to_name_one(tmp_path):
+    from dotenv import dotenv_values
+
+    providers = init_cmd.load_providers()
+    anthropic = next(p for p in providers if p.key_env == "ANTHROPIC_API_KEY")
+    text = init_cmd.render_env(providers, init_cmd.Settings(anthropic, anthropic.model))
+
+    assert "# CERTO_LLM_API_KEY=${ANTHROPIC_API_KEY}" in text
+    assert "The key goes with the" in text
+    # The hint is a comment: the key itself stays empty until it's pasted.
+    path = tmp_path / ".env"
+    path.write_text(text, encoding="utf-8")
+    assert dotenv_values(path)["CERTO_LLM_API_KEY"] == ""
+
+
 # --- the model check -----------------------------------------------------------
 
 
