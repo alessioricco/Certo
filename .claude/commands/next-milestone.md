@@ -1,6 +1,6 @@
 Work on the next milestone of this project.
 
-1. Read @docs/SPEC.md and find the milestone list (section 11). Identify the
+1. Read @docs/history/SPEC.md and find the milestone list (section 11). Identify the
    lowest-numbered milestone that is not yet fully implemented in the repo.
    If $ARGUMENTS names a specific milestone number, do that one instead.
 2. Before writing code that touches the OpenHands SDK, confirm any SDK symbol you

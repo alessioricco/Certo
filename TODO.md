@@ -53,10 +53,6 @@ first item is the suggested next one.
   for Go/Rust were, 2026-10-19; #10, 2026-10-31). #1 and #5 are hard to
   trigger on purpose. A climb inside a milestone (`--milestones
   --escalate`) and `--resume` after Ctrl-C were seen live, 2026-10-31.
-- **Move the historical planning docs into `docs/history/`**
-  (`docs/KICKOFF.md`, `docs/SPEC.md`, `docs/ROADMAP.txt`), so readers
-  don't take them for current docs; fix every reference. Starter issue:
-  [#4](https://github.com/alessioricco/certo/issues/4).
 - **Docker verification has never run against a real container**, and
   neither has escalation under Docker. Fake-workspace tests only. Open
   for a report: [#34](https://github.com/alessioricco/certo/issues/34).

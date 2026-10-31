@@ -15,7 +15,7 @@ In `.claude/commands/`, available to everyone who clones the repo:
 |---|---|
 | `/verify-sdk TOPIC` | Checks an OpenHands SDK class or function against the live docs and examples before code relies on it, and reports the confirmed usage. Changes no file. |
 | `/add-tool DESCRIPTION` | Adds a custom tool: Action, Observation and Executor in `src/certo/custom_tools/`, registered in `tools.py`, with a test that needs no model or network. |
-| `/next-milestone [N]` | Works on the next unfinished milestone of `docs/SPEC.md`, then stops and reports. |
+| `/next-milestone [N]` | Works on the next unfinished milestone of `docs/history/SPEC.md`, then stops and reports. |
 
 ## Skills from Anthropic (downloaded, git-ignored)
 

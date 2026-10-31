@@ -62,9 +62,9 @@ Documentation = "https://github.com/alessioricco/certo/blob/main/docs/README.md"
 [project.optional-dependencies]
 # sqlalchemy: tests/test_task_store.py exercises SQLTaskStore against real sqlite.
 dev = ["pytest>=8.0", "ruff>=0.6", "sqlalchemy>=2.0"]
-# Sandboxed/remote execution (CERTO_EXECUTION=docker). See docs/SPEC.md section 9.
+# Sandboxed/remote execution (CERTO_EXECUTION=docker). See docs/history/SPEC.md section 9.
 sandbox = ["openhands-workspace", "openhands-agent-server"]
-# HTTP/WebSocket server mode (certo-server). See docs/SPEC.md section 9.
+# HTTP/WebSocket server mode (certo-server). See docs/history/SPEC.md section 9.
 server = ["fastapi>=0.110", "uvicorn[standard]>=0.30", "httpx>=0.27"]
 # Server-mode task registry persistence (CERTO_TASK_STORE). See
 # docs/guides/run-as-a-server.md "Keep task records". sqlite needs only
