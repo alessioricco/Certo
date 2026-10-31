@@ -296,16 +296,21 @@ def test_milestone_counts_read_pytests_report_of_every_test():
     assert milestone_counts("PASSED x.py::test_plain\n") is None
 
 
-def test_a_task_in_milestones_is_graded_per_milestone(tmp_path, project_venv):
+@pytest.mark.parametrize(
+    ("name", "milestones", "tests"), [("spreadsheet", 5, 111), ("expenses", 4, 80)]
+)
+def test_a_task_in_milestones_is_graded_per_milestone(
+    tmp_path, project_venv, name, milestones, tests
+):
     from certo.bench_tasks import load_task
 
-    task = load_task(Path(__file__).resolve().parent.parent / "app-tasks" / "spreadsheet")
+    task = load_task(Path(__file__).resolve().parent.parent / "app-tasks" / name)
     result = grade(task, _workspace(tmp_path, task, project_venv, solved=True))
 
     assert result.status == "passed", result.summary
-    assert sorted(result.by_milestone) == [1, 2, 3, 4, 5]
+    assert sorted(result.by_milestone) == list(range(1, milestones + 1))
     assert all(passed == total for passed, total in result.by_milestone.values())
-    assert sum(total for _, total in result.by_milestone.values()) == 111
+    assert sum(total for _, total in result.by_milestone.values()) == tests
 
 
 def test_a_bundled_task_has_no_count_per_milestone(tmp_path, project_venv):

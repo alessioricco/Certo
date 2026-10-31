@@ -1,0 +1,12 @@
+# The expenses app task (app-tasks, apps-2) on a cloud model, Certo
+# 0.1.27: a check that the task can be solved, in milestones and in one
+# go, before the local run. Run it from the repository root with:
+#   certo bench --config docs/benchmark/bench-0.1.27-expenses-cloud.yaml
+# Every model below must be enabled in your models.yaml; see
+# docs/guides/write-a-benchmark-file.md.
+tasks_dir: app-tasks
+tasks: [expenses]
+repeats: 1
+arms:
+  - {name: haiku-milestones, strategy: single, model: claude-haiku-5-5, milestones: true}
+  - {name: haiku-whole, strategy: single, model: claude-haiku-5-5}

@@ -15,3 +15,7 @@ Run them with `tasks_dir: app-tasks` in a bench file.
   in five milestones: numbers and arithmetic, references, ranges and
   functions, errors and cycles, CSV files and a command line. Hidden
   test names start with their milestone (`test_m1_` to `test_m5_`).
+- `expenses`: an expense ledger in Python, standard library only, in
+  four smaller milestones: entries, totals, JSON files and a command
+  line. Hidden test names start with their milestone (`test_m1_` to
+  `test_m4_`). Added in `apps-2`.
