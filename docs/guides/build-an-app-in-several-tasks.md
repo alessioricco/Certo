@@ -175,8 +175,11 @@ With a 65,536-token window and the handover between milestones, 40
 minutes per milestone got all three runs through milestones 1 and 2,
 and 60 minutes got all three through milestones 1 to 3; none got
 through milestone 4. Details in
-[the local benchmark](../benchmark/milestones-60min-0.1.27.md). If you
-build on a local model:
+[the local benchmark](../benchmark/milestones-60min-0.1.27.md). A smaller
+app, an expense ledger in 4 milestones, ended `verified` in 2 of 3 runs
+on the same model, each milestone in under 16 minutes
+([details](../benchmark/expenses-0.1.27.md)). If you build on a local
+model:
 
 - give it a large context window (`CERTO_LLM_CONTEXT_TOKENS`); at
   32,768 tokens, `qwen3.8:27b` gave only empty replies on this task in

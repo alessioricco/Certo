@@ -55,6 +55,11 @@ tests are named by milestone (`test_m1_...`), `results.md` shows the
 hidden tests passed per milestone. See
 [the benchmark file reference](../reference/bench-yaml.md#arms).
 
+On a local model, `qwen3.8:27b` built a new app task, an expense ledger
+in 4 milestones, and Certo said `verified` in 2 of 3 runs, with all of
+the task's hidden tests passing. See
+[the benchmark](../benchmark/expenses-0.1.27.md).
+
 ## New: two official skills
 
 - `python-environment`, when a task mentions pip, a virtual environment

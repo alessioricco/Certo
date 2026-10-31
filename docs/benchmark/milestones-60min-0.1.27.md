@@ -116,5 +116,6 @@ milestone that ran.
 - [The first run, at 32,768 tokens](milestones-0.1.27.md)
 - [The second run, with a 65,536-token window](milestones-64k-0.1.27.md)
 - [The third run, with a handover between milestones](milestones-handover-0.1.27.md)
+- [The next run: a smaller app task](expenses-0.1.27.md)
 - [Run a task in milestones](../guides/run-in-milestones.md)
 - [Build an app in several tasks](../guides/build-an-app-in-several-tasks.md)

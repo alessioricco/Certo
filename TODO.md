@@ -59,40 +59,26 @@ first item is the suggested next one.
 
 ## 2. Complex tasks
 
-- **Milestone mode.** Split a big task into milestones, each with its own
-  acceptance checks, run and verified one at a time, building on
-  `--resume`/`STATUS.md`. The main step from "small task" to "app". The
-  Author's decisions and the design are in DECISIONS.md (2026-10-25,
-  2026-10-29). Steps 1 and 2 are built (0.1.27,
-  `--milestones`, with `--escalate` and independent tests per milestone;
-  live Haiku runs only, no climb inside a milestone seen live yet).
-  Step 3 is built (bench arm `milestones: true`, `app-tasks/spreadsheet`);
-  its first local run (`docs/benchmark/milestones-0.1.27.md`) solved
-  neither arm: in one go qwen3.8 gave only empty replies, in milestones
-  it built milestone 1 and ran out of time on milestone 2. The second
-  run (`docs/benchmark/milestones-64k-0.1.27.md`, 64K window, 40 min per
-  milestone): milestones 1-2 `verified` in 2/3 runs, then out of time
-  planning milestone 3; one go wrote the whole engine in 2/3 runs (87
-  and 100/111 hidden) but no tests. Next: carry a short summary of the
-  code into each new milestone (done 2026-10-30: the handover; its qwen
-  run, `docs/benchmark/milestones-handover-0.1.27.md`: milestones 1-2
-  `verified` in 3/3, 127/333 hidden against 85; milestone 3 failed by
-  time once and twice on tool calls written as text in shapes the
-  detector missed, now recognised), and
-  a longer per-call limit for this model (7 calls hit 1200 s); with the
-  next `apps-` version, say in the task that a chain of 200 cells must
-  work (hidden `test_m2_a_long_chain` is stricter than the text). The
-  docs article is written (`docs/guides/build-an-app-in-several-tasks.md`,
-  Haiku 5/5 verified, 111/111 hidden). Then (5) Certo planning the
-  milestones itself.
-  The fourth run, 60 minutes per milestone and the new tool-call shapes
-  (`docs/benchmark/milestones-60min-0.1.27.md`): milestones 1-3
-  `verified` in 3/3, 249/333 hidden; milestone 4 failed by fix attempts,
-  time, and a lost Ollama machine. Next: more time on milestone 4, or a
-  smaller app task.
-  Done when an app-sized task ends `verified` in milestone mode on a
-  local model, with a published record. Closing it closes the project
-  review's plan; the next release is then 0.2 (the Author, 2026-10-31).
+- **Milestone mode: what's left.** The Phase 3 exit (an app-sized task
+  `verified` in milestone mode on a local model, with a published
+  record) was met on 2026-10-31: `app-tasks/expenses` (apps-2),
+  qwen3.8 `verified` in 2/3 runs, 80/80 hidden
+  (`docs/benchmark/expenses-0.1.27.md`); the Author confirms it closes
+  Phase 3, and the next release is then 0.2. The spreadsheet still
+  stops at milestone 4 on qwen3.8 (`milestones-60min-0.1.27.md`). Left:
+  a climb inside a milestone seen in a benchmark (only one live run,
+  `milestones-escalate-0.1.27.md`); with the next `apps-` version, say
+  in the spreadsheet task that a chain of 200 cells must work (hidden
+  `test_m2_a_long_chain` is stricter than the text); then Certo
+  planning the milestones itself.
+- **Tool-call reminders: count only the ones in a row?** Certo sends at
+  most `CERTO_TOOL_CALL_REMINDERS` (3) per conversation. In
+  `docs/benchmark/expenses-0.1.27.md` repeat 1, qwen3.8 wrote 4 tool
+  calls as text in 5 tries at the start of milestone 4, with one real
+  call between them; the fourth ended the run as `unchanged` with 31
+  minutes left. Resetting the count after a real call would let it go
+  on. A behaviour change: decide with the Author, and measure on a
+  local and a cloud model. Related: #39 / PR #41 (counting them).
 - **A harder app task** (`app-tasks`, next `apps-` version). Haiku and
   Sonnet both pass the spreadsheet 111/111 in one go, so it doesn't
   separate cloud models: a task that does would show the ladder climbing
