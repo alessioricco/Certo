@@ -96,5 +96,6 @@ last one ends at the run's last message):
 
 - [The first run, at 32,768 tokens](milestones-0.1.27.md)
 - [The second run, with a 65,536-token window](milestones-64k-0.1.27.md)
+- [The fourth run, with 60 minutes per milestone](milestones-60min-0.1.27.md)
 - [Run a task in milestones](../guides/run-in-milestones.md)
 - [Build an app in several tasks](../guides/build-an-app-in-several-tasks.md)

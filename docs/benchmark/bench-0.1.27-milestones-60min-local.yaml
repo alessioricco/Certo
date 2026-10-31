@@ -1,0 +1,13 @@
+# Milestone mode on a local model, fourth run (Certo 0.1.27): the arm of
+# bench-0.1.27-milestones-handover-local.yaml (qwen3.8, 65,536-token
+# window, the handover between milestones) with 60 minutes per milestone
+# instead of 40, and with the two tool-call-as-text shapes Certo now
+# recognises. Run it from the repository root with:
+#   certo bench --config docs/benchmark/bench-0.1.27-milestones-60min-local.yaml
+# Every model below must be enabled in your models.yaml; see
+# docs/guides/write-a-benchmark-file.md.
+tasks_dir: app-tasks
+tasks: [spreadsheet]
+repeats: 3
+arms:
+  - {name: qwen-milestones-60min, strategy: single, model: qwen3.8-27b-local, context_tokens: 65536, max_task_seconds: 3600, milestones: true}

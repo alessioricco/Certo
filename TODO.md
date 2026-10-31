@@ -14,6 +14,12 @@ first item is the suggested next one.
 
 ## Before the next release
 
+- **Bench: a milestone that errors drops the earlier milestones' usage.**
+  In `bench.py`'s `execute_run`, an exception keeps only the failed
+  milestone's `run_summary`, not the `attempts` before it (found in
+  `docs/benchmark/milestones-60min-0.1.27.md`, repeat 3: 69K tokens
+  recorded, about 1.45M used). Done when the record adds them up, with
+  a test.
 - **A longer time budget from `certo init` for Ollama?** The mazeman
   sample took 41 minutes on `qwen3.8:27b` (2026-10-22), past the default
   30-minute `CERTO_MAX_TASK_SECONDS`; it ended `verified` only because the
@@ -85,9 +91,11 @@ first item is the suggested next one.
   docs article is written (`docs/guides/build-an-app-in-several-tasks.md`,
   Haiku 5/5 verified, 111/111 hidden). Then (5) Certo planning the
   milestones itself.
-  A fourth run, 60 minutes per milestone and the new tool-call shapes,
-  started 2026-10-31 09:12 (`bench-results/milestones-60min-0.1.27`,
-  config `docs/benchmark/bench-0.1.27-milestones-60min-local.yaml`).
+  The fourth run, 60 minutes per milestone and the new tool-call shapes
+  (`docs/benchmark/milestones-60min-0.1.27.md`): milestones 1-3
+  `verified` in 3/3, 249/333 hidden; milestone 4 failed by fix attempts,
+  time, and a lost Ollama machine. Next: more time on milestone 4, or a
+  smaller app task.
   Done when an app-sized task ends `verified` in milestone mode on a
   local model, with a published record. Closing it closes the project
   review's plan; the next release is then 0.2 (the Author, 2026-10-31).
