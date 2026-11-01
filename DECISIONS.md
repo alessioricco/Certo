@@ -1496,3 +1496,18 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   0.1.27 release). Its plan is done (Phase 3 closed 2026-10-31). From
   now on `TODO.md` and `ROADMAP.md` lead; the review file is kept only
   as a private record.
+
+- **The MCP server is `certo mcp`, over stdio, with no authentication**
+  (the Author, 2026-11-01; supersedes `certo-mcp` in "The MCP server:
+  every command, on a shared core"). A subcommand, not a separate script
+  and not a mode of `certo-server`: client setups stay simple (`uvx
+  certo mcp`), it shows in `certo --help`, and `certo-server` stays
+  HTTP. On stdio, stdout belongs to the protocol, so every other line
+  (banner, update notice, logs) goes to stderr. stdio needs no
+  authentication: the client starts the process as its own user and
+  nothing listens on a port (the MCP spec's authorization is for HTTP).
+  What it needs instead: work only inside the client's roots, the
+  destructive hints, no key in any result, event or resource (tested),
+  every run inside its time, cost and step limits, one run per project
+  folder. HTTP comes only with authentication (the Author's item),
+  likely as `/mcp` inside `certo-server`.

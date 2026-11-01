@@ -245,7 +245,8 @@ cut that first run's output from 2,949 lines to 1,021.)
   closed 2026-10-31). Design in DECISIONS.md ("The MCP server: every
   command, on a shared core"). In order: (0) `certo.api`, one typed
   function per command, with the CLI and `certo-server` moved onto it;
-  (1) the JSON result and `certo --json`; (2) `certo-mcp` over stdio,
+  (1) the JSON result and `certo --json`; (2) `certo mcp` over stdio
+  (no authentication; HTTP only after it, see DECISIONS.md),
   `--tools core` then `--tools all`, runs as start/status/events/cancel,
   resources, roots and elicitation; (3) a guide and the test that every
   command has a tool. Done when every command in
