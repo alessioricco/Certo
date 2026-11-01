@@ -51,6 +51,10 @@ dependencies = [
     # (certo init's arrow-key menus) imports it directly. choice() is in
     # 3.0.53, the version verified.
     "prompt-toolkit>=3.0.53",
+    # Already ships transitively via openhands-sdk (through fastmcp); listed
+    # because `certo mcp` (mcp_server.py) imports it directly. 2.x renamed
+    # FastMCP to MCPServer; 2.2.0 is the version verified (ARCHITECTURE.md).
+    "mcp>=2.2.0,<3",
 ]
 
 [project.urls]

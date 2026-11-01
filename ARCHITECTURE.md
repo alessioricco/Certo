@@ -27,6 +27,22 @@ given design was chosen.
   foreign plugins, creates a named project and records it as Certo's, and
   writes `agents_md`. `cli._main` and `server._resolve_cfg` both call these;
   the milestone and resume rules stay in the CLI for now.
+- **`mcp_server.py`** + `certo mcp` — `build_server(manager, folders,
+  load=)` makes an `mcp` `MCPServer` with the core tools on
+  `runs.RunManager` (`run_task`, `run_status`, `run_events`, `run_cancel`,
+  `list_runs`), `verify` (synchronous `run_full_verification`) and
+  `check_model` (`llm_check.check_tool_calling`). `Folders` turns a tool's
+  `project` or `folder` into `RunOptions`: a folder must be a full path
+  inside `CERTO_PROJECTS_DIR` or a `--root` (realpath, so a symlink can't
+  leave). Every tool is wrapped by `_user_errors`: a `ValueError` (Certo's
+  `ConfigError`, `UsageError`, `AcceptanceCheckError`) becomes the
+  package's `ToolError`, whose message reaches the client; any other
+  exception reaches it only as "Error executing tool NAME". `mcp`'s
+  `stdio_server` points fd 1 at stderr while serving, so prints and child
+  processes can't break the protocol (verified live with the SDK's step
+  printing). Startup reads the settings under `defer_llm_check`: a tool
+  may name the model. Tests call the tools through `mcp.Client(server)`
+  in process.
 - **`runs.py`** — `RunManager`: runs a caller starts and follows (the MCP
   server's `run_task`/`run_status`/`run_events`/`run_cancel`). `start`
   prepares with `api` (errors raised at once), runs `stream_task` in a

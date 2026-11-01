@@ -548,8 +548,8 @@ def _start_update_check() -> update_check.UpdateCheck | None:
 
 
 def _main(argv: list[str]) -> int:
-    # `verify`, `init`, `check`, `models`, `skills`, `bench`, `checkpoints`
-    # and `rollback` are
+    # `verify`, `init`, `check`, `models`, `skills`, `bench`, `checkpoints`,
+    # `mcp` and `rollback` are
     # subcommands only as the exact, whole first argument. A task is always
     # one argument (quoted), so "verify the login flow" or "init a repo" can
     # never match, and `certo -- verify` still runs the one-word task.
@@ -575,6 +575,10 @@ def _main(argv: list[str]) -> int:
         from .checkpoints_cmd import checkpoints_main
 
         return checkpoints_main(argv[1:])
+    if argv and argv[0] == "mcp":
+        from .mcp_server import mcp_main
+
+        return mcp_main(argv[1:])
     if argv and argv[0] == "rollback":
         from .checkpoints_cmd import rollback_main
 

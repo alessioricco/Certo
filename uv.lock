@@ -590,6 +590,7 @@ name = "certo"
 version = "0.2.0"
 source = { editable = "." }
 dependencies = [
+    { name = "mcp" },
     { name = "openhands-sdk" },
     { name = "openhands-tools" },
     { name = "prompt-toolkit" },
@@ -631,6 +632,7 @@ store-sqlite = [
 requires-dist = [
     { name = "fastapi", marker = "extra == 'server'", specifier = ">=0.110" },
     { name = "httpx", marker = "extra == 'server'", specifier = ">=0.27" },
+    { name = "mcp", specifier = ">=2.2.0,<3" },
     { name = "openhands-agent-server", marker = "extra == 'sandbox'" },
     { name = "openhands-sdk", specifier = "==1.47.0" },
     { name = "openhands-tools", specifier = "==1.47.0" },

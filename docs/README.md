@@ -90,6 +90,7 @@ takes you from install to your first verified project.
 | Check the work with tests written before the build | [Independent tests](guides/independent-tests.md) |
 | Run the agent inside a container | [Run in Docker](guides/run-in-docker.md) |
 | Call Certo over HTTP | [Run as a server](guides/run-as-a-server.md) |
+| Use Certo from an editor or an agent | [Use Certo over MCP](guides/use-certo-over-mcp.md) |
 | See what a run did and what it cost | [Run records and costs](guides/run-records-and-costs.md) |
 | Continue a task after an interruption or a failed verdict | [Resume an interrupted run](guides/resume-a-run.md) |
 | Build something bigger in steps, each checked before the next | [Run a task in milestones](guides/run-in-milestones.md) |
@@ -135,7 +136,7 @@ how handoff decides, what the next model gets, and verdicts in CI.
 
 ## Experimental features
 
-Five features are **experimental**: they work and have tests, but haven't
+Six features are **experimental**: they work and have tests, but haven't
 been proven in real use the way the core has (verification, escalation and
 the benchmark). Use them, report what breaks, and expect them to change
 between minor versions. Fixes to the core come first.
@@ -146,6 +147,7 @@ between minor versions. Fixes to the core come first.
 | [Server task stores](guides/run-as-a-server.md#keep-task-records) other than `memory` (`sqlite`, `mysql`, `postgres`, `redis`) | `sqlite` is tested on a real file. `mysql` and `postgres` share its code and were checked live once, not in the test suite. `redis` is tested only where `redis-server` is installed. |
 | [The OpenAI-compatible endpoint](guides/run-as-a-server.md#use-it-from-an-openai-compatible-client) (`/v1/chat/completions`) | The answer has no verdict, and earlier messages aren't replayed. |
 | [Milestone mode](guides/run-in-milestones.md) (`--milestones`) | Not benchmarked yet, not in server mode or `certo bench`, and Certo doesn't plan the milestones itself. A climb inside a milestone hasn't been seen live. |
+| [The MCP server](guides/use-certo-over-mcp.md) (`certo mcp`) | Checked live with the `mcp` Python package's client over stdio, not yet from an editor. Only the core tools so far; the other commands come in later 0.2 versions. Runs are kept in memory and stop when the client closes. |
 | [Skills downloaded from git](guides/manage-skills.md#download-a-skill-from-git) (`certo skills add github:...`) | Licenses are detected with a text match, only `SKILL.md` folders can be installed, and no third-party skill has been benchmarked. |
 
 The rest of server mode (`POST /tasks`, the WebSocket stream, the memory

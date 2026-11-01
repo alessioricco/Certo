@@ -1539,3 +1539,15 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   Reason: nothing then depends on which spec version a client speaks.
   The user guide links the sources (SEP-2577 and the Python SDK's
   deprecated page), so a reader sees why roots aren't used.
+
+- **`certo mcp` 0.2.0: the core tools, `verify` synchronous** (2026-11-01).
+  Seven tools: `run_task`, `run_status`, `run_events`, `run_cancel`,
+  `list_runs`, `verify`, `check_model` (named so it isn't read as "check
+  the project"). `verify` answers in the call instead of being a run: it
+  has no agent, so it's usually seconds; it becomes a run if long test
+  suites hit clients' call timeouts. A tool needs `project` or `folder`:
+  there is no default folder, since the client's working folder is
+  unknown and may be the user's home. `run_task` carries the destructive
+  hint: the agent can change or delete any file in the folder and run
+  commands. Certo's own errors reach the client as tool errors with their
+  message; others are hidden by the `mcp` package.

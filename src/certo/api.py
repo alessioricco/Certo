@@ -42,9 +42,12 @@ class RunOptions:
 
     `escalate` is None for no ladder, "" for the default ladder, or a ladder's
     name. `independent_tests` None keeps the setting; True or False sets it.
+    `workspace` is a folder to work in instead of `CERTO_WORKSPACE`; the
+    caller checks it's one it may use. It can't go with `project`.
     """
 
     project: str | None = None
+    workspace: str | None = None
     model: str | None = None
     api_key: str | None = None
     base_url: str | None = None
@@ -68,6 +71,8 @@ def resolve_config(
     """The settings a run uses: `load()` (the settings files and environment),
     then `options` on top. The project folder is resolved but not created:
     `prepare_workspace` does that, once every check that can refuse is done."""
+    if options.project is not None and options.workspace is not None:
+        raise UsageError(f"give {spell('project')} or {spell('folder')}, not both")
     if options.agents_md is not None and options.project is None:
         raise UsageError(f"{spell('agents_md')} requires {spell('project')}")
     if options.escalate is not None and (options.auto_model or options.model is not None):
@@ -126,6 +131,8 @@ def resolve_config(
 
     if options.project is not None:
         cfg = replace(cfg, workspace=resolve_project_dir(cfg.projects_dir, options.project))
+    elif options.workspace is not None:
+        cfg = replace(cfg, workspace=options.workspace)
     return cfg
 
 

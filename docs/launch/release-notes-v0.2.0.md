@@ -2,6 +2,25 @@
 
 Not released yet.
 
+## New: Certo as an MCP server
+
+`certo mcp` lets an editor or an agent that speaks MCP, such as Claude
+Code, hand a coding task to Certo and get back Certo's verdict:
+
+```bash
+claude mcp add certo -- uvx certo mcp
+```
+
+Its tools start a task and return at once (`run_task`), follow it
+(`run_status`, `run_events`), stop it (`run_cancel`, and `certo
+--resume` continues it), check a project without an agent (`verify`),
+and test the model (`check_model`). A finished run's result is the same
+object `certo --json` prints. The tools work only in projects under
+`CERTO_PROJECTS_DIR` or in folders given with `--root`. It runs over
+stdio, with no login, and doesn't use the MCP features the 2026-07-28
+specification deprecates. See
+[Use Certo from an editor or an agent](../guides/use-certo-over-mcp.md).
+
 ## New: `certo --json`
 
 `certo "task" --json` prints the run's result as one JSON object on

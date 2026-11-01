@@ -30,6 +30,19 @@ def _tail(text: str) -> str:
     return text if len(text) <= OUTPUT_TAIL_CHARS else text[-OUTPUT_TAIL_CHARS:]
 
 
+def check_dict(check: Any) -> dict[str, Any]:
+    """One check (verification.CheckOutcome) as the result shows it."""
+    return {
+        "name": check.name,
+        "command": check.command,
+        "primary": check.primary,
+        "status": check.status,
+        "exit_code": check.exit_code,
+        "summary": check.summary,
+        "output_tail": _tail(check.output),
+    }
+
+
 def _usage(outcome: TaskOutcome) -> dict[str, Any] | None:
     summary = outcome.run_summary
     if summary is None:
@@ -92,18 +105,7 @@ def run_result(
     result.update(
         verdict=outcome.verification_state,
         limitations=list(outcome.completion_contract.limitations),
-        checks=[
-            {
-                "name": c.name,
-                "command": c.command,
-                "primary": c.primary,
-                "status": c.status,
-                "exit_code": c.exit_code,
-                "summary": c.summary,
-                "output_tail": _tail(c.output),
-            }
-            for c in outcome.checks
-        ],
+        checks=[check_dict(c) for c in outcome.checks],
         acceptance=[
             {**asdict(r.check), "passed": r.passed, "detail": r.detail}
             for r in outcome.acceptance_results

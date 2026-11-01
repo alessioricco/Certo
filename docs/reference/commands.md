@@ -584,6 +584,24 @@ never touched. Your own git repository is never touched either. Exit
 code: 0 when done or when nothing needed changing; 1 when declined, for a
 number that doesn't exist, or without `--yes` and no terminal.
 
+## `certo mcp`
+
+Run Certo as an MCP server over stdio, for an editor or an agent. The
+client starts this command; you don't run it in a terminal yourself.
+
+```text
+certo mcp [--root DIR]...
+```
+
+| Flag | Default | Effect |
+|---|---|---|
+| `--root DIR` | none | A folder the tools may work in, with every folder inside it, besides the projects under `CERTO_PROJECTS_DIR`. Repeat it for more than one. A `DIR` that isn't a folder is an error (exit 1). |
+
+It reads the settings as a run does, but needs no model to start: a tool
+can name one. The tools: `run_task`, `run_status`, `run_events`,
+`run_cancel`, `list_runs`, `verify` and `check_model`. Guide:
+[Use Certo from an editor or an agent (MCP)](../guides/use-certo-over-mcp.md).
+
 ## `certo-server`
 
 Run Certo as an HTTP and WebSocket server. Needs the `server` extra. Its
