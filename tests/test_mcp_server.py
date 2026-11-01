@@ -78,6 +78,7 @@ def test_the_core_tools_are_listed_with_their_hints(tmp_path):
         "run_status",
         "run_events",
         "run_cancel",
+        "run_resume",
         "list_runs",
         "verify",
         "check_model",
@@ -219,3 +220,112 @@ def test_a_project_with_no_status_yet_is_not_found(tmp_path):
         errors.append(errors[-1].exceptions[0])
     assert isinstance(errors[-1], MCPError)
     assert "no STATUS.md yet" in str(errors[-1])
+
+
+def _wait_done(server, run_id):
+    for _ in range(200):
+        error, status = _call(server, "run_status", {"run_id": run_id})
+        if status["state"] != "running":
+            return status
+        time.sleep(0.02)
+    raise AssertionError("the run didn't end")
+
+
+def test_run_resume_with_nothing_saved_is_an_error(tmp_path):
+    (tmp_path / "projects" / "demo").mkdir(parents=True)
+    error, text = _call(_server(tmp_path), "run_resume", {"project": "demo"})
+    assert error
+    assert "nothing to resume" in text
+
+
+def test_run_resume_continues_the_saved_run(tmp_path):
+    from certo.project_state import RunRecord, save_record
+
+    workspace = tmp_path / "projects" / "demo"
+    workspace.mkdir(parents=True)
+    save_record(
+        str(workspace),
+        RunRecord(
+            task="the old task",
+            conversation_id="c",
+            model="m",
+            execution="local",
+            started_at="",
+            updated_at="",
+            status="interrupted",
+        ),
+    )
+    seen = {}
+
+    def stream(task, *, resume_from, resume_instruction, **_kwargs):
+        seen.update(task=task, resumed=resume_from.task, extra=resume_instruction)
+        return _outcome()
+
+    server = _server(tmp_path, stream=stream)
+    error, started = _call(server, "run_resume", {"project": "demo", "instruction": "use tabs"})
+    assert not error, started
+    assert started["task"] == "the old task"
+    assert _wait_done(server, started["run_id"])["verdict"] == "verified"
+    assert seen == {"task": "the old task", "resumed": "the old task", "extra": "use tabs"}
+
+
+def test_run_resume_when_the_last_run_was_verified_has_nothing_to_do(tmp_path):
+    from certo.project_state import RunRecord, save_record
+
+    workspace = tmp_path / "projects" / "demo"
+    workspace.mkdir(parents=True)
+    save_record(
+        str(workspace),
+        RunRecord(
+            task="t",
+            conversation_id="c",
+            model="m",
+            execution="local",
+            started_at="",
+            updated_at="",
+            status="finished",
+            verdict="verified",
+        ),
+    )
+    error, result = _call(_server(tmp_path), "run_resume", {"project": "demo"})
+    assert not error, result
+    assert result["state"] == "nothing_to_do"
+    assert result["run_id"] is None
+
+
+def test_a_milestones_file_runs_each_milestone_in_order(tmp_path):
+    plan = tmp_path / "projects" / "plan.md"
+    plan.parent.mkdir(parents=True)
+    plan.write_text("# App\n\n## Milestone 1: first\nDo a.\n\n## Milestone 2: second\nDo b.\n")
+    tasks = []
+
+    def stream(task, **_kwargs):
+        tasks.append(task)
+        return _outcome()
+
+    server = _server(tmp_path, stream=stream)
+    error, started = _call(
+        server,
+        "run_task",
+        {"task": "", "project": "demo", "milestones_file": str(plan)},
+    )
+    assert not error, started
+    status = _wait_done(server, started["run_id"])
+    assert status["verdict"] == "verified"
+    assert [m["verdict"] for m in status["result"]["milestones"]] == ["verified", "verified"]
+    assert len(tasks) == 2
+    assert "Do a." in tasks[0] and "Do b." in tasks[1]
+    _, events = _call(server, "run_events", {"run_id": started["run_id"]})
+    assert any("Milestone 2 of 2: verified" in e["text"] for e in events["events"])
+
+
+def test_a_milestones_file_outside_the_folders_is_refused(tmp_path):
+    plan = tmp_path / "plan.md"
+    plan.write_text("## Milestone 1: a\nDo a.\n")
+    error, text = _call(
+        _server(tmp_path),
+        "run_task",
+        {"task": "", "project": "demo", "milestones_file": str(plan)},
+    )
+    assert error
+    assert "outside the folders" in text

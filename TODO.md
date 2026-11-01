@@ -251,9 +251,10 @@ cut that first run's output from 2,949 lines to 1,021.)
   `prepare_workspace`; the JSON result is `result.run_result`, with
   `certo --json` and the server's `result`; runs to start, follow and
   cancel are `runs.RunManager` (cancel.py); `certo mcp` has the core
-  tools and the project resources (mcp_server.py), checked live from
-  Claude Code and the `mcp` stdio client; 0.2.0 is ready to release;
-  then `--tools all` in 0.2.x);
+  tools, `run_resume`, milestones files and the project resources
+  (mcp_server.py), checked live from Claude Code and the `mcp` stdio
+  client; the JSON result lists the files changed; then `--tools all`
+  in 0.2.x: checkpoints/rollback, models, skills, `verify` as a run);
   (1) the JSON result and `certo --json` (done); (2) `certo mcp` over stdio
   (no authentication; HTTP only after it, see DECISIONS.md),
   `--tools core` then `--tools all`, runs as start/status/events/cancel,

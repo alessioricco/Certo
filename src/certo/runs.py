@@ -25,7 +25,16 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
 
-from .api import RunOptions, UsageError, load_run_ladder, prepare_workspace, resolve_config
+from .api import (
+    RunOptions,
+    RunPlan,
+    UsageError,
+    load_run_ladder,
+    plan_run,
+    prepare_workspace,
+    resolve_config,
+    run_milestones,
+)
 from .config import Config
 from .result import run_result
 from .run_history import append_run, run_entry
@@ -110,13 +119,18 @@ class RunManager:
 
     def start(
         self,
-        task: str,
+        task: str | None,
         options: RunOptions,
         *,
         acceptance_checks: Sequence[Any] | None = None,
+        resume: bool = False,
+        milestones_file: str | None = None,
     ) -> Run:
         """Prepare and start a run; raises `ConfigError` or `UsageError`
-        before anything runs."""
+        before anything runs, and `NothingToDo` when there's nothing left to
+        run. With `resume`, the run continues the project's last run (or its
+        milestones), and `task` is an optional extra instruction. With
+        `milestones_file`, the task is that file's milestones."""
         cfg = resolve_config(options, load=self._load)
         workspace = os.path.abspath(cfg.workspace)
         with self._lock:
@@ -125,16 +139,29 @@ class RunManager:
                 raise UsageError(
                     f"run {other} is still working in {workspace}: wait for it, or cancel it"
                 )
+            plan = plan_run(
+                cfg,
+                task=task,
+                resume=resume,
+                milestones_file=milestones_file,
+                from_project=options.project is not None,
+            )
             ladder = load_run_ladder(cfg)
             prepare_workspace(cfg, options)
+            if plan.resume_from is not None and plan.milestones is None:
+                shown = plan.resume_from.task
+            elif plan.milestones is not None:
+                shown = f"{len(plan.milestones.plan)} milestones from {plan.milestones.source}"
+            else:
+                shown = task or ""
             run = Run(
-                id=uuid.uuid4().hex[:12], task=task, project=options.project, workspace=workspace
+                id=uuid.uuid4().hex[:12], task=shown, project=options.project, workspace=workspace
             )
             self._runs[run.id] = run
             self._busy[workspace] = run.id
         thread = threading.Thread(
             target=self._work,
-            args=(run, cfg, ladder, acceptance_checks),
+            args=(run, cfg, ladder, acceptance_checks, plan, task if resume else None, task),
             name=f"certo-run-{run.id}",
             daemon=True,
         )
@@ -147,57 +174,113 @@ class RunManager:
                 RunEvent(len(run.events) + 1, kind, role, text[:EVENT_TEXT_CHARS], time.time())
             )
 
-    def _work(self, run: Run, cfg: Config, ladder: Any, acceptance_checks: Any) -> None:
+    def _work(
+        self,
+        run: Run,
+        cfg: Config,
+        ladder: Any,
+        acceptance_checks: Any,
+        plan: RunPlan,
+        instruction: str | None,
+        task: str | None,
+    ) -> None:
         from .cancel import RunCancelled
-        from .runner import is_notice
+        from .milestones import clear_state
+        from .runner import TaskResult, is_notice
+
+        messages: list[Any] = []
 
         def on_message(message: Any) -> None:
+            messages.append(message)
             text = _message_text(message)
             if text:
                 kind = "notice" if is_notice(message) else "message"
                 self._add_event(run, kind, str(getattr(message, "role", "")), text)
 
         started = datetime.now(UTC)
+        history = {"task": run.task}
+
+        def record_run(ended: str, outcome: Any = None, summary: Any = None) -> None:
+            # In the project's .certo/RUNS.md, as a command-line run is.
+            entry = run_entry(cfg, ladder, history["task"], ended, started, outcome, summary)
+            try:
+                append_run(run.workspace, entry)
+            except OSError:
+                logger.warning("Could not add run %s to .certo/RUNS.md", run.id, exc_info=True)
+
+        def run_one(text: str, resume: Any, extra: str | None, checks: Any) -> Any:
+            messages.clear()
+            outcome = self._stream(
+                text,
+                cfg=cfg,
+                on_message=on_message,
+                acceptance_checks=checks,
+                run_id=run.id,
+                project=run.project,
+                save_state=True,
+                resume_from=resume,
+                resume_instruction=extra,
+                ladder=ladder,
+                cancel=run.cancel_event,
+            )
+            return TaskResult(list(messages), outcome)
+
+        state = plan.milestones
+
+        def milestones() -> list[dict[str, Any]] | None:
+            if state is None:
+                return None
+            return [
+                {"number": m.number, "title": m.title, "verdict": state.verdicts.get(m.number)}
+                for m in state.plan.milestones
+            ]
 
         def finish(
-            state: str, outcome: Any = None, error: str | None = None, summary: Any = None
+            ended_as: str, outcome: Any = None, error: str | None = None, summary: Any = None
         ) -> None:
             result = run_result(
-                outcome, task=run.task, workspace=run.workspace, project=run.project, error=error
+                outcome,
+                task=run.task,
+                workspace=run.workspace,
+                project=run.project,
+                milestones=milestones(),
+                error=error,
             )
-            # In the project's .certo/RUNS.md, as a command-line run is.
             if outcome is not None:
                 ended = outcome.verification_state
-            elif state == "cancelled":
+            elif ended_as == "cancelled":
                 ended = "interrupted"
             else:
                 lines = (error or "").strip().splitlines()
                 ended = "error: " + (lines[0][:100] if lines else "")
-            try:
-                append_run(
-                    run.workspace,
-                    run_entry(cfg, ladder, run.task, ended, started, outcome, summary),
-                )
-            except OSError:
-                logger.warning("Could not add run %s to .certo/RUNS.md", run.id, exc_info=True)
+            # Milestones add one entry each as they end.
+            if state is None or outcome is None:
+                record_run(ended, outcome, summary)
             with self._lock:
-                run.state = state
+                run.state = ended_as
                 run.result = result
                 run.ended_at = time.time()
                 self._busy.pop(run.workspace, None)
 
         try:
-            outcome = self._stream(
-                run.task,
-                cfg=cfg,
-                on_message=on_message,
-                acceptance_checks=acceptance_checks,
-                run_id=run.id,
-                project=run.project,
-                save_state=True,
-                ladder=ladder,
-                cancel=run.cancel_event,
-            )
+            if state is not None:
+                outcome = run_milestones(
+                    state,
+                    cfg,
+                    run_one,
+                    say=lambda line: self._add_event(run, "notice", "certo", line.strip()),
+                    resume_from=plan.resume_from,
+                    restart=plan.restart,
+                    instruction=instruction,
+                    acceptance_checks=acceptance_checks,
+                    history=history,
+                    record_run=record_run,
+                )
+            else:
+                if plan.resume_from is None:
+                    clear_state(cfg.workspace)  # a new task here isn't the old milestones
+                text = plan.resume_from.task if plan.resume_from is not None else task or ""
+                outcome = run_one(text, plan.resume_from, instruction, acceptance_checks).outcome
         except RunCancelled as exc:
             finish("cancelled", error="cancelled", summary=getattr(exc, "run_summary", None))
         except Exception as exc:  # noqa: BLE001 - kept in the run's result, not raised

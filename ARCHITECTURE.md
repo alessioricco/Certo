@@ -25,8 +25,13 @@ given design was chosen.
   its own `load_config`. `load_run_ladder(cfg)` loads the ladder (or checks
   the model files for auto-model). `prepare_workspace(cfg, options)` refuses
   foreign plugins, creates a named project and records it as Certo's, and
-  writes `agents_md`. `cli._main` and `server._resolve_cfg` both call these;
-  the milestone and resume rules stay in the CLI for now.
+  writes `agents_md`. `cli._main` and `server._resolve_cfg` both call these.
+  `plan_run(cfg, task=, resume=, milestones_file=)` reads what a run
+  continues (a saved run, saved milestones, a milestones file) and raises
+  `UsageError`, or `NothingToDo` when all is `verified` (the CLI prints
+  it and exits 0). `run_milestones(state, cfg, run_one, say=, ...)` is the
+  milestone loop, its lines through `say`; the CLI passes `print`,
+  `runs.RunManager` keeps them as notices.
 - **`mcp_server.py`** + `certo mcp` — `build_server(manager, folders,
   load=)` makes an `mcp` `MCPServer` with the core tools on
   `runs.RunManager` (`run_task`, `run_status`, `run_events`, `run_cancel`,
@@ -47,8 +52,9 @@ given design was chosen.
   call the tools through `mcp.Client(server)` in process.
 - **`runs.py`** — `RunManager`: runs a caller starts and follows (the MCP
   server's `run_task`/`run_status`/`run_events`/`run_cancel`). `start`
-  prepares with `api` (errors raised at once), runs `stream_task` in a
-  daemon thread with `save_state=True` and returns the `Run`; one run per
+  prepares with `api` (errors raised at once; `resume=`/`milestones_file=`
+  go through `api.plan_run`), runs `stream_task` (or `api.run_milestones`)
+  in a daemon thread with `save_state=True` and returns the `Run`; one run per
   workspace (`UsageError` while busy). Messages with text become numbered
   events (`message` or `notice`), read with `events(id, since)`, 200 per
   call. The run ends `finished`, `cancelled` or `error`, with its JSON

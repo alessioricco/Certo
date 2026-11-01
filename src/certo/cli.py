@@ -18,7 +18,16 @@ from urllib.parse import urlparse
 
 from . import __version__, update_check
 from .acceptance import AcceptanceCheck, AcceptanceCheckError, parse_acceptance_checks
-from .api import RunOptions, UsageError, load_run_ladder, prepare_workspace, resolve_config
+from .api import (
+    NothingToDo,
+    RunOptions,
+    UsageError,
+    load_run_ladder,
+    plan_run,
+    prepare_workspace,
+    resolve_config,
+    run_milestones,
+)
 from .banner import format_banner
 from .config import (
     ConfigError,
@@ -30,28 +39,13 @@ from .verification import _build_completion_contract, detect_project, run_full_v
 from .escalation import format_rung_lines
 from .model_catalog import ModelCatalogEntry
 from .milestones import (
-    MilestoneError,
-    MilestoneState,
-    checks_up_to,
     clear_state,
-    handover,
-    is_milestone_task,
-    milestone_task,
-    reopen,
-    summary_lines,
 )
-from .milestones import load_state as load_milestones
-from .milestones import save_state as save_milestones
 from .project_state import (
-    ensure_state_dir,
-    load_record,
-    render_status,
-    save_record,
     status_path,
 )
 from .result import run_result
 from .run_history import append_run, note_models_in_readme, run_entry
-from .run_summary import combine_summaries
 from .worktree import was_created_by_certo, worktree_warning
 
 if TYPE_CHECKING:
@@ -644,83 +638,24 @@ def _run_task_command(
     except ConfigError as exc:
         print(f"Configuration error: {exc}", file=sys.stderr)
         return 1
-    if args.resume and args.project is not None and not os.path.isdir(cfg.workspace):
-        print(f"Error: nothing to resume: {cfg.workspace} doesn't exist.", file=sys.stderr)
-        return 1
-
-    resume_from = None
-    milestone_state: MilestoneState | None = None
-    milestone_restart = None  # the last run of a milestone --escalate starts again
-    saved_milestones = load_milestones(cfg.workspace) if args.resume else None
-    # Milestones restart a milestone on the ladder's first rung; a single
-    # run's resume can't climb.
-    if cfg.model_selection == "escalate" and args.resume and saved_milestones is None:
-        print(
-            "Error: --resume can't be combined with escalation. Resume continues one "
-            "model's conversation; run it without --escalate (after --milestones, it "
-            "can).",
-            file=sys.stderr,
+    try:
+        plan = plan_run(
+            cfg,
+            task=task,
+            resume=args.resume,
+            milestones_file=args.task if args.milestones and not args.resume else None,
+            from_project=args.project is not None,
+            want_milestones=args.milestones,
         )
+    except NothingToDo as exc:
+        print(exc)
+        return 0
+    except UsageError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
         return 1
-    if args.milestones and not args.resume:
-        # A file, not text or a URL: --resume reads it again.
-        if not os.path.isfile(args.task):
-            print(
-                f"Error: --milestones needs a task file; {args.task!r} isn't one.",
-                file=sys.stderr,
-            )
-            return 1
-        try:
-            milestone_state = MilestoneState.from_text(task or "", args.task)
-        except MilestoneError as exc:
-            print(f"Error: {args.task}: {exc}", file=sys.stderr)
-            return 1
-    if args.resume and saved_milestones is None and args.milestones:
-        print(
-            f"Error: no milestones to resume in {os.path.abspath(cfg.workspace)}: Certo "
-            "keeps them in .certo/milestones.json, and there is none here.",
-            file=sys.stderr,
-        )
-        return 1
-    if saved_milestones is not None:
-        if saved_milestones.next_number() is None:
-            print(
-                f"All {len(saved_milestones.titles)} milestones here are already "
-                "'verified'. For more work, run a new task: certo \"...\""
-            )
-            return 0
-        try:
-            milestone_state = reopen(saved_milestones)
-        except MilestoneError as exc:
-            print(f"Error: {exc}", file=sys.stderr)
-            return 1
-        number = milestone_state.next_number()
-        record = load_record(cfg.workspace)
-        # The saved run continues only if it was this milestone's: otherwise
-        # (stopped before it began) the milestone starts afresh.
-        if record is not None and is_milestone_task(record.task, milestone_state.plan, number):
-            if cfg.model_selection == "escalate":
-                # A ladder starts the milestone again on its first rung, in
-                # a fresh conversation told how the last try ended.
-                milestone_restart = record
-            else:
-                resume_from = record
-    elif args.resume:
-        resume_from = load_record(cfg.workspace)
-        if resume_from is None:
-            print(
-                f"Error: nothing to resume in {os.path.abspath(cfg.workspace)}: Certo keeps "
-                "the last run's state in .certo/, and there is none here (or it can't "
-                "be read). Run a task first.",
-                file=sys.stderr,
-            )
-            return 1
-        if resume_from.verdict == "verified" and task is None:
-            print(
-                "The last run here already ended with 'verified'. To continue anyway, "
-                'say what to do next: certo --resume "..."'
-            )
-            return 0
+    resume_from = plan.resume_from
+    milestone_state = plan.milestones
+    milestone_restart = plan.restart
 
     # After the plan is known: a resume of milestones counts too.
 
@@ -844,10 +779,11 @@ def _run_task_command(
             )
             outcome = messages.outcome
         else:
-            outcome = _run_milestones(
+            outcome = run_milestones(
                 milestone_state,
                 cfg,
                 run_one,
+                say=lambda line: print(line, flush=True),
                 resume_from=resume_from,
                 restart=milestone_restart,
                 instruction=task if args.resume else None,
@@ -939,95 +875,6 @@ def _run_task_command(
         if hint:
             print(hint)
     return 1 if failing else 0
-
-
-def _run_milestones(
-    state: MilestoneState,
-    cfg,
-    run_one,
-    *,
-    resume_from,
-    restart=None,
-    instruction: str | None,
-    acceptance_checks,
-    history: dict,
-    record_run,
-):
-    """Milestone mode: run each milestone not yet verified, in order, each
-    in its own conversation, and stop at the first that isn't `verified`.
-    Returns the last milestone's outcome with the run summary and the
-    rungs of all of them. `.certo/milestones.json` records each verdict as it comes."""
-    from .checkpoints import safe_snapshot
-
-    workspace = cfg.workspace
-    ensure_state_dir(workspace)
-    total = len(state.plan)
-    summaries = []
-    ran = []  # every milestone's rungs: the final outcome has only the last one's
-    number = state.next_number()
-    outcome = None
-    first = True
-    # What the milestone before left; a resume past milestone 1 has only
-    # the folder, its conversation was in an earlier session.
-    left = handover(workspace, [], number - 1) if number is not None and number > 1 else None
-    while number is not None:
-        milestone = state.plan.get(number)
-        state.current = number
-        save_milestones(workspace, state)
-        print(f"\nMilestone {number} of {total}: {milestone.label}", flush=True)
-        if cfg.checkpoints:
-            safe_snapshot(workspace, f"before milestone {number}", always=True)
-        text = milestone_task(state.plan, number, left)
-        resume = resume_from if first else None
-        extra = instruction if first else None
-        if first and restart is not None:
-            text += (
-                "\n\nAn earlier try at this milestone didn't pass. Certo's record of how "
-                "it ended is below; the files it left are in the folder.\n\n"
-                + render_status(restart)
-            )
-        if extra and resume is None:
-            text += f"\n\nAdditional instruction from the user:\n{extra.strip()}"
-            extra = None
-        checks = checks_up_to(state.plan, number)
-        if number == total and acceptance_checks:
-            checks += list(acceptance_checks)
-        history["task"] = f"Milestone {number} of {total}: {milestone.label}"
-        result = run_one(text, resume, extra, checks or None)
-        outcome = result.outcome
-        if outcome.run_summary is not None:
-            summaries.append(outcome.run_summary)
-        state.verdicts[number] = outcome.verification_state
-        save_milestones(workspace, state)
-        record = load_record(workspace)
-        if record is not None:  # STATUS.md shows the new verdict in its list
-            try:
-                save_record(workspace, record)
-            except OSError:
-                pass
-        record_run(outcome.verification_state, outcome)
-        print(f"Milestone {number} of {total}: {outcome.verification_state}", flush=True)
-        if outcome.rungs:
-            for line in format_rung_lines(outcome.rungs, outcome.final_rung):
-                print(f"  {line}")
-            ran.extend(outcome.rungs)
-        if outcome.independent_tests is not None:
-            from .independent_tests import report_line
-
-            print(report_line(outcome.independent_tests, strict=cfg.independent_tests_strict))
-        if outcome.verification_state != "verified":
-            break
-        left = handover(workspace, result, number)
-        number = state.next_number()
-        first = False
-    print("\nMilestones:")
-    for line in summary_lines(state):
-        print(f"  {line}")
-    if summaries:
-        outcome = replace(outcome, run_summary=combine_summaries(summaries))
-    if ran:
-        outcome = replace(outcome, rungs=tuple(ran))
-    return outcome
 
 
 def _checkpoints_hint(workspace: str) -> str | None:

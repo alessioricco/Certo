@@ -72,10 +72,11 @@ so Certo doesn't use it.
 
 | Tool | What it does |
 |---|---|
-| `run_task` | Start a task in a `project` or `folder`. Returns at once with a `run_id`. Optional: `model`, `escalate` (a ladder name, `""` for the default), `acceptance_checks` (as in `--acceptance-checks`). |
+| `run_task` | Start a task in a `project` or `folder`. Returns at once with a `run_id`. Optional: `model`, `escalate` (a ladder name, `""` for the default), `acceptance_checks` (as in `--acceptance-checks`), and `milestones_file`: the full path of a task file in milestones, as in `certo --milestones` (it must be inside the same folders; keep it outside the project, so the agent can't read its acceptance checks). |
+| `run_resume` | Continue the last run in a `project` or `folder`, as `certo --resume` does: a cancelled or failed run from where it stopped, or a milestones run from the first milestone not `verified`. Optional: `instruction` (an extra message to the agent), `model`, `escalate`. When everything there is already `verified`, it answers `nothing_to_do` instead of starting a run. |
 | `run_status` | A run's `state` (`running`, `finished`, `cancelled` or `error`) and, once it ended, its `result`: the same object `certo --json` prints. See [The JSON result](../reference/json-result.md). |
 | `run_events` | The agent's messages and Certo's notices so far, numbered. Pass the last call's `next` as `since` to get only the new ones. |
-| `run_cancel` | Stop a run at the agent's next step. The work is kept; `certo --resume` in its folder continues it. |
+| `run_cancel` | Stop a run at the agent's next step. The work is kept; `run_resume` (or `certo --resume` in its folder) continues it. |
 | `list_runs` | The runs this server started. |
 | `verify` | Run Certo's checks on a project or folder without an agent, as `certo verify` does. |
 | `check_model` | One small call to the configured model, as `certo check` does. |
@@ -119,6 +120,19 @@ I polled run_status about every 5 seconds, and the state changed from running to
 finished on the sixth poll.
 ```
 
+**Milestones, cancel and resume.** The same client ran a task file in
+two milestones (Celsius and Fahrenheit, then Kelvin), then started a
+task, cancelled it, continued it with `run_resume`, and asked to continue
+it once more:
+
+```text
+milestones: finished verified [(1, 'verified'), (2, 'verified')] cost 0.0167
+cancelled: cancelled cancelled 2.0s
+resumed task: Write a Python module `shapes.py` with a
+resumed: finished verified {'created': ['README.md', 'shapes.py', 'test_shapes.py'], 'modified': [], 'deleted': []}
+again: nothing_to_do The last run here already ended with 'verified'. To continue
+```
+
 **From a script.** The `mcp` Python package's own client started
 `certo mcp`, ran a task on `claude-haiku-5-5`, followed it, checked the
 project again, and tried a folder it may not use:
@@ -138,7 +152,8 @@ outside: True Error executing tool run_task: /etc is outside the folders t
   authentication.
 - **Runs live as long as the server.** When the client closes, the
   server stops and a run still going stops with it. Its state is in the
-  project's `.certo/` folder, so `certo --resume` continues it.
+  project's `.certo/` folder, so `run_resume` (next time) or
+  `certo --resume` continues it.
 - **A run never waits for a person.** Interactive mode has no effect
   over MCP. With `CERTO_CONFIRM_MODE=always`, the first action that needs
   an approval is rejected and the run ends `confirmation_required` (see

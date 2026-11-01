@@ -11,10 +11,11 @@ Code, hand a coding task to Certo and get back Certo's verdict:
 claude mcp add certo -- uvx certo mcp
 ```
 
-Its tools start a task and return at once (`run_task`), follow it
-(`run_status`, `run_events`), stop it (`run_cancel`, and `certo
---resume` continues it), check a project without an agent (`verify`),
-and test the model (`check_model`). A finished run's result is the same
+Its tools start a task and return at once (`run_task`, also with a task
+file in milestones), follow it (`run_status`, `run_events`), stop it
+(`run_cancel`) and continue it later (`run_resume`, as `certo --resume`
+does), check a project without an agent (`verify`), and test the model
+(`check_model`). A finished run's result is the same
 object `certo --json` prints. Each project's `STATUS.md` and `RUNS.md`
 are resources a client can show, and runs started over MCP are added to
 `RUNS.md` like any other. The tools work only in projects under

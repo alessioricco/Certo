@@ -28,7 +28,8 @@ from .runs import RunManager
 INSTRUCTIONS = (
     "Certo runs a coding task with an agent, then checks the result itself: it runs the "
     "project's tests and checks and gives a verdict (verified, or why not). Start a task "
-    "with run_task, follow it with run_status and run_events, and stop it with run_cancel. "
+    "with run_task, follow it with run_status and run_events, stop it with run_cancel, "
+    "and continue a stopped or failed one with run_resume. "
     "verify checks a folder without an agent. Work happens only in a named project "
     "(project) or in a folder the server was started with (folder). A project's "
     "certo://projects/NAME/status and certo://projects/NAME/runs resources hold its last "
@@ -85,6 +86,19 @@ class Folders:
             )
         return {"workspace": path}
 
+    def file(self, path: str) -> str:
+        """A file a tool reads (a milestones task file): a full path inside
+        the same folders."""
+        real = os.path.realpath(path)
+        if not os.path.isabs(path) or not os.path.isfile(real):
+            raise UsageError(f"milestones_file must be the full path of an existing file: {path!r}")
+        allowed = [self.projects_dir, *self.roots]
+        if not any(_inside(real, root) for root in allowed):
+            raise UsageError(
+                f"{path} is outside the folders this server may use: " + ", ".join(allowed)
+            )
+        return real
+
 
 def build_server(
     manager: RunManager,
@@ -118,6 +132,7 @@ def build_server(
         model: str | None = None,
         escalate: str | None = None,
         acceptance_checks: list[dict[str, Any]] | None = None,
+        milestones_file: str | None = None,
     ) -> dict[str, Any]:
         """Start a coding task: an agent works in the project, then Certo runs the
         project's checks and gives a verdict. Returns at once with a run_id; follow it
@@ -125,16 +140,54 @@ def build_server(
         under Certo's projects folder; `folder` is the full path of a folder inside one
         the server allows. `model` overrides the configured model; `escalate` climbs a
         ladder of models ("" for the default ladder). `acceptance_checks` are extra file
-        checks, as in `certo --acceptance-checks`. The agent can change any file in the
-        folder and run commands there."""
+        checks, as in `certo --acceptance-checks`. `milestones_file` is the full path of
+        a task file split by `## Milestone N: title` headings, as in `certo --milestones`:
+        each milestone runs and is verified before the next starts, and `task` is then
+        ignored. The agent can change any file in the folder and run commands there."""
         from .acceptance import parse_acceptance_checks
 
         options = RunOptions(model=model, escalate=escalate, **folders.options(project, folder))
         checks = parse_acceptance_checks(acceptance_checks) if acceptance_checks else None
-        run = manager.start(task, options, acceptance_checks=checks)
+        source = folders.file(milestones_file) if milestones_file is not None else None
+        run = manager.start(task, options, acceptance_checks=checks, milestones_file=source)
+        return _started(run)
+
+    @server.tool(
+        annotations=ToolAnnotations(
+            title="Continue a run",
+            readOnlyHint=False,
+            destructiveHint=True,
+            openWorldHint=True,
+        )
+    )
+    @_user_errors
+    def run_resume(
+        project: str | None = None,
+        folder: str | None = None,
+        instruction: str | None = None,
+        model: str | None = None,
+        escalate: str | None = None,
+    ) -> dict[str, Any]:
+        """Continue the last run in a project or folder, as `certo --resume` does: one
+        that was cancelled, stopped with an error, or ended without `verified`, from
+        where it stopped. After a milestones run, it continues the first milestone not
+        verified, then the rest. `instruction` is sent to the agent as an extra message.
+        Returns a run_id like run_task, or state `nothing_to_do` when everything there
+        is already verified."""
+        from .api import NothingToDo
+
+        options = RunOptions(model=model, escalate=escalate, **folders.options(project, folder))
+        try:
+            run = manager.start(instruction, options, resume=True)
+        except NothingToDo as exc:
+            return {"run_id": None, "state": "nothing_to_do", "message": str(exc)}
+        return _started(run)
+
+    def _started(run: Any) -> dict[str, Any]:
         return {
             "run_id": run.id,
             "state": run.state,
+            "task": run.task,
             "project": run.project,
             "workspace": run.workspace,
         }
