@@ -34,7 +34,10 @@ given design was chosen.
   Imports `runner` only for type checking: `cli` imports it, and
   `certo --help` must not load the SDK. `cli --json` sends stdout to
   stderr around the run (`contextlib.redirect_stdout`; rich and the SDK
-  look stdout up when they write) and prints the result alone.
+  look stdout up when they write) and prints the result alone. The
+  server keeps it in `TaskRecord.result` (a nullable `result` column,
+  added to older SQL tables like `rungs`) and returns it in `GET
+  /tasks/{id}` and the WebSocket's last message.
 - **`config.py`** — env parsing, model-agnostic (`CERTO_LLM_MODEL` prefix selects
   provider). `override_llm(cfg, model=, api_key=, base_url=,
   reasoning_effort=)` is the per-request override mechanism shared by

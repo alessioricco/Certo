@@ -3,8 +3,9 @@
 `certo "task" --json` prints the run's result as one JSON object on
 standard output, and everything else (the agent's steps, Certo's
 notices, the summary) on standard error. A script or a CI job reads the
-verdict from it instead of parsing the terminal text. The MCP server
-(planned for 0.2) returns the same object.
+verdict from it instead of parsing the terminal text. `certo-server`
+returns the same object as `result` (see [Server API](server-api.md)),
+and so will the MCP server.
 
 ```bash
 certo "Write slug.py with a function slug(text) ..." --project json-check --json > result.json
@@ -105,3 +106,4 @@ The result never holds an API key.
 - [Commands](commands.md#certo)
 - [Verdicts](verdicts.md)
 - [Verify in CI](../guides/verify-in-ci.md)
+- [Server API](server-api.md)

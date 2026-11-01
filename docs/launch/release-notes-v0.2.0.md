@@ -8,8 +8,10 @@ Not released yet.
 standard output, and everything else on standard error: the verdict,
 each check with the end of its output, the acceptance checks, the time,
 tokens and cost per model, the ladder's rungs and the milestones. A
-script or a CI job reads it instead of the terminal text. The MCP
-server will return the same object. See
+script or a CI job reads it instead of the terminal text.
+`certo-server` returns the same object as `result`, in
+`GET /tasks/{task_id}` and in the last message of `WS /tasks/stream`,
+and the MCP server will too. See
 [The JSON result](../reference/json-result.md).
 
 ## Changed: one way to start a run

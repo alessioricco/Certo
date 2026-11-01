@@ -580,6 +580,9 @@ def test_sql_store_adds_the_rungs_column_to_an_older_table(tmp_path):
     assert store.get("old").rungs is None
     store.save(TaskRecord(id="new", task="y", rungs=[{"rung": 1}]))
     assert store.get("new").rungs == [{"rung": 1}]
+    assert store.get("old").result is None
+    store.save(TaskRecord(id="newer", task="z", result={"verdict": "verified"}))
+    assert store.get("newer").result == {"verdict": "verified"}
     store.close()
 
 
@@ -587,3 +590,15 @@ def test_a_record_saved_before_rungs_existed_still_loads():
     data = TaskRecord(id="t", task="x").to_json_dict()
     del data["rungs"]
     assert TaskRecord.from_json_dict(data).rungs is None
+
+
+def test_sql_store_keeps_the_json_result(sqlite_store):
+    result = {"result_version": 1, "verdict": "verified"}
+    sqlite_store.save(TaskRecord(id="t1", task="x", result=result))
+    assert sqlite_store.get("t1").result == result
+
+
+def test_a_record_saved_before_the_result_existed_still_loads():
+    data = TaskRecord(id="t", task="x").to_json_dict()
+    del data["result"]
+    assert TaskRecord.from_json_dict(data).result is None

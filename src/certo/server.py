@@ -9,6 +9,7 @@ free of a FastAPI/uvicorn dependency.
 
 import asyncio
 import json
+import os
 import queue
 import threading
 import time
@@ -21,6 +22,7 @@ from .acceptance import parse_acceptance_checks
 from .api import RunOptions, load_run_ladder, prepare_workspace, resolve_config
 from .config import Config, ConfigError, load_config
 from .escalation import rung_dicts
+from .result import run_result
 from .runner import UNPROVEN_STATES, run_task, stream_task
 from .task_store import TaskRecord, TaskStore, build_task_store
 
@@ -106,6 +108,15 @@ def _resolve_cfg(
     cfg = resolve_config(options, load=lambda: load_config())
     prepare_workspace(cfg, options)
     return cfg
+
+
+def _result(
+    outcome, task: str, cfg: Config, project: str | None, error: str | None = None
+) -> dict[str, Any]:
+    """The run's JSON result (result.py), as `certo --json` prints it."""
+    return run_result(
+        outcome, task=task, workspace=os.path.abspath(cfg.workspace), project=project, error=error
+    )
 
 
 def _rung_list(outcome) -> list[dict] | None:
@@ -244,6 +255,7 @@ def create_app():
                 else None
             )
             record.rungs = _rung_list(outcome)
+            record.result = _result(outcome, record.task, cfg, record.project)
             if require_verification and outcome.verification_state in UNPROVEN_STATES:
                 record.status = "failed"
                 record.error = (
@@ -257,6 +269,7 @@ def create_app():
         except Exception as exc:  # noqa: BLE001 - surfaced via GET /tasks/{id}, not raised here
             record.status = "failed"
             record.error = str(exc)
+            record.result = _result(None, record.task, cfg, record.project, error=str(exc))
         finally:
             record.updated_at = time.time()
             store.save(record)
@@ -318,6 +331,8 @@ def create_app():
             "completion_contract": record.completion_contract,
             "acceptance_results": record.acceptance_results,
             "rungs": record.rungs,
+            # The same object `certo --json` prints; None until the run ends.
+            "result": record.result,
             "messages": list(record.messages),
             "error": record.error,
         }
@@ -383,7 +398,13 @@ def create_app():
                         "requested treating that as a failure: "
                         + "; ".join(outcome.completion_contract.limitations)
                     )
-                    events.put({"type": "error", "detail": detail})
+                    events.put(
+                        {
+                            "type": "error",
+                            "detail": detail,
+                            "result": _result(outcome, request.task, cfg, request.project),
+                        }
+                    )
                 else:
                     events.put(
                         {
@@ -393,10 +414,17 @@ def create_app():
                             "acceptance_results": [asdict(r) for r in outcome.acceptance_results]
                             or None,
                             "rungs": _rung_list(outcome),
+                            "result": _result(outcome, request.task, cfg, request.project),
                         }
                     )
             except Exception as exc:  # noqa: BLE001 - surfaced to the client, not raised
-                events.put({"type": "error", "detail": str(exc)})
+                events.put(
+                    {
+                        "type": "error",
+                        "detail": str(exc),
+                        "result": _result(None, request.task, cfg, request.project, error=str(exc)),
+                    }
+                )
             finally:
                 events.put(_SENTINEL)
 

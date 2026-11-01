@@ -1339,3 +1339,56 @@ def test_chat_completions_files_its_run_records_under_the_project(monkeypatch, t
 
     assert response.status_code == 200
     assert calls["project"] == "my-api"
+
+
+# --- the JSON result (result.py), as `certo --json` prints it ---------------
+
+
+def test_get_task_returns_the_json_result(monkeypatch):
+    def _fake_stream_task(task, cfg=None, on_message=None, acceptance_checks=None, **_kwargs):
+        return _fake_outcome(verification_state="retry_exhausted", limitations=["pytest: 1 failed"])
+
+    monkeypatch.setattr(server, "load_config", lambda: _cfg())
+    monkeypatch.setattr(server, "stream_task", _fake_stream_task)
+
+    client = TestClient(server.create_app())
+    task_id = client.post("/tasks", json={"task": "do something"}).json()["task_id"]
+    final = _wait_for_status(client, task_id)
+
+    result = final["result"]
+    assert result["result_version"] == 1
+    assert result["task"] == "do something"
+    assert result["verdict"] == "retry_exhausted"
+    assert result["limitations"] == ["pytest: 1 failed"]
+    assert "key" not in str(result).replace("cache_read_tokens", "")
+
+
+def test_get_task_result_says_why_a_run_failed(monkeypatch):
+    def _fake_stream_task(task, **_kwargs):
+        raise RuntimeError("provider down")
+
+    monkeypatch.setattr(server, "load_config", lambda: _cfg())
+    monkeypatch.setattr(server, "stream_task", _fake_stream_task)
+
+    client = TestClient(server.create_app())
+    task_id = client.post("/tasks", json={"task": "do something"}).json()["task_id"]
+    final = _wait_for_status(client, task_id)
+
+    assert final["result"]["verdict"] is None
+    assert final["result"]["error"] == "provider down"
+
+
+def test_stream_result_event_carries_the_json_result(monkeypatch):
+    def _fake_stream_task(task, cfg=None, on_message=None, acceptance_checks=None, **_kwargs):
+        return _fake_outcome()
+
+    monkeypatch.setattr(server, "load_config", lambda: _cfg())
+    monkeypatch.setattr(server, "stream_task", _fake_stream_task)
+
+    client = TestClient(server.create_app())
+    with client.websocket_connect("/tasks/stream") as ws:
+        ws.send_json({"task": "do something"})
+        event = ws.receive_json()
+
+    assert event["type"] == "result"
+    assert event["result"]["verdict"] == event["verification_state"]

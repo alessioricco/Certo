@@ -59,6 +59,7 @@ Starts a task in the background and returns at once with `202 Accepted`:
   },
   "acceptance_results": null,
   "rungs": null,
+  "result": {"result_version": 1, "verdict": "verified", "...": "..."},
   "messages": [],
   "error": null
 }
@@ -72,6 +73,7 @@ Starts a task in the background and returns at once with `202 Accepted`:
 | `completion_contract` | What the task was checked against: the goal, the acceptance criteria, the exact commands run (`verification_checks`) and what couldn't be checked (`limitations`). |
 | `acceptance_results` | One result per acceptance check, or `null` when none were given. |
 | `rungs` | With `escalate`: one object per rung that ran, in order, else `null`. Each has `rung`, `name`, `model`, `reasoning_effort` (`null` when none is set), `verdict` (`null` after a provider or run failure), `failure`, `fix_attempts`, `duration_seconds`, `tokens`, `cost`, `cost_known`, `files_created`, `files_modified`, `files_deleted`, `failing_checks`, and `final` (`true` on the rung whose verdict is the task's). |
+| `result` | The run's result in the same format as `certo --json` (see [The JSON result](json-result.md)), once the task ends, else `null`. When the run fails with an error, its `verdict` is `null` and its `error` says why. |
 | `messages` | Every message so far, growing while the task runs. |
 | `error` | Why the task failed, once `failed`. |
 
@@ -106,8 +108,8 @@ then sends messages until the task ends, and closes the connection (code
 | `type` | Meaning |
 |---|---|
 | `message` | One agent message, with all its fields. |
-| `result` | The last message on success: `verification_state`, `completion_contract`, `acceptance_results`, `rungs`. |
-| `error` | `detail` explains the problem: an invalid request, a run-time error, or an `inconclusive` or `unchanged` verdict with `require_verification: true`. |
+| `result` | The last message on success: `verification_state`, `completion_contract`, `acceptance_results`, `rungs`, and `result`, the run's [JSON result](json-result.md). |
+| `error` | `detail` explains the problem: an invalid request, a run-time error, or an `inconclusive` or `unchanged` verdict with `require_verification: true`. Once the run has started, it also has `result`. |
 
 ## `POST /v1/chat/completions`
 

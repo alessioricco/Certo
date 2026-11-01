@@ -75,6 +75,9 @@ class TaskRecord:
     # Escalation only: one entry per rung that ran (escalation.RungResult,
     # plus "final" on the rung whose verdict this is).
     rungs: list[dict[str, Any]] | None = None
+    # The run's JSON result (result.py), the same object `certo --json`
+    # prints. None until the run ends.
+    result: dict[str, Any] | None = None
 
     def to_json_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -231,6 +234,7 @@ class SQLTaskStore(TaskStore):
             sa.Column("completion_contract", sa.Text, nullable=True),
             sa.Column("acceptance_results", sa.Text, nullable=True),
             sa.Column("rungs", sa.Text, nullable=True),
+            sa.Column("result", sa.Text, nullable=True),
         )
         self._metadata.create_all(self._engine)
         self._add_missing_columns(sa)
@@ -243,7 +247,7 @@ class SQLTaskStore(TaskStore):
         existing = {c["name"] for c in sa.inspect(self._engine).get_columns(name)}
         quote = self._engine.dialect.identifier_preparer.quote
         with self._engine.begin() as conn:
-            for column in ("rungs",):
+            for column in ("rungs", "result"):
                 if column not in existing:
                     logger.info("Adding column %r to task-store table %r.", column, name)
                     conn.execute(
@@ -283,6 +287,7 @@ class SQLTaskStore(TaskStore):
                 json.loads(row.acceptance_results) if row.acceptance_results else None
             ),
             rungs=json.loads(row.rungs) if row.rungs else None,
+            result=json.loads(row.result) if row.result else None,
         )
 
     def _record_to_values(self, record: TaskRecord) -> dict[str, Any]:
@@ -307,6 +312,7 @@ class SQLTaskStore(TaskStore):
                 else None
             ),
             "rungs": json.dumps(record.rungs) if record.rungs is not None else None,
+            "result": json.dumps(record.result) if record.result is not None else None,
         }
 
     def save(self, record: TaskRecord) -> None:
