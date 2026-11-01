@@ -119,6 +119,37 @@ installed where they ran.
   the checks ran where PyYAML was installed; only a fresh environment
   shows the difference. One run with the skill still declared nothing.
 
+### The bundled Node tasks on qwen3.8
+
+The four Node tasks with `node-project-setup` and without it, on the
+same model and window, 2 repeats, one run at a time, on 2026-11-01 from
+03:35 to 06:40 UTC, at commit `bf9e5cd`.
+**File:** [bench-0.1.27-node-skill-local.yaml](bench-0.1.27-node-skill-local.yaml).
+**Results folder:** `bench-results/node-skill-local-0.1.27`.
+
+| Task | Without the skill | With the skill |
+|---|---|---|
+| `slugify` | `verified` 2/2 (14m 31s, 6m 08s) | `verified` 2/2 (7m 23s, 6m 41s) |
+| `semver-order` | `verified` 2/2 (5m 25s, 6m 39s) | `verified` 2/2 (8m 20s, 10m 38s) |
+| `room-bookings` | `verified` once (22m 53s); `stuck` once, hidden tests failed (30m 02s) | `verified` once (26m 29s); `budget_exhausted` once, hidden tests passed (30m 02s) |
+| `token-bucket` | `verified` once (5m 37s); `error` once | `verified` once (3m 21s); `error` once |
+
+The two `error` runs were the last two of the night: the machine
+running Ollama dropped off the network
+(`[Errno 8] nodename nor servname provided`), and both stopped after 2m
+26s. They say nothing about the skill.
+
+Counting the 14 runs that reached the model, 7 in each arm: hidden
+tests passed in 6 of 7 without the skill and 7 of 7 with it, and
+`verified` 6 times each.
+
+- **On the bundled Node tasks, `node-project-setup` made nothing
+  worse on qwen3.8.** The starter projects already have a working
+  `test` script, so there is little for it to fix, as on Haiku. The one
+  difference, in `room-bookings`, is one run each way that ran out of
+  the 30 minutes, and is within chance at 2 runs per task.
+- **Both skills stay in 0.1.27.**
+
 ## Related
 
 - [Manage skills](../guides/manage-skills.md)

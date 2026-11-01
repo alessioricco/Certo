@@ -1,0 +1,12 @@
+# The node-project-setup skill on a local model (Certo 0.1.27):
+# qwen3.8 on the four bundled Node tasks, with the skill and without it
+# (skills_off), as bench-0.1.27-node-skill-cloud.yaml does for Haiku.
+# 2 repeats, to finish in one night. Run it from the repository root with:
+#   certo bench --config docs/benchmark/bench-0.1.27-node-skill-local.yaml
+# Every model below must be enabled in your models.yaml; see
+# docs/guides/write-a-benchmark-file.md.
+tasks: [slugify, semver-order, room-bookings, token-bucket]
+repeats: 2
+arms:
+  - {name: qwen-no-skill, strategy: single, model: qwen3.8-27b-local, context_tokens: 65536, skills_off: [node-project-setup]}
+  - {name: qwen-skill, strategy: single, model: qwen3.8-27b-local, context_tokens: 65536}

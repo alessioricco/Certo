@@ -296,13 +296,6 @@ terminal never fires it. Decide whether it becomes keyword-triggered
 too, or folds into `python-environment`. Done when its rule reaches the
 agent before a dependency is added from the terminal.
 
-**Measure the two new skills on qwen3.8 before 0.1.27 is released.**
-The two skill tasks are done on qwen3.8 (`docs/benchmark/setup-skills-0.1.27.md`:
-both skills help, neither made anything worse). Left: the four bundled
-Node tasks on qwen3.8 (`docs/benchmark/bench-0.1.27-node-skill-local.yaml`).
-Done when that is published, or an unhelpful skill is left out of the
-release.
-
 **Make a project verifiable** (first; suggested order: the first two):
 - `cli-entry-points`: `__main__` guard last, a closed stdin doesn't hang,
   `--help` and non-interactive flags work.
