@@ -3,7 +3,7 @@ transcripts (qwen3.8, qwen3.6, devstral), with shorter paths."""
 
 import pytest
 
-from certo.text_tool_calls import DEFAULT_TOOLS, looks_like_tool_call
+from certo.text_tool_calls import DEFAULT_TOOLS, announces_next_step, looks_like_tool_call
 
 TOOLS = {
     "terminal": ["command", "is_input", "reset", "timeout"],
@@ -99,3 +99,39 @@ def test_the_default_tools_match_the_sdk():
         "file_editor": set(FileEditorAction.model_fields),
         "task_tracker": set(TaskTrackerAction.model_fields),
     }
+
+
+# The four endings of saved local runs that announced a next step and stopped.
+@pytest.mark.parametrize(
+    "text",
+    [
+        '{"type": "text", "text": "Now let me look at the test file to understand '
+        'conventions, then implement milestone 3."}',
+        '{"type": "text", "text": "Good, imports are in place. Now let me add the `save` '
+        'and `load` methods to the `Ledger` class."}',
+        '{"message": "I\'ve created `durations.py`. Let me now run the tests to verify '
+        'everything works.", "tool_use_id": "call_abc123", "arguments": {"command": '
+        '"python -m pytest test_durations.py -v", "timeout": 30}}',
+        '{"thinking": "Let me trace through each failing test.\\n\\nAll 5 failures are '
+        'test bugs. Let me fix them."}',
+        "The parser is in place. Next, I'll add the tests.",
+    ],
+)
+def test_a_message_that_announces_its_next_step_is_recognised(text):
+    assert announces_next_step(text)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Done, all tests pass.",
+        "I added `save` and `load`. Let me know if you want a CSV export too.",
+        "Now let me check the tests. All 12 pass, so the ledger is complete.",
+        '{"type": "text", "text": "The ledger is complete and its tests pass."}',
+        '{"command": "view", "path": "/tmp/project"}',
+        '{"type": "text", "text": "Now let me',
+        "",
+    ],
+)
+def test_a_finished_answer_does_not_announce_a_next_step(text):
+    assert not announces_next_step(text)

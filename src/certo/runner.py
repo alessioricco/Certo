@@ -126,8 +126,9 @@ from .project_state import (
     save_record,
 )
 from .run_summary import RunSummary, summarize_run
+from .text_tool_calls import NEXT_STEP_REMINDER
 from .text_tool_calls import REMINDER as TOOL_CALL_REMINDER
-from .text_tool_calls import looks_like_tool_call
+from .text_tool_calls import announces_next_step, looks_like_tool_call
 from .workspace import build_workspace
 
 logger = logging.getLogger(__name__)
@@ -704,13 +705,15 @@ def _remind_text_tool_call(
 ) -> bool:
     """When the run just ended on a tool call the model wrote as text
     (text_tool_calls.py), tell the agent to make it as a real call and
-    return True, so the caller runs the conversation again. At most
+    return True, so the caller runs the conversation again. The same when
+    it ended on a message that only announces the next step ("Now let me
+    add the save method."): tell it to make that call. At most
     `CERTO_TOOL_CALL_REMINDERS` times in a row, once per message, and never
     past the deadline or the cost limit. A real tool call since the last
     reminder starts the count again: the reminder worked, and only a model
     that never recovers is stopped. A model that makes real tool calls
     never gets here: the last message must be text that is, as a whole, a
-    call to one of the agent's tools."""
+    call to one of the agent's tools, or end on a sentence of plans."""
     sent, last_id = _TOOL_CALL_REMINDERS.get(conversation, (0, ""))
     if sent and _real_call_since(conversation, last_id):
         sent = 0
@@ -723,7 +726,11 @@ def _remind_text_tool_call(
         if not isinstance(event, MessageEvent) or event.id == last_id:
             return False
         text = "".join(c.text for c in event.llm_message.content if isinstance(c, TextContent))
-        if not looks_like_tool_call(text, _tool_parameters(conversation)):
+        if looks_like_tool_call(text, _tool_parameters(conversation)):
+            reminder, what = TOOL_CALL_REMINDER, "wrote a tool call as text instead of making it"
+        elif announces_next_step(text):
+            reminder, what = NEXT_STEP_REMINDER, "said what it would do next but made no tool call"
+        else:
             return False
     except Exception:  # noqa: BLE001 - an event log that can't be read (Docker) means no reminder
         return False
@@ -733,11 +740,10 @@ def _remind_text_tool_call(
     _TOOL_CALL_REMINDERS[conversation] = (sent, event.id)
     _emit_notice(
         emit,
-        "Certo: the agent wrote a tool call as text instead of making it, so "
-        f"nothing ran. Asking it to make the call ({sent} of {cfg.tool_call_reminders} "
-        "in a row).",
+        f"Certo: the agent {what}, so nothing ran. Asking it to make the call "
+        f"({sent} of {cfg.tool_call_reminders} in a row).",
     )
-    conversation.send_message(TOOL_CALL_REMINDER)
+    conversation.send_message(reminder)
     return True
 
 

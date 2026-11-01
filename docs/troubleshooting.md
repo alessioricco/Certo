@@ -358,6 +358,26 @@ raise the context window (see
 update Ollama, and run `certo check`, which fails when the answer isn't a
 real tool call. If it keeps happening, use another model.
 
+### The run ends on a sentence of plans
+
+**You see:** with a local model, the agent's last message says what it
+will do next, such as `Now let me add the save and load methods.`
+(sometimes written as `{"type": "text", "text": "..."}`), and nothing
+after it. Certo prints:
+
+```
+Certo: the agent said what it would do next but made no tool call, so nothing ran. Asking it to make the call (1 of 3 in a row).
+```
+
+**Cause:** the model ended its turn with a plan instead of the tool call
+that carries it out, so the agent framework took it as the final answer.
+In Certo's saved benchmark runs it happened 4 times, all on local
+models, and never on a cloud model.
+
+**Fix:** Certo tells the agent to make the call, or to say the task is
+done, sharing the limit of the reminders above
+(`CERTO_TOOL_CALL_REMINDERS`, `0` turns both off).
+
 ### Every step is very slow
 
 **You see:** each step of the agent takes minutes, and tasks end with

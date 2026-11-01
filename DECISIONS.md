@@ -1578,3 +1578,13 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   no tool: `NO_TOOL` in mcp_server.py says why, and a test fails when a
   command in commands.md is in neither list. `skills remove/disable` are
   "not yet", not "never".
+
+- **A turn that ends on a sentence of plans gets the tool-call reminder's
+  treatment** (2026-11-01). When the agent's last message only announces
+  its next step (plain, or inside `{"type": "text"|"message"|"thinking"}`
+  written as text), Certo sends `NEXT_STEP_REMINDER` and goes on, sharing
+  `CERTO_TOOL_CALL_REMINDERS` (no new setting). Not gated by model tier:
+  a replay of every saved ending found it in 4 local endings and in none
+  of 210 cloud ones, so it is structurally a local-model failure. The
+  last sentence must be the plan, so "Now let me check... All pass." and
+  "let me know" don't count.

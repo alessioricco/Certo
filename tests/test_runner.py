@@ -751,6 +751,28 @@ def test_a_run_that_ends_on_a_tool_call_written_as_text_is_sent_back_once():
     )
 
 
+def test_a_run_that_ends_announcing_its_next_step_is_sent_back():
+    # reminders-in-a-row-0.1.27.md, repeat 4: qwen ended milestone 3 with a
+    # sentence of plans and no tool call.
+    plan = (
+        '{"type": "text", "text": "Good, imports are in place. Now let me add the '
+        '`save` and `load` methods to the `Ledger` class."}'
+    )
+    conversation = _FakeConversation(
+        events_after_run=[_agent_says(plan), _agent_says("Done, all tests pass.")]
+    )
+    notices: list = []
+
+    runner._run_conversation_once(conversation, _cfg(), notices.append, None)
+
+    assert conversation.run_calls == 2
+    assert conversation.sent_messages == [runner.NEXT_STEP_REMINDER]
+    assert any(
+        "said what it would do next" in n and "(1 of 3 in a row)" in n
+        for n in _notice_texts(notices)
+    )
+
+
 def test_tool_call_reminders_stop_at_the_limit():
     conversation = _FakeConversation(events_after_run=[_agent_says(_TEXT_CALL) for _ in range(5)])
 

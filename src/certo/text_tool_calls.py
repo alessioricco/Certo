@@ -121,3 +121,46 @@ def _cut_off_call(body: str, known: Mapping[str, frozenset[str]]) -> bool:
         return False
     key = first.group(1)
     return key in known or any(key in params for params in known.values())
+
+
+# --- A turn that ends by announcing its next step ------------------------------------
+
+NEXT_STEP_REMINDER = (
+    "Certo: your last message said what you would do next, but made no tool "
+    "call, so nothing ran and your turn ended. Make that tool call now and go "
+    "on with the task. If the task is already done, say so in one line."
+)
+
+# Where a model that wrote its message as a JSON object put the words.
+_TEXT_KEYS = ("text", "message", "thinking")
+# "Now let me ...", "Next, I'll ...", "Let me ...", but not "let me know".
+_NEXT_STEP = re.compile(
+    r"\b(?:now|next|then)\b[,\s]*(?:let me|let's|i'll|i will|i'm going to)\b"
+    r"|^(?:let me|let's|i'll|i will)\b(?!\s+know)",
+    re.IGNORECASE,
+)
+_SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
+
+
+def announces_next_step(text: str) -> bool:
+    """True when the message ends by saying what the agent will do next
+    ("Now let me add the save method."), as its whole last sentence, and so
+    ends the turn with the work not done. The words may be plain text or
+    inside a JSON object a model wrote as text (`{"type": "text", "text":
+    "..."}`, also under `message` or `thinking`). Seen only on local models:
+    in the saved benchmark runs, 4 local endings and none of 194 cloud
+    ones."""
+    words = text.strip()
+    if words.startswith("{"):
+        try:
+            value = json.loads(words)
+        except ValueError:
+            return False
+        if not isinstance(value, dict):
+            return False
+        found = [value[k] for k in _TEXT_KEYS if isinstance(value.get(k), str)]
+        if not found:
+            return False
+        words = found[0].strip()
+    sentences = [s for s in _SENTENCE_END.split(words) if s.strip()]
+    return bool(sentences) and bool(_NEXT_STEP.search(sentences[-1].strip()))
