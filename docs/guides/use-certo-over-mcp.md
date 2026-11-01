@@ -87,8 +87,31 @@ folders go in parallel.
 
 ## A real run
 
-A client (the `mcp` Python package's own) started `certo mcp`, ran a
-task on `claude-haiku-5-5`, followed it, and checked the project again:
+**From Claude Code.** Claude Code was given `certo mcp` as its only MCP
+server and asked to start a task in the project `claude-code-check` (a
+`fib(n)` function with pytest tests), poll `run_status` until it ended,
+and report. Certo ran the task on `claude-haiku-5-5`. Claude Code's
+report:
+
+```text
+The run finished and was verified.
+
+- run_id: 385209a10416
+- Final state: finished
+- Verdict: verified
+- Checks:
+  - pytest: passed (exit 0), "10 passed in 0.01s"
+  - No acceptance checks were configured, and there were no limitations or retries.
+- Cost: $0.005617 (known), using anthropic/claude-haiku-5-5. Total tokens were
+  136,815 (133,361 prompt, 3,454 completion, 111,124 cache read), over 27.5 seconds.
+
+I polled run_status about every 5 seconds, and the state changed from running to
+finished on the sixth poll.
+```
+
+**From a script.** The `mcp` Python package's own client started
+`certo mcp`, ran a task on `claude-haiku-5-5`, followed it, checked the
+project again, and tried a folder it may not use:
 
 ```text
 tools: ['run_task', 'run_status', 'run_events', 'run_cancel', 'list_runs', 'verify', 'check_model']
