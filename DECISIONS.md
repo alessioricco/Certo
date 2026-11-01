@@ -1511,3 +1511,12 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   every run inside its time, cost and step limits, one run per project
   folder. HTTP comes only with authentication (the Author's item),
   likely as `/mcp` inside `certo-server`.
+
+- **0.2 comes in slices** (the Author, 2026-11-01). 0.2.0 is the first
+  usable slice: `certo.api` for running a task, `verify`, `check` and a
+  run's status; the JSON result and `certo --json`; `certo mcp` with the
+  core tools; a guide with a live run to `verified`. Each later 0.2.x
+  moves more commands onto `certo.api` and gives them tools, until
+  `--tools all` covers every command. Reason: something usable ships
+  early, and each step is reviewed on its own, instead of weeks with
+  nothing released.

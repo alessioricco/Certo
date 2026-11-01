@@ -243,7 +243,9 @@ cut that first run's output from 2,949 lines to 1,021.)
 - **MCP server with every Certo command** (the Author, 2026-10-31: all
   the commands, so a client can build a wrapper on top; 0.2 work; Phase 3
   closed 2026-10-31). Design in DECISIONS.md ("The MCP server: every
-  command, on a shared core"). In order: (0) `certo.api`, one typed
+  command, on a shared core"), released in slices ("0.2 comes in
+  slices": 0.2.0 is running a task, verify, check and run status, then
+  the rest in 0.2.x). In order: (0) `certo.api`, one typed
   function per command, with the CLI and `certo-server` moved onto it;
   (1) the JSON result and `certo --json`; (2) `certo mcp` over stdio
   (no authentication; HTTP only after it, see DECISIONS.md),
