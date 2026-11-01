@@ -1491,3 +1491,8 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   with 31 minutes left. The limit is for a model that never recovers;
   one that recovers keeps going, still bounded by the time, cost and
   step limits. Cloud models never get reminders, so they can't change.
+
+- **The project review is closed** (the Author, 2026-11-01, with the
+  0.1.27 release). Its plan is done (Phase 3 closed 2026-10-31). From
+  now on `TODO.md` and `ROADMAP.md` lead; the review file is kept only
+  as a private record.

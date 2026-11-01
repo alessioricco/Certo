@@ -151,8 +151,8 @@ about ladders, profiles or the benchmark; time from install to first
 
 ## Now, next, later
 
-- **Now:** release 0.1.27 (milestone mode, experimental); then 0.2,
-  which starts the MCP server with every Certo command.
+- **Now:** 0.2, which starts the MCP server with every Certo command
+  (0.1.27, with milestone mode, was released on 2026-11-01).
 - **Next:** independent tests from the spec; the pull-request CI; more
   "make it verifiable" skills; the simple first run.
 - **Later:** run-the-app verification, new ecosystems, the GitHub Action,
