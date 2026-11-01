@@ -130,7 +130,8 @@ later:
   stays on your machine. It moves with the folder when you rename or copy
   it.
 - `CERTO_SAVE_STATE=false` turns it off, with the rest of `.certo/`.
-  Server mode and `certo bench` never write it.
+  Runs started over MCP (`certo mcp`) write it too; server mode and
+  `certo bench` never write it.
 
 In a project folder Certo created (`--project` with a new name), Certo
 also keeps a one-line note at the end of the project's `README.md`, so

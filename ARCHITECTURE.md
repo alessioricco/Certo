@@ -41,8 +41,10 @@ given design was chosen.
   `stdio_server` points fd 1 at stderr while serving, so prints and child
   processes can't break the protocol (verified live with the SDK's step
   printing). Startup reads the settings under `defer_llm_check`: a tool
-  may name the model. Tests call the tools through `mcp.Client(server)`
-  in process.
+  may name the model. Resources `certo://projects/{name}/status` and
+  `/runs` read `.certo/STATUS.md` and `RUNS.md` (name through
+  `resolve_project_dir`; a missing file is `ResourceNotFoundError`). Tests
+  call the tools through `mcp.Client(server)` in process.
 - **`runs.py`** — `RunManager`: runs a caller starts and follows (the MCP
   server's `run_task`/`run_status`/`run_events`/`run_cancel`). `start`
   prepares with `api` (errors raised at once), runs `stream_task` in a
@@ -50,7 +52,8 @@ given design was chosen.
   workspace (`UsageError` while busy). Messages with text become numbered
   events (`message` or `notice`), read with `events(id, since)`, 200 per
   call. The run ends `finished`, `cancelled` or `error`, with its JSON
-  result. In memory only: a new process forgets the runs, not the
+  result, and is appended to `.certo/RUNS.md` with
+  `run_history.run_entry` (moved there from the CLI, which uses it too). In memory only: a new process forgets the runs, not the
   projects' `.certo/` state. The SDK's visualizer prints each step on
   stdout during a run, so a stdio server must send stdout to stderr.
 - **`cancel.py`** — `stream_task(cancel=event)` sets a context-variable

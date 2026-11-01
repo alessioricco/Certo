@@ -9,22 +9,28 @@ stops it at its next step (cancel.py). One run per project folder at a time;
 runs in different folders go in parallel.
 
 Each run keeps its state in the project's `.certo/` folder, so a cancelled or
-failed run can be continued with `certo --resume`.
+failed run can be continued with `certo --resume`, and is added to its
+`.certo/RUNS.md` as a command-line run is.
 """
 
 from __future__ import annotations
 
+import logging
 import os
 import threading
 import time
 import uuid
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from typing import Any
 
 from .api import RunOptions, UsageError, load_run_ladder, prepare_workspace, resolve_config
 from .config import Config
 from .result import run_result
+from .run_history import append_run, run_entry
+
+logger = logging.getLogger(__name__)
 
 # Events returned by one `events` call, at most.
 EVENTS_PER_CALL = 200
@@ -151,10 +157,29 @@ class RunManager:
                 kind = "notice" if is_notice(message) else "message"
                 self._add_event(run, kind, str(getattr(message, "role", "")), text)
 
-        def finish(state: str, outcome: Any = None, error: str | None = None) -> None:
+        started = datetime.now(UTC)
+
+        def finish(
+            state: str, outcome: Any = None, error: str | None = None, summary: Any = None
+        ) -> None:
             result = run_result(
                 outcome, task=run.task, workspace=run.workspace, project=run.project, error=error
             )
+            # In the project's .certo/RUNS.md, as a command-line run is.
+            if outcome is not None:
+                ended = outcome.verification_state
+            elif state == "cancelled":
+                ended = "interrupted"
+            else:
+                lines = (error or "").strip().splitlines()
+                ended = "error: " + (lines[0][:100] if lines else "")
+            try:
+                append_run(
+                    run.workspace,
+                    run_entry(cfg, ladder, run.task, ended, started, outcome, summary),
+                )
+            except OSError:
+                logger.warning("Could not add run %s to .certo/RUNS.md", run.id, exc_info=True)
             with self._lock:
                 run.state = state
                 run.result = result
@@ -173,10 +198,14 @@ class RunManager:
                 ladder=ladder,
                 cancel=run.cancel_event,
             )
-        except RunCancelled:
-            finish("cancelled", error="cancelled")
+        except RunCancelled as exc:
+            finish("cancelled", error="cancelled", summary=getattr(exc, "run_summary", None))
         except Exception as exc:  # noqa: BLE001 - kept in the run's result, not raised
-            finish("error", error=str(exc) or type(exc).__name__)
+            finish(
+                "error",
+                error=str(exc) or type(exc).__name__,
+                summary=getattr(exc, "run_summary", None),
+            )
         else:
             finish("finished", outcome)
 

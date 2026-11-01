@@ -30,7 +30,9 @@ INSTRUCTIONS = (
     "project's tests and checks and gives a verdict (verified, or why not). Start a task "
     "with run_task, follow it with run_status and run_events, and stop it with run_cancel. "
     "verify checks a folder without an agent. Work happens only in a named project "
-    "(project) or in a folder the server was started with (folder)."
+    "(project) or in a folder the server was started with (folder). A project's "
+    "certo://projects/NAME/status and certo://projects/NAME/runs resources hold its last "
+    "run's status and its run history."
 )
 
 
@@ -209,6 +211,51 @@ def build_server(
         cfg = resolve_config(RunOptions(model=model), load=load)
         result = (check_fn or check_tool_calling)(cfg)
         return asdict(result)
+
+    def _project_file(name: str, path_of: Callable[[str], str], what: str) -> str:
+        from mcp.server.mcpserver.exceptions import ResourceError, ResourceNotFoundError
+
+        from .config import resolve_project_dir
+
+        try:
+            workspace = resolve_project_dir(folders.projects_dir, name)
+        except ValueError as exc:
+            raise ResourceError(str(exc)) from exc
+        path = path_of(workspace)
+        if not os.path.isfile(path):
+            raise ResourceNotFoundError(f"project {name!r} has no {what} yet")
+        with open(path, encoding="utf-8") as f:
+            return f.read()
+
+    @server.resource(
+        "certo://projects/{name}/status",
+        name="project_status",
+        title="A project's status",
+        description=(
+            "The project's .certo/STATUS.md: the last run's task, verdict, checks and "
+            "how to continue it."
+        ),
+        mime_type="text/markdown",
+    )
+    def project_status(name: str) -> str:
+        from .project_state import status_path
+
+        return _project_file(name, status_path, "STATUS.md")
+
+    @server.resource(
+        "certo://projects/{name}/runs",
+        name="project_runs",
+        title="A project's runs",
+        description=(
+            "The project's .certo/RUNS.md: every run in it, with its verdict, models, "
+            "time and cost."
+        ),
+        mime_type="text/markdown",
+    )
+    def project_runs(name: str) -> str:
+        from .run_history import runs_path
+
+        return _project_file(name, runs_path, "RUNS.md")
 
     return server
 

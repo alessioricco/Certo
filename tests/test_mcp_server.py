@@ -180,3 +180,42 @@ def test_a_root_that_isnt_a_folder_is_refused(argv, capsys):
 
     assert mcp_main(argv) == 1
     assert "is not a folder" in capsys.readouterr().err
+
+
+def _read(server, uri):
+    async def go():
+        async with Client(server) as client:
+            return await client.read_resource(uri)
+
+    return anyio.run(go)
+
+
+def test_a_projects_status_and_runs_are_resources(tmp_path):
+    server = _server(tmp_path)
+
+    async def templates():
+        async with Client(server) as client:
+            return (await client.list_resource_templates()).resource_templates
+
+    assert {t.uri_template for t in anyio.run(templates)} == {
+        "certo://projects/{name}/status",
+        "certo://projects/{name}/runs",
+    }
+    state = tmp_path / "projects" / "demo" / ".certo"
+    state.mkdir(parents=True)
+    (state / "STATUS.md").write_text("# Status\nverified\n")
+    (state / "RUNS.md").write_text("# Runs\n")
+    assert "verified" in _read(server, "certo://projects/demo/status").contents[0].text
+    assert _read(server, "certo://projects/demo/runs").contents[0].text == "# Runs\n"
+
+
+def test_a_project_with_no_status_yet_is_not_found(tmp_path):
+    from mcp.shared.exceptions import MCPError
+
+    with pytest.raises(BaseException) as caught:
+        _read(_server(tmp_path), "certo://projects/new/status")
+    errors = [caught.value]
+    while isinstance(errors[-1], BaseExceptionGroup):
+        errors.append(errors[-1].exceptions[0])
+    assert isinstance(errors[-1], MCPError)
+    assert "no STATUS.md yet" in str(errors[-1])

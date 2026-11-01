@@ -50,8 +50,8 @@ from .project_state import (
     status_path,
 )
 from .result import run_result
-from .run_history import RunEntry, append_run, note_models_in_readme
-from .run_summary import combine_summaries, model_label
+from .run_history import append_run, note_models_in_readme, run_entry
+from .run_summary import combine_summaries
 from .worktree import was_created_by_certo, worktree_warning
 
 if TYPE_CHECKING:
@@ -785,7 +785,7 @@ def _run_task_command(
     def record_run(ended: str, outcome=None, summary=None) -> None:
         if not save_state:
             return
-        entry = _run_entry(cfg, ladder, history["task"], ended, started_at, outcome, summary)
+        entry = run_entry(cfg, ladder, history["task"], ended, started_at, outcome, summary)
         entry = replace(entry, resumed=resume_from is not None)
         try:
             append_run(cfg.workspace, entry)
@@ -1058,35 +1058,6 @@ def _models_that_ran(cfg, outcome) -> list[str]:
     if summary and summary.models:
         return [m.model for m in summary.models]
     return [cfg.model] if cfg.model else []
-
-
-def _run_entry(
-    cfg, ladder, task: str, ended: str, started_at: datetime, outcome, summary=None
-) -> RunEntry:
-    """What `.certo/RUNS.md` records about this run: the models that really
-    ran when the outcome says so, else the ones the settings name. A run
-    that stopped early has no outcome, only the `summary` of its usage."""
-    if outcome is not None:
-        summary = outcome.run_summary
-    if outcome is not None and outcome.rungs:
-        models = [f"{r.number}. {r.described}: {r.ended}" for r in outcome.rungs]
-        note = "escalation" + (
-            f", final result from rung {outcome.final_rung}" if outcome.final_rung else ""
-        )
-    elif ladder is not None:
-        models = [f"{i}. {rung.label}" for i, rung in enumerate(ladder.rungs, 1)]
-        note = "escalation ladder"
-    else:
-        if summary and summary.models:
-            models = [m.label for m in summary.models]
-        elif cfg.model:
-            models = [model_label(cfg.model, cfg.reasoning_effort)]
-        else:  # --auto-model stopped before it picked one
-            models = []
-        note = "picked by --auto-model" if cfg.model_selection == "auto" else ""
-    return RunEntry(
-        task=task, ended=ended, started_at=started_at, models=models, summary=summary, note=note
-    )
 
 
 def _first_line(text: str, limit: int = 100) -> str:

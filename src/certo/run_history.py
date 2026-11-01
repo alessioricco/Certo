@@ -14,10 +14,11 @@ import re
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from typing import Any
 
 from . import __version__
 from .project_state import ensure_state_dir, state_dir
-from .run_summary import RunSummary, format_duration
+from .run_summary import RunSummary, format_duration, model_label
 
 RUNS_FILE = "RUNS.md"
 
@@ -125,3 +126,38 @@ def note_models_in_readme(workspace: str, models: Sequence[str]) -> bool:
     with open(path, "w", encoding="utf-8") as f:
         f.write(new_text)
     return True
+
+
+def run_entry(
+    cfg: Any,
+    ladder: Any,
+    task: str,
+    ended: str,
+    started_at: datetime,
+    outcome: Any,
+    summary: Any = None,
+) -> RunEntry:
+    """What `.certo/RUNS.md` records about this run: the models that really
+    ran when the outcome says so, else the ones the settings name. A run
+    that stopped early has no outcome, only the `summary` of its usage."""
+    if outcome is not None:
+        summary = outcome.run_summary
+    if outcome is not None and outcome.rungs:
+        models = [f"{r.number}. {r.described}: {r.ended}" for r in outcome.rungs]
+        note = "escalation" + (
+            f", final result from rung {outcome.final_rung}" if outcome.final_rung else ""
+        )
+    elif ladder is not None:
+        models = [f"{i}. {rung.label}" for i, rung in enumerate(ladder.rungs, 1)]
+        note = "escalation ladder"
+    else:
+        if summary and summary.models:
+            models = [m.label for m in summary.models]
+        elif cfg.model:
+            models = [model_label(cfg.model, cfg.reasoning_effort)]
+        else:  # --auto-model stopped before it picked one
+            models = []
+        note = "picked by --auto-model" if cfg.model_selection == "auto" else ""
+    return RunEntry(
+        task=task, ended=ended, started_at=started_at, models=models, summary=summary, note=note
+    )

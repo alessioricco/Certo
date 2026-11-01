@@ -15,7 +15,9 @@ Its tools start a task and return at once (`run_task`), follow it
 (`run_status`, `run_events`), stop it (`run_cancel`, and `certo
 --resume` continues it), check a project without an agent (`verify`),
 and test the model (`check_model`). A finished run's result is the same
-object `certo --json` prints. The tools work only in projects under
+object `certo --json` prints. Each project's `STATUS.md` and `RUNS.md`
+are resources a client can show, and runs started over MCP are added to
+`RUNS.md` like any other. The tools work only in projects under
 `CERTO_PROJECTS_DIR` or in folders given with `--root`. It runs over
 stdio, with no login, and doesn't use the MCP features the 2026-07-28
 specification deprecates. See

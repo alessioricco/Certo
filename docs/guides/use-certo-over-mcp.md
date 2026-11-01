@@ -80,6 +80,16 @@ so Certo doesn't use it.
 | `verify` | Run Certo's checks on a project or folder without an agent, as `certo verify` does. |
 | `check_model` | One small call to the configured model, as `certo check` does. |
 
+Each project also has two resources, which a client can show or read:
+
+| Resource | What it holds |
+|---|---|
+| `certo://projects/NAME/status` | The project's `.certo/STATUS.md`: the last run's task, verdict and checks, and how to continue it. |
+| `certo://projects/NAME/runs` | The project's `.certo/RUNS.md`: every run in it, with its verdict, models, time and cost. Runs started over MCP are added too. |
+
+A project with no run yet has neither: reading one is a "not found"
+error. See [Run records and costs](run-records-and-costs.md).
+
 `run_task` is marked as able to change files, since the agent can
 change any file in the folder and run commands there, so a client asks
 you before it runs. One run per folder at a time; runs in different
