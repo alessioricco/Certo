@@ -95,3 +95,24 @@ def test_the_files_a_run_changed_are_listed():
         "deleted": ["old.py"],
     }
     assert run_result(None, task="t", workspace="/p")["files_changed"] is None
+
+
+def test_independent_tests_show_their_sets_and_output():
+    from certo.independent_tests import IndependentTestsResult
+
+    sets = (
+        IndependentTestsResult("passed", "4 passed", "m"),
+        IndependentTestsResult("failed", "1 failed", "m"),
+    )
+    found = IndependentTestsResult("split", "1 of 2 sets failed", "m", output="FAILED x", sets=sets)
+    result = run_result(_outcome(independent_tests=found), task="t", workspace="/p")
+    assert result["independent_tests"] == {
+        "status": "split",
+        "summary": "1 of 2 sets failed",
+        "model": "m",
+        "output_tail": "FAILED x",
+        "sets": [
+            {"status": "passed", "summary": "4 passed"},
+            {"status": "failed", "summary": "1 failed"},
+        ],
+    }

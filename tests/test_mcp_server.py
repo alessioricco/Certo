@@ -329,3 +329,19 @@ def test_a_milestones_file_outside_the_folders_is_refused(tmp_path):
     )
     assert error
     assert "outside the folders" in text
+
+
+def test_run_task_can_ask_for_independent_tests(tmp_path):
+    seen = {}
+
+    def stream(task, *, cfg, **_kwargs):
+        seen.update(on=cfg.independent_tests, strict=cfg.independent_tests_strict)
+        return _outcome()
+
+    server = _server(tmp_path, stream=stream)
+    error, started = _call(
+        server, "run_task", {"task": "x", "project": "demo", "independent_tests": True}
+    )
+    assert not error, started
+    _wait_done(server, started["run_id"])
+    assert seen == {"on": True, "strict": False}

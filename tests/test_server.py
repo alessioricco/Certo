@@ -1392,3 +1392,25 @@ def test_stream_result_event_carries_the_json_result(monkeypatch):
 
     assert event["type"] == "result"
     assert event["result"]["verdict"] == event["verification_state"]
+
+
+def test_a_task_can_ask_for_independent_tests(monkeypatch):
+    seen = {}
+
+    def _fake_stream_task(task, cfg=None, **_kwargs):
+        seen.update(on=cfg.independent_tests, strict=cfg.independent_tests_strict)
+        return _fake_outcome()
+
+    monkeypatch.setattr(server, "load_config", lambda: _cfg())
+    monkeypatch.setattr(server, "stream_task", _fake_stream_task)
+
+    client = TestClient(server.create_app())
+    task_id = client.post(
+        "/tasks", json={"task": "do it", "independent_tests_strict": True}
+    ).json()["task_id"]
+    _wait_for_status(client, task_id)
+    assert seen == {"on": True, "strict": True}
+
+    task_id = client.post("/tasks", json={"task": "do it"}).json()["task_id"]
+    _wait_for_status(client, task_id)
+    assert seen == {"on": False, "strict": False}

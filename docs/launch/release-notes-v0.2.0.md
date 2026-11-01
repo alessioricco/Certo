@@ -15,7 +15,10 @@ Its tools start a task and return at once (`run_task`, also with a task
 file in milestones), follow it (`run_status`, `run_events`), stop it
 (`run_cancel`) and continue it later (`run_resume`, as `certo --resume`
 does), check a project without an agent (`verify`), and test the model
-(`check_model`). A finished run's result is the same
+(`check_model`). `run_task` can also ask for
+[independent tests](../guides/independent-tests.md), and so can a
+`certo-server` task, with `independent_tests`: before, server mode
+couldn't report them. A finished run's result is the same
 object `certo --json` prints. Each project's `STATUS.md` and `RUNS.md`
 are resources a client can show, and runs started over MCP are added to
 `RUNS.md` like any other. The tools work only in projects under

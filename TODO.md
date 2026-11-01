@@ -90,7 +90,7 @@ first item is the suggested next one.
   about doubled). The writer's wrong sums are fixed (0.1.25: it writes
   the calculation in the test; `docs/benchmark/writer-arithmetic-0.1.25.md`).
   Left: (1) tests that misread the task still turn up in some runs (0
-  to 7 of 65 sets); (2) server mode; (3) maybe an option for a different
+  to 7 of 65 sets); (2) maybe an option for a different
   writer model than the build's. (A 2-of-3
   failure changes the verdict only with `--independent-tests-strict`,
   0.1.25.) The `qwen3.8` replay

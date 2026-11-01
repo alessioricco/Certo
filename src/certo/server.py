@@ -88,6 +88,8 @@ def _resolve_cfg(
     base_url: str | None = None,
     reasoning_effort: str | None = None,
     escalate: bool | str | None = None,
+    independent_tests: bool = False,
+    independent_tests_strict: bool = False,
 ) -> Config:
     options = RunOptions(
         project=project,
@@ -100,9 +102,10 @@ def _resolve_cfg(
         if escalate is None or escalate is False
         else (escalate if isinstance(escalate, str) else ""),
         execution=execution,
-        # Not in server mode yet: a task's stored result has no place for it
-        # (TODO.md). Off, so a server task never pays for tests it can't report.
-        independent_tests=False,
+        # Off unless asked for, here or by CERTO_INDEPENDENT_TESTS; the result
+        # reports them (result.py).
+        independent_tests=True if independent_tests else None,
+        independent_tests_strict=independent_tests_strict,
         agents_md=agents_md,
     )
     cfg = resolve_config(options, load=lambda: load_config())
@@ -171,6 +174,11 @@ def create_app():
         # models.yaml. Same as the CLI's --escalate [LADDER]; can't be
         # combined with `model`.
         escalate: bool | str | None = None
+        # Tests written from the task before the build, run on the result
+        # (independent_tests.py). Same as the CLI's --independent-tests and
+        # --independent-tests-strict.
+        independent_tests: bool = False
+        independent_tests_strict: bool = False
 
     class ChatMessage(BaseModel):
         role: str
@@ -293,6 +301,8 @@ def create_app():
                 base_url=request.base_url,
                 reasoning_effort=request.reasoning_effort,
                 escalate=request.escalate,
+                independent_tests=request.independent_tests,
+                independent_tests_strict=request.independent_tests_strict,
             )
             acceptance_checks = (
                 parse_acceptance_checks(request.acceptance_checks)
@@ -364,6 +374,8 @@ def create_app():
                 base_url=request.base_url,
                 reasoning_effort=request.reasoning_effort,
                 escalate=request.escalate,
+                independent_tests=request.independent_tests,
+                independent_tests_strict=request.independent_tests_strict,
             )
             acceptance_checks = (
                 parse_acceptance_checks(request.acceptance_checks)

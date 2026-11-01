@@ -43,6 +43,18 @@ def check_dict(check: Any) -> dict[str, Any]:
     }
 
 
+def _independent(found: Any) -> dict[str, Any] | None:
+    if found is None:
+        return None
+    return {
+        "status": found.status,
+        "summary": found.summary,
+        "model": found.model,
+        "output_tail": _tail(found.output),
+        "sets": [{"status": s.status, "summary": s.summary} for s in found.sets],
+    }
+
+
 def _usage(outcome: TaskOutcome) -> dict[str, Any] | None:
     summary = outcome.run_summary
     if summary is None:
@@ -112,15 +124,7 @@ def run_result(
             for r in outcome.acceptance_results
         ],
         retries_used=outcome.retries_used,
-        independent_tests=(
-            {
-                "status": outcome.independent_tests.status,
-                "summary": outcome.independent_tests.summary,
-                "model": outcome.independent_tests.model,
-            }
-            if outcome.independent_tests is not None
-            else None
-        ),
+        independent_tests=_independent(outcome.independent_tests),
         check_file_changes=[asdict(c) for c in outcome.check_file_changes],
         files_changed=(
             {

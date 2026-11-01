@@ -133,6 +133,8 @@ def build_server(
         escalate: str | None = None,
         acceptance_checks: list[dict[str, Any]] | None = None,
         milestones_file: str | None = None,
+        independent_tests: bool = False,
+        independent_tests_strict: bool = False,
     ) -> dict[str, Any]:
         """Start a coding task: an agent works in the project, then Certo runs the
         project's checks and gives a verdict. Returns at once with a run_id; follow it
@@ -143,10 +145,20 @@ def build_server(
         checks, as in `certo --acceptance-checks`. `milestones_file` is the full path of
         a task file split by `## Milestone N: title` headings, as in `certo --milestones`:
         each milestone runs and is verified before the next starts, and `task` is then
-        ignored. The agent can change any file in the folder and run commands there."""
+        ignored. `independent_tests` first has tests written from the task alone, by a
+        separate conversation, and runs them on the result: they report whether the
+        agent's own tests could have fooled Certo; with `independent_tests_strict`, a
+        `verified` run whose independent tests mostly fail ends `independent_failed`.
+        The agent can change any file in the folder and run commands there."""
         from .acceptance import parse_acceptance_checks
 
-        options = RunOptions(model=model, escalate=escalate, **folders.options(project, folder))
+        options = RunOptions(
+            model=model,
+            escalate=escalate,
+            independent_tests=True if independent_tests else None,
+            independent_tests_strict=independent_tests_strict,
+            **folders.options(project, folder),
+        )
         checks = parse_acceptance_checks(acceptance_checks) if acceptance_checks else None
         source = folders.file(milestones_file) if milestones_file is not None else None
         run = manager.start(task, options, acceptance_checks=checks, milestones_file=source)

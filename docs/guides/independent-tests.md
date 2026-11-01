@@ -184,7 +184,10 @@ where a later task's agent could see them.
 - **Not on `--resume`**: the project already holds earlier work, so it
   isn't "before the build" any more. In [milestone mode](run-in-milestones.md#with-independent-tests),
   each milestone gets its own tests.
-- **Not with `--execution docker`**, and not in server mode yet.
+- **Not with `--execution docker`.** In server mode, a task asks for them
+  with `independent_tests` (see [Server API](../reference/server-api.md#task-request-fields));
+  over MCP, `run_task` does (see [Use Certo over MCP](use-certo-over-mcp.md#the-tools)).
+  The JSON result shows them in `independent_tests`.
 - **Vague tasks get none.** The writer only tests what the task or the
   existing code names; it doesn't guess. See
   [Write a good task](write-a-good-task.md).

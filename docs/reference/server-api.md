@@ -27,6 +27,8 @@ before any task starts.
 | `reasoning_effort` | string | no | As `--reasoning-effort`, for this task only. |
 | `require_verification` | boolean | no | Default `false`. When `true`, an `inconclusive` or `unchanged` verdict counts as a failure (see below). |
 | `acceptance_checks` | list | no | A list of check objects, as `--acceptance-checks`, always inline JSON. See [Acceptance checks](../guides/acceptance-checks.md). |
+| `independent_tests` | boolean | no | Default `false`. As `--independent-tests`: tests written from the task before the build, run on the result, reported in `result.independent_tests`. `CERTO_INDEPENDENT_TESTS` turns them on for every task. See [Independent tests](../guides/independent-tests.md). |
+| `independent_tests_strict` | boolean | no | Default `false`. As `--independent-tests-strict`: a `verified` task whose independent tests mostly fail ends `independent_failed`. |
 | `escalate` | boolean or string | no | As `--escalate`: `true` climbs the ladder named `default` (or one built from the ratings), a string names a ladder in `escalation.yaml`. Can't be combined with `model`. A missing model file or an unknown ladder is a `400`. |
 
 ## `GET /health`
