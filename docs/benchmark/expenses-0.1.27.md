@@ -115,12 +115,13 @@ Minutes spent on each milestone (from the saved conversations):
 
 - Count the reminders only while the model writes tool calls as text
   in a row, not over the whole conversation: in repeat 1, qwen made a
-  real call between them. A change to how Certo behaves, so it needs a
-  benchmark on a local and a cloud model first. It is in `TODO.md`.
+  real call between them. Done in Certo 0.1.27 and measured in
+  [the next run](reminders-in-a-row-0.1.27.md).
 - More runs on this task, to know the rate better than 2 of 3.
 
 ## Related
 
 - [The last spreadsheet run, 60 minutes per milestone](milestones-60min-0.1.27.md)
+- [The next run: tool-call reminders counted in a row](reminders-in-a-row-0.1.27.md)
 - [Run a task in milestones](../guides/run-in-milestones.md)
 - [Build an app in several tasks](../guides/build-an-app-in-several-tasks.md)

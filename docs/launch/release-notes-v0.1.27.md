@@ -97,7 +97,9 @@ call, up to `CERTO_TOOL_CALL_REMINDERS` times (default 3). These are
 now counted in a row: a real tool call after a reminder starts the
 count again. Before, they were counted over the whole conversation, and
 a local model that slipped four times, with real work in between, was
-stopped with time left. See
+stopped with time left. On `qwen3.8:27b`, this kept one run of five
+going, and that run was verified; on Claude Haiku, runs didn't change
+([the benchmark](../benchmark/reminders-in-a-row-0.1.27.md)). See
 [Troubleshooting](../troubleshooting.md#the-run-ends-at-once-with-a-tool-call-as-the-agents-last-message).
 
 ## New: a line when a newer Certo is out

@@ -1,0 +1,12 @@
+# Tool-call reminders counted in a row (Certo 0.1.27, commit bf9e5cd):
+# the arm of bench-0.1.27-expenses-local.yaml again (qwen3.8, 65,536-token
+# window, 60 minutes per milestone), with 5 repeats. Run it from the
+# repository root with:
+#   certo bench --config docs/benchmark/bench-0.1.27-reminders-in-a-row-local.yaml
+# Every model below must be enabled in your models.yaml; see
+# docs/guides/write-a-benchmark-file.md.
+tasks_dir: app-tasks
+tasks: [expenses]
+repeats: 5
+arms:
+  - {name: qwen-expenses-in-a-row, strategy: single, model: qwen3.8-27b-local, context_tokens: 65536, max_task_seconds: 3600, milestones: true}

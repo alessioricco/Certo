@@ -1,0 +1,12 @@
+# Tool-call reminders counted in a row (Certo 0.1.27, commit bf9e5cd), on
+# a cloud model: the expenses task in milestones on Haiku, to show that a
+# model which makes real tool calls runs as before. Run it from the
+# repository root with:
+#   certo bench --config docs/benchmark/bench-0.1.27-reminders-in-a-row-cloud.yaml
+# Every model below must be enabled in your models.yaml; see
+# docs/guides/write-a-benchmark-file.md.
+tasks_dir: app-tasks
+tasks: [expenses]
+repeats: 3
+arms:
+  - {name: haiku-expenses-in-a-row, strategy: single, model: claude-haiku-5-5, milestones: true}
