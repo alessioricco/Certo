@@ -9,20 +9,19 @@ free of a FastAPI/uvicorn dependency.
 
 import asyncio
 import json
-import os
 import queue
 import threading
 import time
 import uuid
 from contextlib import asynccontextmanager
-from dataclasses import asdict, replace
+from dataclasses import asdict
 from typing import Any
 
 from .acceptance import parse_acceptance_checks
-from .config import Config, ConfigError, load_config, override_llm, resolve_project_dir
-from .escalation import load_ladder, rung_dicts
+from .api import RunOptions, load_run_ladder, prepare_workspace, resolve_config
+from .config import Config, ConfigError, load_config
+from .escalation import rung_dicts
 from .runner import UNPROVEN_STATES, run_task, stream_task
-from .skills import write_project_context
 from .task_store import TaskRecord, TaskStore, build_task_store
 
 # How often the background purge loop checks for expired records — not
@@ -88,48 +87,24 @@ def _resolve_cfg(
     reasoning_effort: str | None = None,
     escalate: bool | str | None = None,
 ) -> Config:
-    if agents_md is not None and project is None:
-        raise ValueError("agents_md requires project")
-    if escalate is not None and escalate is not False and model is not None:
-        raise ValueError(
-            "escalate can't be combined with model: the ladder decides which models run"
-        )
-
-    cfg = load_config()
-    if (
-        model is not None
-        or api_key is not None
-        or base_url is not None
-        or reasoning_effort is not None
-    ):
-        cfg = override_llm(
-            cfg, model=model, api_key=api_key, base_url=base_url, reasoning_effort=reasoning_effort
-        )
-    if escalate is not None and escalate is not False:
-        name = escalate if isinstance(escalate, str) else ""
-        cfg = replace(cfg, model_selection="escalate", escalation_ladder=name)
-    elif cfg.model_selection == "escalate" and model is not None:
-        raise ValueError(
-            "model can't be used while CERTO_MODEL_SELECTION=escalate: the ladder "
-            "decides which models run"
-        )
-    if execution is not None:
-        cfg = replace(cfg, execution=execution)
-    # Not in server mode yet: a task's stored result has no place for it
-    # (TODO.md). Off, so a server task never pays for tests it can't report.
-    cfg = replace(cfg, independent_tests=False, independent_tests_strict=False)
-    if project is not None:
-        cfg = replace(cfg, workspace=resolve_project_dir(cfg.projects_dir, project))
-    if cfg.execution == "local":
-        from .plugins import foreign_plugins, refusal
-
-        found = foreign_plugins(cfg.workspace, cfg.projects_dir)
-        if found:
-            raise ConfigError(refusal(found))
-    if project is not None:
-        os.makedirs(cfg.workspace, exist_ok=True)
-    if agents_md is not None:
-        write_project_context(cfg.workspace, agents_md)
+    options = RunOptions(
+        project=project,
+        model=model,
+        api_key=api_key,
+        base_url=base_url,
+        reasoning_effort=reasoning_effort,
+        # true climbs the default ladder; a string names one.
+        escalate=None
+        if escalate is None or escalate is False
+        else (escalate if isinstance(escalate, str) else ""),
+        execution=execution,
+        # Not in server mode yet: a task's stored result has no place for it
+        # (TODO.md). Off, so a server task never pays for tests it can't report.
+        independent_tests=False,
+        agents_md=agents_md,
+    )
+    cfg = resolve_config(options, load=lambda: load_config())
+    prepare_workspace(cfg, options)
     return cfg
 
 
@@ -311,17 +286,7 @@ def create_app():
                 if request.acceptance_checks
                 else None
             )
-            ladder = (
-                load_ladder(
-                    cfg.models_file,
-                    cfg.models_list_file,
-                    cfg.escalation_ladder or None,
-                    escalation_file=cfg.escalation_file,
-                    task_profiles_file=cfg.task_profiles_file,
-                )
-                if cfg.model_selection == "escalate"
-                else None
-            )
+            ladder = load_run_ladder(cfg)
         except (ConfigError, ValueError) as exc:  # AcceptanceCheckError is a ValueError
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -390,17 +355,7 @@ def create_app():
                 if request.acceptance_checks
                 else None
             )
-            ladder = (
-                load_ladder(
-                    cfg.models_file,
-                    cfg.models_list_file,
-                    cfg.escalation_ladder or None,
-                    escalation_file=cfg.escalation_file,
-                    task_profiles_file=cfg.task_profiles_file,
-                )
-                if cfg.model_selection == "escalate"
-                else None
-            )
+            ladder = load_run_ladder(cfg)
         except (ConfigError, ValueError) as exc:  # AcceptanceCheckError is a ValueError
             await websocket.send_json({"type": "error", "detail": str(exc)})
             await websocket.close()

@@ -15,6 +15,18 @@ choice was made is in `DECISIONS.md`, and what's left to do is in
 Per-module reference. See `docs/` for user-facing behavior; see `DECISIONS.md` for *why* a
 given design was chosen.
 
+- **`api.py`** — the shared core under the interfaces (0.2, DECISIONS.md
+  "The MCP server: every command, on a shared core"). No printing, no
+  prompts: problems are `ConfigError` or `UsageError`, with options named
+  through `spell` (`--model` for the CLI, `model` for the server).
+  `resolve_config(RunOptions, load=, spell=)` is the settings plus the
+  caller's options (overrides, ladder or auto-model rules, project path,
+  not created); `load` is passed in so each interface's tests can replace
+  its own `load_config`. `load_run_ladder(cfg)` loads the ladder (or checks
+  the model files for auto-model). `prepare_workspace(cfg, options)` refuses
+  foreign plugins, creates a named project and records it as Certo's, and
+  writes `agents_md`. `cli._main` and `server._resolve_cfg` both call these;
+  the milestone and resume rules stay in the CLI for now.
 - **`config.py`** — env parsing, model-agnostic (`CERTO_LLM_MODEL` prefix selects
   provider). `override_llm(cfg, model=, api_key=, base_url=,
   reasoning_effort=)` is the per-request override mechanism shared by

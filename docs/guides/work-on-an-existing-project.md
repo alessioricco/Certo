@@ -39,8 +39,9 @@ Note: /home/me/notes isn't a git repository, so the agent's changes there can't 
 ```
 
 - A clean git repository gets no line.
-- An empty folder, or a `--project` folder Certo created itself, gets no
-  line either.
+- An empty folder, or a `--project` folder Certo created itself (also
+  one `certo-server` created for a task's `project`), gets no line
+  either.
 - Certo's own `.certo/` state folder never counts: git ignores it (see
   [Resume an interrupted run](resume-a-run.md#the-certo-folder)).
 - It never asks and never stops the task, so scripts and CI are not

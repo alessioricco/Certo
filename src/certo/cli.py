@@ -17,20 +17,16 @@ from urllib.parse import urlparse
 
 from . import __version__, update_check
 from .acceptance import AcceptanceCheck, AcceptanceCheckError, parse_acceptance_checks
+from .api import RunOptions, UsageError, load_run_ladder, prepare_workspace, resolve_config
 from .banner import format_banner
-from .catalog_check import load_checked_catalog
 from .config import (
     ConfigError,
     DEFAULT_PROJECTS_DIR,
-    defer_llm_check,
-    ensure_llm_configured,
     load_config,
     load_settings_files,
-    override_llm,
-    resolve_project_dir,
 )
 from .verification import _build_completion_contract, detect_project, run_full_verification
-from .escalation import format_rung_lines, load_ladder
+from .escalation import format_rung_lines
 from .model_catalog import ModelCatalogEntry
 from .milestones import (
     MilestoneError,
@@ -54,7 +50,7 @@ from .project_state import (
 )
 from .run_history import RunEntry, append_run, note_models_in_readme
 from .run_summary import combine_summaries, model_label
-from .worktree import record_created_project, was_created_by_certo, worktree_warning
+from .worktree import was_created_by_certo, worktree_warning
 
 if TYPE_CHECKING:
     from openhands.sdk.event import ActionEvent
@@ -89,6 +85,11 @@ def run_sample_task(*args: Any, **kwargs: Any) -> Any:
 
 
 _URL_FETCH_TIMEOUT_SECONDS = 15
+
+
+def _flag(name: str) -> str:
+    """An option as the command line spells it, for `api`'s messages."""
+    return "--" + name.replace("_", "-")
 
 
 def _looks_like_url(value: str) -> bool:
@@ -586,81 +587,32 @@ def _main(argv: list[str]) -> int:
             print(f"Error: {exc}", file=sys.stderr)
             return 1
 
+    options = RunOptions(
+        project=args.project,
+        model=args.model,
+        api_key=args.api_key,
+        base_url=args.base_url,
+        reasoning_effort=args.reasoning_effort,
+        escalate=args.escalate,
+        auto_model=args.auto_model,
+        execution=args.execution,
+        interactive=args.interactive,
+        independent_tests=True if args.independent_tests else None,
+        independent_tests_strict=args.independent_tests_strict,
+        verbose=args.verbose,
+        agents_md=args.agents_md,
+    )
     try:
-        has_llm_override = (
-            args.model is not None
-            or args.api_key is not None
-            or args.base_url is not None
-            or args.reasoning_effort is not None
-        )
-        # Apply --model/--api-key/--base-url/--reasoning-effort before the
-        # required-field checks, so the flags alone can satisfy them (issue #11).
-        with defer_llm_check():
-            cfg = load_config()
-        if has_llm_override:
-            cfg = override_llm(
-                cfg,
-                model=args.model,
-                api_key=args.api_key,
-                base_url=args.base_url,
-                reasoning_effort=args.reasoning_effort,
-            )
-        # With --escalate or --auto-model the model files name every model
-        # and its key, so CERTO_LLM_MODEL isn't needed (DECISIONS.md).
-        picked_from_files = (
-            args.escalate is not None or args.auto_model or cfg.model_selection != "manual"
-        )
-        if not picked_from_files:
-            cfg = ensure_llm_configured(cfg)
+        cfg = resolve_config(options, load=lambda: load_config(), spell=_flag)
+    except UsageError as exc:
+        print(f"Error: {exc}.", file=sys.stderr)
+        return 1
     except ConfigError as exc:
         print(f"Configuration error: {exc}", file=sys.stderr)
         return 1
-
-    if args.execution is not None:
-        cfg = replace(cfg, execution=args.execution)
-
-    if args.interactive:
-        cfg = replace(cfg, interactive=True)
-    if args.independent_tests:
-        cfg = replace(cfg, independent_tests=True)
-    if args.independent_tests_strict:
-        cfg = replace(cfg, independent_tests=True, independent_tests_strict=True)
-
-    if args.verbose:
-        cfg = replace(cfg, verbose=True)
-
-    if args.escalate is not None:
-        if args.auto_model or args.model is not None:
-            print(
-                "Error: --escalate can't be combined with --auto-model or --model: the "
-                "ladder decides which models run.",
-                file=sys.stderr,
-            )
-            return 1
-        cfg = replace(cfg, model_selection="escalate", escalation_ladder=args.escalate)
-    elif args.auto_model:
-        cfg = replace(cfg, model_selection="auto")
-    elif cfg.model_selection == "escalate" and args.model is not None:
-        print(
-            "Error: --model can't be used while CERTO_MODEL_SELECTION=escalate: the "
-            "ladder decides which models run.",
-            file=sys.stderr,
-        )
+    if args.resume and args.project is not None and not os.path.isdir(cfg.workspace):
+        print(f"Error: nothing to resume: {cfg.workspace} doesn't exist.", file=sys.stderr)
         return 1
-    if args.agents_md is not None and args.project is None:
-        print("Error: --agents-md requires --project", file=sys.stderr)
-        return 1
-
-    if args.project is not None:
-        try:
-            project_dir = resolve_project_dir(cfg.projects_dir, args.project)
-        except ConfigError as exc:
-            print(f"Configuration error: {exc}", file=sys.stderr)
-            return 1
-        if args.resume and not os.path.isdir(project_dir):
-            print(f"Error: nothing to resume: {project_dir} doesn't exist.", file=sys.stderr)
-            return 1
-        cfg = replace(cfg, workspace=project_dir)
 
     resume_from = None
     milestone_state: MilestoneState | None = None
@@ -738,34 +690,13 @@ def _main(argv: list[str]) -> int:
 
     # After the plan is known: a resume of milestones counts too.
 
-    ladder = None
-    if cfg.model_selection == "escalate":
-        try:
-            ladder = load_ladder(
-                cfg.models_file,
-                cfg.models_list_file,
-                cfg.escalation_ladder or None,
-                escalation_file=cfg.escalation_file,
-                task_profiles_file=cfg.task_profiles_file,
-                on_warning=lambda w: print(f"Warning (models.yaml): {w}", file=sys.stderr),
-            )
-        except ValueError as exc:  # EscalationError, ModelCatalogError
-            print(f"Configuration error: {exc}", file=sys.stderr)
-            return 1
-    elif cfg.model_selection == "auto":
-        # Same timing as --escalate: refuse before the banner or any run
-        # record. run_task() loads the catalog again to pick a model.
-        try:
-            load_checked_catalog(
-                cfg.models_file,
-                cfg.models_list_file,
-                task_profiles_file=cfg.task_profiles_file,
-                escalation_file=cfg.escalation_file,
-                mode="auto",
-            )
-        except ValueError as exc:  # ModelCatalogError
-            print(f"Configuration error: {exc}", file=sys.stderr)
-            return 1
+    try:
+        ladder = load_run_ladder(
+            cfg, on_warning=lambda w: print(f"Warning (models.yaml): {w}", file=sys.stderr)
+        )
+    except ValueError as exc:  # EscalationError, ModelCatalogError
+        print(f"Configuration error: {exc}", file=sys.stderr)
+        return 1
 
     acceptance_checks: list[AcceptanceCheck] | None = None
     if args.acceptance_checks is not None:
@@ -776,20 +707,12 @@ def _main(argv: list[str]) -> int:
             return 1
 
     # OpenHands plugins from outside the project would load with no way to
-    # turn them off (plugins.py): refuse before anything is created.
-    if cfg.execution == "local":
-        from .plugins import foreign_plugins, refusal
-
-        found = foreign_plugins(cfg.workspace, cfg.projects_dir)
-        if found:
-            print(f"Error: {refusal(found)}", file=sys.stderr)
-            return 1
-
-    if args.project is not None:
-        created = not os.path.exists(cfg.workspace)
-        os.makedirs(cfg.workspace, exist_ok=True)
-        if created:
-            record_created_project(cfg.projects_dir, args.project)
+    # turn them off (plugins.py): refused before anything is created.
+    try:
+        prepare_workspace(cfg, options)
+    except ConfigError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
 
     # After every check that can refuse the run, so it only shows for a run
     # that starts.
@@ -812,11 +735,6 @@ def _main(argv: list[str]) -> int:
         warning = worktree_warning(cfg.workspace)
         if warning:
             print(warning, file=sys.stderr)
-
-    if args.agents_md is not None:
-        from .skills import write_project_context
-
-        write_project_context(cfg.workspace, args.agents_md)
 
     on_confirm = _confirm_pending_actions if cfg.confirm_mode == "always" else None
     on_awaiting_input = _prompt_for_continuation if cfg.interactive else None

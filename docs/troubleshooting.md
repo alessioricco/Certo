@@ -634,7 +634,7 @@ once.
 |---|---|
 | `No models_list.yaml found` / `No models.yaml found` | See [No `models_list.yaml` or `models.yaml` found](#no-models_listyaml-or-modelsyaml-found). |
 | `There is no escalation ladder named '...' in escalation.yaml. Ladders: ...` | Use one of the listed names, or leave the name out for the `default` (or derived) ladder. |
-| `--escalate can't be combined with --auto-model or --model` | The ladder decides which models run. Drop the other flag. |
+| `--escalate can't be combined with --auto-model or --model` (or `with --model`) | The ladder decides which models run. Drop the other flag. |
 | `--model can't be used while CERTO_MODEL_SELECTION=escalate` | Drop `--model`, or set `CERTO_MODEL_SELECTION=manual` for this run. |
 | `--resume can't be combined with escalation` | Resume without `--escalate`: it continues the last model's conversation. |
 
