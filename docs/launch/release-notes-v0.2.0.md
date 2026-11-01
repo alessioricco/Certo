@@ -27,7 +27,8 @@ specification deprecates. See
 
 `certo "task" --json` prints the run's result as one JSON object on
 standard output, and everything else on standard error: the verdict,
-each check with the end of its output, the acceptance checks, the time,
+each check with the end of its output, the files the run created,
+modified and deleted, the acceptance checks, the time,
 tokens and cost per model, the ladder's rungs and the milestones. A
 script or a CI job reads it instead of the terminal text.
 `certo-server` returns the same object as `result`, in

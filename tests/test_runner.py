@@ -3746,3 +3746,29 @@ def test_a_cancelled_run_is_saved_as_interrupted(tmp_path):
     writer = runner._ProjectStateWriter(str(tmp_path), record)
     writer.fail(RunCancelled())
     assert record.status == "interrupted"
+
+
+def test_stream_task_lists_the_files_the_run_changed(monkeypatch, tmp_path):
+    (tmp_path / "keep.py").write_text("x = 1\n")
+    (tmp_path / "edit.py").write_text("x = 1\n")
+    (tmp_path / "gone.py").write_text("x = 1\n")
+    outcome = runner.TaskOutcome(
+        verification_state="verified",
+        completion_contract=runner.CompletionContract(
+            goal="", acceptance_criteria=[], verification_checks=[], limitations=[]
+        ),
+    )
+
+    def work(task, **_kwargs):
+        (tmp_path / "new.py").write_text("y = 2\n")
+        (tmp_path / "edit.py").write_text("x = 2  # longer now\n")
+        (tmp_path / "gone.py").unlink()
+        (tmp_path / "MODEL_DECISIONS.md").write_text("Certo's own file\n")
+        return outcome
+
+    monkeypatch.setattr(runner, "_stream_task", work)
+    result = runner.stream_task("do it", cfg=_cfg(workspace=str(tmp_path)))
+
+    assert result.files_changed.created == ("new.py",)
+    assert result.files_changed.modified == ("edit.py",)
+    assert result.files_changed.deleted == ("gone.py",)

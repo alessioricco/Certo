@@ -95,6 +95,7 @@ def run_result(
         "retries_used": 0,
         "independent_tests": None,
         "check_file_changes": [],
+        "files_changed": None,
         "usage": None,
         "rungs": None,
         "milestones": list(milestones) if milestones is not None else None,
@@ -121,6 +122,15 @@ def run_result(
             else None
         ),
         check_file_changes=[asdict(c) for c in outcome.check_file_changes],
+        files_changed=(
+            {
+                "created": list(outcome.files_changed.created),
+                "modified": list(outcome.files_changed.modified),
+                "deleted": list(outcome.files_changed.deleted),
+            }
+            if outcome.files_changed is not None
+            else None
+        ),
         usage=_usage(outcome),
         rungs=rung_dicts(outcome.rungs, outcome.final_rung) if outcome.rungs else None,
     )

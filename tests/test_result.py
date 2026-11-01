@@ -82,3 +82,16 @@ def test_milestones_are_listed_with_their_verdicts():
     milestones = [{"number": 1, "title": "a", "verdict": "verified"}]
     result = run_result(_outcome(), task="t", workspace="/p", milestones=milestones)
     assert result["milestones"] == milestones
+
+
+def test_the_files_a_run_changed_are_listed():
+    from certo.escalation import FileChanges
+
+    changes = FileChanges(created=("a.py",), modified=("README.md",), deleted=("old.py",))
+    result = run_result(_outcome(files_changed=changes), task="t", workspace="/p")
+    assert result["files_changed"] == {
+        "created": ["a.py"],
+        "modified": ["README.md"],
+        "deleted": ["old.py"],
+    }
+    assert run_result(None, task="t", workspace="/p")["files_changed"] is None

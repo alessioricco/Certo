@@ -75,6 +75,11 @@ given design was chosen.
   server keeps it in `TaskRecord.result` (a nullable `result` column,
   added to older SQL tables like `rungs`) and returns it in `GET
   /tasks/{id}` and the WebSocket's last message.
+- **`runner.stream_task`** is now a thin wrapper over `_stream_task`: it
+  sets the cancel token (only when given, so a milestone keeps its outer
+  one), lists the folder before (`escalation.workspace_listing`) and
+  attaches `TaskOutcome.files_changed` after (minus `_CERTO_OWN_FILES`).
+  Tests that need the run itself patch `_stream_task`.
 - **`config.py`** — env parsing, model-agnostic (`CERTO_LLM_MODEL` prefix selects
   provider). `override_llm(cfg, model=, api_key=, base_url=,
   reasoning_effort=)` is the per-request override mechanism shared by

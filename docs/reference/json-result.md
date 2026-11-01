@@ -30,16 +30,16 @@ shortened):
 ```json
 {
   "result_version": 1,
-  "certo_version": "0.1.27",
+  "certo_version": "0.2.0",
   "task": "Write slug.py with a function slug(text) that lower-cases text and joins its words with '-', and a pytest test for it.",
-  "project": "json-check",
-  "workspace": "/home/me/certo-projects/json-check",
+  "project": "json-check-2",
+  "workspace": "/home/me/certo-projects/json-check-2",
   "verdict": "verified",
   "limitations": [],
   "checks": [
     {
       "name": "pytest",
-      "command": "/home/me/certo-projects/json-check/.venv/bin/python -m pytest -q",
+      "command": "/home/me/certo-projects/json-check-2/.venv/bin/python -m pytest -q",
       "primary": true,
       "status": "passed",
       "exit_code": 0,
@@ -51,23 +51,32 @@ shortened):
   "retries_used": 0,
   "independent_tests": null,
   "check_file_changes": [],
+  "files_changed": {
+    "created": [
+      "README.md",
+      "slug.py",
+      "test_slug.py"
+    ],
+    "modified": [],
+    "deleted": []
+  },
   "usage": {
-    "duration_seconds": 20.2,
-    "total_tokens": 93731,
-    "prompt_tokens": 91249,
-    "completion_tokens": 2482,
-    "cache_read_tokens": 70610,
-    "cost": 0.004527,
+    "duration_seconds": 24.2,
+    "total_tokens": 116821,
+    "prompt_tokens": 113453,
+    "completion_tokens": 3368,
+    "cache_read_tokens": 91793,
+    "cost": 0.005309,
     "cost_known": true,
     "condensations": 0,
     "models": [
       {
         "model": "anthropic/claude-haiku-5-5",
         "reasoning_effort": null,
-        "prompt_tokens": 91249,
-        "completion_tokens": 2482,
-        "cache_read_tokens": 70610,
-        "cost": 0.004527,
+        "prompt_tokens": 113453,
+        "completion_tokens": 3368,
+        "cache_read_tokens": 91793,
+        "cost": 0.005309,
         "cost_known": true
       }
     ]
@@ -94,6 +103,7 @@ shortened):
 | `retries_used` | How many times Certo sent the agent back to fix failing checks. |
 | `independent_tests` | With `--independent-tests`: `status`, `summary` and the `model` that wrote them. Otherwise `null`. See [Independent tests](../guides/independent-tests.md). |
 | `check_file_changes` | Changes the agent made to the files the checks rely on, such as the test files: `path`, `deleted`, and the lines `removed`, `added` and `changed`. |
+| `files_changed` | The files the run created, modified and deleted in the project folder, each a list of paths relative to it, compared before and after the run (Certo's own files, `.certo/`, `.git/`, environments, caches and build output such as `dist/` or `target/` left out). `null` when the run stopped with an error. |
 | `usage` | Time and tokens for the whole run: `duration_seconds`, `total_tokens`, `prompt_tokens` (cached ones included), `completion_tokens`, `cache_read_tokens`, `cost` in US dollars, `cost_known` (false when a model has no price), `condensations`, and the same per model in `models`. `null` when the run stopped with an error. |
 | `rungs` | With `--escalate`: one entry per model that ran, with `final: true` on the one whose verdict this is. Otherwise `null`. See [Escalate between models](../guides/escalate-between-models.md). |
 | `milestones` | With `--milestones`: each milestone's `number`, `title` and `verdict` (`null` if it didn't start). Otherwise `null`. |

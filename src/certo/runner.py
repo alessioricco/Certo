@@ -5,6 +5,7 @@ Result is captured via an event callback — there is no `conversation.result`.
 
 from __future__ import annotations
 
+import contextlib
 import errno
 import logging
 import os
@@ -296,6 +297,9 @@ class TaskOutcome:
     # A verified run's changes to the files its checks rely on
     # (check_files.py). Report only, like independent_tests.
     check_file_changes: tuple[CheckFileChange, ...] = ()
+    # Files the whole run created, modified or deleted in the project
+    # folder (stream_task). None when the run didn't go through it.
+    files_changed: FileChanges | None = None
 
     @property
     def success(self) -> bool:
@@ -1641,26 +1645,64 @@ def stream_task(
     `cancel`, when set from another thread, stops the run at its next step
     with `RunCancelled` (cancel.py).
     """
-    if cancel is not None:
-        with cancel_token(cancel):
-            return stream_task(
-                task,
-                cfg=cfg,
-                on_message=on_message,
-                on_confirm=on_confirm,
-                acceptance_checks=acceptance_checks,
-                on_awaiting_input=on_awaiting_input,
-                on_model_choice=on_model_choice,
-                run_id=run_id,
-                project=project,
-                save_state=save_state,
-                resume_from=resume_from,
-                resume_instruction=resume_instruction,
-                ladder=ladder,
-                on_escalate=on_escalate,
-                on_progress=on_progress,
-                model_catalog=model_catalog,
-            )
+    if cfg is None:
+        cfg = load_config()
+    # What the run changed, from the folder itself (never the model): the
+    # files before, against the files after.
+    before = workspace_listing(cfg.workspace)
+    # Without its own token, a run keeps the one around it (a milestone of
+    # a cancellable run).
+    with cancel_token(cancel) if cancel is not None else contextlib.nullcontext():
+        outcome = _stream_task(
+            task,
+            cfg=cfg,
+            on_message=on_message,
+            on_confirm=on_confirm,
+            acceptance_checks=acceptance_checks,
+            on_awaiting_input=on_awaiting_input,
+            on_model_choice=on_model_choice,
+            run_id=run_id,
+            project=project,
+            save_state=save_state,
+            resume_from=resume_from,
+            resume_instruction=resume_instruction,
+            ladder=ladder,
+            on_escalate=on_escalate,
+            on_progress=on_progress,
+            model_catalog=model_catalog,
+        )
+    return replace(outcome, files_changed=_files_changed(cfg.workspace, before))
+
+
+def _files_changed(workspace: str, before: dict[str, tuple[int, int]]) -> FileChanges:
+    """The run's changes to the folder, without Certo's own files."""
+    changes = FileChanges.between(before, workspace_listing(workspace))
+    return FileChanges(
+        created=tuple(p for p in changes.created if p not in _CERTO_OWN_FILES),
+        modified=tuple(p for p in changes.modified if p not in _CERTO_OWN_FILES),
+        deleted=tuple(p for p in changes.deleted if p not in _CERTO_OWN_FILES),
+    )
+
+
+def _stream_task(
+    task: str,
+    cfg: Config | None = None,
+    on_message: Callable[[Message], None] | None = None,
+    on_confirm: ConfirmCallback | None = None,
+    acceptance_checks: Sequence[AcceptanceCheck] | None = None,
+    on_awaiting_input: OnAwaitingInput | None = None,
+    on_model_choice: OnModelChoice | None = None,
+    run_id: str | None = None,
+    project: str | None = None,
+    save_state: bool = False,
+    resume_from: RunRecord | None = None,
+    resume_instruction: str | None = None,
+    ladder: ResolvedLadder | None = None,
+    on_escalate: OnEscalate | None = None,
+    on_progress: Callable[[str], None] | None = None,
+    model_catalog: ModelCatalog | None = None,
+) -> TaskOutcome:
+    """`stream_task`'s run, inside its cancel token and file listing."""
     # Total running time covers the whole task, model selection and
     # verification included (and any interactive waits — it is wall clock).
     run_started = time.monotonic()
