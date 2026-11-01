@@ -21,7 +21,7 @@ certo TASK [--project NAME] [--execution {local,docker}] [--model MODEL]
            [--agents-md TEXT] [--independent-tests] [--independent-tests-strict]
            [--interactive] [--verbose]
            [--auto-model]
-           [--require-verification] [--acceptance-checks JSON_OR_FILE]
+           [--json] [--require-verification] [--acceptance-checks JSON_OR_FILE]
            [--escalate [LADDER]] [--milestones]
 certo --resume [TASK] [same options]
 ```
@@ -52,6 +52,7 @@ current folder, the file is read instead.
 | `--interactive` | off (`CERTO_INTERACTIVE`) | Let the agent stop and ask you questions. See [Interactive and confirm mode](../guides/interactive-mode.md). |
 | `--verbose` | off (`CERTO_VERBOSE`) | Print the agent's full output: the whole system prompt, the task with the skills Certo adds, and the SDK's own logs. Without it, each of these is one line. |
 | `--auto-model` | off (`CERTO_MODEL_SELECTION`) | Pick the model from the model files (`models_list.yaml`, `models.yaml`, and the task profiles in `task_profiles.yaml`). A missing or broken model file is a configuration error (the error says which example to copy, or lists the problems): no banner, no resume hint, and no run is recorded. See [Pick models automatically](../guides/pick-models-automatically.md). |
+| `--json` | off | Print the run's result as one JSON object on standard output (verdict, checks, acceptance checks, cost, models, milestones), and everything else on standard error. Nothing on standard output when Certo refuses to start. See [The JSON result](json-result.md). |
 | `--require-verification` | off | Exit 1 for `inconclusive` and `unchanged` too. |
 | `--acceptance-checks JSON_OR_FILE` | none | Extra file checks for this task, as inline JSON or a JSON file. See [Acceptance checks](../guides/acceptance-checks.md). |
 | `--escalate [LADDER]` | off (`CERTO_MODEL_SELECTION`) | Start on the first rung of a ladder of models from `escalation.yaml`, and move to the next model only when Certo's verdict shows the model couldn't finish, or its provider fails (outage, rate limit, rejected key). The time budget (`budget_exhausted`) and `CERTO_MAX_TASK_COST` stop the climb. `LADDER` names a ladder; without it, the ladder named `default` is used, else one built from the ratings. With only one value after the flag, as in `certo --escalate "Fix the crash"`, that value is the task. Can't be combined with `--auto-model` or `--model`, nor with `--resume` except after `--milestones`, where it starts the milestone again on the first rung. A missing model file (the error says which example to copy) or an unknown ladder is a configuration error that lists the ladders found. See [Escalate between models](../guides/escalate-between-models.md). |

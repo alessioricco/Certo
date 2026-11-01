@@ -118,6 +118,8 @@ takes you from install to your first verified project.
   benchmark.
 - [bench.yaml](reference/bench-yaml.md): the benchmark file.
 - [Server API](reference/server-api.md): every HTTP and WebSocket endpoint.
+- [The JSON result](reference/json-result.md): what `certo --json`
+  prints, field by field.
 
 **Curious how it works?**
 

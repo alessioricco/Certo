@@ -94,9 +94,11 @@ jobs:
 
 An agent run (`certo "<task>"`) uses the same rule: exit code 0 for
 `verified` and `inconclusive`, 1 for every failure verdict and for errors.
-`--require-verification` makes `inconclusive` exit 1 there too. The last
-`Verification:` line names the verdict if you need more than the exit
-code. Every verdict and its exit code is in
+`--require-verification` makes `inconclusive` exit 1 there too. If you
+need more than the exit code, add `--json`: standard output is then one
+JSON object with the verdict, the checks and the cost (see
+[The JSON result](../reference/json-result.md)), and everything else goes
+to standard error. Every verdict and its exit code is in
 [Verdicts](../reference/verdicts.md).
 
 ## Related

@@ -5,6 +5,7 @@ these exercise only argument parsing and control flow.
 from __future__ import annotations
 
 import importlib.metadata
+import json
 import os
 import tomllib
 import urllib.error
@@ -2672,3 +2673,42 @@ def test_milestones_need_a_task_file(monkeypatch, tmp_path, capsys):
 
     assert cli.main(["--milestones", "## Milestone 1: a\nDo it."]) == 1
     assert "--milestones needs a task file" in capsys.readouterr().err
+
+
+def test_json_prints_only_the_result_on_stdout(monkeypatch, capsys):
+    monkeypatch.setattr(cli, "load_config", lambda: _cfg())
+    monkeypatch.setattr(
+        cli,
+        "run_task",
+        lambda task, **_kw: (print("agent chatter"), _fake_result([_FakeMessage("done")]))[1],
+    )
+    assert cli.main(["do it", "--json"]) == 0
+    captured = capsys.readouterr()
+    result = json.loads(captured.out)
+    assert result["result_version"] == 1
+    assert result["task"] == "do it"
+    assert result["verdict"] == "verified"
+    assert "agent chatter" in captured.err
+    assert "Verification: verified" in captured.err
+    assert "key" not in captured.out.replace("cache_read_tokens", "")
+
+
+def test_json_reports_an_error_that_stops_the_run(monkeypatch, capsys):
+    monkeypatch.setattr(cli, "load_config", lambda: _cfg())
+
+    def fail(task, **_kw):
+        raise RuntimeError("provider down")
+
+    monkeypatch.setattr(cli, "run_task", fail)
+    assert cli.main(["do it", "--json"]) == 1
+    result = json.loads(capsys.readouterr().out)
+    assert result["verdict"] is None
+    assert result["error"] == "provider down"
+
+
+def test_json_prints_nothing_on_stdout_when_the_run_is_refused(monkeypatch, capsys):
+    monkeypatch.setattr(cli, "load_config", lambda: _cfg())
+    assert cli.main(["do it", "--json", "--agents-md", "x"]) == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "--agents-md requires --project" in captured.err

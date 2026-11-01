@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
 import os
 import shlex
@@ -48,6 +49,7 @@ from .project_state import (
     save_record,
     status_path,
 )
+from .result import run_result
 from .run_history import RunEntry, append_run, note_models_in_readme
 from .run_summary import combine_summaries, model_label
 from .worktree import was_created_by_certo, worktree_warning
@@ -407,6 +409,15 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--json",
+        action="store_true",
+        help=(
+            "Print the run's result as JSON on standard output, and everything else "
+            "on standard error: the verdict, the checks, the cost and more, in the "
+            "format described in docs/reference/json-result.md."
+        ),
+    )
+    parser.add_argument(
         "--require-verification",
         action="store_true",
         help=(
@@ -570,6 +581,25 @@ def _main(argv: list[str]) -> int:
         return rollback_main(argv[1:])
     parser = _build_parser()
     args = parser.parse_args(argv)
+    if not args.json:
+        return _run_task_command(args, parser, None)
+    # stdout carries only the JSON result: everything a run prints goes to
+    # stderr instead (docs/reference/json-result.md).
+    out = sys.stdout
+    holder: dict[str, Any] = {}
+    with contextlib.redirect_stdout(sys.stderr):
+        code = _run_task_command(args, parser, holder)
+    if "result" in holder:
+        out.write(json.dumps(holder["result"], indent=2) + "\n")
+        out.flush()
+    return code
+
+
+def _run_task_command(
+    args: argparse.Namespace, parser: argparse.ArgumentParser, holder: dict[str, Any] | None
+) -> int:
+    """`certo "task"` after its flags are parsed. With `holder`, the run's JSON
+    result is put in `holder["result"]` once the run has started."""
     if args.task is None and args.escalate and not args.resume:
         # `certo --escalate "task"`: LADDER is optional, so argparse took the
         # task for a ladder name. A ladder with no task can't run, so it was
@@ -777,6 +807,29 @@ def _main(argv: list[str]) -> int:
 
     if save_state and milestone_state is None and resume_from is None:
         clear_state(cfg.workspace)  # a new task here isn't the old milestones
+
+    def keep_result(outcome, error: str | None = None) -> None:
+        if holder is None:
+            return
+        milestones = None
+        if milestone_state is not None:
+            milestones = [
+                {
+                    "number": m.number,
+                    "title": m.title,
+                    "verdict": milestone_state.verdicts.get(m.number),
+                }
+                for m in milestone_state.plan.milestones
+            ]
+        holder["result"] = run_result(
+            outcome,
+            task=history["task"],
+            workspace=os.path.abspath(cfg.workspace),
+            project=args.project,
+            milestones=milestones,
+            error=error,
+        )
+
     try:
         if milestone_state is None:
             messages = run_one(
@@ -801,6 +854,7 @@ def _main(argv: list[str]) -> int:
     except KeyboardInterrupt as exc:
         # The runner attaches the usage up to the interrupt to the exception.
         record_run("interrupted", summary=getattr(exc, "run_summary", None))
+        keep_result(None, "interrupted")
         print("\nInterrupted.", file=sys.stderr)
         if save_state:
             print(f"Continue with: {resume_hint}", file=sys.stderr)
@@ -810,6 +864,7 @@ def _main(argv: list[str]) -> int:
             f"error: {_first_line(str(exc) or type(exc).__name__)}",
             summary=getattr(exc, "run_summary", None),
         )
+        keep_result(None, str(exc) or type(exc).__name__)
         print(f"Error: {exc}", file=sys.stderr)
         if save_state:
             print(f"Continue with: {resume_hint}", file=sys.stderr)
@@ -835,6 +890,7 @@ def _main(argv: list[str]) -> int:
     # flip — see DECISIONS.md).
     if milestone_state is None:
         record_run(outcome.verification_state, outcome)
+    keep_result(outcome)
     # Only in a project folder Certo created: it never edits the README of
     # a project you brought.
     if certo_made:

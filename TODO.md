@@ -248,8 +248,10 @@ cut that first run's output from 2,949 lines to 1,021.)
   the rest in 0.2.x). In order: (0) `certo.api`, one typed
   function per command, with the CLI and `certo-server` moved onto it
   (started: both now build a run's config with `api.resolve_config` and
-  `prepare_workspace`; next, the run itself and its typed result);
-  (1) the JSON result and `certo --json`; (2) `certo mcp` over stdio
+  `prepare_workspace`; the JSON result is `result.run_result`, with
+  `certo --json`; next, the server returns it too, then `api` runs a
+  task for the MCP server);
+  (1) the JSON result and `certo --json` (done); (2) `certo mcp` over stdio
   (no authentication; HTTP only after it, see DECISIONS.md),
   `--tools core` then `--tools all`, runs as start/status/events/cancel,
   resources, folders limited by `CERTO_PROJECTS_DIR` and `--root` (no

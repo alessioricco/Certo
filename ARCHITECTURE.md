@@ -27,6 +27,14 @@ given design was chosen.
   foreign plugins, creates a named project and records it as Certo's, and
   writes `agents_md`. `cli._main` and `server._resolve_cfg` both call these;
   the milestone and resume rules stay in the CLI for now.
+- **`result.py`** — `run_result(outcome, task=, workspace=, ...)`: a run's
+  JSON result (`RESULT_VERSION` 1), the one format for `certo --json`,
+  the server and MCP; fields in `docs/reference/json-result.md`. Built
+  from the outcome only, never the settings, so no key can reach it.
+  Imports `runner` only for type checking: `cli` imports it, and
+  `certo --help` must not load the SDK. `cli --json` sends stdout to
+  stderr around the run (`contextlib.redirect_stdout`; rich and the SDK
+  look stdout up when they write) and prints the result alone.
 - **`config.py`** — env parsing, model-agnostic (`CERTO_LLM_MODEL` prefix selects
   provider). `override_llm(cfg, model=, api_key=, base_url=,
   reasoning_effort=)` is the per-request override mechanism shared by
