@@ -14,6 +14,7 @@ import errno
 import json
 import logging
 import os
+import threading
 from contextlib import nullcontext
 from types import SimpleNamespace
 from typing import ClassVar
@@ -3690,3 +3691,58 @@ def test_strict_independent_tests_leave_other_verdicts_alone(monkeypatch, tmp_pa
 
     assert outcome.verification_state == "inconclusive"
     assert outcome.independent_tests.status == "failed"
+
+
+# --- cancel (cancel.py) ------------------------------------------------------
+
+
+class _BlockingConversation:
+    """`run()` goes on until `pause()` is called, as an agent between steps."""
+
+    def __init__(self) -> None:
+        self.paused = threading.Event()
+        self.run_calls = 0
+
+    def run(self) -> None:
+        self.run_calls += 1
+        self.paused.wait(5)
+
+    def pause(self) -> None:
+        self.paused.set()
+
+
+def test_cancel_pauses_a_running_conversation_and_raises():
+    from certo.cancel import RunCancelled, cancel_token
+
+    conversation = _BlockingConversation()
+    event = threading.Event()
+    threading.Timer(0.1, event.set).start()
+
+    with cancel_token(event), pytest.raises(RunCancelled):
+        runner._run_conversation_once(conversation, _cfg(), lambda _m: None, None)
+    assert conversation.paused.is_set()
+    assert conversation.run_calls == 1
+
+
+def test_a_cancelled_run_doesnt_start_another_conversation_run():
+    from certo.cancel import RunCancelled, cancel_token
+
+    conversation = _BlockingConversation()
+    event = threading.Event()
+    event.set()
+
+    with cancel_token(event), pytest.raises(RunCancelled):
+        runner._run_conversation_once(conversation, _cfg(), lambda _m: None, None)
+    assert conversation.run_calls == 0
+
+
+def test_a_cancelled_run_is_saved_as_interrupted(tmp_path):
+    from certo.cancel import RunCancelled
+    from certo.project_state import RunRecord
+
+    record = RunRecord(
+        task="t", conversation_id="c", model="m", execution="local", started_at="", updated_at=""
+    )
+    writer = runner._ProjectStateWriter(str(tmp_path), record)
+    writer.fail(RunCancelled())
+    assert record.status == "interrupted"

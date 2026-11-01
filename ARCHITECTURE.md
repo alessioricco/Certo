@@ -27,6 +27,24 @@ given design was chosen.
   foreign plugins, creates a named project and records it as Certo's, and
   writes `agents_md`. `cli._main` and `server._resolve_cfg` both call these;
   the milestone and resume rules stay in the CLI for now.
+- **`runs.py`** — `RunManager`: runs a caller starts and follows (the MCP
+  server's `run_task`/`run_status`/`run_events`/`run_cancel`). `start`
+  prepares with `api` (errors raised at once), runs `stream_task` in a
+  daemon thread with `save_state=True` and returns the `Run`; one run per
+  workspace (`UsageError` while busy). Messages with text become numbered
+  events (`message` or `notice`), read with `events(id, since)`, 200 per
+  call. The run ends `finished`, `cancelled` or `error`, with its JSON
+  result. In memory only: a new process forgets the runs, not the
+  projects' `.certo/` state. The SDK's visualizer prints each step on
+  stdout during a run, so a stdio server must send stdout to stderr.
+- **`cancel.py`** — `stream_task(cancel=event)` sets a context-variable
+  token for the run's thread; `_run_conversation_once` checks it before
+  each `conversation.run()` and after it, and `stop_when_cancelled`
+  pauses the conversation when it is set (between agent steps, like the
+  deadline). Then `RunCancelled`, which `_ProjectStateWriter.fail` saves
+  as `interrupted`, so `--resume` continues it. A check or model call
+  already under way finishes first. Live 2026-11-01 (Haiku): stopped 0.5s
+  after the cancel, resumed to `verified`.
 - **`result.py`** — `run_result(outcome, task=, workspace=, ...)`: a run's
   JSON result (`RESULT_VERSION` 1), the one format for `certo --json`,
   the server and MCP; fields in `docs/reference/json-result.md`. Built

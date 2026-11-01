@@ -12,6 +12,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+import threading
 import time
 import uuid
 import weakref
@@ -58,6 +59,7 @@ from .checkpoints import (
     safe_snapshot,
 )
 from .cost_limit import cost_limit, cost_limit_reached, pause_at_cost_limit, set_cost_limit
+from .cancel import RunCancelled, cancel_token, raise_if_cancelled, stop_when_cancelled
 from .deadline import stop_at_deadline
 from .independent_tests import (
     IndependentTestsResult,
@@ -813,11 +815,17 @@ def _run_conversation_once(
     — see DECISIONS.md).
     """
     while True:
+        raise_if_cancelled()
         try:
-            # The run can't outlast `deadline` or the cost limit: see
-            # deadline.py and cost_limit.py.
-            with stop_at_deadline(conversation, deadline), pause_at_cost_limit(conversation):
+            # The run can't outlast `deadline` or the cost limit, and stops
+            # when cancelled: see deadline.py, cost_limit.py and cancel.py.
+            with (
+                stop_at_deadline(conversation, deadline),
+                pause_at_cost_limit(conversation),
+                stop_when_cancelled(conversation),
+            ):
                 conversation.run()
+            raise_if_cancelled()
             found = cost_limit(conversation)
             if found is not None and not found.announced and found.reached(conversation):
                 found.announced = True
@@ -1589,6 +1597,7 @@ def stream_task(
     on_escalate: OnEscalate | None = None,
     on_progress: Callable[[str], None] | None = None,
     model_catalog: ModelCatalog | None = None,
+    cancel: threading.Event | None = None,
 ) -> TaskOutcome:
     """Run a task, invoking `on_message` with each message as it's produced,
     and return the terminal `TaskOutcome` once verification has settled.
@@ -1628,7 +1637,30 @@ def stream_task(
     `_stream_escalation`. `on_escalate` is asked before each climb when
     `cfg.interactive` is set; `on_progress` receives the escalation lines
     (the ladder, each climb) for a terminal.
+
+    `cancel`, when set from another thread, stops the run at its next step
+    with `RunCancelled` (cancel.py).
     """
+    if cancel is not None:
+        with cancel_token(cancel):
+            return stream_task(
+                task,
+                cfg=cfg,
+                on_message=on_message,
+                on_confirm=on_confirm,
+                acceptance_checks=acceptance_checks,
+                on_awaiting_input=on_awaiting_input,
+                on_model_choice=on_model_choice,
+                run_id=run_id,
+                project=project,
+                save_state=save_state,
+                resume_from=resume_from,
+                resume_instruction=resume_instruction,
+                ladder=ladder,
+                on_escalate=on_escalate,
+                on_progress=on_progress,
+                model_catalog=model_catalog,
+            )
     # Total running time covers the whole task, model selection and
     # verification included (and any interactive waits — it is wall clock).
     run_started = time.monotonic()
@@ -1965,7 +1997,7 @@ class _ProjectStateWriter:
         self.save()
 
     def fail(self, exc: BaseException) -> None:
-        if isinstance(exc, KeyboardInterrupt):
+        if isinstance(exc, (KeyboardInterrupt, RunCancelled)):
             self.record.status = "interrupted"
         else:
             self.record.status = "error"
