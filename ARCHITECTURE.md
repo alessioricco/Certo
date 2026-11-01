@@ -37,8 +37,13 @@ given design was chosen.
   `runs.RunManager` (`run_task`, `run_status`, `run_events`, `run_cancel`,
   `list_runs`, `run_resume`), `verify` (a run: `RunManager.start_verify`),
   `checkpoints` and `rollback` (`checkpoints.py`; preview unless
-  `confirm`, refused while `RunManager.busy`), and `check_model`
-  (`llm_check.check_tool_calling`). `Folders` turns a tool's
+  `confirm`, refused while `RunManager.busy`), `check_model`
+  (`llm_check.check_tool_calling`), and the read-only `list_projects`
+  (`project_state.load_record` per folder), `list_models` (the catalog,
+  loaded non-strict as `certo check` does, no key fields) and
+  `list_skills` (`skill_library.collect`). `COMMAND_TOOLS` and `NO_TOOL`
+  map every heading of docs/reference/commands.md to its tools or a
+  reason; a test keeps them complete. `Folders` turns a tool's
   `project` or `folder` into `RunOptions`: a folder must be a full path
   inside `CERTO_PROJECTS_DIR` or a `--root` (realpath, so a symlink can't
   leave). Every tool is wrapped by `_user_errors`: a `ValueError` (Certo's

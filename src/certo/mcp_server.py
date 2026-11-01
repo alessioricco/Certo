@@ -25,12 +25,49 @@ from .api import RunOptions, UsageError, resolve_config
 from .config import Config, ConfigError, defer_llm_check, load_config
 from .runs import RunManager
 
+# Every command in docs/reference/commands.md, and the tools that do its work
+# over MCP (tests/test_mcp_server.py checks that the list is complete).
+COMMAND_TOOLS: dict[str, tuple[str, ...]] = {
+    "certo": ("run_task", "run_resume", "run_status", "run_events", "run_cancel", "list_runs"),
+    "certo verify": ("verify",),
+    "certo check": ("check_model", "list_models"),
+    "certo models": ("list_models",),
+    "certo skills": ("list_skills",),
+    "certo skills list": ("list_skills",),
+    "certo checkpoints": ("checkpoints",),
+    "certo rollback": ("rollback",),
+}
+
+# The commands with no tool, and why. Those that say "not yet" are still to
+# do (TODO.md, "MCP server with every Certo command").
+NO_TOOL: dict[str, str] = {
+    "certo init": "asks questions and writes your settings file: run it in a terminal",
+    "certo init models": "asks questions and writes your model files: run it in a terminal",
+    "certo models update": "asks about each change to your models list: run it in a terminal",
+    "certo skills add": "downloads code, with a license step a person answers: not yet",
+    "certo skills remove": "changes the skills every run gets: not yet",
+    "certo skills enable": "turns on downloaded code: not yet",
+    "certo skills disable": "changes the skills every run gets: not yet",
+    "certo skills update": "downloads code, with a license step a person answers: not yet",
+    "certo skills sync": "downloads code, with a license step a person answers: not yet",
+    "certo bench": "runs for hours, and is set up and read in a terminal",
+    "certo mcp": "it is this server",
+    "certo-server": "another server, over HTTP",
+    "certo-admin": "manages certo-server's task store, not this server's runs",
+    "certo-admin show": "manages certo-server's task store, not this server's runs",
+    "certo-admin delete-task": "manages certo-server's task store, not this server's runs",
+    "certo-admin delete-project": "manages certo-server's task store, not this server's runs",
+    "certo-admin purge": "manages certo-server's task store, not this server's runs",
+    "certo-admin check-llm": "certo-server's model check; check_model does the same here",
+}
+
 INSTRUCTIONS = (
     "Certo runs a coding task with an agent, then checks the result itself: it runs the "
     "project's tests and checks and gives a verdict (verified, or why not). Start a task "
     "with run_task, follow it with run_status and run_events, stop it with run_cancel, "
     "and continue a stopped or failed one with run_resume. "
-    "verify checks a folder without an agent. Work happens only in a named project "
+    "verify checks a folder without an agent. list_projects, list_models and list_skills "
+    "show what there is to work with. Work happens only in a named project "
     "(project) or in a folder the server was started with (folder). A project's "
     "certo://projects/NAME/status and certo://projects/NAME/runs resources hold its last "
     "run's status and its run history."
@@ -330,6 +367,161 @@ def build_server(
             "changes": changes,
             "undo_with": undo,
         }
+
+    def _settings() -> Config:
+        # These tools need no model: one given to a run comes later.
+        with defer_llm_check():
+            return load()
+
+    @server.tool(annotations=ToolAnnotations(title="List the projects", readOnlyHint=True))
+    @_user_errors
+    def list_projects() -> dict[str, Any]:
+        """The projects under Certo's projects folder, by name, each with its last
+        run as Certo saved it (task, status, verdict, model, time; null when it has
+        none) and the id of a run of this server working there now."""
+        from .project_state import load_record
+
+        root = folders.projects_dir
+        names = sorted(
+            n
+            for n in (os.listdir(root) if os.path.isdir(root) else [])
+            if not n.startswith(".") and os.path.isdir(os.path.join(root, n))
+        )
+        projects = []
+        for name in names:
+            path = os.path.join(root, name)
+            record = load_record(path)
+            last = None
+            if record is not None:
+                last = {
+                    "task": record.task,
+                    "status": record.status,
+                    "verdict": record.verdict,
+                    "model": record.model,
+                    "updated_at": record.updated_at,
+                }
+            projects.append(
+                {"name": name, "path": path, "last_run": last, "running": manager.busy(path)}
+            )
+        return {"projects_dir": root, "projects": projects}
+
+    @server.tool(annotations=ToolAnnotations(title="List the models", readOnlyHint=True))
+    @_user_errors
+    def list_models() -> dict[str, Any]:
+        """The models Certo may use: the configured one, and, when the model files
+        exist (models_list.yaml, models.yaml), each model with its id, whether it is
+        active, its ratings and description, the ladders `escalate` takes by name,
+        and the problems in the files. Never a key. `run_task`'s `model` takes a
+        model id (a model's `model` here), with the key from Certo's settings;
+        `escalate` takes a ladder's `name`."""
+        from .catalog_check import check_catalog, usable_rungs
+        from .escalation import EscalationError, derive_ladder
+        from .model_catalog import load_model_catalog
+        from .model_files import resolve, resolve_optional
+
+        cfg = _settings()
+        answer: dict[str, Any] = {"configured_model": cfg.model or None, "files": None}
+        try:
+            list_path, models_path = resolve(cfg.models_file, cfg.models_list_file)
+        except ValueError as exc:
+            answer["message"] = str(exc)
+            return answer
+        profiles_path, escalation_path = resolve_optional(
+            cfg.task_profiles_file, cfg.escalation_file
+        )
+        catalog = load_model_catalog(
+            list_path,
+            models_path,
+            profiles_path=profiles_path,
+            escalation_path=escalation_path,
+            strict=False,
+        )
+        report = check_catalog(catalog)
+        try:
+            derived = [r.name for r in derive_ladder(catalog).rungs]
+        except EscalationError:
+            derived = []
+        answer.update(
+            files={
+                "list": list_path,
+                "models": models_path,
+                "task_profiles": profiles_path,
+                "escalation": escalation_path,
+            },
+            models=[
+                {
+                    "name": m.name,
+                    "model": m.model,
+                    "active": m.activated,
+                    "reasoning_effort": m.reasoning_effort,
+                    "context_tokens": m.context_tokens or None,
+                    "ratings": dict(m.ratings),
+                    "description": m.description,
+                    "missing_settings": list(m.missing_vars),
+                }
+                for m in catalog.models
+                if m.configured
+            ],
+            ladders=[
+                {"name": ladder.name, "rungs": [r.model for r in usable_rungs(ladder, catalog)]}
+                for ladder in catalog.escalation.ladders.values()
+            ],
+            derived_ladder=derived,
+            errors=list(report.errors),
+            warnings=list(report.warnings),
+        )
+        return answer
+
+    @server.tool(annotations=ToolAnnotations(title="List the skills", readOnlyHint=True))
+    @_user_errors
+    def list_skills(
+        project: str | None = None, folder: str | None = None, task: str | None = None
+    ) -> dict[str, Any]:
+        """The skills a run gets, as `certo skills list` shows them: official ones
+        (come with Certo), your global ones and, with `project` or `folder`, that
+        project's own. Each says how it fires, its rough size in tokens, whether it
+        is on, and what replaces it. With `task`, also which skills would go into a
+        run of that task from its first message, and which may come in later."""
+        from . import skill_library as lib
+
+        cfg = _settings()
+        workspace = None
+        if project is not None or folder is not None:
+            cfg = resolve_config(RunOptions(**folders.options(project, folder)), load=_settings)
+            workspace = os.path.abspath(cfg.workspace)
+            if not os.path.isdir(workspace):
+                raise UsageError(f"{workspace} doesn't exist")
+        found = lib.collect(cfg, workspace, project_name=project)
+        answer: dict[str, Any] = {
+            "skills": [
+                {
+                    "name": r.name,
+                    "layer": r.layer,
+                    "state": r.state,
+                    "fires": lib.how_it_fires(r.skill) if r.skill is not None else None,
+                    "tokens": lib.size_in_tokens(r.skill) if r.skill is not None else None,
+                    "downloaded": r.downloaded,
+                    "replaced_by": r.replaced_by,
+                    "where": r.where,
+                }
+                for r in found.rows
+            ]
+        }
+        if task is not None:
+            active = [r for r in found.rows if r.active and r.skill is not None]
+            answer["for_task"] = {
+                "now": [
+                    {"name": r.name, "layer": r.layer, "why": why}
+                    for r in active
+                    if (why := lib.fires_for_task(r.skill, task))
+                ],
+                "later": [
+                    {"name": r.name, "layer": r.layer, "how": how}
+                    for r in active
+                    if (how := lib.later_for_task(r.skill))
+                ],
+            }
+        return answer
 
     @server.tool(annotations=ToolAnnotations(title="Check the model", openWorldHint=True))
     @_user_errors

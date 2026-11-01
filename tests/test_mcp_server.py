@@ -85,6 +85,9 @@ def test_the_core_tools_are_listed_with_their_hints(tmp_path):
         "rollback",
         "verify",
         "check_model",
+        "list_projects",
+        "list_models",
+        "list_skills",
     }
     assert tools["run_task"].annotations.destructive_hint is True
     assert tools["run_status"].annotations.read_only_hint is True
@@ -436,3 +439,141 @@ def test_rollback_to_a_number_that_doesnt_exist_is_refused(tmp_path):
     error, text = _call(_server(tmp_path), "rollback", {"project": "demo", "number": 3})
     assert error
     assert "no checkpoint 3" in text
+
+
+def test_every_command_has_a_tool_or_says_why_not(tmp_path):
+    import re
+    from pathlib import Path
+
+    from certo.mcp_server import COMMAND_TOOLS, NO_TOOL
+
+    commands_md = Path(__file__).resolve().parent.parent / "docs/reference/commands.md"
+    documented = set(re.findall(r"^#{2,3} `(certo[^`]*)`", commands_md.read_text(), re.M))
+    assert documented == set(COMMAND_TOOLS) | set(NO_TOOL)
+    assert not set(COMMAND_TOOLS) & set(NO_TOOL)
+    tools = {t.name for t in _tools(_server(tmp_path))}
+    for command, names in COMMAND_TOOLS.items():
+        assert set(names) <= tools, command
+
+
+def test_list_projects_gives_each_projects_last_run(tmp_path):
+    from certo.project_state import RunRecord, save_record
+
+    projects = tmp_path / "projects"
+    (projects / "fresh").mkdir(parents=True)
+    (projects / "done").mkdir()
+    (projects / ".hidden").mkdir()
+    save_record(
+        str(projects / "done"),
+        RunRecord(
+            task="Write fib",
+            conversation_id="c" * 32,
+            model="anthropic/claude-haiku-5-5",
+            execution="local",
+            started_at="2026-11-01T10:00:00+00:00",
+            updated_at="2026-11-01T10:01:00+00:00",
+            status="finished",
+            verdict="verified",
+        ),
+    )
+    is_error, value = _call(_server(tmp_path), "list_projects")
+    assert not is_error
+    by_name = {p["name"]: p for p in value["projects"]}
+    assert list(by_name) == ["done", "fresh"]
+    last = dict(by_name["done"]["last_run"])
+    assert last.pop("updated_at")  # saving stamps the time
+    assert last == {
+        "task": "Write fib",
+        "status": "finished",
+        "verdict": "verified",
+        "model": "anthropic/claude-haiku-5-5",
+    }
+    assert by_name["fresh"]["last_run"] is None
+    assert by_name["fresh"]["running"] is None
+
+
+def _model_files(tmp_path):
+    files = tmp_path / "models"
+    files.mkdir()
+    (files / "models_list.yaml").write_text(
+        "models:\n"
+        "  - name: cheap\n    model: openai/gpt-6-luna\n"
+        "    ratings: {reasoning: 3, precision: 3, code: 3, cost: 4}\n"
+        "  - name: strong\n    model: anthropic/claude-sonnet-5-5\n"
+        "    ratings: {reasoning: 4, precision: 4, code: 5, cost: 2}\n"
+        "  - name: unused\n    model: anthropic/claude-opus-5-5\n"
+    )
+    (files / "models.yaml").write_text(
+        "models:\n  - name: cheap\n    api_key: sk-in-models-yaml\n  - name: strong\n"
+    )
+    (files / "escalation.yaml").write_text(
+        "escalation:\n  ladders:\n    climb:\n      rungs:\n"
+        "        - model: cheap\n        - model: strong\n"
+    )
+    return files
+
+
+def test_list_models_shows_the_models_and_ladders_never_a_key(tmp_path, monkeypatch):
+    files = _model_files(tmp_path)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
+    load = lambda: _cfg(  # noqa: E731
+        tmp_path,
+        models_file=str(files / "models.yaml"),
+        models_list_file=str(files / "models_list.yaml"),
+        escalation_file=str(files / "escalation.yaml"),
+    )
+    manager = RunManager(load=load, stream=lambda task, **_k: _outcome())
+    server = build_server(manager, Folders(str(tmp_path / "projects"), []), load=load)
+    is_error, value = _call(server, "list_models")
+    assert not is_error
+    assert value["configured_model"] == "openai/gpt-4o"
+    assert [(m["name"], m["model"], m["active"]) for m in value["models"]] == [
+        ("cheap", "openai/gpt-6-luna", True),
+        ("strong", "anthropic/claude-sonnet-5-5", True),
+    ]
+    assert value["ladders"] == [{"name": "climb", "rungs": ["cheap", "strong"]}]
+    assert value["files"]["escalation"] == str(files / "escalation.yaml")
+    text = json.dumps(value)
+    assert "sk-in-models-yaml" not in text and "sk-secret-key-value" not in text
+
+
+def test_list_models_without_model_files_says_how_to_add_them(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
+    is_error, value = _call(_server(tmp_path), "list_models")
+    assert not is_error
+    assert value["configured_model"] == "openai/gpt-4o"
+    assert value["files"] is None
+    assert "certo init models" in value["message"]
+
+
+def test_list_skills_lists_official_and_project_skills(tmp_path, monkeypatch):
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
+    skill = tmp_path / "projects" / "demo" / ".certo" / "skills" / "house-style"
+    skill.mkdir(parents=True)
+    (skill / "SKILL.md").write_text(
+        "---\nname: house-style\ndescription: Our code style.\n"
+        "triggers:\n  - style\n---\nUse tabs.\n"
+    )
+    server = _server(tmp_path)
+    is_error, value = _call(server, "list_skills")
+    assert not is_error
+    layers = {s["layer"] for s in value["skills"]}
+    assert layers == {"official"}
+    assert "for_task" not in value
+
+    is_error, value = _call(
+        server, "list_skills", {"project": "demo", "task": "Fix the style of main.py"}
+    )
+    assert not is_error, value
+    mine = [s for s in value["skills"] if s["name"] == "house-style"]
+    assert mine and mine[0]["layer"] == "project" and mine[0]["state"] == "on"
+    assert {"name": "house-style", "layer": "project"}.items() <= next(
+        r for r in value["for_task"]["now"] if r["name"] == "house-style"
+    ).items()
+
+
+def test_list_skills_for_a_project_that_doesnt_exist_is_refused(tmp_path):
+    is_error, text = _call(_server(tmp_path), "list_skills", {"project": "nope"})
+    assert is_error and "doesn't exist" in text

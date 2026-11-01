@@ -253,9 +253,10 @@ cut that first run's output from 2,949 lines to 1,021.)
   cancel are `runs.RunManager` (cancel.py); `certo mcp` has the core
   tools, `run_resume`, milestones files and the project resources
   (mcp_server.py), checked live from Claude Code and the `mcp` stdio
-  client; the JSON result lists the files changed; then `--tools all`
-  in 0.2.x: models, skills, the other commands; then the test that every
-  command has a tool);
+  client; the JSON result lists the files changed; `list_projects`,
+  `list_models`, `list_skills`, and the test that every command has a
+  tool or a reason (`COMMAND_TOOLS`/`NO_TOOL`); left: the "not yet"
+  entries in `NO_TOOL`, i.e. the skills commands that change files);
   (1) the JSON result and `certo --json` (done); (2) `certo mcp` over stdio
   (no authentication; HTTP only after it, see DECISIONS.md),
   `--tools core` then `--tools all`, runs as start/status/events/cancel,

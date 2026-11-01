@@ -16,8 +16,9 @@ file in milestones), follow it (`run_status`, `run_events`), stop it
 (`run_cancel`) and continue it later (`run_resume`, as `certo --resume`
 does), check a project without an agent (`verify`), list its
 checkpoints and go back to one (`checkpoints`, `rollback`, which only
-says what it would change until it's confirmed), and test the model
-(`check_model`). `run_task` can also ask for
+says what it would change until it's confirmed), test the model
+(`check_model`), and list the projects, the models and ladders, and
+the skills a run gets (`list_projects`, `list_models`, `list_skills`). `run_task` can also ask for
 [independent tests](../guides/independent-tests.md), and so can a
 `certo-server` task, with `independent_tests`: before, server mode
 couldn't report them. A finished run's result is the same

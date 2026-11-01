@@ -600,7 +600,8 @@ certo mcp [--root DIR]...
 It reads the settings as a run does, but needs no model to start: a tool
 can name one. The tools: `run_task` (also with a milestones task file),
 `run_status`, `run_events`, `run_cancel`, `run_resume`, `list_runs`,
-`verify` (as a run), `checkpoints`, `rollback` and `check_model`; the resources:
+`verify` (as a run), `checkpoints`, `rollback`, `check_model`,
+`list_projects`, `list_models` and `list_skills`; the resources:
 `certo://projects/NAME/status` and `certo://projects/NAME/runs`. Guide:
 [Use Certo from an editor or an agent (MCP)](../guides/use-certo-over-mcp.md).
 

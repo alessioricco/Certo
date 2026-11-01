@@ -82,6 +82,15 @@ so Certo doesn't use it.
 | `checkpoints` | The snapshots Certo took of a project during its runs, as `certo checkpoints` lists them. See [Go back to an earlier point](checkpoints.md). |
 | `rollback` | Put a project's files back as they were at a checkpoint `number`, as `certo rollback` does. Without `confirm: true` it only lists what would be restored, added back or deleted. With it, the files are rolled back, and the answer's `undo_with` is the checkpoint that undoes it. Refused while a run works in that folder. |
 | `check_model` | One small call to the configured model, as `certo check` does. |
+| `list_projects` | The projects under `CERTO_PROJECTS_DIR`, each with its last run (task, status, verdict, model, time) and the `run_id` of a run working there now. |
+| `list_models` | The configured model and, when you have [model files](../reference/models-yaml.md), each model with its id, whether it is active, its ratings and description, the ladders `escalate` takes by name, and the files' problems. Never a key. `run_task`'s `model` takes a model id from it. |
+| `list_skills` | The skills a run gets, as `certo skills list` shows them: official and yours, and with `project` or `folder` that project's too. Each says how it fires, its size in tokens, and whether it is on. With `task`, which skills would go into a run of that task. |
+
+Some commands have no tool: those that ask you questions (`certo init`,
+`certo models update`), those that download or turn on skills (`certo
+skills add`, `update`, `sync`, `enable`, and for now `remove` and
+`disable`), `certo bench`, which runs for hours, and the commands of
+`certo-server` and `certo-admin`. Run them in a terminal.
 
 Each project also has two resources, which a client can show or read:
 
@@ -146,6 +155,20 @@ checkpoints: [(1, 'before the agent'), (2, 'checks 1: verified')]
 preview: False [{'change': 'deleted', 'path': 'README.md'}, {'change': 'deleted', 'path': 'sub.py'}, {'change': 'deleted', 'path': 'test_sub.py'}]
 rolled back: True undo_with 2 files now: ['.certo', '.pytest_cache', '.venv', '__pycache__']
 undone: True files now: ['.certo', '.pytest_cache', '.venv', 'README.md', '__pycache__', 'sub.py', 'test_sub.py']
+```
+
+**What there is to work with.** The `mcp` package's client listed the
+projects, the models and a project's skills for a task, with the
+Author's settings:
+
+```text
+tools: 13
+projects: [('decisions-check', 'verified', None)]
+configured: anthropic/claude-sonnet-5-5
+ladders: [('default', ['qwen3.8-27b-local', 'claude-haiku-5-5', 'claude-sonnet-5-5', 'gpt-6-luna', 'claude-opus-5-5', 'gpt-6.1-sol']), ('hard', ['claude-sonnet-5-5', 'claude-opus-5-5', 'gpt-6.1-sol']), ('local-only', ['qwen3.6-35b-local', 'qwen3.8-27b-local'])]
+derived: ['qwen3.8-27b-local', 'claude-haiku-5-5', 'claude-opus-5-5'] errors: [] warnings: 3
+now: [{'name': 'pytest-conventions', 'layer': 'official', 'why': '"pytest" is in the task'}]
+later: ['pin-dependencies']
 ```
 
 **From a script.** The `mcp` Python package's own client started

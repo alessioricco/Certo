@@ -1568,3 +1568,13 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   it from one place; the server stores it in its `result` column. Fixed
   keys (`score`, with `scored_by` saying what the score is) rather than a
   key named after the score.
+
+- **`certo mcp`: the read-only list tools; commands with no tool say why**
+  (2026-11-01). `list_projects`, `list_models`, `list_skills` let a client
+  pick a project, a model or ladder, and see the skills without a
+  terminal. Commands that ask a person questions (`init`, `models
+  update`), download or turn on code (`skills add/update/sync/enable`),
+  run for hours (`bench`), or belong to `certo-server`/`certo-admin` get
+  no tool: `NO_TOOL` in mcp_server.py says why, and a test fails when a
+  command in commands.md is in neither list. `skills remove/disable` are
+  "not yet", not "never".
