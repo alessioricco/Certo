@@ -250,11 +250,15 @@ cut that first run's output from 2,949 lines to 1,021.)
   (1) the JSON result and `certo --json`; (2) `certo mcp` over stdio
   (no authentication; HTTP only after it, see DECISIONS.md),
   `--tools core` then `--tools all`, runs as start/status/events/cancel,
-  resources, roots and elicitation; (3) a guide and the test that every
-  command has a tool. Done when every command in
+  resources, folders limited by `CERTO_PROJECTS_DIR` and `--root` (no
+  roots, elicitation or sampling: DECISIONS.md "uses no deprecated MCP
+  feature"); (3) a guide and the test that every command has a tool.
+  The guide links its sources: SEP-2577
+  (https://modelcontextprotocol.info/seps/2577-deprecate-roots-sampling-and-logging/)
+  and https://py.sdk.modelcontextprotocol.io/v2/deprecated/, to say why
+  the folders are set with `--root`. Done when every command in
   `docs/reference/commands.md` has a tool, a guide shows a client
-  running a task to `verified`, and that test passes. Later: the
-  client's model through MCP sampling.
+  running a task to `verified`, and that test passes.
 - **Run report**: an HTML/Markdown summary per run (what changed, which
   checks ran, cost, why the verdict), from the existing artifacts.
 - **Live progress view** in the terminal: current milestone, last check,

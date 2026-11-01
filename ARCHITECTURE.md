@@ -550,6 +550,22 @@ Internal and architectural; the user-facing ones are in `docs/`.
 
 **SDK/tooling gotchas** (re-verify on any SDK upgrade — see CLAUDE.md golden
 rule 2):
+- **MCP (`mcp` 2.2.0, from the OpenHands SDK via `fastmcp`): roots,
+  sampling and logging are deprecated** by the 2026-07-28 spec
+  (SEP-2577). `ctx.session.list_roots()` warns (`MCPDeprecationWarning`)
+  on a 2025-11-25 or older connection and fails on a 2026-07-28 one (no
+  back-channel for server requests). The `elicitation/create` request is
+  gone too: a question travels inside an `InputRequiredResult`
+  (multi-round-trip requests). Still working: tool annotations
+  (`readOnlyHint`, `destructiveHint`), progress from server to client,
+  resource templates. `FastMCP` is now
+  `mcp.server.mcpserver.MCPServer`; long-running "tasks" are only an
+  extension example, not built in. A tool returning a plain `dict` gave
+  no structured content; return a typed model. Verified 2026-11-01 with
+  a stdio round trip. Sources: SEP-2577
+  (https://modelcontextprotocol.info/seps/2577-deprecate-roots-sampling-and-logging/),
+  the Python SDK's deprecated page
+  (https://py.sdk.modelcontextprotocol.io/v2/deprecated/).
 - **Every `LocalConversation` loads "ambient plugins", with no switch**
   (SDK 1.47.0, `conversation/impl/local_conversation.py`
   `_ensure_plugins_loaded`, about line 1111: `load_available_plugins(work_dir,

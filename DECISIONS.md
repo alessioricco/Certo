@@ -1520,3 +1520,22 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   `--tools all` covers every command. Reason: something usable ships
   early, and each step is reviewed on its own, instead of weeks with
   nothing released.
+
+- **The MCP server uses no deprecated MCP feature** (the Author,
+  2026-11-01; supersedes the roots, elicitation and sampling parts of
+  "The MCP server: every command, on a shared core"). The 2026-07-28
+  spec deprecates roots, sampling and logging (SEP-2577), and moves
+  questions to the person into multi-round-trip results; `mcp` 2.2.0
+  fails `list_roots` on a new connection (ARCHITECTURE.md). So:
+  1. The folders are limited by `CERTO_PROJECTS_DIR` and `certo mcp
+     --root DIR` (repeatable); every tool takes a project inside them
+     and refuses anything outside. The limit sits in the client's server
+     setup, where the person sees it.
+  2. No question to the person in 0.2: what Certo would ask is a tool
+     argument with the default that needs no answer. The new question
+     pattern waits until clients support it.
+  3. No "client's model through sampling": the spec is removing it.
+  4. Logs go to stderr only.
+  Reason: nothing then depends on which spec version a client speaks.
+  The user guide links the sources (SEP-2577 and the Python SDK's
+  deprecated page), so a reader sees why roots aren't used.
