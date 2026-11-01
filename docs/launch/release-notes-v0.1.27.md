@@ -1,7 +1,5 @@
 # Certo v0.1.27
 
-Not released yet.
-
 This release is about bigger tasks, and about setting Certo up:
 
 - **Run a task in milestones** (experimental): a task file split into
@@ -9,6 +7,8 @@ This release is about bigger tasks, and about setting Certo up:
   one that failed.
 - **Two official skills** for project setup, in Python and in Node, so
   a project's dependencies and tests work on the next machine too.
+- **Tool-call reminders count the ones in a row**, so a local model
+  that slips now and then isn't stopped with time left.
 - **`certo check` shows Ollama's details**: the server version and the
   context window a run will get, thanks to @Tusharkanda.
 - **The model files are enough** for `--escalate` and `--auto-model`,
@@ -70,7 +70,14 @@ the task's hidden tests passing. See
   TypeScript: a real `test` script, a `build` script when there is a
   build step, the lockfile kept, and scaffolders run without prompts.
 
-See [Manage skills](../guides/manage-skills.md).
+On `qwen3.8:27b`, both skills helped and neither made anything worse:
+with `node-project-setup`, a Node program in an empty folder ended
+`verified` in 3 of 3 runs instead of `inconclusive` in 3 of 3, because
+the project now had a real `test` script; with `python-environment`,
+the PyYAML dependency was declared in 2 runs of 3 instead of none. On
+Claude Haiku, neither changed anything that worked. See
+[the benchmark](../benchmark/setup-skills-0.1.27.md) and
+[Manage skills](../guides/manage-skills.md).
 
 ## New: Ollama details in `certo check`
 
