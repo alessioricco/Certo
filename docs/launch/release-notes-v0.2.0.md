@@ -1,6 +1,18 @@
 # Certo v0.2.0
 
-Not released yet.
+This release lets other tools drive Certo:
+
+- **Certo as an MCP server** (experimental): `certo mcp` lets an editor
+  or an agent, such as Claude Code, start a task, follow it, stop and
+  continue it, check a project, go back to a checkpoint, and list the
+  projects, models and skills, and get Certo's verdict back.
+- **`certo --json`** prints a run's result as one JSON object, for
+  scripts and CI. `certo-server` and the MCP server return the same
+  object.
+- **Independent tests in server mode**, and in the result the files a
+  run created, modified and deleted, and how each model was chosen.
+- **One way to start a run** for the command line, `certo-server` and
+  the MCP server.
 
 ## New: Certo as an MCP server
 
@@ -41,7 +53,7 @@ chosen (with `--escalate` or `--auto-model`) and the milestones. A
 script or a CI job reads it instead of the terminal text.
 `certo-server` returns the same object as `result`, in
 `GET /tasks/{task_id}` and in the last message of `WS /tasks/stream`,
-and the MCP server will too. See
+and so does the MCP server. See
 [The JSON result](../reference/json-result.md).
 
 ## Changed: one way to start a run
