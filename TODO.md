@@ -297,13 +297,11 @@ too, or folds into `python-environment`. Done when its rule reaches the
 agent before a dependency is added from the terminal.
 
 **Measure the two new skills on qwen3.8 before 0.1.27 is released.**
-Haiku is done (`docs/benchmark/setup-skills-0.1.27.md`: not worse on the
-four Node tasks and on the two skill tasks, nothing to fix there). Left:
-`docs/benchmark/bench-0.1.27-setup-skills-cloud.yaml` with
-`qwen3.8-27b-local` (and the Node tasks), at night or when the Ollama
-machine is free, then `scripts/fresh_env_grade.py` on `yaml-merge`. Done
-when the qwen arms are published, or an unhelpful skill is left out of
-the release.
+The two skill tasks are done on qwen3.8 (`docs/benchmark/setup-skills-0.1.27.md`:
+both skills help, neither made anything worse). Left: the four bundled
+Node tasks on qwen3.8 (`docs/benchmark/bench-0.1.27-node-skill-local.yaml`).
+Done when that is published, or an unhelpful skill is left out of the
+release.
 
 **Make a project verifiable** (first; suggested order: the first two):
 - `cli-entry-points`: `__main__` guard last, a closed stdin doesn't hang,

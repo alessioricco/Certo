@@ -1,11 +1,12 @@
-# Benchmark: the python-environment and node-project-setup skills on a cloud model, Certo 0.1.27
+# Benchmark: the python-environment and node-project-setup skills, Certo 0.1.27
 
 Certo 0.1.27 adds two official skills: `python-environment` (declare a
 project's packages in its own files and install from them, test tools
 as development dependencies) and `node-project-setup` (a real `test`
 script, the lockfile kept, scaffolders without prompts). Do they help,
-and do they make anything worse? These runs answer the second question
-for a cloud model, and set up the first for a local one.
+and do they make anything worse? The first runs answer the second
+question for a cloud model; the runs on a local model, further down,
+answer both.
 
 ## The setup
 
@@ -71,9 +72,8 @@ again in a fresh environment built only from its own files
   only visible effect is the one the skill asks for: with
   `python-environment`, pytest went into the development dependencies
   instead of next to PyYAML.
-- **Whether they help a weaker model is still open.** `qwen3.8` is the
-  next run of the same file with a local model, once the Ollama machine
-  is free.
+- **Whether they help a weaker model** is answered by the local runs
+  below.
 - **One hidden test was stricter than the task text** in the first
   grading: it gave `word-tally-node` two files without a final newline,
   which a program that joins its files as they are reads as one word
@@ -81,6 +81,43 @@ again in a fresh environment built only from its own files
   newline), and the runs graded again; the table shows the new grades
   (the results folder's `results.md` keeps the first ones).
   Before the fix, 7 of 10 runs were graded failed by that test alone.
+
+## On a local model: qwen3.8
+
+The two skill tasks again, on `ollama/qwen3.8:27b` (build
+`aaee06c39dcf`, Ollama 0.40.6 on another machine, a 65,536-token
+window), 3 repeats, one run at a time, on 2026-11-01 from 01:31 to
+03:30 UTC, at commit `bf9e5cd`.
+**File:** [bench-0.1.27-setup-skills-local.yaml](bench-0.1.27-setup-skills-local.yaml).
+**Results folder:** `bench-results/setup-skills-local-0.1.27`.
+
+| Task | Arm | Hidden tests passed | Verified | Median time | What the project declares |
+|---|---|---|---|---|---|
+| `word-tally-node` | without | 3/3 | **0/3** (`inconclusive` 3 times) | 11m 50s | no `package.json` at all, 3 times |
+| | with | 3/3 | 3/3 | 11m 31s | `test` script `node --test tally.test.js`, 3 times |
+| `yaml-merge` | without | 3/3 | 3/3 | 7m 22s | nothing, 3 times |
+| | with | 3/3 | 3/3 | 8m 44s | PyYAML in `pyproject.toml`, with pytest as a development dependency, 2 times; nothing once |
+
+In a fresh environment built only from the project's own files
+(`scripts/fresh_env_grade.py`), the `yaml-merge` projects passed their
+hidden tests 0 times of 3 without the skills, and 2 times of 3 with
+them. The runs passed them in the benchmark because PyYAML was already
+installed where they ran.
+
+**What these runs say:**
+
+- **Both skills help qwen3.8, and neither made anything worse.** Every
+  run's code was right (hidden tests 6/6 in each arm), and the times
+  are close.
+- **`node-project-setup` turned `inconclusive` into `verified`.**
+  Without it, qwen wrote the program and its tests but no
+  `package.json`, so Certo found no test command to run and could not
+  say the work was right. With it, qwen added a `package.json` with a
+  real `test` script in all 3 runs, and Certo ran the tests.
+- **`python-environment` got PyYAML declared in 2 runs of 3, against
+  none without it.** Certo's verdict was `verified` either way, because
+  the checks ran where PyYAML was installed; only a fresh environment
+  shows the difference. One run with the skill still declared nothing.
 
 ## Related
 
