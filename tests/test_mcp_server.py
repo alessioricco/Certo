@@ -4,6 +4,7 @@ connected in process. No LLM: runs, verify and check are fakes."""
 from __future__ import annotations
 
 import json
+import shutil
 import time
 
 import anyio
@@ -80,6 +81,8 @@ def test_the_core_tools_are_listed_with_their_hints(tmp_path):
         "run_cancel",
         "run_resume",
         "list_runs",
+        "checkpoints",
+        "rollback",
         "verify",
         "check_model",
     }
@@ -155,10 +158,13 @@ def test_verify_runs_the_checks_on_a_project(tmp_path):
         seen.append(path)
         return VerificationRun(checks=[check])
 
-    error, result = _call(_server(tmp_path, verify=verify), "verify", {"project": "demo"})
-    assert not error, result
+    server = _server(tmp_path, verify=verify)
+    error, started = _call(server, "verify", {"project": "demo"})
+    assert not error, started
+    result = _wait_done(server, started["run_id"])["result"]
     assert result["verdict"] == "verified"
     assert result["checks"][0]["name"] == "pytest"
+    assert result["task"] == "certo verify"
     assert seen == [str((tmp_path / "projects" / "demo"))]
 
 
@@ -345,3 +351,88 @@ def test_run_task_can_ask_for_independent_tests(tmp_path):
     assert not error, started
     _wait_done(server, started["run_id"])
     assert seen == {"on": True, "strict": False}
+
+
+# --- checkpoints and rollback (real git, as tests/test_checkpoints.py) -------
+
+
+def _project_with_checkpoints(tmp_path):
+    from certo.checkpoints import snapshot
+
+    project = tmp_path / "projects" / "demo"
+    project.mkdir(parents=True)
+    (project / "a.py").write_text("one\n")
+    snapshot(str(project), "first", always=True)
+    (project / "a.py").write_text("two\n")
+    (project / "b.py").write_text("new\n")
+    snapshot(str(project), "second", always=True)
+    return project
+
+
+@pytest.mark.skipif(shutil.which("git") is None, reason="needs git")
+def test_checkpoints_are_listed(tmp_path):
+    _project_with_checkpoints(tmp_path)
+    error, result = _call(_server(tmp_path), "checkpoints", {"project": "demo"})
+    assert not error, result
+    assert [(c["number"], c["label"]) for c in result["checkpoints"]] == [
+        (1, "first"),
+        (2, "second"),
+    ]
+
+
+@pytest.mark.skipif(shutil.which("git") is None, reason="needs git")
+def test_rollback_without_confirm_only_says_what_would_change(tmp_path):
+    project = _project_with_checkpoints(tmp_path)
+    error, result = _call(_server(tmp_path), "rollback", {"project": "demo", "number": 1})
+    assert not error, result
+    assert result["rolled_back"] is False
+    assert {(c["change"], c["path"]) for c in result["changes"]} == {
+        ("restored", "a.py"),
+        ("deleted", "b.py"),
+    }
+    assert (project / "a.py").read_text() == "two\n"
+
+
+@pytest.mark.skipif(shutil.which("git") is None, reason="needs git")
+def test_rollback_with_confirm_restores_and_can_be_undone(tmp_path):
+    project = _project_with_checkpoints(tmp_path)
+    server = _server(tmp_path)
+    error, result = _call(server, "rollback", {"project": "demo", "number": 1, "confirm": True})
+    assert not error, result
+    assert result["rolled_back"] is True
+    assert (project / "a.py").read_text() == "one\n"
+    assert not (project / "b.py").exists()
+
+    error, undone = _call(
+        server, "rollback", {"project": "demo", "number": result["undo_with"], "confirm": True}
+    )
+    assert not error, undone
+    assert (project / "a.py").read_text() == "two\n"
+    assert (project / "b.py").exists()
+
+
+@pytest.mark.skipif(shutil.which("git") is None, reason="needs git")
+def test_rollback_is_refused_while_a_run_works_there(tmp_path):
+    import threading
+
+    _project_with_checkpoints(tmp_path)
+    release = threading.Event()
+
+    def stream(task, **_kwargs):
+        release.wait(5)
+        return _outcome()
+
+    server = _server(tmp_path, stream=stream)
+    _call(server, "run_task", {"task": "x", "project": "demo"})
+    error, text = _call(server, "rollback", {"project": "demo", "number": 1, "confirm": True})
+    release.set()
+    assert error
+    assert "is working in" in text
+
+
+@pytest.mark.skipif(shutil.which("git") is None, reason="needs git")
+def test_rollback_to_a_number_that_doesnt_exist_is_refused(tmp_path):
+    (tmp_path / "projects" / "demo").mkdir(parents=True)
+    error, text = _call(_server(tmp_path), "rollback", {"project": "demo", "number": 3})
+    assert error
+    assert "no checkpoint 3" in text

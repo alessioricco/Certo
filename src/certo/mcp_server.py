@@ -246,23 +246,89 @@ def build_server(
     def verify(project: str | None = None, folder: str | None = None) -> dict[str, Any]:
         """Run Certo's checks on a project without an agent, as `certo verify` does:
         its tests, build and linters where they are set up. It may create the
-        project's own environment (.venv) to run them. Returns the verdict and each
-        check."""
-        from .result import check_dict
-        from .verification import _build_completion_contract, run_full_verification
+        project's own environment (.venv) to run them. Returns a run_id at once, like
+        run_task; run_status then gives the verdict and each check."""
+        run = manager.start_verify(RunOptions(**folders.options(project, folder)), verify=verify_fn)
+        return _started(run)
+
+    def _checkpoint_folder(project: str | None, folder: str | None) -> str:
+        from .checkpoints import git_available
 
         cfg = resolve_config(RunOptions(**folders.options(project, folder)), load=load)
         path = os.path.abspath(cfg.workspace)
         if not os.path.isdir(path):
             raise UsageError(f"{path} doesn't exist")
-        run = (verify_fn or run_full_verification)(path)
-        contract = _build_completion_contract("certo verify", run, skipped=False, aborted=False)
+        if not git_available():
+            raise UsageError("checkpoints need git, which isn't installed")
+        return path
+
+    def _listed(checkpoint: Any) -> dict[str, Any]:
+        return {"number": checkpoint.number, "label": checkpoint.label, "when": checkpoint.when}
+
+    @server.tool(annotations=ToolAnnotations(title="List checkpoints", readOnlyHint=True))
+    @_user_errors
+    def checkpoints(project: str | None = None, folder: str | None = None) -> dict[str, Any]:
+        """The snapshots Certo took of a project during its runs, as `certo
+        checkpoints` lists them: number, label and time, oldest first. `rollback`
+        takes a number from this list."""
+        from .checkpoints import list_checkpoints
+
+        path = _checkpoint_folder(project, folder)
+        return {"workspace": path, "checkpoints": [_listed(c) for c in list_checkpoints(path)]}
+
+    @server.tool(
+        annotations=ToolAnnotations(
+            title="Roll back to a checkpoint", readOnlyHint=False, destructiveHint=True
+        )
+    )
+    @_user_errors
+    def rollback(
+        number: int,
+        project: str | None = None,
+        folder: str | None = None,
+        confirm: bool = False,
+    ) -> dict[str, Any]:
+        """Put a project's files back as they were at checkpoint `number`, as `certo
+        rollback` does. Without `confirm`, nothing changes: it returns the files a
+        rollback would restore, add back or delete. With `confirm` true, it rolls back;
+        the files as they were before become a checkpoint, so rolling back to that one
+        undoes it. Refused while a run is working in the folder."""
+        from .checkpoints import CheckpointError, changed_files, list_checkpoints
+        from .checkpoints import rollback as roll_back
+
+        path = _checkpoint_folder(project, folder)
+        other = manager.busy(path)
+        if other is not None:
+            raise UsageError(f"run {other} is working in {path}: wait for it, or cancel it")
+        found = list_checkpoints(path)
+        if not 1 <= number <= len(found):
+            raise UsageError(
+                f"no checkpoint {number}; {path} has " + (f"1 to {len(found)}" if found else "none")
+            )
+        target = found[number - 1]
+        words = {"M": "restored", "A": "added back", "D": "deleted"}
+        try:
+            changes = [
+                {"change": words.get(kind[:1], kind), "path": name}
+                for kind, _, name in (line.partition(" ") for line in changed_files(path, target))
+            ]
+            if not confirm or not changes:
+                return {
+                    "workspace": path,
+                    "checkpoint": _listed(target),
+                    "rolled_back": False,
+                    "changes": changes,
+                }
+            before, after = roll_back(path, number)
+        except CheckpointError as exc:
+            raise UsageError(str(exc)) from exc
+        undo = before.number if before is not None else found[-1].number
         return {
             "workspace": path,
-            "verdict": run.state,
-            "checks": [check_dict(c) for c in run.checks],
-            "notices": list(run.notices),
-            "limitations": list(contract.limitations),
+            "checkpoint": _listed(target),
+            "rolled_back": True,
+            "changes": changes,
+            "undo_with": undo,
         }
 
     @server.tool(annotations=ToolAnnotations(title="Check the model", openWorldHint=True))

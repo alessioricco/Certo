@@ -35,8 +35,10 @@ given design was chosen.
 - **`mcp_server.py`** + `certo mcp` — `build_server(manager, folders,
   load=)` makes an `mcp` `MCPServer` with the core tools on
   `runs.RunManager` (`run_task`, `run_status`, `run_events`, `run_cancel`,
-  `list_runs`), `verify` (synchronous `run_full_verification`) and
-  `check_model` (`llm_check.check_tool_calling`). `Folders` turns a tool's
+  `list_runs`, `run_resume`), `verify` (a run: `RunManager.start_verify`),
+  `checkpoints` and `rollback` (`checkpoints.py`; preview unless
+  `confirm`, refused while `RunManager.busy`), and `check_model`
+  (`llm_check.check_tool_calling`). `Folders` turns a tool's
   `project` or `folder` into `RunOptions`: a folder must be a full path
   inside `CERTO_PROJECTS_DIR` or a `--root` (realpath, so a symlink can't
   leave). Every tool is wrapped by `_user_errors`: a `ValueError` (Certo's

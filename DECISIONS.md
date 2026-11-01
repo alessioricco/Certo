@@ -1551,3 +1551,12 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   hint: the agent can change or delete any file in the folder and run
   commands. Certo's own errors reach the client as tool errors with their
   message; others are hidden by the `mcp` package.
+
+- **`certo mcp`: `verify` is a run; `rollback` needs `confirm`**
+  (2026-11-01; supersedes "`verify` synchronous" above). `verify` returns
+  a run id like `run_task`, with the same JSON result (verdict, checks), so
+  a long suite never hits a client's call timeout; it can't be cancelled
+  (each check has its own limit). `rollback` without `confirm: true` only
+  lists what it would change, so one tool call can't throw work away even
+  in a client that doesn't ask about destructive tools; it is refused while
+  a run works in the folder.

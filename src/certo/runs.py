@@ -292,6 +292,70 @@ class RunManager:
         else:
             finish("finished", outcome)
 
+    def start_verify(
+        self, options: RunOptions, *, verify: Callable[[str], Any] | None = None
+    ) -> Run:
+        """Run Certo's checks on a folder without an agent, as `certo verify`
+        does, as a run: its result has the verdict and the checks. It can't be
+        cancelled; each check has its own time limit."""
+        cfg = resolve_config(options, load=self._load)
+        workspace = os.path.abspath(cfg.workspace)
+        if not os.path.isdir(workspace):
+            raise UsageError(f"{workspace} doesn't exist")
+        with self._lock:
+            other = self._busy.get(workspace)
+            if other is not None:
+                raise UsageError(
+                    f"run {other} is still working in {workspace}: wait for it, or cancel it"
+                )
+            run = Run(
+                id=uuid.uuid4().hex[:12],
+                task="certo verify",
+                project=options.project,
+                workspace=workspace,
+            )
+            self._runs[run.id] = run
+            self._busy[workspace] = run.id
+        threading.Thread(
+            target=self._verify_work, args=(run, verify), name=f"certo-run-{run.id}", daemon=True
+        ).start()
+        return run
+
+    def _verify_work(self, run: Run, verify: Callable[[str], Any] | None) -> None:
+        from .result import check_dict
+        from .verification import _build_completion_contract, run_full_verification
+
+        result = run_result(None, task=run.task, workspace=run.workspace, project=run.project)
+        try:
+            found = (verify or run_full_verification)(run.workspace)
+        except Exception as exc:  # noqa: BLE001 - kept in the run's result, not raised
+            state = "error"
+            result["error"] = str(exc) or type(exc).__name__
+        else:
+            state = "finished"
+            for notice in found.notices:
+                self._add_event(run, "notice", "certo", notice)
+            for check in found.checks:
+                self._add_event(run, "notice", "certo", f"{check.status} {check.name}")
+            contract = _build_completion_contract(
+                "certo verify", found, skipped=False, aborted=False
+            )
+            result.update(
+                verdict=found.state,
+                limitations=list(contract.limitations),
+                checks=[check_dict(c) for c in found.checks],
+            )
+        with self._lock:
+            run.state = state
+            run.result = result
+            run.ended_at = time.time()
+            self._busy.pop(run.workspace, None)
+
+    def busy(self, workspace: str) -> str | None:
+        """The id of the run working in `workspace`, or None."""
+        with self._lock:
+            return self._busy.get(os.path.abspath(workspace))
+
     def get(self, run_id: str) -> Run:
         with self._lock:
             run = self._runs.get(run_id)

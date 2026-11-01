@@ -78,7 +78,9 @@ so Certo doesn't use it.
 | `run_events` | The agent's messages and Certo's notices so far, numbered. Pass the last call's `next` as `since` to get only the new ones. |
 | `run_cancel` | Stop a run at the agent's next step. The work is kept; `run_resume` (or `certo --resume` in its folder) continues it. |
 | `list_runs` | The runs this server started. |
-| `verify` | Run Certo's checks on a project or folder without an agent, as `certo verify` does. |
+| `verify` | Run Certo's checks on a project or folder without an agent, as `certo verify` does. Returns a `run_id` at once, like `run_task`, so a long test suite doesn't hit the client's time limit; `run_status` then gives the verdict and the checks. It can't be cancelled: each check has its own time limit. |
+| `checkpoints` | The snapshots Certo took of a project during its runs, as `certo checkpoints` lists them. See [Go back to an earlier point](checkpoints.md). |
+| `rollback` | Put a project's files back as they were at a checkpoint `number`, as `certo rollback` does. Without `confirm: true` it only lists what would be restored, added back or deleted. With it, the files are rolled back, and the answer's `undo_with` is the checkpoint that undoes it. Refused while a run works in that folder. |
 | `check_model` | One small call to the configured model, as `certo check` does. |
 
 Each project also has two resources, which a client can show or read:
@@ -91,9 +93,10 @@ Each project also has two resources, which a client can show or read:
 A project with no run yet has neither: reading one is a "not found"
 error. See [Run records and costs](run-records-and-costs.md).
 
-`run_task` is marked as able to change files, since the agent can
-change any file in the folder and run commands there, so a client asks
-you before it runs. One run per folder at a time; runs in different
+`run_task`, `run_resume` and `rollback` are marked as able to change
+or delete files, so a client asks you before it runs them: the agent
+can change any file in the folder and run commands there. `rollback`
+also asks for `confirm: true` itself. One run per folder at a time; runs in different
 folders go in parallel.
 
 ## A real run
@@ -131,6 +134,18 @@ cancelled: cancelled cancelled 2.0s
 resumed task: Write a Python module `shapes.py` with a
 resumed: finished verified {'created': ['README.md', 'shapes.py', 'test_shapes.py'], 'modified': [], 'deleted': []}
 again: nothing_to_do The last run here already ended with 'verified'. To continue
+```
+
+**Verify, checkpoints and rollback.** The same client checked a
+project, listed its checkpoints, asked what a rollback to checkpoint 1
+would do, did it, and undid it:
+
+```text
+verify: finished verified [('pytest', 'passed')]
+checkpoints: [(1, 'before the agent'), (2, 'checks 1: verified')]
+preview: False [{'change': 'deleted', 'path': 'README.md'}, {'change': 'deleted', 'path': 'sub.py'}, {'change': 'deleted', 'path': 'test_sub.py'}]
+rolled back: True undo_with 2 files now: ['.certo', '.pytest_cache', '.venv', '__pycache__']
+undone: True files now: ['.certo', '.pytest_cache', '.venv', 'README.md', '__pycache__', 'sub.py', 'test_sub.py']
 ```
 
 **From a script.** The `mcp` Python package's own client started

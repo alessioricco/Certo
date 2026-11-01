@@ -14,7 +14,9 @@ claude mcp add certo -- uvx certo mcp
 Its tools start a task and return at once (`run_task`, also with a task
 file in milestones), follow it (`run_status`, `run_events`), stop it
 (`run_cancel`) and continue it later (`run_resume`, as `certo --resume`
-does), check a project without an agent (`verify`), and test the model
+does), check a project without an agent (`verify`), list its
+checkpoints and go back to one (`checkpoints`, `rollback`, which only
+says what it would change until it's confirmed), and test the model
 (`check_model`). `run_task` can also ask for
 [independent tests](../guides/independent-tests.md), and so can a
 `certo-server` task, with `independent_tests`: before, server mode
