@@ -82,6 +82,7 @@ shortened):
     ]
   },
   "rungs": null,
+  "model_decisions": null,
   "milestones": null,
   "error": null
 }
@@ -106,10 +107,39 @@ shortened):
 | `files_changed` | The files the run created, modified and deleted in the project folder, each a list of paths relative to it, compared before and after the run (Certo's own files, `.certo/`, `.git/`, environments, caches and build output such as `dist/` or `target/` left out). `null` when the run stopped with an error. |
 | `usage` | Time and tokens for the whole run: `duration_seconds`, `total_tokens`, `prompt_tokens` (cached ones included), `completion_tokens`, `cache_read_tokens`, `cost` in US dollars, `cost_known` (false when a model has no price), `condensations`, and the same per model in `models`. `null` when the run stopped with an error. |
 | `rungs` | With `--escalate`: one entry per model that ran, with `final: true` on the one whose verdict this is. Otherwise `null`. See [Escalate between models](../guides/escalate-between-models.md). |
+| `model_decisions` | With `--escalate` or `--auto-model`: how each model was chosen, as `MODEL_DECISIONS.md` in the project tells it. Each decision has `kind`, `timestamp`, `task_profile` and `weights` (with `--auto-model`), `candidates` (each `name` and `score`), `scored_by` (`score`, a weighted rating, with `--auto-model`; `capability` on a ladder), `chosen` and `reason`. Otherwise `null`. An example follows the table. |
 | `milestones` | With `--milestones`: each milestone's `number`, `title` and `verdict` (`null` if it didn't start). Otherwise `null`. |
 | `error` | Why the run stopped without a verdict (`interrupted`, or the error), or `null`. |
 
 The result never holds an API key.
+
+A run with `--escalate hard` (a ladder of three cloud models) that ended
+`verified` on its first rung has two decisions, the ladder and the stop
+(the second shown in part):
+
+```json
+"model_decisions": [
+  {
+    "kind": "ladder",
+    "timestamp": "2026-11-01T19:14:33.537743+00:00",
+    "task_profile": null,
+    "weights": {},
+    "scored_by": "capability",
+    "candidates": [
+      {"name": "claude-sonnet-5-5 (effort high)", "score": 13.0},
+      {"name": "claude-opus-5-5 (effort high)", "score": 15.0},
+      {"name": "gpt-6.1-sol (effort high)", "score": 13.0}
+    ],
+    "chosen": "claude-sonnet-5-5 (effort high)",
+    "reason": "Explicit ladder 'hard' from escalation.yaml."
+  },
+  {
+    "kind": "escalation_stop",
+    "chosen": "claude-sonnet-5-5 (effort high)",
+    "reason": "claude-sonnet-5-5 ended verified, which doesn't escalate."
+  }
+]
+```
 
 ## Related
 

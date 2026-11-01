@@ -116,3 +116,32 @@ def test_independent_tests_show_their_sets_and_output():
             {"status": "failed", "summary": "1 failed"},
         ],
     }
+
+
+def test_model_decisions_say_how_each_model_was_chosen():
+    from certo.model_selection import ModelDecisionRecord
+
+    decision = ModelDecisionRecord(
+        kind="initial",
+        timestamp="2026-11-01T10:00:00+00:00",
+        task_profile="web",
+        weights={"precision": 2.0},
+        ranked=(("haiku", 8.0), ("sonnet", 6.5)),
+        chosen="haiku",
+        reason="highest score",
+    )
+    result = run_result(_outcome(model_decisions=(decision,)), task="t", workspace="/p")
+    assert result["model_decisions"] == [
+        {
+            "kind": "initial",
+            "timestamp": "2026-11-01T10:00:00+00:00",
+            "task_profile": "web",
+            "weights": {"precision": 2.0},
+            "scored_by": "score",
+            "candidates": [{"name": "haiku", "score": 8.0}, {"name": "sonnet", "score": 6.5}],
+            "chosen": "haiku",
+            "reason": "highest score",
+        }
+    ]
+    assert run_result(_outcome(), task="t", workspace="/p")["model_decisions"] is None
+    json.dumps(result)

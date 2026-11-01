@@ -35,7 +35,8 @@ specification deprecates. See
 standard output, and everything else on standard error: the verdict,
 each check with the end of its output, the files the run created,
 modified and deleted, the acceptance checks, the time,
-tokens and cost per model, the ladder's rungs and the milestones. A
+tokens and cost per model, the ladder's rungs, how each model was
+chosen (with `--escalate` or `--auto-model`) and the milestones. A
 script or a CI job reads it instead of the terminal text.
 `certo-server` returns the same object as `result`, in
 `GET /tasks/{task_id}` and in the last message of `WS /tasks/stream`,

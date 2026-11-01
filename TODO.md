@@ -287,9 +287,6 @@ cut that first run's output from 2,949 lines to 1,021.)
   for `verification_state`, so a caller gets the agent's own claim only.
   Needs a deliberate wire-format choice (a custom field, or a trailing
   message).
-- **`model_decisions` isn't on `GET /tasks/{id}`.** The SQL stores need a
-  new column; the `rungs` column (0.1.9) already shows how
-  (`ALTER TABLE ... ADD COLUMN` on startup).
 - **No way to list tasks or projects** in a task store (`certo-admin`,
   REST): every operation needs a known id or project name.
 - **ECS/EC2 or other remote execution backends.** `build_workspace()` is

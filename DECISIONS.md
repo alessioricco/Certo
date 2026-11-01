@@ -1560,3 +1560,11 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   lists what it would change, so one tool call can't throw work away even
   in a client that doesn't ask about destructive tools; it is refused while
   a run works in the folder.
+
+- **`model_decisions` go in the JSON result, not a server column**
+  (2026-11-01). How `--escalate` and `--auto-model` chose each model
+  (what `MODEL_DECISIONS.md` holds) is the result's `model_decisions`, so
+  `certo --json`, `GET /tasks/{id}`'s `result` and the MCP server all get
+  it from one place; the server stores it in its `result` column. Fixed
+  keys (`score`, with `scored_by` saying what the score is) rather than a
+  key named after the score.

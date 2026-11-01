@@ -83,6 +83,27 @@ def _usage(outcome: TaskOutcome) -> dict[str, Any] | None:
     }
 
 
+def _decisions(outcome: TaskOutcome) -> list[dict[str, Any]] | None:
+    """How --auto-model and --escalate chose each model, as MODEL_DECISIONS.md
+    tells it; no key or base URL is in a decision."""
+    if not outcome.model_decisions:
+        return None
+    return [
+        {
+            "kind": d.kind,
+            "timestamp": d.timestamp,
+            "task_profile": d.task_profile or None,
+            "weights": dict(d.weights),
+            # --auto-model ranks by a weighted "score"; a ladder by "capability".
+            "scored_by": d.score_label,
+            "candidates": [{"name": name, "score": score} for name, score in d.ranked],
+            "chosen": d.chosen,
+            "reason": d.reason,
+        }
+        for d in outcome.model_decisions
+    ]
+
+
 def run_result(
     outcome: TaskOutcome | None,
     *,
@@ -110,6 +131,7 @@ def run_result(
         "files_changed": None,
         "usage": None,
         "rungs": None,
+        "model_decisions": None,
         "milestones": list(milestones) if milestones is not None else None,
         "error": error,
     }
@@ -137,5 +159,6 @@ def run_result(
         ),
         usage=_usage(outcome),
         rungs=rung_dicts(outcome.rungs, outcome.final_rung) if outcome.rungs else None,
+        model_decisions=_decisions(outcome),
     )
     return result
