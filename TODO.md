@@ -69,11 +69,6 @@ first item is the suggested next one.
   in the spreadsheet task that a chain of 200 cells must work (hidden
   `test_m2_a_long_chain` is stricter than the text); then Certo
   planning the milestones itself.
-- **A local model that ends its turn with a sentence of plans.** Done in
-  0.2.1 (`text_tool_calls.announces_next_step`, reminder shared with
-  `CERTO_TOOL_CALL_REMINDERS`); replay of saved endings: 4/4 local, 0/210
-  cloud. Left: the local and cloud benchmark (expenses in milestones, as
-  `reminders-in-a-row-0.1.27.md`), then delete this item.
 - **A harder app task** (`app-tasks`, next `apps-` version). Haiku and
   Sonnet both pass the spreadsheet 111/111 in one go, so it doesn't
   separate cloud models: a task that does would show the ladder climbing
