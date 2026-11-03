@@ -234,7 +234,8 @@ In `results.md`, per arm:
   "caught" runs are in fact unconfirmed passes.
 - **Median time, tokens and cost.**
 - **Tool-call reminders:** how often the agent wrote a tool call as text
-  instead of making it, and Certo sent it back
+  instead of making it, or ended its turn on a sentence of plans, and
+  Certo sent it back
   ([`CERTO_TOOL_CALL_REMINDERS`](../reference/configuration.md), see also
   [Troubleshooting](../troubleshooting.md#the-run-ends-at-once-with-a-tool-call-as-the-agents-last-message)),
   added up over the arm's runs. An escalation run counts every rung's own.

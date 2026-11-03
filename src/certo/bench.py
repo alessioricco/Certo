@@ -354,7 +354,8 @@ def execute_run(
         "cost": round(summary.total_cost, 6) if summary else 0.0,
         "cost_known": summary.cost_complete if summary else True,
         "retries_used": attempt.retries_used if attempt else 0,
-        # How often the agent wrote a tool call as text instead of making it
+        # How often the agent wrote a tool call as text instead of making it,
+        # or ended on a sentence of plans
         # (CERTO_TOOL_CALL_REMINDERS); summed over rungs for an escalation.
         "tool_call_reminders": attempt.tool_call_reminders if attempt else 0,
         # How often older steps were summarized (the context window filled up).

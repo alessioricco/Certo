@@ -17,3 +17,14 @@ in milestones, no run ended this way: `qwen3.8:27b` was verified in 5
 of 5 runs and Haiku in 3 of 3, but the reminder was never sent, so
 that score is not its doing. See
 [Troubleshooting](../troubleshooting.md#the-run-ends-on-a-sentence-of-plans).
+
+## New: tool-call reminders in the benchmark results
+
+`certo bench` now counts how many times Certo sent the agent back
+because it wrote a tool call as text or ended its turn on a sentence of
+plans: a **Tool-call reminders** column in `results.md`, and
+`tool_call_reminders` in `results.csv` and each run's record. An
+escalation run adds up every rung's own, and a run in milestones adds
+up every milestone's. Thanks to @Tusharkanda
+([#41](https://github.com/alessioricco/Certo/pull/41)). See
+[Benchmark](../guides/benchmark.md).

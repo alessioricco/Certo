@@ -435,8 +435,9 @@ def render_markdown(meta: dict[str, Any], records: list[dict[str, Any]]) -> str:
         "- **Median time:** wall time of one run, including Certo's checks and retries.",
         (
             "- **Tool-call reminders:** how many times the agent wrote a tool call as text "
-            "instead of making it, and Certo sent it back (`CERTO_TOOL_CALL_REMINDERS`), "
-            "added up over the arm's runs. An escalation run counts every rung's own."
+            "instead of making it, or ended its turn on a sentence of plans, and Certo sent "
+            "it back (`CERTO_TOOL_CALL_REMINDERS`), added up over the arm's runs. An "
+            "escalation run counts every rung's own."
         ),
         "- **Cost:** from LiteLLM's prices; `+ unknown` when a model has no price.",
         (

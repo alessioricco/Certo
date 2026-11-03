@@ -302,7 +302,8 @@ class TaskOutcome:
     # folder (stream_task). None when the run didn't go through it.
     files_changed: FileChanges | None = None
     # How many times _remind_text_tool_call sent the agent back after it
-    # wrote a tool call as text (see CERTO_TOOL_CALL_REMINDERS). An
+    # wrote a tool call as text or ended on a sentence of plans (see
+    # CERTO_TOOL_CALL_REMINDERS), in all, not in a row. An
     # escalation run sums every rung's own count (RungResult below).
     tool_call_reminders: int = 0
 
@@ -696,14 +697,18 @@ def _outcome_for_run_result(
     )
 
 
-# Per conversation: how many tool-call reminders were sent, and the id of
-# the last message reminded about (`_remind_text_tool_call`).
-_TOOL_CALL_REMINDERS: weakref.WeakKeyDictionary[Any, tuple[int, str]] = weakref.WeakKeyDictionary()
+# Per conversation: how many tool-call reminders were sent in a row, how
+# many in all, and the id of the last message reminded about
+# (`_remind_text_tool_call`).
+_TOOL_CALL_REMINDERS: weakref.WeakKeyDictionary[Any, tuple[int, int, str]] = (
+    weakref.WeakKeyDictionary()
+)
 
 
 def _reminders_sent(conversation: Conversation) -> int:
-    """How many tool-call reminders this conversation has been sent so far."""
-    return _TOOL_CALL_REMINDERS.get(conversation, (0, ""))[0]
+    """How many tool-call reminders this conversation has been sent in all;
+    the in-a-row count goes back to 0 after a real tool call, this doesn't."""
+    return _TOOL_CALL_REMINDERS.get(conversation, (0, 0, ""))[1]
 
 
 def _remind_text_tool_call(
@@ -723,7 +728,7 @@ def _remind_text_tool_call(
     that never recovers is stopped. A model that makes real tool calls
     never gets here: the last message must be text that is, as a whole, a
     call to one of the agent's tools, or end on a sentence of plans."""
-    sent, last_id = _TOOL_CALL_REMINDERS.get(conversation, (0, ""))
+    sent, total, last_id = _TOOL_CALL_REMINDERS.get(conversation, (0, 0, ""))
     if sent and _real_call_since(conversation, last_id):
         sent = 0
     if sent >= cfg.tool_call_reminders:
@@ -746,7 +751,7 @@ def _remind_text_tool_call(
     if time.monotonic() >= deadline or cost_limit_reached(conversation):
         return False
     sent += 1
-    _TOOL_CALL_REMINDERS[conversation] = (sent, event.id)
+    _TOOL_CALL_REMINDERS[conversation] = (sent, total + 1, event.id)
     _emit_notice(
         emit,
         f"Certo: the agent {what}, so nothing ran. Asking it to make the call "
