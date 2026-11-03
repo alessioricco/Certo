@@ -1605,3 +1605,11 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   with `certo --json`; the name comes from the start time, so every
   milestone's `RUNS.md` entry links the one report before it exists. No
   HTML: it can be made from the same data later.
+
+- **The skills commands that download or turn on code never get an MCP
+  tool** (2026-11-03; supersedes their "not yet" in `NO_TOOL`).
+  `certo skills add`, `update` and `sync` have a license a person
+  accepts, and `enable` runs third-party code: over MCP, an agent would
+  decide either for you, or Certo would need elicitation, which it
+  doesn't use. `remove` and `disable` only take skills away, so they can
+  get a tool with a confirm step, when someone asks.

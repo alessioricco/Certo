@@ -38,18 +38,18 @@ COMMAND_TOOLS: dict[str, tuple[str, ...]] = {
     "certo rollback": ("rollback",),
 }
 
-# The commands with no tool, and why. Those that say "not yet" are still to
-# do (TODO.md, "MCP server with every Certo command").
+# The commands with no tool, and why. Those that say "on request" get a
+# tool when someone asks (TODO.md); the others never do (DECISIONS.md).
 NO_TOOL: dict[str, str] = {
     "certo init": "asks questions and writes your settings file: run it in a terminal",
     "certo init models": "asks questions and writes your model files: run it in a terminal",
     "certo models update": "asks about each change to your models list: run it in a terminal",
-    "certo skills add": "downloads code, with a license step a person answers: not yet",
-    "certo skills remove": "changes the skills every run gets: not yet",
-    "certo skills enable": "turns on downloaded code: not yet",
-    "certo skills disable": "changes the skills every run gets: not yet",
-    "certo skills update": "downloads code, with a license step a person answers: not yet",
-    "certo skills sync": "downloads code, with a license step a person answers: not yet",
+    "certo skills add": "downloads code, with a license only a person may accept: run it in a terminal",
+    "certo skills remove": "changes the skills every run gets: on request",
+    "certo skills enable": "turns on downloaded code, a person's decision: run it in a terminal",
+    "certo skills disable": "changes the skills every run gets: on request",
+    "certo skills update": "downloads code, with a license only a person may accept: run it in a terminal",
+    "certo skills sync": "downloads code, with a license only a person may accept: run it in a terminal",
     "certo bench": "runs for hours, and is set up and read in a terminal",
     "certo mcp": "it is this server",
     "certo-server": "another server, over HTTP",

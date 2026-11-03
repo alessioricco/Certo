@@ -231,35 +231,15 @@ cut that first run's output from 2,949 lines to 1,021.)
   the settings file for now. Later, read them from the system keychain
   or a secret manager (1Password, Bitwarden, a cloud vault) instead.
   Decide which, and how a key is named, when someone asks for it.
-- **MCP server with every Certo command** (the Author, 2026-10-31: all
-  the commands, so a client can build a wrapper on top; 0.2 work; Phase 3
-  closed 2026-10-31). Design in DECISIONS.md ("The MCP server: every
-  command, on a shared core"), released in slices ("0.2 comes in
-  slices": 0.2.0 is running a task, verify, check and run status, then
-  the rest in 0.2.x). In order: (0) `certo.api`, one typed
-  function per command, with the CLI and `certo-server` moved onto it
-  (started: both now build a run's config with `api.resolve_config` and
-  `prepare_workspace`; the JSON result is `result.run_result`, with
-  `certo --json` and the server's `result`; runs to start, follow and
-  cancel are `runs.RunManager` (cancel.py); `certo mcp` has the core
-  tools, `run_resume`, milestones files and the project resources
-  (mcp_server.py), checked live from Claude Code and the `mcp` stdio
-  client; the JSON result lists the files changed; `list_projects`,
-  `list_models`, `list_skills`, and the test that every command has a
-  tool or a reason (`COMMAND_TOOLS`/`NO_TOOL`); left: the "not yet"
-  entries in `NO_TOOL`, i.e. the skills commands that change files);
-  (1) the JSON result and `certo --json` (done); (2) `certo mcp` over stdio
-  (no authentication; HTTP only after it, see DECISIONS.md),
-  `--tools core` then `--tools all`, runs as start/status/events/cancel,
-  resources, folders limited by `CERTO_PROJECTS_DIR` and `--root` (no
-  roots, elicitation or sampling: DECISIONS.md "uses no deprecated MCP
-  feature"); (3) a guide and the test that every command has a tool.
-  The guide links its sources: SEP-2577
-  (https://modelcontextprotocol.info/seps/2577-deprecate-roots-sampling-and-logging/)
-  and https://py.sdk.modelcontextprotocol.io/v2/deprecated/, to say why
-  the folders are set with `--root`. Done when every command in
-  `docs/reference/commands.md` has a tool, a guide shows a client
-  running a task to `verified`, and that test passes.
+- **MCP tools for `certo skills remove` and `disable`** (on request
+  only). They only take skills away, so a tool is safe, with
+  `rollback`'s confirm step; nobody has asked. Every other command has
+  a tool or a lasting reason (`NO_TOOL`, DECISIONS.md).
+- **`certo mcp --tools core` / `--tools all`**: planned in DECISIONS.md
+  ("The MCP server: every command, on a shared core", point 3) for ~25
+  tools crowding a client model's context, never built. `certo mcp` has
+  13 tools today. The Author decides: build it (a local model in a
+  client is crowded), or drop it with a DECISIONS.md entry.
 - **Live progress view** in the terminal: current milestone, last check,
   cost so far.
 - **Docs website and gallery**: a site generator for `docs/`, a gallery of
