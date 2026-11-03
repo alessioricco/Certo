@@ -87,6 +87,36 @@ class TaskRecord:
         return cls(**data)
 
 
+@dataclass(frozen=True)
+class TaskSummary:
+    """One line of `TaskStore.list_tasks`: a record without its messages
+    and results, which can be large."""
+
+    id: str
+    task: str
+    status: str
+    project: str | None
+    verification_state: str | None
+    created_at: float
+    updated_at: float
+
+    @classmethod
+    def of(cls, record: TaskRecord) -> TaskSummary:
+        return cls(
+            id=record.id,
+            task=record.task,
+            status=record.status,
+            project=record.project,
+            verification_state=record.verification_state,
+            created_at=record.created_at,
+            updated_at=record.updated_at,
+        )
+
+
+def _newest_first(summaries: list[TaskSummary]) -> list[TaskSummary]:
+    return sorted(summaries, key=lambda s: (s.created_at, s.id), reverse=True)
+
+
 class TaskStore(ABC):
     """Common interface every backend implements. A caller (`server.py`,
     `admin_cli.py`) never needs to know which backend is actually active.
@@ -109,6 +139,11 @@ class TaskStore(ABC):
     @abstractmethod
     def delete(self, task_id: str) -> bool:
         """Delete one record. Returns whether it actually existed."""
+
+    @abstractmethod
+    def list_tasks(self, project: str | None = None) -> list[TaskSummary]:
+        """Every record, or only those whose `project` matches exactly,
+        newest first. An empty list is a normal result."""
 
     @abstractmethod
     def delete_by_project(self, project: str) -> int:
@@ -170,6 +205,16 @@ class MemoryTaskStore(TaskStore):
     def delete(self, task_id: str) -> bool:
         with self._lock:
             return self._records.pop(task_id, None) is not None
+
+    def list_tasks(self, project: str | None = None) -> list[TaskSummary]:
+        with self._lock:
+            return _newest_first(
+                [
+                    TaskSummary.of(r)
+                    for r in self._records.values()
+                    if project is None or r.project == project
+                ]
+            )
 
     def delete_by_project(self, project: str) -> int:
         with self._lock:
@@ -335,6 +380,17 @@ class SQLTaskStore(TaskStore):
             result = conn.execute(self._table.delete().where(self._table.c.id == task_id))
             return result.rowcount > 0
 
+    def list_tasks(self, project: str | None = None) -> list[TaskSummary]:
+        c = self._table.c
+        query = self._sa.select(
+            c.id, c.task, c.status, c.project, c.verification_state, c.created_at, c.updated_at
+        )
+        if project is not None:
+            query = query.where(c.project == project)
+        with self._engine.connect() as conn:
+            rows = conn.execute(query).fetchall()
+        return _newest_first([TaskSummary(*row) for row in rows])
+
     def delete_by_project(self, project: str) -> int:
         with self._engine.begin() as conn:
             result = conn.execute(self._table.delete().where(self._table.c.project == project))
@@ -445,6 +501,25 @@ class RedisTaskStore(TaskStore):
             for prefix in (_REDIS_PREFIX, _LEGACY_REDIS_PREFIX):
                 self._redis.srem(self._project_key(record.project, prefix), task_id)
         return deleted
+
+    def list_tasks(self, project: str | None = None) -> list[TaskSummary]:
+        # A project's ids come from its sets; all ids from a SCAN of the
+        # task keys. Both cover the pre-rename prefix.
+        if project is not None:
+            task_ids = set(
+                self._redis.sunion(
+                    [self._project_key(project, p) for p in (_REDIS_PREFIX, _LEGACY_REDIS_PREFIX)]
+                )
+            )
+        else:
+            task_ids = {
+                key.split(":task:", 1)[1]
+                for p in (_REDIS_PREFIX, _LEGACY_REDIS_PREFIX)
+                for key in self._redis.scan_iter(match=self._task_key("*", p))
+            }
+        records = (self.get(task_id) for task_id in task_ids)
+        # A project set can still name a record that expired (native TTL).
+        return _newest_first([TaskSummary.of(r) for r in records if r is not None])
 
     def delete_by_project(self, project: str) -> int:
         project_keys = [

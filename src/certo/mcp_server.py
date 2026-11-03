@@ -54,6 +54,7 @@ NO_TOOL: dict[str, str] = {
     "certo mcp": "it is this server",
     "certo-server": "another server, over HTTP",
     "certo-admin": "manages certo-server's task store, not this server's runs",
+    "certo-admin list": "manages certo-server's task store, not this server's runs",
     "certo-admin show": "manages certo-server's task store, not this server's runs",
     "certo-admin delete-task": "manages certo-server's task store, not this server's runs",
     "certo-admin delete-project": "manages certo-server's task store, not this server's runs",

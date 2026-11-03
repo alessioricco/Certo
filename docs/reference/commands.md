@@ -643,6 +643,22 @@ same settings as `certo`. Skills are managed with
 |---|---|
 | `--version` | Print the version and exit. |
 
+### `certo-admin list`
+
+```text
+certo-admin list [--project PROJECT] [--limit N]
+```
+
+List the task records in the task store (`CERTO_TASK_STORE`), newest
+first: id, project, status, verdict, when it was created (UTC) and the
+start of the task. Use an id with `certo-admin show` or
+`certo-admin delete-task`. No records is not an error.
+
+| Flag | Default | Effect |
+|---|---|---|
+| `--project PROJECT` | all projects | Only the records of this project. |
+| `--limit N` | `50` | Show at most `N` records; `0` shows all. When some are left out, the last line says how many. |
+
 ### `certo-admin show`
 
 ```text

@@ -119,10 +119,12 @@ To delete old records automatically, set `CERTO_TASK_TTL_SECONDS` (default
 `0`, keep forever). Finished tasks older than that are removed; running
 tasks never are.
 
-To delete records by hand, use the API or `certo-admin`, which talks to the
-store directly, without a running server:
+To see the records, or delete them by hand, use `certo-admin`, which
+talks to the store directly, without a running server, or the API for
+deleting:
 
 ```bash
+certo-admin list --project my-api
 curl -X DELETE "http://127.0.0.1:8000/tasks?project=my-api"
 certo-admin delete-project my-api
 certo-admin delete-task f4fe313c-...

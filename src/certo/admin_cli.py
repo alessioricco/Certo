@@ -14,6 +14,7 @@ redis/mysql/postgres store.
 from __future__ import annotations
 
 import argparse
+from datetime import UTC, datetime
 
 from . import __version__
 from .config import ConfigError, load_config, override_llm
@@ -61,6 +62,42 @@ def _cmd_purge(args: argparse.Namespace) -> int:
     finally:
         store.close()
     print(f"Purged {purged} expired task(s) (ttl_seconds={ttl_seconds}).")
+    return 0
+
+
+# A task's text is cut to this many characters in `list`; `show` has more.
+_LISTED_TASK_CHARS = 50
+
+
+def _cmd_list(args: argparse.Namespace) -> int:
+    if args.limit < 0:
+        print("--limit must be 0 (all) or more.")
+        return 1
+    cfg = load_config()
+    store = build_task_store(cfg)
+    try:
+        summaries = store.list_tasks(args.project)
+    finally:
+        store.close()
+    if not summaries:
+        where = f" for project {args.project!r}" if args.project is not None else ""
+        print(f"No task records{where}.")
+        return 0
+    shown = summaries[: args.limit] if args.limit else summaries
+    rows = [("ID", "PROJECT", "STATUS", "VERDICT", "CREATED (UTC)", "TASK")]
+    for s in shown:
+        task = " ".join(s.task.split())
+        if len(task) > _LISTED_TASK_CHARS:
+            task = task[: _LISTED_TASK_CHARS - 3] + "..."
+        created = datetime.fromtimestamp(s.created_at, UTC).strftime("%Y-%m-%d %H:%M")
+        rows.append((s.id, s.project or "-", s.status, s.verification_state or "-", created, task))
+    widths = [max(len(row[i]) for row in rows) for i in range(len(rows[0]) - 1)]
+    for row in rows:
+        print(
+            "  ".join(cell.ljust(w) for cell, w in zip(row, widths, strict=False)) + "  " + row[-1]
+        )
+    if len(shown) < len(summaries):
+        print(f"({len(shown)} of {len(summaries)} shown, newest first; --limit 0 shows all.)")
     return 0
 
 
@@ -146,6 +183,18 @@ def build_parser() -> argparse.ArgumentParser:
         "default instead of accidentally deleting everything).",
     )
     purge.set_defaults(func=_cmd_purge)
+
+    list_cmd = subparsers.add_parser(
+        "list", help="List the task records, newest first: id, project, status and verdict."
+    )
+    list_cmd.add_argument("--project", default=None, help="Only the records of this project.")
+    list_cmd.add_argument(
+        "--limit",
+        type=int,
+        default=50,
+        help="Show at most this many records (default 50); 0 shows all.",
+    )
+    list_cmd.set_defaults(func=_cmd_list)
 
     show = subparsers.add_parser("show", help="Print one task record's summary.")
     show.add_argument("task_id")

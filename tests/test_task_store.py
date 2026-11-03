@@ -30,6 +30,7 @@ from certo.task_store import (
     MemoryTaskStore,
     SQLTaskStore,
     TaskRecord,
+    TaskSummary,
     _build_sql_url,
     build_task_store,
 )
@@ -602,3 +603,63 @@ def test_a_record_saved_before_the_result_existed_still_loads():
     data = TaskRecord(id="t", task="x").to_json_dict()
     del data["result"]
     assert TaskRecord.from_json_dict(data).result is None
+
+
+# --- list_tasks, on every backend -----------------------------------------
+
+
+def _check_list_tasks(store):
+    store.save(TaskRecord(id="t1", task="x", project="myapp", created_at=1.0))
+    store.save(
+        TaskRecord(
+            id="t2",
+            task="y",
+            project="myapp",
+            status="completed",
+            verification_state="verified",
+            created_at=3.0,
+            messages=[{"role": "assistant", "content": "a long log"}],
+        )
+    )
+    store.save(TaskRecord(id="t3", task="z", project=None, created_at=2.0))
+
+    everything = store.list_tasks()
+    assert [s.id for s in everything] == ["t2", "t3", "t1"]  # newest first
+    assert everything[0] == TaskSummary(
+        id="t2",
+        task="y",
+        status="completed",
+        project="myapp",
+        verification_state="verified",
+        created_at=3.0,
+        updated_at=everything[0].updated_at,
+    )
+    assert [s.id for s in store.list_tasks("myapp")] == ["t2", "t1"]
+    assert store.list_tasks("nope") == []
+
+
+def test_memory_store_lists_tasks():
+    _check_list_tasks(MemoryTaskStore())
+
+
+def test_sql_store_lists_tasks(sqlite_store):
+    _check_list_tasks(sqlite_store)
+
+
+@_requires_redis_server
+def test_redis_store_lists_tasks(redis_store):
+    _check_list_tasks(redis_store)
+
+
+@_requires_redis_server
+def test_redis_store_lists_legacy_keys_too(redis_store):
+    import json
+
+    r = redis_store._redis
+    r.set(
+        "harness:task:old", json.dumps(TaskRecord(id="old", task="t", project="p").to_json_dict())
+    )
+    r.sadd("harness:project:p", "old", "expired")  # "expired" has no record left
+
+    assert [s.id for s in redis_store.list_tasks()] == ["old"]
+    assert [s.id for s in redis_store.list_tasks("p")] == ["old"]

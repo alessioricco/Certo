@@ -279,8 +279,9 @@ cut that first run's output from 2,949 lines to 1,021.)
   for `verification_state`, so a caller gets the agent's own claim only.
   Needs a deliberate wire-format choice (a custom field, or a trailing
   message).
-- **No way to list tasks or projects** in a task store (`certo-admin`,
-  REST): every operation needs a known id or project name.
+- **No way to list tasks over REST** (`GET /tasks`): `certo-admin list`
+  does it locally (0.2.1). Waits for server authentication, since the
+  list would show every client's tasks.
 - **ECS/EC2 or other remote execution backends.** `build_workspace()` is
   the single dispatch point. No concrete need yet.
 

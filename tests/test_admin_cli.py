@@ -160,3 +160,70 @@ def test_no_command_exits_nonzero_with_usage():
         admin_cli.main([])
 
     assert exc_info.value.code != 0
+
+
+def test_list_shows_the_records_newest_first(monkeypatch, capsys, tmp_path):
+    cfg = _cfg(tmp_path)
+    _seed(
+        cfg,
+        TaskRecord(id="old", task="first task", project="acme", created_at=0.0),
+        TaskRecord(
+            id="new",
+            task="second\ntask " + "x" * 60,
+            project="acme",
+            status="completed",
+            verification_state="verified",
+            created_at=86400.0,
+        ),
+        TaskRecord(id="other", task="t", project="other", created_at=3600.0),
+    )
+    monkeypatch.setattr(admin_cli, "load_config", lambda: cfg)
+
+    with pytest.raises(SystemExit) as exc_info:
+        admin_cli.main(["list"])
+
+    assert exc_info.value.code == 0
+    lines = capsys.readouterr().out.splitlines()
+    assert lines[0].split() == ["ID", "PROJECT", "STATUS", "VERDICT", "CREATED", "(UTC)", "TASK"]
+    assert lines[1].split()[:6] == ["new", "acme", "completed", "verified", "1970-01-02", "00:00"]
+    assert lines[1].endswith("second task " + "x" * 35 + "...")  # one line, cut to 50
+    assert [line.split()[0] for line in lines[2:]] == ["other", "old"]
+    assert lines[3].split()[:4] == ["old", "acme", "pending", "-"]
+
+
+def test_list_for_one_project_and_with_a_limit(monkeypatch, capsys, tmp_path):
+    cfg = _cfg(tmp_path)
+    _seed(
+        cfg,
+        *(TaskRecord(id=f"a{i}", task="t", project="acme", created_at=float(i)) for i in range(3)),
+        TaskRecord(id="b", task="t", project="other", created_at=9.0),
+    )
+    monkeypatch.setattr(admin_cli, "load_config", lambda: cfg)
+
+    with pytest.raises(SystemExit):
+        admin_cli.main(["list", "--project", "acme", "--limit", "2"])
+
+    lines = capsys.readouterr().out.splitlines()
+    assert [line.split()[0] for line in lines[1:3]] == ["a2", "a1"]
+    assert lines[3] == "(2 of 3 shown, newest first; --limit 0 shows all.)"
+
+
+def test_list_with_no_records_says_so(monkeypatch, capsys, tmp_path):
+    cfg = _cfg(tmp_path)
+    monkeypatch.setattr(admin_cli, "load_config", lambda: cfg)
+
+    with pytest.raises(SystemExit) as exc_info:
+        admin_cli.main(["list", "--project", "acme"])
+
+    assert exc_info.value.code == 0
+    assert capsys.readouterr().out == "No task records for project 'acme'.\n"
+
+
+def test_list_refuses_a_negative_limit(monkeypatch, capsys, tmp_path):
+    monkeypatch.setattr(admin_cli, "load_config", lambda: _cfg(tmp_path))
+
+    with pytest.raises(SystemExit) as exc_info:
+        admin_cli.main(["list", "--limit", "-1"])
+
+    assert exc_info.value.code == 1
+    assert "--limit" in capsys.readouterr().out

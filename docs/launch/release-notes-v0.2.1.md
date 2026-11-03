@@ -30,3 +30,12 @@ the MCP server has the same count as `tool_call_reminders`, also per
 rung. Thanks to @Tusharkanda
 ([#41](https://github.com/alessioricco/Certo/pull/41)). See
 [Benchmark](../guides/benchmark.md).
+
+## New: `certo-admin list`
+
+`certo-admin list` lists the task records of `certo-server`'s task
+store, newest first: id, project, status, verdict, when it was created
+and the start of the task. `--project` shows one project's, and
+`--limit` how many (50 unless you say otherwise; `0` shows all). Before,
+`certo-admin show` and `delete-task` needed an id you already knew. See
+[Commands](../reference/commands.md#certo-admin-list).

@@ -475,7 +475,8 @@ given design was chosen.
   `build_task_store(cfg)` is the one factory both `server.py` and
   `admin_cli.py` use.
 - **`admin_cli.py`** (`certo-admin`) — maintenance CLI talking directly to
-  the store, no running server needed: `show`, `delete-task`,
+  the store, no running server needed: `list` (`TaskStore.list_tasks`,
+  summaries without messages), `show`, `delete-task`,
   `delete-project`, `purge [--ttl-seconds N]` (refuses at `<= 0`).
 - **`skills.py`** — two mechanisms: `load_skill_catalog()` reads a
   shared, trigger-based catalog, such as the official

@@ -1588,3 +1588,11 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   of 210 cloud ones, so it is structurally a local-model failure. The
   last sentence must be the plan, so "Now let me check... All pass." and
   "let me know" don't count.
+
+- **Task records are listed by `certo-admin`, not yet over REST**
+  (2026-11-03). `certo-admin list` runs where the store's settings are,
+  so it shows nothing a person couldn't already read there. `GET /tasks`
+  would show every client's tasks to anyone who can reach the server,
+  which has no login yet; it waits for server authentication. The list
+  reads `TaskSummary` (no messages or result), so a large store lists
+  cheaply; Redis finds all ids with a SCAN, a project's from its sets.
