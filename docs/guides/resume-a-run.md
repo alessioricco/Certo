@@ -62,6 +62,7 @@ my-project/
     STATUS.md        the last run, for you to read
     run.json         the same, for Certo
     RUNS.md          every run, oldest first: date, model, verdict, cost
+    reports/         one page per run: why the verdict, checks, files, cost
     milestones.json  with --milestones: the task file, titles and verdicts
     conversations/   the agent's saved conversation
 ```

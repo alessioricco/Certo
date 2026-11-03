@@ -260,8 +260,6 @@ cut that first run's output from 2,949 lines to 1,021.)
   the folders are set with `--root`. Done when every command in
   `docs/reference/commands.md` has a tool, a guide shows a client
   running a task to `verified`, and that test passes.
-- **Run report**: an HTML/Markdown summary per run (what changed, which
-  checks ran, cost, why the verdict), from the existing artifacts.
 - **Live progress view** in the terminal: current milestone, last check,
   cost so far.
 - **Docs website and gallery**: a site generator for `docs/`, a gallery of

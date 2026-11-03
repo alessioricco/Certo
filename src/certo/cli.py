@@ -46,6 +46,7 @@ from .project_state import (
 )
 from .result import run_result
 from .run_history import append_run, note_models_in_readme, run_entry
+from .run_report import report_relpath, write_report
 from .worktree import was_created_by_certo, worktree_warning
 
 if TYPE_CHECKING:
@@ -716,12 +717,13 @@ def _run_task_command(
         resume_hint = f"CERTO_PROJECTS_DIR={shlex.quote(cfg.projects_dir)} {resume_hint}"
     started_at = datetime.now(UTC)
     history = {"task": resume_from.task if resume_from is not None else (task or "")}
+    report: dict[str, str] = {}
 
     def record_run(ended: str, outcome=None, summary=None) -> None:
         if not save_state:
             return
         entry = run_entry(cfg, ladder, history["task"], ended, started_at, outcome, summary)
-        entry = replace(entry, resumed=resume_from is not None)
+        entry = replace(entry, resumed=resume_from is not None, report=report_relpath(started_at))
         try:
             append_run(cfg.workspace, entry)
         except OSError as exc:
@@ -748,7 +750,8 @@ def _run_task_command(
         clear_state(cfg.workspace)  # a new task here isn't the old milestones
 
     def keep_result(outcome, error: str | None = None) -> None:
-        if holder is None:
+        # The JSON result for --json, and the run's report (run_report.py).
+        if holder is None and not save_state:
             return
         milestones = None
         if milestone_state is not None:
@@ -760,7 +763,7 @@ def _run_task_command(
                 }
                 for m in milestone_state.plan.milestones
             ]
-        holder["result"] = run_result(
+        result = run_result(
             outcome,
             task=history["task"],
             workspace=os.path.abspath(cfg.workspace),
@@ -768,6 +771,13 @@ def _run_task_command(
             milestones=milestones,
             error=error,
         )
+        if holder is not None:
+            holder["result"] = result
+        if save_state:
+            try:
+                report["path"] = write_report(cfg.workspace, result, started_at)
+            except OSError as exc:
+                print(f"Warning: couldn't write the run report ({exc}).", file=sys.stderr)
 
     try:
         if milestone_state is None:
@@ -859,6 +869,13 @@ def _run_task_command(
     if outcome.rungs and milestone_state is None:
         for line in format_rung_lines(outcome.rungs, outcome.final_rung):
             print(f"  {line}")
+    if report.get("path"):
+        shown = report["path"]
+        try:
+            shown = min(shown, os.path.relpath(shown), key=len)
+        except ValueError:
+            pass  # Windows: no relative path between different drives
+        print(f"\nReport: {shown}")
     failing = outcome.verification_state in _FAILING_STATES or (
         args.require_verification and outcome.verification_state in _unproven_states()
     )

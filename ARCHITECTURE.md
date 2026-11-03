@@ -367,6 +367,13 @@ given design was chosen.
   notices carry `Message.name == "certo"` (`runner.NOTICE_NAME`), which
   `run_task(on_notice=)` uses to print them live; the CLI no longer
   reprints the last message, which the visualizer already showed.
+- **`run_report.py`** — `.certo/reports/<start time>.md`, rendered only
+  from the `run_result()` dict. `cli.py` (`keep_result`, also on
+  interrupt/error) and `runs.py` (`finish`) write it when state is saved;
+  `RUNS.md` entries link `report_relpath(started_at)`, known before the
+  write. `tests/test_cli.py` stubs `write_report` (autouse
+  `written_reports`), as it does `append_run`: its workspace is the
+  checkout.
 - **`run_history.py`** — stdlib only. `.certo/RUNS.md`, appended by
   `cli.py` (not the runner) once per run when state saving is on: after
   the outcome, or from the `KeyboardInterrupt`/error branches. Models come

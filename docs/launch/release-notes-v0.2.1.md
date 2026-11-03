@@ -39,3 +39,17 @@ and the start of the task. `--project` shows one project's, and
 `--limit` how many (50 unless you say otherwise; `0` shows all). Before,
 `certo-admin show` and `delete-task` needed an id you already knew. See
 [Commands](../reference/commands.md#certo-admin-list).
+
+## New: a report for each run
+
+After every run, Certo writes one Markdown page about it in the
+project's `.certo/reports/`, and the terminal says where. It gives the
+facts behind the verdict (what couldn't be checked, each check that
+didn't pass with the end of its output, failed acceptance checks or
+independent tests, a test file the agent changed), the checks that ran,
+the files the run created, modified and deleted, and the models, time
+and cost, with each milestone's verdict and each escalation rung. It's
+built from the same facts as `certo --json`, and each entry in
+`.certo/RUNS.md` links to it. `CERTO_SAVE_STATE=false` turns it off,
+with the rest of `.certo/`. See
+[Run records and costs](../guides/run-records-and-costs.md#the-report-of-each-run).

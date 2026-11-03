@@ -41,6 +41,7 @@ class RunEntry:
     summary: RunSummary | None = None
     resumed: bool = False
     note: str = ""  # e.g. how the model was chosen
+    report: str = ""  # the run's report inside .certo/ (run_report.py), if any
 
 
 def runs_path(workspace: str) -> str:
@@ -70,6 +71,8 @@ def render_entry(entry: RunEntry) -> str:
             f"- Time: {format_duration(s.duration_seconds)} · "
             f"Tokens: {s.total_tokens:,} · Cost: {cost}"
         )
+    if entry.report:
+        lines.append(f"- Report: [{entry.report}]({entry.report})")
     return "\n".join(lines) + "\n"
 
 

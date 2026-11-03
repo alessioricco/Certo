@@ -119,6 +119,8 @@ later:
 - Time: 4m 03s · Tokens: 801,191 · Cost: $0.0593
 ```
 
+From Certo 0.2.1, an entry also links to [the run's report](#the-report-of-each-run).
+
 - The heading is when the run started, and how it ended: the verdict,
   `interrupted`, or `error:` with the error. A run stopped by Ctrl-C or
   an error still has its time, tokens and cost up to that point.
@@ -149,6 +151,85 @@ same note instead of adding another. Certo adds it only after a run that
 finished, and only when the agent wrote a `README.md`. It never edits the
 README of a folder you brought. If you delete the note, the next run in
 that folder adds it again.
+
+## The report of each run
+
+After every run, Certo also writes one page about it, for you to read:
+`.certo/reports/` in the project folder, named by when the run started.
+The terminal shows where it is, after the run summary (the folder path
+is shortened):
+
+```text
+Verification: verified
+
+Run summary:
+  Total running time: 22.3s
+  Models: anthropic/claude-haiku-5-5 (effort default)
+  Total tokens: 134,669 (input 131,548, of which cached 110,088; output 3,121)
+  Total cost: $0.0053
+
+Report: /home/me/certo-projects/report-check-2/.certo/reports/2026-11-03T16-34-13Z.md
+```
+
+From that run on `anthropic/claude-haiku-5-5`:
+
+````markdown
+# Run report · verified
+
+- Started: 2026-11-03 16:34 UTC
+- Certo: 0.2.1
+- Project: report-check-2
+
+## Task
+
+> Write slug.py with a function slug(text) that lower-cases text and joins its words with '-', and a pytest test for it.
+
+## Why the verdict
+
+**verified**. See [Verdicts](https://github.com/alessioricco/certo/blob/main/docs/reference/verdicts.md) for what it means.
+
+- Every check Certo ran passed.
+
+## Checks
+
+| Check | Status | Command | Summary |
+|---|---|---|---|
+| pytest | passed | `.venv/bin/python -m pytest -q` | pytest passed |
+
+## Files changed
+
+**Created** (4):
+- `README.md`
+- `requirements.txt`
+- `slug.py`
+- `test_slug.py`
+
+## Models, time and cost
+
+Time 22.3s · tokens 131,548 in / 3,121 out · cost $0.0053
+
+| Model | Effort | Tokens in / out | Cost |
+|---|---|---|---|
+| `anthropic/claude-haiku-5-5` | default | 131,548 / 3,121 | $0.0053 |
+````
+
+- **Why the verdict** lists the facts behind it: what Certo couldn't
+  check, each check that didn't pass, a failed acceptance check, failed
+  independent tests, a test file the agent changed, and how many times
+  Certo sent the agent back to fix failing checks.
+- A check that didn't pass shows the last 40 lines of its output.
+- With `--milestones`, a table gives each milestone's verdict; with
+  `--escalate`, one row per rung, and how each model was chosen.
+- A run stopped by Ctrl-C or an error gets its report too, with the
+  reason, and says what isn't known yet.
+- The page is built from the same facts as [`certo --json`](../reference/json-result.md).
+  Certo writes it after the run, never the agent, and names models,
+  never keys.
+- Each entry in `RUNS.md` links to its report. With `--milestones`, every
+  milestone's entry links to the one report of the run.
+- Like `RUNS.md`, it's written by `certo` and by runs started over MCP,
+  and `CERTO_SAVE_STATE=false` turns it off. Server mode and `certo bench`
+  never write it.
 
 ## Model decisions
 

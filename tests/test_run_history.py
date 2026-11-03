@@ -107,3 +107,17 @@ def test_no_readme_or_no_model_means_no_note(tmp_path):
     (tmp_path / "README.md").write_text("# App\n")
     assert not note_models_in_readme(str(tmp_path), [])
     assert (tmp_path / "README.md").read_text() == "# App\n"
+
+
+def test_an_entry_links_its_report():
+    text = render_entry(
+        RunEntry(
+            task="t",
+            ended="verified",
+            started_at=_WHEN,
+            models=["m"],
+            report="reports/2026-11-03T16-19-05Z.md",
+        )
+    )
+
+    assert "- Report: [reports/2026-11-03T16-19-05Z.md](reports/2026-11-03T16-19-05Z.md)" in text

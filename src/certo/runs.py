@@ -21,7 +21,7 @@ import threading
 import time
 import uuid
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
 from typing import Any
 
@@ -38,6 +38,7 @@ from .api import (
 from .config import Config
 from .result import run_result
 from .run_history import append_run, run_entry
+from .run_report import report_relpath, write_report
 
 logger = logging.getLogger(__name__)
 
@@ -203,6 +204,7 @@ class RunManager:
         def record_run(ended: str, outcome: Any = None, summary: Any = None) -> None:
             # In the project's .certo/RUNS.md, as a command-line run is.
             entry = run_entry(cfg, ladder, history["task"], ended, started, outcome, summary)
+            entry = replace(entry, report=report_relpath(started))
             try:
                 append_run(run.workspace, entry)
             except OSError:
@@ -246,6 +248,10 @@ class RunManager:
                 milestones=milestones(),
                 error=error,
             )
+            try:
+                write_report(run.workspace, result, started)
+            except OSError:
+                logger.warning("Could not write the report of run %s", run.id, exc_info=True)
             if outcome is not None:
                 ended = outcome.verification_state
             elif ended_as == "cancelled":

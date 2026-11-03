@@ -16,6 +16,7 @@ import pytest
 
 from certo import cli
 from certo.config import Config, ConfigError
+from certo.run_report import report_relpath
 from certo.run_summary import ModelUsage, RunSummary
 from certo.runner import CompletionContract, TaskOutcome, TaskResult
 
@@ -27,6 +28,20 @@ def recorded_runs(monkeypatch):
     entries = []
     monkeypatch.setattr(cli, "append_run", lambda workspace, entry: entries.append(entry))
     return entries
+
+
+@pytest.fixture(autouse=True)
+def written_reports(monkeypatch):
+    """The same for the run reports in .certo/reports/: (result, path) each."""
+    reports = []
+
+    def _write(workspace, result, started_at):
+        path = os.path.join(workspace, ".certo", report_relpath(started_at))
+        reports.append((result, path))
+        return path
+
+    monkeypatch.setattr(cli, "write_report", _write)
+    return reports
 
 
 def _fake_result(messages=(), verification_state="verified", limitations=()):
@@ -2294,12 +2309,53 @@ def test_a_run_that_stopped_early_records_what_it_used(
     assert entry.summary is error.run_summary
 
 
-def test_no_run_is_recorded_when_saving_state_is_off(monkeypatch, recorded_runs):
+def test_no_run_is_recorded_when_saving_state_is_off(monkeypatch, recorded_runs, written_reports):
     monkeypatch.setattr(cli, "load_config", lambda: _cfg(save_state=False))
     monkeypatch.setattr(cli, "run_task", lambda *a, **k: _fake_result())
 
     assert cli.main(["do something"]) == 0
     assert recorded_runs == []
+    assert written_reports == []
+
+
+def test_a_run_writes_its_report_and_runs_md_links_it(
+    monkeypatch, capsys, recorded_runs, written_reports
+):
+    monkeypatch.setattr(cli, "load_config", lambda: _cfg())
+    monkeypatch.setattr(cli, "run_task", lambda *a, **k: _fake_result())
+
+    assert cli.main(["do something"]) == 0
+    ((result, path),) = written_reports
+    assert (result["task"], result["verdict"]) == ("do something", "verified")
+    (entry,) = recorded_runs
+    assert entry.report.startswith("reports/") and path.endswith(entry.report)
+    assert f"Report: {os.path.relpath(path)}" in capsys.readouterr().out
+
+
+def test_an_interrupted_run_still_gets_its_report(monkeypatch, written_reports):
+    def _stop(*a, **k):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(cli, "load_config", lambda: _cfg())
+    monkeypatch.setattr(cli, "run_task", _stop)
+
+    assert cli.main(["do something"]) == 130
+    ((result, _path),) = written_reports
+    assert (result["verdict"], result["error"]) == (None, "interrupted")
+
+
+def test_a_report_that_cant_be_written_never_fails_the_run(monkeypatch, capsys):
+    def _fail(workspace, result, started_at):
+        raise OSError("read-only file system")
+
+    monkeypatch.setattr(cli, "write_report", _fail)
+    monkeypatch.setattr(cli, "load_config", lambda: _cfg())
+    monkeypatch.setattr(cli, "run_task", lambda *a, **k: _fake_result())
+
+    assert cli.main(["do something"]) == 0
+    captured = capsys.readouterr()
+    assert "couldn't write the run report (read-only file system)" in captured.err
+    assert "Report:" not in captured.out
 
 
 def test_a_history_write_that_fails_never_fails_the_run(monkeypatch, capsys):

@@ -1596,3 +1596,12 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   which has no login yet; it waits for server authentication. The list
   reads `TaskSummary` (no messages or result), so a large store lists
   cheaply; Redis finds all ids with a SCAN, a project's from its sets.
+
+- **A Markdown report for every run, from the JSON result** (2026-11-03,
+  the Author's choice of format, timing and place). One page per run in
+  `.certo/reports/<start time>.md`, written whenever the run keeps state
+  (`RUNS.md`'s rule, so server mode and bench never write it), and linked
+  from `RUNS.md`. Built only from `run_result()`, so it can't disagree
+  with `certo --json`; the name comes from the start time, so every
+  milestone's `RUNS.md` entry links the one report before it exists. No
+  HTML: it can be made from the same data later.
