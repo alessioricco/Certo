@@ -1613,3 +1613,21 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   decide either for you, or Certo would need elicitation, which it
   doesn't use. `remove` and `disable` only take skills away, so they can
   get a tool with a confirm step, when someone asks.
+
+- **`certo mcp` has one tool set; `--tools core` / `--tools all` is
+  dropped** (the Author, 2026-11-03; supersedes point 3 of "The MCP
+  server: every command, on a shared core"). The split was for ~25
+  tools crowding a client model's context. There are 13, and their
+  definitions are 11,029 characters (about 2,800 tokens; the core four
+  would be about 1,100), small next to a client's own tools, and
+  clients can turn single MCP tools off. Reopen it if someone reports
+  a crowded context. The descriptions are only 4,128 of those
+  characters, the rest is the generated input schemas and hints, so
+  shortening descriptions would save little; they stay as they are.
+
+- **`certo skills add` from a local file or folder may get an MCP
+  tool** (2026-11-03; narrows the entry above about the skills
+  commands). It downloads nothing and accepts no license: it is a skill
+  the person wrote, so a tool is safe if it refuses git sources and
+  confirms before replacing a skill. On request only. `add` from git
+  still never gets one.

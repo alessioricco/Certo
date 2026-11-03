@@ -235,11 +235,11 @@ cut that first run's output from 2,949 lines to 1,021.)
   only). They only take skills away, so a tool is safe, with
   `rollback`'s confirm step; nobody has asked. Every other command has
   a tool or a lasting reason (`NO_TOOL`, DECISIONS.md).
-- **`certo mcp --tools core` / `--tools all`**: planned in DECISIONS.md
-  ("The MCP server: every command, on a shared core", point 3) for ~25
-  tools crowding a client model's context, never built. `certo mcp` has
-  13 tools today. The Author decides: build it (a local model in a
-  client is crowded), or drop it with a DECISIONS.md entry.
+- **An MCP tool for `certo skills add` with a local file or folder**
+  (on request only): for a skill just written in the editor. It refuses
+  a git source, and replaces a skill of the same name only with a
+  confirm step, like `rollback`. Done when the tool exists and
+  `NO_TOOL` no longer lists `certo skills add` for local files.
 - **Live progress view** in the terminal: current milestone, last check,
   cost so far.
 - **Docs website and gallery**: a site generator for `docs/`, a gallery of

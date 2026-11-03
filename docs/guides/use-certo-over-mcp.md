@@ -89,11 +89,11 @@ so Certo doesn't use it.
 Some commands have no tool: those that ask you questions (`certo init`,
 `certo models update`), `certo bench`, which runs for hours, and the
 commands of `certo-server` and `certo-admin`. Run them in a terminal.
-The skills commands that download or turn on code (`certo skills add`,
-`update`, `sync` and `enable`) never get a tool: accepting a skill's
-license, or running code someone else wrote, is for you to decide, not
-an agent. `certo skills remove` and `disable` have no tool yet; ask if
-you need one.
+The skills commands that download or turn on code (`certo skills add`
+from git, `update`, `sync` and `enable`) never get a tool: accepting a
+skill's license, or running code someone else wrote, is for you to
+decide, not an agent. `certo skills add` with a file or folder of your
+own, `remove` and `disable` have no tool yet; ask if you need one.
 
 Each project also has two resources, which a client can show or read:
 

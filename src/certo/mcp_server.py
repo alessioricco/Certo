@@ -44,7 +44,10 @@ NO_TOOL: dict[str, str] = {
     "certo init": "asks questions and writes your settings file: run it in a terminal",
     "certo init models": "asks questions and writes your model files: run it in a terminal",
     "certo models update": "asks about each change to your models list: run it in a terminal",
-    "certo skills add": "downloads code, with a license only a person may accept: run it in a terminal",
+    "certo skills add": (
+        "from git it downloads code, with a license only a person may accept: run it in a "
+        "terminal; a skill file or folder of yours: on request"
+    ),
     "certo skills remove": "changes the skills every run gets: on request",
     "certo skills enable": "turns on downloaded code, a person's decision: run it in a terminal",
     "certo skills disable": "changes the skills every run gets: on request",
