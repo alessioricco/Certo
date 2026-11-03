@@ -870,28 +870,28 @@ def _run_task_command(
         for line in format_rung_lines(outcome.rungs, outcome.final_rung):
             print(f"  {line}")
     if report.get("path"):
-        shown = report["path"]
-        try:
-            shown = min(shown, os.path.relpath(shown), key=len)
-        except ValueError:
-            pass  # Windows: no relative path between different drives
-        print(f"\nReport: {shown}")
+        print(f"\nReport: {_short_path(report['path'])}")
     failing = outcome.verification_state in _FAILING_STATES or (
         args.require_verification and outcome.verification_state in _unproven_states()
     )
     if failing and save_state:
-        status = status_path(cfg.workspace)
-        try:
-            status = os.path.relpath(status)
-        except ValueError:
-            # Windows cannot make a relative path between different drives.
-            pass
+        status = _short_path(status_path(cfg.workspace))
         print(f"\nWhere it stopped: {status}. Continue with: {resume_hint}")
     if save_state and cfg.checkpoints:
         hint = _checkpoints_hint(cfg.workspace)
         if hint:
             print(hint)
     return 1 if failing else 0
+
+
+def _short_path(path: str) -> str:
+    """`path` relative to the current folder, or absolute when that is
+    shorter (a project far away would be a long `../..` chain)."""
+    path = os.path.abspath(path)
+    try:
+        return min(path, os.path.relpath(path), key=len)
+    except ValueError:
+        return path  # Windows: no relative path between different drives
 
 
 def _checkpoints_hint(workspace: str) -> str | None:
@@ -904,10 +904,7 @@ def _checkpoints_hint(workspace: str) -> str | None:
         return None
     if not count:
         return None
-    try:
-        where = os.path.relpath(workspace)
-    except ValueError:
-        where = workspace
+    where = _short_path(workspace)
     path = "" if where == "." else f" {shlex.quote(where)}"
     return (
         f"Checkpoints: {count} (list them: certo checkpoints{path}; "

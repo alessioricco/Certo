@@ -53,3 +53,10 @@ built from the same facts as `certo --json`, and each entry in
 `.certo/RUNS.md` links to it. `CERTO_SAVE_STATE=false` turns it off,
 with the rest of `.certo/`. See
 [Run records and costs](../guides/run-records-and-costs.md#the-report-of-each-run).
+
+## Fixed: a far project's paths at the end of a run
+
+When the project was far from the folder you ran Certo in, the last
+lines of a run (where it stopped, its checkpoints) showed it as a long
+`../../..` chain. They now show its full path when that is shorter, as
+the report's line does.

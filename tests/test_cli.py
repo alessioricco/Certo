@@ -7,6 +7,7 @@ from __future__ import annotations
 import importlib.metadata
 import json
 import os
+import shlex
 import tomllib
 import urllib.error
 from dataclasses import replace
@@ -2768,3 +2769,31 @@ def test_json_prints_nothing_on_stdout_when_the_run_is_refused(monkeypatch, caps
     captured = capsys.readouterr()
     assert captured.out == ""
     assert "--agents-md requires --project" in captured.err
+
+
+def test_a_far_project_is_shown_by_its_full_path_not_a_long_relative_one(tmp_path, monkeypatch):
+    # From deep in the temp folder, the filesystem root is a short full
+    # path and a long `../..` chain.
+    root = tmp_path.anchor
+    (tmp_path / "here" / "proj").mkdir(parents=True)
+    monkeypatch.chdir(tmp_path / "here")
+
+    assert cli._short_path(str(tmp_path / "here" / "proj")) == "proj"
+    assert cli._short_path(".") == "."
+    assert cli._short_path(root) == root
+
+
+def test_the_checkpoints_hint_names_a_far_project_by_its_full_path(tmp_path, monkeypatch):
+    import certo.checkpoints as checkpoints
+
+    root = tmp_path.anchor
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(checkpoints, "git_available", lambda: True)
+    monkeypatch.setattr(checkpoints, "list_checkpoints", lambda _w: [object(), object()])
+
+    hint = cli._checkpoints_hint(root)
+    root = shlex.quote(root)  # 'C:\\' on Windows
+
+    assert hint == (
+        f"Checkpoints: 2 (list them: certo checkpoints {root}; go back to one: certo rollback N {root})"
+    )
