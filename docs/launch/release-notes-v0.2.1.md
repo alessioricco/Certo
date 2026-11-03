@@ -25,6 +25,8 @@ because it wrote a tool call as text or ended its turn on a sentence of
 plans: a **Tool-call reminders** column in `results.md`, and
 `tool_call_reminders` in `results.csv` and each run's record. An
 escalation run adds up every rung's own, and a run in milestones adds
-up every milestone's. Thanks to @Tusharkanda
+up every milestone's. The result of `certo --json`, `certo-server` and
+the MCP server has the same count as `tool_call_reminders`, also per
+rung. Thanks to @Tusharkanda
 ([#41](https://github.com/alessioricco/Certo/pull/41)). See
 [Benchmark](../guides/benchmark.md).

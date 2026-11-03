@@ -126,6 +126,7 @@ def run_result(
         "checks": [],
         "acceptance": [],
         "retries_used": 0,
+        "tool_call_reminders": 0,
         "independent_tests": None,
         "check_file_changes": [],
         "files_changed": None,
@@ -146,6 +147,7 @@ def run_result(
             for r in outcome.acceptance_results
         ],
         retries_used=outcome.retries_used,
+        tool_call_reminders=outcome.tool_call_reminders,
         independent_tests=_independent(outcome.independent_tests),
         check_file_changes=[asdict(c) for c in outcome.check_file_changes],
         files_changed=(

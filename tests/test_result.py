@@ -30,6 +30,7 @@ def _outcome(**overrides) -> TaskOutcome:
             ),
         ),
         "retries_used": 2,
+        "tool_call_reminders": 3,
         "acceptance_results": (
             AcceptanceCheckResult(AcceptanceCheck(kind="file_exists", path="a.py"), True, "found"),
         ),
@@ -63,6 +64,7 @@ def test_a_finished_run_gives_its_verdict_checks_and_usage():
         }
     ]
     assert result["retries_used"] == 2
+    assert result["tool_call_reminders"] == 3
     assert result["usage"]["duration_seconds"] == 12.3
     assert result["usage"]["total_tokens"] == 120
     assert result["usage"]["cost"] == 0.0123
