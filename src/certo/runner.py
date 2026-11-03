@@ -301,6 +301,11 @@ class TaskOutcome:
     # Files the whole run created, modified or deleted in the project
     # folder (stream_task). None when the run didn't go through it.
     files_changed: FileChanges | None = None
+    # How many times _remind_text_tool_call sent the agent back after it
+    # wrote a tool call as text or ended on a sentence of plans (see
+    # CERTO_TOOL_CALL_REMINDERS), in all, not in a row. An
+    # escalation run sums every rung's own count (RungResult below).
+    tool_call_reminders: int = 0
 
     @property
     def success(self) -> bool:
@@ -692,9 +697,18 @@ def _outcome_for_run_result(
     )
 
 
-# Per conversation: how many tool-call reminders were sent, and the id of
-# the last message reminded about (`_remind_text_tool_call`).
-_TOOL_CALL_REMINDERS: weakref.WeakKeyDictionary[Any, tuple[int, str]] = weakref.WeakKeyDictionary()
+# Per conversation: how many tool-call reminders were sent in a row, how
+# many in all, and the id of the last message reminded about
+# (`_remind_text_tool_call`).
+_TOOL_CALL_REMINDERS: weakref.WeakKeyDictionary[Any, tuple[int, int, str]] = (
+    weakref.WeakKeyDictionary()
+)
+
+
+def _reminders_sent(conversation: Conversation) -> int:
+    """How many tool-call reminders this conversation has been sent in all;
+    the in-a-row count goes back to 0 after a real tool call, this doesn't."""
+    return _TOOL_CALL_REMINDERS.get(conversation, (0, 0, ""))[1]
 
 
 def _remind_text_tool_call(
@@ -714,7 +728,7 @@ def _remind_text_tool_call(
     that never recovers is stopped. A model that makes real tool calls
     never gets here: the last message must be text that is, as a whole, a
     call to one of the agent's tools, or end on a sentence of plans."""
-    sent, last_id = _TOOL_CALL_REMINDERS.get(conversation, (0, ""))
+    sent, total, last_id = _TOOL_CALL_REMINDERS.get(conversation, (0, 0, ""))
     if sent and _real_call_since(conversation, last_id):
         sent = 0
     if sent >= cfg.tool_call_reminders:
@@ -737,7 +751,7 @@ def _remind_text_tool_call(
     if time.monotonic() >= deadline or cost_limit_reached(conversation):
         return False
     sent += 1
-    _TOOL_CALL_REMINDERS[conversation] = (sent, event.id)
+    _TOOL_CALL_REMINDERS[conversation] = (sent, total + 1, event.id)
     _emit_notice(
         emit,
         f"Certo: the agent {what}, so nothing ran. Asking it to make the call "
@@ -1971,6 +1985,7 @@ def _stream_task(
                 )
         if model_chain is not None:
             outcome = replace(outcome, model_decisions=tuple(model_chain.decisions))
+        outcome = replace(outcome, tool_call_reminders=_reminders_sent(conversation))
         if state_writer is not None:
             state_writer.finish(outcome)
         _checkpoint(cfg, f"finished: {outcome.verification_state}")
@@ -2742,6 +2757,7 @@ def _stream_escalation(
                     reasoning_effort=rung_cfg.reasoning_effort,
                     verdict=outcome.verification_state if outcome is not None else None,
                     retries_used=outcome.retries_used if outcome is not None else 0,
+                    tool_call_reminders=_reminders_sent(conversation),
                     duration_seconds=duration,
                     summary=summarize_run(duration, rung_metrics, efforts),
                     failure=failure,
@@ -2900,6 +2916,7 @@ def _stream_escalation(
         rungs=tuple(rungs),
         final_rung=final_rung,
         model_decisions=tuple(decisions),
+        tool_call_reminders=sum(r.tool_call_reminders for r in rungs),
         run_summary=summarize_run(
             time.monotonic() - run_started, per_model_metrics, efforts, io.condensed[0]
         ),

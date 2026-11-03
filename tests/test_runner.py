@@ -833,6 +833,61 @@ def test_tool_call_reminders_0_turns_them_off():
     assert conversation.sent_messages == []
 
 
+def test_reminders_sent_counts_them_for_the_benchmark():
+    conversation = _FakeConversation(events_after_run=[_agent_says(_TEXT_CALL) for _ in range(5)])
+    assert runner._reminders_sent(conversation) == 0
+
+    runner._run_conversation_once(conversation, _cfg(tool_call_reminders=2), lambda _m: None, None)
+
+    assert runner._reminders_sent(conversation) == 2
+    # A conversation never reminded (a model that makes real tool calls) reads 0.
+    assert runner._reminders_sent(_FakeConversation()) == 0
+
+
+def test_reminders_sent_counts_them_all_not_only_the_ones_in_a_row():
+    # The limit's count goes back to 0 after a real tool call; the
+    # benchmark's total doesn't.
+    conversation = _FakeConversation(
+        events_after_run=[
+            _agent_says(_TEXT_CALL),
+            _agent_says(_TEXT_CALL),
+            [_agent_calls_a_tool(), _agent_says(_TEXT_CALL)],
+            _agent_says(_TEXT_CALL),
+            [_agent_calls_a_tool(), _agent_says("Done.")],
+        ]
+    )
+
+    runner._run_conversation_once(conversation, _cfg(tool_call_reminders=2), lambda _m: None, None)
+
+    assert len(conversation.sent_messages) == 4
+    assert runner._reminders_sent(conversation) == 4
+
+
+def test_a_run_reports_its_tool_call_reminders_in_the_outcome(monkeypatch):
+    conversation = _FakeConversation(
+        events_after_run=[_agent_says(_TEXT_CALL), _agent_says("Done.")]
+    )
+    monkeypatch.setattr(runner, "Conversation", lambda **_kwargs: conversation)
+    monkeypatch.setattr(runner, "build_agent", lambda cfg, **_kw: "fake-agent")
+    monkeypatch.setattr(runner, "build_workspace", lambda cfg: nullcontext("fake-workspace"))
+    monkeypatch.setattr(runner, "_enforce_task_tracker_completion", lambda *a, **kw: None)
+    monkeypatch.setattr(
+        runner,
+        "_verify_and_report",
+        lambda *a, **kw: runner.TaskOutcome(
+            verification_state="inconclusive",
+            completion_contract=runner.CompletionContract(
+                goal="", acceptance_criteria=[], verification_checks=[], limitations=[]
+            ),
+        ),
+    )
+
+    outcome = runner.stream_task("do the thing", cfg=_cfg())
+
+    assert conversation.sent_messages == ["do the thing", runner.TOOL_CALL_REMINDER]
+    assert outcome.tool_call_reminders == 1
+
+
 def test_the_same_text_call_is_not_reminded_twice():
     # After the reminder the run adds nothing: the last agent message is
     # still the one already reminded about.

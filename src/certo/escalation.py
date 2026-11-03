@@ -332,6 +332,8 @@ class RungResult:
     changes: FileChanges = FileChanges()
     failing_checks: tuple[str, ...] = ()  # "name (`command`)"
     reasoning_effort: str | None = None  # None: no effort set
+    # How many tool-call reminders this rung's own conversation was sent.
+    tool_call_reminders: int = 0
 
     @property
     def described(self) -> str:
@@ -383,6 +385,7 @@ class RungResult:
             "verdict": self.verdict,
             "failure": self.failure,
             "fix_attempts": self.retries_used,
+            "tool_call_reminders": self.tool_call_reminders,
             "duration_seconds": round(self.duration_seconds, 3),
             "tokens": summary.total_tokens if summary else 0,
             "cost": self.cost,
