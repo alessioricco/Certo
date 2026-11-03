@@ -1,6 +1,17 @@
 # Certo v0.2.1
 
-Not released yet.
+This release helps local models finish their runs, and tells you more
+about each run:
+
+- **A turn that ends on a sentence of plans is sent back**, as a tool
+  call written as text already was, so a local model doesn't stop with
+  the work half done.
+- **A report for each run**, one Markdown page in `.certo/reports/`:
+  why the verdict, the checks, the files changed, the models and the
+  cost.
+- **`certo-admin list`** lists `certo-server`'s task records.
+- **Tool-call reminders are counted** in the benchmark results and in
+  the JSON result.
 
 ## Changed: a turn that ends on a sentence of plans is sent back
 
