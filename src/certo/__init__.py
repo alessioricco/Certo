@@ -19,4 +19,4 @@ os.environ.setdefault("OPENHANDS_SUPPRESS_BANNER", "1")
 # which config.py loads without overriding. Certo reads only ./.env.
 os.environ.setdefault("LITELLM_MODE", "PRODUCTION")
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"

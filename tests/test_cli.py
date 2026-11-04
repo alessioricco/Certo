@@ -2797,3 +2797,40 @@ def test_the_checkpoints_hint_names_a_far_project_by_its_full_path(tmp_path, mon
     assert hint == (
         f"Checkpoints: 2 (list them: certo checkpoints {root}; go back to one: certo rollback N {root})"
     )
+
+
+def test_a_run_gets_one_progress_line_that_names_the_milestone_and_counts_earlier_costs(
+    monkeypatch, tmp_path
+):
+    seen: list = []
+    usage = RunSummary(5.0, (ModelUsage("openai/gpt-4o", 100, 10, cost=0.01),))
+    fake = _milestone_run_task([], ["verified", "verified"], usage)
+
+    def run_task(task, **kwargs):
+        progress = kwargs["run_progress"]
+        seen.append((progress, progress.where, progress.cost_before))
+        return fake(task, **kwargs)
+
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))
+    monkeypatch.setattr(cli, "run_task", run_task)
+
+    assert cli.main(["--milestones", _milestone_file(tmp_path)]) == 0
+
+    assert seen[0][0] is seen[1][0]  # one line for the whole run
+    assert [(where, cost) for _p, where, cost in seen] == [
+        ("milestone 1 of 2", 0.0),
+        ("milestone 2 of 2", 0.01),
+    ]
+    assert seen[0][0].every_seconds == 120
+
+
+def test_progress_seconds_zero_turns_the_line_off(monkeypatch, tmp_path):
+    calls: list = []
+    monkeypatch.setattr(
+        cli, "load_config", lambda: replace(_milestone_cfg(tmp_path), progress_seconds=0)
+    )
+    monkeypatch.setattr(cli, "run_task", _milestone_run_task(calls, ["verified", "verified"]))
+
+    assert cli.main(["--milestones", _milestone_file(tmp_path)]) == 0
+
+    assert [call["run_progress"] for call in calls] == [None, None]

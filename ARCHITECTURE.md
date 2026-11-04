@@ -622,6 +622,14 @@ given design was chosen.
   `usage_to_metrics[*].accumulated_cost` every 2 s and pauses the
   conversation. `runner._budget_spent` turns it into `cost_exhausted` at
   the same points as the time budget.
+- **`run_progress.py`** — the terminal's progress line, in the same shape:
+  `attach_progress` next to each `set_cost_limit` (spent-before counted),
+  `report_progress()` a watcher inside `_run_conversation_once`, and
+  `checks_ran`/`fix_attempt` called by `_verify_and_report`,
+  `_verify_after_budget` and the task-list follow-ups. The CLI makes one
+  `RunProgress` per run and sets `where`/`cost_before` per milestone;
+  server, MCP and bench pass none. Under `--json` the CLI's stdout
+  redirect sends the watcher's lines to stderr too.
 - **`plugins.py`** — `foreign_plugins(workspace, projects_dir)`: the
   OpenHands plugins the SDK would load into a local run that don't belong
   to it (every user plugin; a project plugin from outside a generated

@@ -1631,3 +1631,12 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   the person wrote, so a tool is safe if it refuses git sources and
   confirms before replacing a skill. On request only. `add` from git
   still never gets one.
+
+- **The live progress view is a line, not a status bar** (the Author,
+  2026-11-04). A `Progress:` line every `CERTO_PROGRESS_SECONDS` (120)
+  while the agent works, and after each check run and fix attempt. A bar
+  pinned to the bottom would fight the SDK's own colored output and break
+  in logs, CI and some Windows terminals; a line works everywhere and
+  stays in the scrollback. Terminal runs only: the server, MCP and bench
+  have their own records. No step count: the events log isn't safe to
+  read from the watcher thread.

@@ -3849,3 +3849,29 @@ def test_stream_task_lists_the_files_the_run_changed(monkeypatch, tmp_path):
     assert result.files_changed.created == ("new.py",)
     assert result.files_changed.modified == ("edit.py",)
     assert result.files_changed.deleted == ("gone.py",)
+
+
+def test_a_terminal_run_prints_the_progress_line_after_checks_and_at_each_fix_attempt(
+    monkeypatch,
+):
+    from certo.run_progress import RunProgress, attach_progress
+
+    runs = iter([_run(_check(status="failed", exit_code=1, summary="1 failed")), _run(_check())])
+    monkeypatch.setattr(runner, "_run_verification", lambda _dir, *_a: next(runs))
+    conversation = _FakeConversation()
+    lines: list[str] = []
+    attach_progress(conversation, RunProgress(say=lines.append, every_seconds=0))
+
+    runner._verify_and_report(
+        conversation,
+        _cfg(verify_tests="always", max_verify_retries=2),
+        lambda _m: None,
+        "do the thing",
+    )
+
+    # Each line without its time and cost.
+    assert [line.rsplit(" · ", 2)[0] for line in lines] == [
+        "Progress: checks failed: pytest (1 failed)",
+        "Progress: fix attempt 1 of 2 · checks failed: pytest (1 failed)",
+        "Progress: fix attempt 1 of 2 · checks verified",
+    ]

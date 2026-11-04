@@ -46,6 +46,7 @@ from .project_state import (
 )
 from .result import run_result
 from .run_history import append_run, note_models_in_readme, run_entry
+from .run_progress import RunProgress
 from .run_report import report_relpath, write_report
 from .worktree import was_created_by_certo, worktree_warning
 
@@ -729,8 +730,20 @@ def _run_task_command(
         except OSError as exc:
             print(f"Warning: couldn't add this run to .certo/RUNS.md ({exc}).", file=sys.stderr)
 
+    # The progress line (run_progress.py): one for the whole run, so its
+    # time and cost count every milestone.
+    progress = (
+        RunProgress(say=_print_progress, every_seconds=cfg.progress_seconds)
+        if cfg.progress_seconds > 0
+        else None
+    )
+
     def run_one(text: str, resume, instruction: str | None, checks):
-        return run_task(
+        if progress is not None and milestone_state is not None:
+            total = len(milestone_state.plan.milestones)
+            progress.where = f"milestone {milestone_state.current} of {total}"
+            progress.checks = ""
+        result = run_task(
             text,
             cfg=cfg,
             on_confirm=on_confirm,
@@ -744,7 +757,12 @@ def _run_task_command(
             ladder=ladder,
             on_escalate=_confirm_escalation if cfg.interactive else None,
             on_notice=_print_progress,
+            run_progress=progress,
         )
+        summary = result.outcome.run_summary
+        if progress is not None and summary is not None:
+            progress.cost_before += summary.total_cost
+        return result
 
     if save_state and milestone_state is None and resume_from is None:
         clear_state(cfg.workspace)  # a new task here isn't the old milestones

@@ -1,8 +1,29 @@
 # Run records and costs
 
-This guide explains the summary Certo prints after every run, and how to
-keep a full record of each run on disk: the transcript, the tokens and the
-cost.
+This guide explains the progress line Certo prints during a run, the
+summary it prints after it, and how to keep a full record of each run on
+disk: the transcript, the tokens and the cost.
+
+## The progress line
+
+While a run goes, Certo prints one line that says where it is: every two
+minutes while the agent works, and once more after each check run and
+when a fix attempt starts. From a real run on `claude-haiku-5-5`, with
+the line set to every 20 seconds:
+
+```text
+Progress: 21.5s · $0.0043
+...
+Progress: checks verified · 30.3s · $0.0066
+```
+
+It shows, when they apply: the milestone (`milestone 2 of 4`), the
+escalation rung's model, the fix attempt (`fix attempt 1 of 2`), the
+last check run (`checks failed: pytest (2 failed)`), then the time and
+the cost so far. In milestones, the time and the cost count every
+milestone so far. `CERTO_PROGRESS_SECONDS` sets how often it comes, and
+`0` turns it off. Only a run in the terminal prints it, not
+`certo-server`, the MCP server or `certo bench`.
 
 ## The run summary
 

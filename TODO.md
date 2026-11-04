@@ -240,8 +240,6 @@ cut that first run's output from 2,949 lines to 1,021.)
   a git source, and replaces a skill of the same name only with a
   confirm step, like `rollback`. Done when the tool exists and
   `NO_TOOL` no longer lists `certo skills add` for local files.
-- **Live progress view** in the terminal: current milestone, last check,
-  cost so far.
 - **Docs website and gallery**: a site generator for `docs/`, a gallery of
   apps built with Certo (verdict and cost each), a short demo video.
 

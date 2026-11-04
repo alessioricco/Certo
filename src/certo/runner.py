@@ -60,6 +60,7 @@ from .checkpoints import (
     safe_snapshot,
 )
 from .cost_limit import cost_limit, cost_limit_reached, pause_at_cost_limit, set_cost_limit
+from .run_progress import RunProgress, attach_progress, checks_ran, fix_attempt, report_progress
 from .cancel import RunCancelled, cancel_token, raise_if_cancelled, stop_when_cancelled
 from .deadline import stop_at_deadline
 from .independent_tests import (
@@ -847,6 +848,7 @@ def _run_conversation_once(
                 stop_at_deadline(conversation, deadline),
                 pause_at_cost_limit(conversation),
                 stop_when_cancelled(conversation),
+                report_progress(conversation),
             ):
                 conversation.run()
             raise_if_cancelled()
@@ -1012,6 +1014,7 @@ def _verify_after_budget(
         return exhausted
     run = _run_verification(os.path.abspath(cfg.workspace), runner)
     _emit_verification_notices(emit, run)
+    checks_ran(conversation, run)
     if on_verification is not None:
         on_verification(run)
     if run.state != "verified":
@@ -1101,6 +1104,7 @@ def _verify_and_report(
     retries_used = 0
     run = _run_verification(working_dir, runner)
     _emit_verification_notices(emit, run)
+    checks_ran(conversation, run)
     if on_verification is not None:
         on_verification(run)
 
@@ -1130,6 +1134,7 @@ def _verify_and_report(
         previous_signature = _failure_signature(run)
         attempts_left -= 1
         retries_used += 1
+        fix_attempt(conversation, retries_used, cfg.max_verify_retries)
         if model_chain is not None and cfg.execution == "local":
             failed_name = model_chain.current.name
             next_entry = model_chain.advance(
@@ -1176,6 +1181,7 @@ def _verify_and_report(
             )
         run = _run_verification(working_dir, runner)
         _emit_verification_notices(emit, run)
+        checks_ran(conversation, run)
         if on_verification is not None:
             on_verification(run)
 
@@ -1386,6 +1392,7 @@ def _enforce_task_tracker_completion(
             )
         attempts_left -= 1
         retries_used += 1
+        fix_attempt(conversation, retries_used, cfg.max_verify_retries)
         if model_chain is not None and cfg.execution == "local":
             failed_name = model_chain.current.name
             next_entry = model_chain.advance(
@@ -1621,6 +1628,7 @@ def stream_task(
     on_escalate: OnEscalate | None = None,
     on_progress: Callable[[str], None] | None = None,
     model_catalog: ModelCatalog | None = None,
+    run_progress: RunProgress | None = None,
     cancel: threading.Event | None = None,
 ) -> TaskOutcome:
     """Run a task, invoking `on_message` with each message as it's produced,
@@ -1690,6 +1698,7 @@ def stream_task(
             on_escalate=on_escalate,
             on_progress=on_progress,
             model_catalog=model_catalog,
+            run_progress=run_progress,
         )
     return replace(outcome, files_changed=_files_changed(cfg.workspace, before))
 
@@ -1721,6 +1730,7 @@ def _stream_task(
     on_escalate: OnEscalate | None = None,
     on_progress: Callable[[str], None] | None = None,
     model_catalog: ModelCatalog | None = None,
+    run_progress: RunProgress | None = None,
 ) -> TaskOutcome:
     """`stream_task`'s run, inside its cancel token and file listing."""
     # Total running time covers the whole task, model selection and
@@ -1777,6 +1787,7 @@ def _stream_task(
                 on_awaiting_input=on_awaiting_input,
                 on_escalate=on_escalate,
                 on_progress=on_progress,
+                run_progress=run_progress,
                 condensed=condensed,
             ),
             acceptance_checks=acceptance_checks,
@@ -1882,6 +1893,7 @@ def _stream_task(
         # CERTO_MAX_TASK_COST covers the whole task, the tests written
         # before the build included (cost_limit.py).
         set_cost_limit(conversation, cfg.max_task_cost, _metrics_cost(written))
+        attach_progress(conversation, run_progress, _metrics_cost(written))
         # A shared, task-level wall-clock budget spanning every phase below —
         # CERTO_MAX_ITERATIONS alone only bounds a single conversation.run()
         # call, and runner.py can call that up to three times per task (this
@@ -2427,6 +2439,8 @@ class _EscalationIO:
     on_awaiting_input: OnAwaitingInput | None
     on_escalate: OnEscalate | None
     on_progress: Callable[[str], None] | None
+    # The progress line (run_progress.py), for a terminal run.
+    run_progress: RunProgress | None = None
     # How many times the condenser summarized older steps, over every rung.
     condensed: list[int] = field(default_factory=lambda: [0])
 
@@ -2705,6 +2719,12 @@ def _stream_escalation(
                     cfg.max_task_cost,
                     _metrics_cost(written) + sum(r.cost for r in rungs),
                 )
+                attach_progress(
+                    conversation,
+                    io.run_progress,
+                    _metrics_cost(written) + sum(r.cost for r in rungs),
+                    model=rung.name,
+                )
 
                 restarted = number > 1 and _restart_rung(cfg, restart_from, rungs[-1], io)
                 first_message = (
@@ -2939,6 +2959,7 @@ def run_task(
     on_escalate: OnEscalate | None = None,
     on_progress: Callable[[str], None] | None = None,
     on_notice: Callable[[str], None] | None = None,
+    run_progress: RunProgress | None = None,
 ) -> TaskResult:
     """`stream_task`, collecting the messages. `on_notice` receives the text
     of each of Certo's own notices as it happens, for a terminal."""
@@ -2968,5 +2989,6 @@ def run_task(
         ladder=ladder,
         on_escalate=on_escalate,
         on_progress=on_progress,
+        run_progress=run_progress,
     )
     return TaskResult(messages, outcome)  # last message is the final assistant output
