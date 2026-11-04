@@ -6,6 +6,10 @@ work was wrong, or the reverse. Those are the most useful reports, since
 a verdict you can trust is Certo's whole job. There are also forms for
 bugs, feature requests and your own benchmark results.
 
+For a question, an idea that isn't a feature request yet, or to show
+what you ran Certo on, use
+[Discussions](https://github.com/alessioricco/certo/discussions).
+
 To work on the code:
 
 ```bash

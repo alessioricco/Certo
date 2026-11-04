@@ -1,5 +1,8 @@
 blank_issues_enabled: true
 contact_links:
+  - name: Questions and ideas
+    url: https://github.com/alessioricco/certo/discussions
+    about: Ask a question, share an idea or show what you ran Certo on.
   - name: Documentation
     url: https://github.com/alessioricco/certo/blob/main/docs/README.md
     about: Guides, reference and concepts, organised by what you want to do.

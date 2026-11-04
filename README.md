@@ -321,7 +321,7 @@ The full list is in the [documentation](https://github.com/alessioricco/certo/bl
 
 ## Contributing
 
-Issues and pull requests are welcome. Issues labelled [good first issue](https://github.com/alessioricco/certo/labels/good%20first%20issue) are a good place to start, and so is [adding a benchmark task](https://github.com/alessioricco/certo/blob/main/docs/guides/contribute-a-benchmark-task.md). To work on the code:
+Issues and pull requests are welcome. Issues labelled [good first issue](https://github.com/alessioricco/certo/labels/good%20first%20issue) are a good place to start, and so is [adding a benchmark task](https://github.com/alessioricco/certo/blob/main/docs/guides/contribute-a-benchmark-task.md). Questions and ideas go in [Discussions](https://github.com/alessioricco/certo/discussions). To work on the code:
 
 ```bash
 git clone https://github.com/alessioricco/certo.git
