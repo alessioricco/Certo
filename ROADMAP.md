@@ -157,6 +157,13 @@ about ladders, profiles or the benchmark; time from install to first
   "make it verifiable" skills; the simple first run.
 - **Later:** run-the-app verification, new ecosystems, the GitHub Action,
   local-model tuning.
+- **Possible:** an integration with Jev, TypeSafe's model for fast,
+  typed decisions (choose one of a list, score, yes or no, with a
+  confidence). It would be optional and off unless the user turns it
+  on, with their own TypeSafe API key; without it Certo works exactly as
+  today. Which decisions it would take is still to be designed. Using it
+  to choose models or skills would change the "no LLM-based router"
+  choice below, so that would need its own decision first.
 
 Meanwhile, keep the less central parts (the server's SQL and Redis
 stores, the OpenAI-compatible endpoint, third-party skills, Docker mode)
