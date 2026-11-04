@@ -150,10 +150,10 @@ def test_each_run_is_added_to_the_projects_runs_md(tmp_path):
     manager = RunManager(load=lambda: _cfg(tmp_path), stream=lambda task, **_k: _outcome())
     run = manager.start("do it", RunOptions(project="demo"))
     _wait(manager, run.id)
-    runs_md = (tmp_path / "projects" / "demo" / ".certo" / "RUNS.md").read_text()
+    runs_md = (tmp_path / "projects" / "demo" / ".certo" / "RUNS.md").read_text(encoding="utf-8")
     assert "do it" in runs_md
     assert "verified" in runs_md
     # Linked to its report, which is in the folder.
     link = runs_md.split("- Report: [", 1)[1].split("]", 1)[0]
-    report = (tmp_path / "projects" / "demo" / ".certo" / link).read_text()
+    report = (tmp_path / "projects" / "demo" / ".certo" / link).read_text(encoding="utf-8")
     assert report.startswith("# Run report · verified")

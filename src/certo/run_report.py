@@ -237,7 +237,7 @@ def write_report(workspace: str, result: dict[str, Any], started_at: datetime) -
     """Write the run's report and return its path. Raises OSError; the
     caller decides that a failed write never fails the run."""
     ensure_state_dir(workspace)
-    path = os.path.join(state_dir(workspace), report_relpath(started_at))
+    path = os.path.join(state_dir(workspace), *report_relpath(started_at).split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         f.write(render_report(result, started_at))
