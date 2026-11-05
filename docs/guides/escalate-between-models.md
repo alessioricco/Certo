@@ -383,6 +383,11 @@ A cloud ladder, Haiku then Sonnet, against each model alone on the 13
 bundled tasks is [The Haiku → Sonnet ladder in 0.1.25](../benchmark/ladder-haiku-sonnet-0.1.25.md):
 Haiku solved every task, so the ladder never climbed and cost what Haiku
 costs.
+One model on two rungs, a lower effort then `high`, is
+[A lower reasoning effort first in 0.2.2](../benchmark/effort-0.2.2.md):
+on Haiku, `low` first was fooled by its own passing checks, so the
+ladder never climbed; on a local `qwen3.8`, thinking off first was
+faster and climbed when its checks failed.
 
 ## Related
 

@@ -1,0 +1,17 @@
+# Escalate on reasoning effort (Certo 0.2.2, TODO "Escalate on reasoning
+# effort, not only on the model"): one model at low effort, then high
+# when low fails, against the same model at high only and at low only.
+# Measure first: the strategy gets built only if low effort is much
+# faster or cheaper and rarely fails.
+# Run it from the repository root with:
+#   certo bench --config docs/benchmark/bench-0.2.2-effort-cloud.yaml --parallel 3 --max-cost 4
+# The model files below name the key as ${ANTHROPIC_API_KEY}, read from
+# the environment.
+models_file: docs/benchmark/models-0.2.2-effort.yaml
+models_list_file: docs/benchmark/models_list-0.2.2-effort.yaml
+tasks: all
+repeats: 3
+arms:
+  - {name: haiku-high, strategy: single, model: haiku-high}
+  - {name: haiku-low, strategy: single, model: haiku-low}
+  - {name: haiku-low-then-high, strategy: escalate, models: [haiku-low, haiku-high]}

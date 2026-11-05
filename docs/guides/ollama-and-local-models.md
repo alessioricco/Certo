@@ -163,6 +163,12 @@ CERTO_LLM_REASONING_EFFORT=high
 If you set it for a model without a thinking mode, the first call fails
 with `does not support thinking`. Clear the setting or set it to `none`.
 
+For most models Ollama has no levels, only thinking on or off: `low`,
+`medium` and `high` all turn thinking on, and the model thinks the same
+way at each. (`gpt-oss` models are the exception: they get the level
+itself.) To turn thinking off on a model that has it, such as
+`qwen3.8`, set `minimal`: Ollama then gets `think: false`.
+
 ## Other local servers
 
 Servers such as vLLM or LM Studio work too, as long as LiteLLM supports

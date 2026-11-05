@@ -1,0 +1,12 @@
+# Which models the reasoning-effort benchmark uses. The key is read from
+# the environment, never written here. The Ollama server is the one on
+# another machine on the local network.
+models:
+  - name: haiku-low
+    api_key: "${ANTHROPIC_API_KEY}"
+  - name: haiku-high
+    api_key: "${ANTHROPIC_API_KEY}"
+  - name: qwen-nothink
+    base_url: http://turing.local:11434
+  - name: qwen-high
+    base_url: http://turing.local:11434

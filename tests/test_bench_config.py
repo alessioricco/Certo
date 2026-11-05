@@ -222,11 +222,20 @@ def test_the_shipped_example_is_valid_against_the_shipped_models_example(tmp_pat
 @pytest.mark.parametrize(
     "bench_file", sorted((_REPO / "docs/benchmark").glob("bench-*.yaml")), ids=lambda p: p.name
 )
-def test_the_published_benchmark_files_load_against_the_shipped_catalog(tmp_path, bench_file):
+def test_the_published_benchmark_files_load_against_the_shipped_catalog(
+    tmp_path, monkeypatch, bench_file
+):
     # docs/benchmark/*.yaml reproduce the published results: each must still
-    # load once every model of the shipped models_list.yaml is enabled.
+    # load once every model of the shipped models_list.yaml is enabled. A
+    # file that names its own model files (in docs/benchmark/) loads with
+    # them, from the repository root, as its comment says to run it.
     import yaml
 
+    if "models_file:" in bench_file.read_text():
+        monkeypatch.chdir(_REPO)
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-test")
+        assert load_bench_config(str(bench_file)).arms
+        return
     list_path = _REPO / "src/certo/examples/models_list.yaml.example"
     catalog = yaml.safe_load(list_path.read_text())
     models = [

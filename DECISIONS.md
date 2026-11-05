@@ -1640,3 +1640,11 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   stays in the scrollback. Terminal runs only: the server, MCP and bench
   have their own records. No step count: the events log isn't safe to
   read from the watcher thread.
+
+- **No "lower effort first" ladder for cloud models** (2026-11-05,
+  `docs/benchmark/effort-0.2.2.md`). On Haiku, `low` was twice as fast
+  and half the cost of `high`, but 4 of 78 low-effort runs fooled
+  Certo's checks (none of 39 at `high`), and a ladder can't climb past
+  checks that pass: low then high never reached the high rung. Local
+  models stay open: thinking off first looked better on `qwen3.8`, from
+  one repeat (TODO.md).

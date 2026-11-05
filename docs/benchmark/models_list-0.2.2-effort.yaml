@@ -1,0 +1,37 @@
+# The model list for the reasoning-effort benchmark (Certo 0.2.2): Haiku
+# under two names, the same model at two reasoning efforts, so one
+# escalation ladder can climb from low to high effort. Ratings and the
+# timeout as in the catalog's claude-haiku-5-5 entry.
+models:
+  - name: haiku-low
+    model: anthropic/claude-haiku-5-5
+    reasoning_effort: "low"
+    timeout_seconds: 300
+    description: claude-haiku-5-5 at low reasoning effort.
+    ratings: {reasoning: 3, precision: 3, code: 4, cost: 4}
+
+  - name: haiku-high
+    model: anthropic/claude-haiku-5-5
+    reasoning_effort: "high"
+    timeout_seconds: 300
+    description: claude-haiku-5-5 at high reasoning effort, Certo's default.
+    ratings: {reasoning: 3, precision: 3, code: 4, cost: 4}
+
+  # qwen3.8 on Ollama has no effort levels, only thinking on or off:
+  # LiteLLM sends "low", "medium" and "high" as `think: true`, and any
+  # other value, like "minimal", as `think: false`.
+  - name: qwen-nothink
+    model: ollama/qwen3.8:27b
+    reasoning_effort: "minimal"
+    timeout_seconds: 1200
+    context_tokens: 65536
+    description: qwen3.8:27b with thinking off.
+    ratings: {reasoning: 3, precision: 3, code: 2, cost: 5}
+
+  - name: qwen-high
+    model: ollama/qwen3.8:27b
+    reasoning_effort: "high"
+    timeout_seconds: 1200
+    context_tokens: 65536
+    description: qwen3.8:27b with thinking on.
+    ratings: {reasoning: 3, precision: 3, code: 2, cost: 5}

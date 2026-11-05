@@ -146,17 +146,18 @@ first item is the suggested next one.
   switch ran live on 2026-10-19 (ARCHITECTURE.md). The other path, a fix
   attempt that still fails the checks, has only run against a fake; it
   needs a model that fails on purpose, so it may take a few tries.
-- **Escalate on reasoning effort, not only on the model.** Explicit
-  ladders already can (one model on two rungs, each with its own
-  `reasoning_effort`). Not yet: a derived ladder that tries a lower effort
-  before a stronger model, and `--auto-model` choosing the effort per task
-  profile as it chooses the model. Measure first: a bench arm with one
-  model at low then high effort against the same model at high only, on a
-  local and a cloud model (time, cost, hidden tests). Build the
-  strategies only if the cheaper effort is much faster and rarely fails.
-  Needs, per model in `models_list.yaml`, the effort levels it accepts:
-  some models ignore the setting or name the levels differently, and a
-  wrong level fails only when the model is called.
+- **Thinking off first, on local models only: repeat the measurement.**
+  `docs/benchmark/effort-0.2.2.md`: on Haiku, low effort first is
+  ruled out (DECISIONS.md). On `qwen3.8`, thinking off (`minimal`) then
+  on gave 12/13 hidden passes, 0 fooled, median 4m 52s, against 11/13,
+  1 fooled, 7m 57s for thinking on only, but from one repeat and with 17
+  tool-call reminders. Re-run `bench-0.2.2-effort-local.yaml` with 3
+  repeats in night slots; build a local-only, opt-in derived ladder (and
+  `--auto-model` choosing it) only if the result holds. That build also
+  needs, per model in `models_list.yaml`, the effort levels it accepts:
+  on Ollama, `low`/`medium`/`high` all mean thinking on (only `gpt-oss`
+  gets the level) and `minimal` means off; other providers name levels
+  differently, and a wrong level fails only when the model is called.
 - **Benchmark `--auto-model` for the README.** The bench `auto` arm
   exists (0.1.25); a two-task live check picked Sonnet for a `debugging`
   task and Haiku for a `default` one, both verified. Left: a full run of
