@@ -34,6 +34,12 @@ class _FakeOllama(BaseHTTPRequestHandler):
 
     def do_POST(self):
         body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+        if self.path == "/api/show":
+            if body["model"] != "qwen3.8:27b":
+                self.send_error(404)
+                return
+            self._reply({"capabilities": ["completion", "tools", "thinking"]})
+            return
         type(self).loaded.append(body["model"])
         self._reply({"done": True, "done_reason": "load"})
 
@@ -133,3 +139,20 @@ def test_the_small_window_warning_says_what_happens_and_how_to_fix_it():
     assert "CERTO_LLM_CONTEXT_TOKENS=65536" in raw
     cloud = cw.small_window_warning("anthropic/m", 20000, 32768, configured=True, condense=True)
     assert "For more room, raise CERTO_LLM_CONTEXT_TOKENS if the model allows more" in cloud
+
+
+def test_the_capabilities_are_read_from_ollama_without_loading_it(fake_ollama):
+    from importlib import reload
+
+    fresh = reload(cw)
+    try:
+        assert fresh.ollama_capabilities("ollama/qwen3.8:27b", fake_ollama) == [
+            "completion",
+            "tools",
+            "thinking",
+        ]
+        assert fresh.ollama_capabilities("ollama/not-pulled", fake_ollama) is None
+        assert fresh.ollama_capabilities("ollama/x", "http://127.0.0.1:9", 2) is None
+        assert _FakeOllama.loaded == []
+    finally:
+        reload(cw)

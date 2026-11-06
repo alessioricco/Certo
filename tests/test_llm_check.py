@@ -311,6 +311,55 @@ def test_ollama_details_partial_when_only_version_fails(monkeypatch):
     assert details["context_tokens"] == 65536
 
 
+def test_ollama_details_say_how_the_model_will_think(monkeypatch):
+    monkeypatch.setattr(
+        context_window, "ollama_capabilities", lambda *a, **k: ["completion", "thinking"]
+    )
+    details = llm_check._ollama_details(_cfg(model="ollama/qwen3.8:27b", reasoning_effort="high"))
+    assert details["thinking"].startswith("Thinking: on.")
+
+
+def test_ollama_details_skip_thinking_when_the_server_doesnt_say(monkeypatch):
+    # conftest's stub answers None, as an old server or a missing model would.
+    assert "thinking" not in llm_check._ollama_details(_cfg(model="ollama/qwen3.8:27b"))
+
+
+_THINKS = ["completion", "tools", "thinking"]
+
+
+@pytest.mark.parametrize(
+    ("model", "capabilities", "effort", "start"),
+    [
+        ("ollama/qwen3.8:27b", _THINKS, "high", "Thinking: on. Ollama has only on and off"),
+        ("ollama/qwen3.8:27b", _THINKS, "low", "Thinking: on."),
+        ("ollama/qwen3.8:27b", _THINKS, "minimal", "Thinking: off. On Ollama, minimal"),
+        # max reaches Ollama as think: false, which surprises.
+        ("ollama/qwen3.8:27b", _THINKS, "max", "Thinking: off. On Ollama, max"),
+        ("ollama/qwen3.8:27b", _THINKS, None, "Thinking: the model has it, and"),
+        ("ollama/qwen3.8:27b", _THINKS, "none", "Thinking: the model has it, and"),
+        ("ollama/gpt-oss:20b", _THINKS, "medium", "Thinking: on, at level medium."),
+        ("ollama_chat/gpt-oss:20b", _THINKS, "low", "Thinking: on, at level low."),
+        ("ollama/gemma3:4b", ["completion"], None, "Thinking: the model has none."),
+        ("ollama/gemma3:4b", ["completion"], "high", "Thinking: the model has none, but"),
+    ],
+)
+def test_thinking_line(model, capabilities, effort, start):
+    assert llm_check.thinking_line(model, capabilities, effort).startswith(start)
+
+
+def test_detail_lines_thinking_before_the_warning():
+    result = llm_check.LLMCheckResult(
+        ok=True,
+        model="ollama/qwen3.8:27b",
+        base_url=None,
+        latency_seconds=1.8,
+        ollama_version="0.5.7",
+        thinking="Thinking: on.",
+        context_warning="Certo: window is small",
+    )
+    assert llm_check.detail_lines(result)[1:] == ["Thinking: on.", "Certo: window is small"]
+
+
 # --- check_llm: the new fields land on the result ----------------------------
 
 

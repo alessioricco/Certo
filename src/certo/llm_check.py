@@ -126,6 +126,7 @@ class LLMCheckResult:
     # "CERTO_LLM_CONTEXT_TOKENS" or "server" — where context_tokens came from.
     context_source: str | None = None
     context_warning: str | None = None  # the run's own warning text, if any
+    thinking: str | None = None  # thinking_line(), when the server says
 
 
 def _scrub(text: str, secret: str | None) -> str:
@@ -340,6 +341,12 @@ def _ollama_details(cfg: Config, *, timeout: int | None = None) -> dict:
     except Exception:  # noqa: BLE001 - best effort
         pass
     try:
+        capabilities = context_window.ollama_capabilities(cfg.model, cfg.base_url, t)
+        if capabilities is not None:
+            details["thinking"] = thinking_line(cfg.model, capabilities, cfg.reasoning_effort)
+    except Exception:  # noqa: BLE001
+        pass
+    try:
         tokens = context_window.known_context_tokens(
             cfg.model, cfg.llm_context_tokens, cfg.base_url, t
         )
@@ -360,11 +367,45 @@ def _ollama_details(cfg: Config, *, timeout: int | None = None) -> dict:
     return details
 
 
+# LiteLLM sends these as `think: true`, and any other effort as `think:
+# false`, except to gpt-oss models, which get the level itself.
+_THINKING_ON = ("low", "medium", "high")
+
+
+def thinking_line(model: str, capabilities: list[str], effort: str | None) -> str:
+    """How an Ollama model will think with this reasoning effort, from what
+    the server says it can do."""
+    name = model.split("/", 1)[1]
+    if "thinking" not in capabilities:
+        if effort and effort != "none":
+            return (
+                f"Thinking: the model has none, but CERTO_LLM_REASONING_EFFORT is {effort}, "
+                "so Ollama refuses its requests. Clear the setting or set it to none."
+            )
+        return "Thinking: the model has none."
+    if not effort or effort == "none":
+        return (
+            "Thinking: the model has it, and CERTO_LLM_REASONING_EFFORT is not set, so it "
+            "thinks as Ollama does by default. high turns it on, minimal turns it off."
+        )
+    if name.startswith("gpt-oss"):
+        return f"Thinking: on, at level {effort}."
+    if effort in _THINKING_ON:
+        return (
+            "Thinking: on. Ollama has only on and off for this model, so low, medium "
+            "and high think the same."
+        )
+    return (
+        f"Thinking: off. On Ollama, {effort} turns thinking off for this model; only "
+        "low, medium and high turn it on."
+    )
+
+
 def detail_lines(result: LLMCheckResult) -> list[str]:
     """The extra context lines `certo check` prints for a local (Ollama)
     model: server version, the context window the run will use and where it
-    came from, the test request's time, and — separately —
-    the same small-window warning a run emits. Empty for cloud models, so
+    came from, the test request's time, then how the model will think, and
+    — separately — the same small-window warning a run emits. Empty for cloud models, so
     their output is unchanged."""
     if not _is_ollama(result.model):
         return []
@@ -381,6 +422,8 @@ def detail_lines(result: LLMCheckResult) -> list[str]:
     # far below the model's real speed.
     parts.append(f"{result.latency_seconds:.1f}s")
     lines = [" · ".join(parts)]
+    if result.thinking:
+        lines.append(result.thinking)
     if result.context_warning:
         lines.append(result.context_warning)
     return lines

@@ -166,8 +166,10 @@ with `does not support thinking`. Clear the setting or set it to `none`.
 For most models Ollama has no levels, only thinking on or off: `low`,
 `medium` and `high` all turn thinking on, and the model thinks the same
 way at each. (`gpt-oss` models are the exception: they get the level
-itself.) To turn thinking off on a model that has it, such as
-`qwen3.8`, set `minimal`: Ollama then gets `think: false`.
+itself.) Any other value turns thinking off: set `minimal` to turn it
+off on a model that has it, such as `qwen3.8`. Watch out for `xhigh`
+and `max`: they turn thinking off too, not up. `certo check` says on
+its `Thinking:` line which one you get.
 
 ## Other local servers
 

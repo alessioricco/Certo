@@ -500,11 +500,12 @@ and (with `--models`) every model passes; 1 otherwise. `--models` without
 the model files is an error. With `--task`: 0 when the model files load,
 1 when they can't be found or read.
 
-For an Ollama model, `certo check` also reports the server version, the context window the model will run with, and how long the test request took (loading the model included). For example, `qwen3.8:27b` on another machine of the network, with the window the server gives it:
+For an Ollama model, `certo check` also reports the server version, the context window the model will run with, and how long the test request took (loading the model included). A `Thinking:` line then says how the model will think with your `CERTO_LLM_REASONING_EFFORT`, from what the server says the model can do: on, off, the model's default, or that the model has no thinking mode (then a set effort makes Ollama refuse the request). For example, `qwen3.8:27b` on another machine of the network, with the window the server gives it:
 
 ```text
 Checking the model ollama/qwen3.8:27b (a local model may take a minute to load)... 
-Ollama 0.40.6 · context window 131,072 tokens (from server) · 11.7s
+Ollama 0.40.6 · context window 131,072 tokens (from server) · 11.0s
+Thinking: the model has it, and CERTO_LLM_REASONING_EFFORT is not set, so it thinks as Ollama does by default. high turns it on, minimal turns it off.
 ok: reachable, tool calling works.
 ```
 
@@ -513,7 +514,8 @@ Certo warns about:
 
 ```text
 Checking the model ollama/qwen3.8:27b (a local model may take a minute to load)... 
-Ollama 0.40.6 · context window 20,000 tokens (from CERTO_LLM_CONTEXT_TOKENS) · 10.1s
+Ollama 0.40.6 · context window 20,000 tokens (from CERTO_LLM_CONTEXT_TOKENS) · 11.3s
+Thinking: the model has it, and CERTO_LLM_REASONING_EFFORT is not set, so it thinks as Ollama does by default. high turns it on, minimal turns it off.
 ollama/qwen3.8:27b has a context window of 20,000 tokens (CERTO_LLM_CONTEXT_TOKENS), under CERTO_CONTEXT_WARN_TOKENS=32,768: when a long task fills it, older steps are summarized and the run goes on. For more room, set CERTO_LLM_CONTEXT_TOKENS=32768 (Certo then asks Ollama for that size), or start Ollama with OLLAMA_CONTEXT_LENGTH=32768. (CERTO_CONTEXT_WARN_TOKENS=0 turns this warning off.)
 ok: reachable, tool calling works.
 ```

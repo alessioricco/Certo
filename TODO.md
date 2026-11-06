@@ -179,12 +179,11 @@ first item is the suggested next one.
   release.
 - **Per-tier tuning for small models.** Shorter prompts and stricter
   tool-call repair, gated by model tier and measured on both tiers.
-- **`certo check` for Ollama, the rest.** Version, context window and
-  the small-window warning came with #40 (0.1.27); the docs sample is
-  from a real run (qwen3.8 on Ollama 0.40.6, 2026-11-01). Still to do:
-  model pulled, thinking mode, and a real speed (Ollama's own
-  `eval_count`/`eval_duration`, not the request time, which includes
-  loading the model).
+- **`certo check` for Ollama: a real speed.** Version, context window,
+  the small-window warning (0.1.27) and the `Thinking:` line (0.2.2) are
+  there; a model that isn't pulled gets an `ollama pull` hint. Left: a
+  real speed from Ollama's own `eval_count`/`eval_duration`, not the
+  request time, which includes loading the model.
 - **Measured speed and context in the catalog**, filled from real runs,
   so ladders can weigh speed. A `speed` rating would count as capability
   today.

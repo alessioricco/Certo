@@ -119,6 +119,21 @@ def ollama_model_digest(model: str, base_url: str | None, timeout: float = 10) -
     return None
 
 
+def ollama_capabilities(model: str, base_url: str | None, timeout: float = 10) -> list[str] | None:
+    """What the server says `model` can do (`/api/show`), such as
+    `tools` and `thinking`, or None when it can't be learned (a model it
+    doesn't have, an old server, no answer). Doesn't load the model."""
+    name = model.split("/", 1)[1]
+    base = (base_url or _DEFAULT_OLLAMA_URL).rstrip("/")
+    try:
+        found = _post(f"{base}/api/show", {"model": name}, timeout).get("capabilities")
+    except (OSError, ValueError, AttributeError, urllib.error.URLError):
+        return None
+    if not isinstance(found, list):
+        return None
+    return [c for c in found if isinstance(c, str)]
+
+
 def server_address(base_url: str | None) -> str:
     """Host and port only: no scheme, path or credentials."""
     parsed = urllib.parse.urlsplit(base_url or _DEFAULT_OLLAMA_URL)

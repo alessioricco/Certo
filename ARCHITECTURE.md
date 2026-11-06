@@ -121,7 +121,12 @@ given design was chosen.
   `run_tests`. `build_llm()` passes `reasoning_effort` through when set;
   `none`/`off` (config folds `off` into `none`) and an unset Ollama model
   pass an explicit `None` (no reasoning param sent); any other unset model
-  omits the kwarg so the SDK's own `"high"` default applies. `AgentContext.system_message_suffix` carries five
+  omits the kwarg so the SDK's own `"high"` default applies. LiteLLM's
+  Ollama transformation (chat and completion) maps the effort to `think`:
+  the level itself for a `gpt-oss*` model, else `effort in {low, medium,
+  high}`, so `minimal`, `xhigh` and `max` all send `think: false`
+  (checked in LiteLLM's source, 2026-11-06). `llm_check.thinking_line`
+  mirrors it, from `/api/show` `capabilities` (`ollama_capabilities()`). `AgentContext.system_message_suffix` carries five
   behavioral policies: `_AUTONOMOUS_SUFFIX` (omitted when `cfg.interactive`),
   `_README_SUFFIX` (leave a real `README.md`), `_NONINTERACTIVE_TOOLING_SUFFIX`
   (use CI/non-interactive flags, don't blindly retry a no-op command),
