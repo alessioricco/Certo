@@ -264,3 +264,4 @@ stopped. It is written whether or not `CERTO_ARTIFACTS_DIR` is set. See
 
 - [Configuration](../reference/configuration.md)
 - [OpenAI, Claude and Gemini](openai-claude-gemini.md#cost)
+- [Keep costs down](keep-costs-down.md)

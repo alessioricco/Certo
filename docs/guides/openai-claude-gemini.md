@@ -119,7 +119,8 @@ LiteLLM's model list, which is installed with Certo. A model newer than
 your LiteLLM still works, but its cost shows as `unknown`. The default
 models of `certo init` need LiteLLM 1.105 or newer; upgrade with
 `uv tool upgrade certo` (or `pip install -U litellm`). See
-[Run records and costs](run-records-and-costs.md).
+[Run records and costs](run-records-and-costs.md), and
+[Keep costs down](keep-costs-down.md) to spend less.
 
 ## Related
 

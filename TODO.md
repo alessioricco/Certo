@@ -22,7 +22,10 @@ first item is the suggested next one.
   does the 1200s call timeout). Measured 2026-10-26
   (`docs/benchmark/budget-0.1.25.md`): 60 minutes solved 2/8 of the
   larger tasks against 3/8 with 30; the only right work the budget
-  stopped had no tests. Not shown to help; the Author decides.
+  stopped had no tests. Not shown to help. The Author agreed
+  (2026-11-06) that a longer budget can be chosen later: pick the value
+  from data, e.g. the budget hits in the 3-repeat effort run
+  (`bench-results/effort-local-3x-0.2.2`).
 - **Baselines, when the Author chooses.** `docs/benchmark/baseline-<version>.md`
   (local vs cloud, fooled rate, cost per solved task), run when the
   Author decides; minor releases may skip it (2026-10-23). Also a README
@@ -220,7 +223,7 @@ cut that first run's output from 2,949 lines to 1,021.)
 - **GitHub Action**: an issue labelled `certo` becomes a pull request with
   the verdict and checks in its description.
 - **Docs articles still to write** (ideas from 2026-10-18): review the agent's work safely;
-  share your benchmark results (with the benchmark file, as `docs/benchmark/` does); keep costs down; use `certo verify`
+  share your benchmark results (with the benchmark file, as `docs/benchmark/` does); use `certo verify`
   without the agent (pre-commit: done in #16; any AI tool: [#31](https://github.com/alessioricco/certo/issues/31)).
 - **Prebuilt Docker image.** Docker execution from a pip install fails:
   `workspace.py` builds from `docker/agent-server.Dockerfile` relative to

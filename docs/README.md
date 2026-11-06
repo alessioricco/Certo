@@ -92,6 +92,7 @@ takes you from install to your first verified project.
 | Call Certo over HTTP | [Run as a server](guides/run-as-a-server.md) |
 | Use Certo from an editor or an agent | [Use Certo over MCP](guides/use-certo-over-mcp.md) |
 | See what a run did and what it cost | [Run records and costs](guides/run-records-and-costs.md) |
+| Spend less on cloud models, without worse results | [Keep costs down](guides/keep-costs-down.md) |
 | Continue a task after an interruption or a failed verdict | [Resume an interrupted run](guides/resume-a-run.md) |
 | Build something bigger in steps, each checked before the next | [Run a task in milestones](guides/run-in-milestones.md) |
 | See a whole app built that way, step by step | [Build an app in several tasks](guides/build-an-app-in-several-tasks.md) |
