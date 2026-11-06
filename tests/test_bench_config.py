@@ -181,6 +181,37 @@ def test_an_escalation_file_can_be_named(tmp_path):
     assert cfg.model_catalog.escalation.max_rungs == 2
 
 
+_OTHER_LADDERS = "escalation:\n  max_rungs: 2\n  ladders:\n    default:\n      - model: nobody\n"
+_OTHER_PROFILES = "task_profiles:\n  default:\n    model: nobody\n    weights: {code: 1}\n"
+
+
+def test_a_file_naming_its_models_skips_the_ladders_and_profiles_here(tmp_path, monkeypatch):
+    # Your own escalation.yaml and task_profiles.yaml name your models, not
+    # the benchmark file's: a published file must still load next to them.
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "escalation.yaml").write_text(_OTHER_LADDERS)
+    (tmp_path / "task_profiles.yaml").write_text(_OTHER_PROFILES)
+    own = tmp_path / "own"
+    own.mkdir()
+
+    cfg = load_bench_config(_write(own, VALID))
+
+    assert cfg.escalation_file == ""
+    assert cfg.task_profiles_file == ""
+    assert cfg.model_catalog.escalation.max_rungs == 3
+
+
+def test_without_a_models_file_the_ladders_here_are_used(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    write_model_files(tmp_path, MODELS)
+    (tmp_path / "escalation.yaml").write_text("escalation:\n  max_rungs: 2\n")
+    (tmp_path / "bench.yaml").write_text(VALID)
+
+    cfg = load_bench_config("bench.yaml")
+
+    assert cfg.model_catalog.escalation.max_rungs == 2
+
+
 def test_a_missing_escalation_file_is_an_error(tmp_path):
     list_path, models_path = write_model_files(tmp_path, MODELS)
     path = tmp_path / "bench.yaml"

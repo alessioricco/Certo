@@ -187,13 +187,18 @@ def load_checked_catalog(
     escalation_file: str = "",
     on_warning: Callable[[str], None] | None = None,
     mode: str | None = None,
+    look_up_optional: bool = True,
 ) -> ModelCatalog:
     """Find, load and check the model files (see model_files.py; "" means
     look them up; task_profiles.yaml and escalation.yaml are optional).
-    Raises `ModelCatalogError` listing every error; passes each warning to
-    `on_warning`. `mode` as in `check_catalog`."""
+    With `look_up_optional=False`, "" for one of the optional two means
+    none. Raises `ModelCatalogError` listing every error; passes each
+    warning to `on_warning`. `mode` as in `check_catalog`."""
     list_path, models_path = resolve(models_file, models_list_file)
-    profiles_path, escalation_path = resolve_optional(task_profiles_file, escalation_file)
+    if look_up_optional:
+        profiles_path, escalation_path = resolve_optional(task_profiles_file, escalation_file)
+    else:
+        profiles_path, escalation_path = task_profiles_file or None, escalation_file or None
     catalog = load_model_catalog(
         list_path,
         models_path,

@@ -34,12 +34,17 @@ arms:
 | `repeats` | `1` | Runs per task per arm, a whole number of at least 1. Results vary between runs, so more repeats give a fairer comparison. |
 | `models_file` | looked up | Your personal `models.yaml`. Without it: `./models.yaml`, else `~/.config/certo/models.yaml`. `CERTO_MODELS_FILE` is not read. |
 | `models_list_file` | looked up | The model catalog, `models_list.yaml`, the same way. `CERTO_MODELS_LIST_FILE` is not read. |
-| `escalation_file` | looked up | `escalation.yaml`, the same way, for the `cost_axis` and `max_rungs` of a derived `escalate` arm. Optional: without one, the defaults apply. `CERTO_ESCALATION_FILE` is not read. |
-| `task_profiles_file` | looked up | `task_profiles.yaml`, the same way, for `auto` arms: how a task is classified and which ratings count. Optional: without one, every task gets the `default` profile. `CERTO_TASK_PROFILES_FILE` is not read. |
+| `escalation_file` | looked up | `escalation.yaml`, the same way (but not when the file names its own `models_file`), for the `cost_axis` and `max_rungs` of a derived `escalate` arm. Optional: without one, the defaults apply. `CERTO_ESCALATION_FILE` is not read. |
+| `task_profiles_file` | looked up | `task_profiles.yaml`, the same way as `escalation_file`, for `auto` arms: how a task is classified and which ratings count. Optional: without one, every task gets the `default` profile. `CERTO_TASK_PROFILES_FILE` is not read. |
 | `tasks_dir` | the bundled task set | A folder of your own tasks, in the same shape. |
 
 Any other key is an error. Relative paths are relative to the folder where
 you run `certo bench`.
+
+A benchmark file that names its own `models_file` uses only the ladders and
+task profiles it names as well. Your own `escalation.yaml` and
+`task_profiles.yaml` name your models, so they would not fit its models.
+This is how the files in `docs/benchmark/` run from the repository root.
 
 ## Arms
 

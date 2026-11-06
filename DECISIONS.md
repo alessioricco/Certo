@@ -1648,3 +1648,9 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   checks that pass: low then high never reached the high rung. Local
   models stay open: thinking off first looked better on `qwen3.8`, from
   one repeat (TODO.md).
+
+- **A bench file that names its own `models_file` doesn't look up
+  ladders or profiles** (2026-11-06). Personal `escalation.yaml` and
+  `task_profiles.yaml` name personal models, so next to a published
+  file's own models they can only fail; it uses the ones it names.
+  Without its own `models_file` it still looks them up, as before.

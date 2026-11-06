@@ -306,6 +306,10 @@ def load_bench_config(path: str = DEFAULT_BENCH_FILE) -> BenchConfig:
             escalation_file=escalation_file,
             task_profiles_file=task_profiles_file,
             on_warning=catalog_warnings.append,
+            # A file that names its own models.yaml doesn't pick up the
+            # ladders and profiles in the current folder: they name other
+            # models.
+            look_up_optional=not raw.get("models_file"),
         )
         catalog = {e.name: e for e in loaded.models}
     except ModelCatalogError as exc:
