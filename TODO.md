@@ -70,6 +70,22 @@ first item is the suggested next one.
 
 ## 2. Complex tasks
 
+- **Study and improve the agent loop** (the Author's prompt, 2026-11-07,
+  "a big activity, not now"; kept as written in
+  `docs/history/agent-loop-prompt.md`). Trace the run, verification,
+  retry, escalation, checkpoint, independent-test and milestone flows;
+  give a prioritized plan; implement one improvement at a time, only
+  the one the Author picks. Five areas: (1) undo a fix attempt that
+  makes the checks worse (see "Automatic use of checkpoints" below);
+  (2) tell legitimate test changes from ones that weaken the evidence
+  (see "Changed check files"); (3) fewer misread independent tests,
+  maybe a separate writer model (see "Independent tests: the rest");
+  (4) bounded smoke checks of the app (an HTTP endpoint, a page that
+  renders), within the existing security decisions; (5) Certo proposes
+  milestones with acceptance criteria for the user to approve (see the
+  milestone entry above). Sky Hopper is the candidate evaluation task.
+  Benchmark on a local and a cloud model before claiming a gain; no live
+  calls without the Author's OK. Done item by item.
 - **The three milestone samples: the menu?** First runs done
   (`docs/benchmark/milestone-samples-0.2.3.md`): all `verified` on Haiku
   alone, $0.34 to $1.11 and 14 to 47 minutes each. Left: the Author
@@ -79,7 +95,8 @@ first item is the suggested next one.
 - **The milestone samples on other models** (the Author's wish,
   2026-11-07, "not now"). Same three tasks, same way, one model each, to
   compare by eye and by numbers: `gpt-6.1-sol` first (the Author's
-  choice: discounted in November 2026), then maybe Sonnet 5.5 and qwen3.8
+  choice; the November 2026 discount is on `gpt-5.6-sol`, but 6.1 Sol is
+  cheaper at list price and stronger), then maybe Sonnet 5.5 and qwen3.8
   at night. `examples/compare-models.sh.example` already runs one task per
   model and tabulates verdict, time and cost (a milestone file now runs
   in milestones without the flag). Estimate first: Haiku took $2.28 for
