@@ -70,14 +70,12 @@ first item is the suggested next one.
 
 ## 2. Complex tasks
 
-- **Run the three milestone samples** (added 2026-11-07, the Author's
-  request: `sky-hopper`, `iron-horizon`, `team-board` in
-  `starter/tasks/`). Never run yet. Run each once on a cloud model
-  (`--milestones`), record time, cost and each milestone's verdict in
-  `docs/benchmark/`, fix what the runs show is unclear in the tasks, then
-  decide whether they join the menu at the end of `certo init` (with
-  their measured times) and the benchmark task set. Done when each has a
-  recorded run.
+- **The three milestone samples: the menu?** First runs done
+  (`docs/benchmark/milestone-samples-0.2.3.md`): all `verified` on Haiku
+  alone, $0.34 to $1.11 and 14 to 47 minutes each. Left: the Author
+  judges how they look and play; then decide whether they join the menu
+  at the end of `certo init` (with those times) and the benchmark task
+  set. A run on a local model is still to try (at night).
 - **Milestone mode: what's left.** Phase 3 closed on 2026-10-31 (the
   Author): `app-tasks/expenses` (apps-2), qwen3.8 `verified` in 2/3
   runs, 80/80 hidden (`docs/benchmark/expenses-0.1.27.md`). The
@@ -369,6 +367,12 @@ before the 0.2.3 release; also decide the default budget from it.
 
 ## Smaller bugs
 
+- **The root guard blocks `/Applications`.** In the milestone samples'
+  first runs the agent looked there for a browser (Chromium) to check a
+  game, and was blocked. Add `/Applications` to the allowed system
+  folders (`root_guard._SYSTEM_DIRS`), read-only like `/usr`. After the
+  2026-11-07 night benchmark (it changes the guard). Done when a command
+  naming `/Applications/...` runs.
 - **`git` inside a project sees the workspace's repository.** A project
   in `projects/` of a workspace that is a git repository (and isn't one
   itself) makes the agent's `git status` list the whole workspace: a lure
