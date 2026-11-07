@@ -3052,7 +3052,7 @@ def test_a_condensation_is_announced_and_counted(monkeypatch, tmp_path):
     monkeypatch.setattr(runner, "_emit_notice", lambda _emit, text: notices.append(text))
 
     def fake_phases(conversation, cfg, emit, task, *args, **_kwargs):
-        (callback,) = conversation.kwargs["callbacks"]
+        *_guard, callback = conversation.kwargs["callbacks"]
         callback(
             Condensation(
                 forgotten_event_ids=set(), summary="s", summary_offset=1, llm_response_id="r"
@@ -3875,3 +3875,36 @@ def test_a_terminal_run_prints_the_progress_line_after_checks_and_at_each_fix_at
         "Progress: fix attempt 1 of 2 · checks failed: pytest (1 failed)",
         "Progress: fix attempt 1 of 2 · checks verified",
     ]
+
+
+def test_the_root_guard_watches_the_conversation(monkeypatch, tmp_path):
+    from certo.root_guard import RootGuard
+
+    _stub_for_state_tests(monkeypatch)
+    seen = {}
+
+    def fake_phases(conversation, cfg, emit, task, *args, **_kwargs):
+        guard, _callback = conversation.kwargs["callbacks"]
+        seen.update(guard=guard, conversation=conversation)
+        return _verified_outcome()
+
+    monkeypatch.setattr(runner, "_run_stream_task_phases", fake_phases)
+    runner.stream_task("do it", cfg=_cfg(workspace=str(tmp_path)))
+
+    assert isinstance(seen["guard"], RootGuard)
+    assert seen["guard"].root == os.path.realpath(tmp_path)
+    assert seen["guard"].conversation is seen["conversation"]
+
+
+def test_docker_needs_no_root_guard():
+    assert runner._root_guard(_cfg(execution="docker"), lambda _m: None) is None
+
+
+def test_a_blocked_action_is_said_as_a_certo_notice(tmp_path):
+    said = []
+    guard = runner._root_guard(_cfg(workspace=str(tmp_path)), said.append)
+
+    guard.emit("x is outside the project root")
+
+    assert runner.is_notice(said[0])
+    assert said[0].content[0].text == "x is outside the project root"

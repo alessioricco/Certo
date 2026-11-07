@@ -2,12 +2,51 @@
 
 Not released yet.
 
-This release makes it easier to set up more than one model:
+This release keeps the agent in its project, and makes it easier to set
+up more than one model:
 
+- **A task gets its own project folder.** In a Certo workspace, a task
+  run without `--project` gets `projects/<name>`, named after the task.
+- **The agent stays in its project root.** It is told its root, and
+  Certo blocks an action that reaches outside it.
 - **`certo init` offers more models.** After a passing model check, it
   asks whether to set up more models now, and on yes runs
   `certo init models` at once.
 - **`certo --help` lists every command**, each in its own section.
+
+## New: the agent stays in its project root
+
+Run from a Certo workspace (the folder `certo init` makes, with
+`projects/` in it) without `--project`, a task used to get the whole
+workspace as its folder. The agent then chose a subfolder itself, read
+the other projects, and Certo's checks found several projects and ended
+`stuck`. Now:
+
+- **A task gets its own project folder**, named after the task file, its
+  title or its first words, and Certo says which before the run:
+
+  ```text
+  Project: ./projects/farewell, named after the task. The agent works only in that folder.
+  ```
+
+  A folder that already exists isn't reused: the new task gets
+  `farewell-2`, and `--project farewell` works on the old one.
+- **The agent is told its project root**, and that nothing above or
+  beside it is part of the task.
+- **Certo blocks an action that reaches outside the root** before it
+  runs: the file editor outside the root, or a command like `ls ..`,
+  `cat ../other/file` or `cd ~`. The agent is told why and carries on:
+
+  ```text
+  Certo blocked an action outside the project root: <workspace>/projects is outside the project root <workspace>/projects/farewell-3. Work only inside the project root: nothing outside it is part of the task.
+  ```
+
+  It is a guard rail, not a sandbox; `--execution docker` is the
+  sandbox. Three live runs are in
+  [The project root in 0.2.3](../benchmark/project-root-0.2.3.md).
+
+See [Safety](../concepts/safety.md#what-the-agent-can-do) and
+[`certo`](../reference/commands.md#certo).
 
 ## New: `certo init` offers more models
 

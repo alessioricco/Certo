@@ -14,6 +14,12 @@ first item is the suggested next one.
 
 ## Before the next release
 
+- **Benchmark the project-root sentence (0.2.3).** Every run's system
+  prompt now names the project root and forbids reading outside it
+  (`agent.py`). New prompt text for every run, so measure it with
+  `certo bench` on a local and a cloud model before the release
+  (working agreement 2). Three Haiku runs only so far
+  (`docs/benchmark/project-root-0.2.3.md`). Done when both show no loss.
 - **A longer time budget from `certo init` for Ollama?** The mazeman
   sample took 41 minutes on `qwen3.8:27b` (2026-10-22), past the default
   30-minute `CERTO_MAX_TASK_SECONDS`; it ended `verified` only because the
@@ -335,6 +341,12 @@ adding skills one by one (`certo skills add` + `enable` today).
 
 ## Smaller bugs
 
+- **`git` inside a project sees the workspace's repository.** A project
+  in `projects/` of a workspace that is a git repository (and isn't one
+  itself) makes the agent's `git status` list the whole workspace: a lure
+  outside the root the guard can't see (no path in the command). Maybe
+  `GIT_CEILING_DIRECTORIES` in the agent's terminal for a project Certo
+  created. Done when `git` in such a project doesn't reach the parent.
 - **`certo skills`: turn an official skill off**, globally or for one
   project (later, agreed 2026-10-22). Today a third-party skill can only
   replace one.

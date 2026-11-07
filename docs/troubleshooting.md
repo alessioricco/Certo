@@ -60,6 +60,7 @@ setting comes from and makes one small call to the model.
   [Node tasks show "hidden tests error"](#certo-bench-node-tasks-show-hidden-tests-error),
   [verified with no tests](#certo-bench-a-node-run-is-verified-but-fooled)
 - Other: [uncommitted changes warning](#warning-uncommitted-changes),
+  [an action outside the project root was blocked](#certo-blocked-an-action-outside-the-project-root),
   [wrong path or read-only file system](#the-agent-writes-to-the-wrong-path),
   [`init` refuses to write](#certo-init-says-a-file-already-exists),
   [Docker](#docker)
@@ -462,7 +463,8 @@ no single obvious root`, listing the candidates.
 the top, so Certo can't tell which one to check.
 
 **Fix:** run Certo from (or `certo verify`) the sub-project folder you
-mean.
+mean. In a Certo workspace (a folder with `projects/`) a new task gets its
+own project folder, so this happens only in other folders.
 
 ### A toolchain is missing (Node, Go, Rust, Maven or Gradle)
 
@@ -995,6 +997,23 @@ runs were saved. Since 0.1.19, Certo hides this message; it appears only
 with older versions.
 
 ## Other problems
+
+### Certo blocked an action outside the project root
+
+**You see:**
+
+```text
+Certo blocked an action outside the project root: /home/me/certo-workspace/projects/other is outside the project root /home/me/certo-workspace/projects/app. Work only inside the project root: nothing outside it is part of the task.
+```
+
+**Cause:** the agent tried to read, list, search or edit something above
+or beside its project folder: a parent folder, another project, your home
+folder. Certo stopped that one action and told the agent why; the run goes
+on.
+
+**Fix:** nothing, when the task doesn't need those files. When it does
+(a shared library in `../shared`, say), run Certo from the folder that
+holds everything the task needs, so that folder is the project root.
 
 ### Warning: uncommitted changes
 

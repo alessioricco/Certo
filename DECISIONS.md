@@ -1679,3 +1679,14 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   never a model call (as "No LLM-based router"); an existing folder gets
   `-2` rather than being reused, so a new task never edits an old
   project by accident. Other folders keep working in place.
+
+- **A root guard that blocks, not warns, and is heuristic** (2026-11-07).
+  The Author: the project root "must be respected". Actions reaching
+  outside it are blocked before they run (a rejection the agent reads,
+  and the run goes on), in local mode only. Terminal commands are judged
+  by their words, so it is a guard rail, not a sandbox; Docker stays the
+  sandbox. System and tool folders are allowed for commands, but never
+  the root's parent, its siblings or the folders above it, even when the
+  project itself sits in an allowed folder such as `/tmp`. No switch to
+  turn it off: a task that needs `../shared` runs from the folder that
+  holds both.

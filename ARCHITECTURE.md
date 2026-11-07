@@ -323,6 +323,17 @@ given design was chosen.
   deterministic) and re-resolves the config as if `--project` was given.
   CLI only: MCP and the server take an explicit folder. `init` creates
   the empty `projects/` so a new sample folder qualifies.
+- **`root_guard.py`** — keeps the agent in its project root (local mode;
+  `runner._root_guard`, both conversation builders). A conversation
+  callback, first in the list: the SDK (1.47, `agent.py`) emits each
+  `ActionEvent` through the callbacks *before* `_ActionBatch.prepare`
+  runs the batch, and `prepare` pops `state.blocked_actions`, turning a
+  blocked one into a `UserRejectObservation(rejection_source="hook")` the
+  agent sees. So `conversation.state.block_action(id, reason)` from a
+  plain callback blocks without the SDK's shell-command hook machinery.
+  Terminal words are read with `shlex(punctuation_chars=True)`; the
+  current folder follows `TerminalObservation.metadata.working_dir`.
+  Heuristic by design (DECISIONS.md); Docker is the sandbox.
 - **`project_state.py`** + `certo --resume` — stdlib only. The CLI
   passes `save_state=True` (`CERTO_SAVE_STATE`, default on) to
   `stream_task`, which then builds the `Conversation` with

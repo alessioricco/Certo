@@ -41,7 +41,7 @@ from openhands.tools.task_tracker import TaskTrackerTool
 
 from . import context_window
 from .acceptance import AcceptanceCheck, AcceptanceCheckResult, evaluate_acceptance_checks
-from .agent import build_agent
+from .agent import build_agent, project_root
 from .artifacts import resolve_run_artifacts_dir, write_run_artifacts
 from .catalog_check import load_checked_catalog
 from .check_files import (
@@ -60,6 +60,7 @@ from .checkpoints import (
     safe_snapshot,
 )
 from .cost_limit import cost_limit, cost_limit_reached, pause_at_cost_limit, set_cost_limit
+from .root_guard import RootGuard
 from .run_progress import RunProgress, attach_progress, checks_ran, fix_attempt, report_progress
 from .cancel import RunCancelled, cancel_token, raise_if_cancelled, stop_when_cancelled
 from .deadline import stop_at_deadline
@@ -323,6 +324,22 @@ class TaskResult(list):
     def __init__(self, messages, outcome: TaskOutcome) -> None:
         super().__init__(messages)
         self.outcome = outcome
+
+
+def _root_guard(cfg: Config, emit: Callable[[Message], None]) -> RootGuard | None:
+    """The guard that keeps the agent in its project root (root_guard.py);
+    None in Docker, where the container only has the project. A blocked
+    action is said as a Certo notice: the SDK's own panel calls it a "User
+    Rejected Action"."""
+    if cfg.execution != "local":
+        return None
+    return RootGuard(project_root(cfg), emit=lambda text: _emit_notice(emit, text))
+
+
+def _with_guard(guard: RootGuard | None, on_event: Callable[[Any], None]) -> list:
+    """The conversation's callbacks: the guard first, so it marks an action
+    before anything else sees it."""
+    return [guard, on_event] if guard is not None else [on_event]
 
 
 def _run_verification(working_dir: str, runner: CommandRunner | None = None) -> VerificationRun:
@@ -1849,6 +1866,8 @@ def _stream_task(
         project_env = _prepare_agent_env(task, cfg, runner, emit)
         _warn_small_window(agent_cfg, emit)
 
+        guard = _root_guard(cfg, emit)
+
         def new_conversation(**persistence: Any) -> Conversation:
             return Conversation(
                 agent=build_agent(
@@ -1857,7 +1876,7 @@ def _stream_task(
                     project_env=project_env,
                     terminal_env=terminal_env(project_env, runner),
                 ),
-                callbacks=[on_event],
+                callbacks=_with_guard(guard, on_event),
                 workspace=workspace,
                 visualizer=visualizer_for(agent_cfg),
                 # Previously unset (SDK default 500), so CERTO_MAX_ITERATIONS
@@ -1884,6 +1903,8 @@ def _stream_task(
             )
         else:
             conversation = new_conversation()
+        if guard is not None:
+            guard.conversation = conversation
         if cfg.confirm_mode == "always":
             # Previously parsed/validated in config.py but never attached to
             # an actual ConfirmationPolicyBase, so it was a silent no-op —
@@ -2680,8 +2701,13 @@ def _stream_escalation(
                 efforts[usage_id] = rung_cfg.reasoning_effort
                 _warn_small_window(rung_cfg, io.emit)
 
+                guard = _root_guard(cfg, io.emit)
+
                 def new_conversation(
-                    rung_cfg: Config = rung_cfg, usage_id: str = usage_id, **persistence: Any
+                    rung_cfg: Config = rung_cfg,
+                    usage_id: str = usage_id,
+                    guard: RootGuard | None = guard,
+                    **persistence: Any,
                 ) -> Conversation:
                     return Conversation(
                         agent=build_agent(
@@ -2690,7 +2716,7 @@ def _stream_escalation(
                             project_env=project_env,
                             terminal_env=terminal_env(project_env, runner),
                         ),
-                        callbacks=[io.on_event],
+                        callbacks=_with_guard(guard, io.on_event),
                         workspace=workspace,
                         visualizer=visualizer_for(rung_cfg),
                         max_iteration_per_run=rung_cfg.max_iterations,
@@ -2711,6 +2737,8 @@ def _stream_escalation(
                     )
                 else:
                     conversation = new_conversation()
+                if guard is not None:
+                    guard.conversation = conversation
                 if cfg.confirm_mode == "always":
                     conversation.set_confirmation_policy(AlwaysConfirm())
                 # One cost limit for every rung together (cost_limit.py).

@@ -8,9 +8,22 @@ third-party skills.
 ## What the agent can do
 
 In local mode (the default), the agent's terminal runs commands **as your
-user**, with your permissions, in the task's folder. Nothing stops a
-command from reading or changing files elsewhere. Treat a task like
-running a script you haven't read.
+user**, with your permissions, in the task's folder, the project root.
+
+Certo blocks an action that reaches outside the project root before it
+runs, and tells the agent why:
+
+- a file the editor would open or change outside the root;
+- a terminal command that names a path above or beside the root:
+  `ls ..`, `cat ../other/file`, `find /`, `cd ~`, `$HOME/...`.
+
+System and tool folders stay allowed for commands (`/usr`, `/tmp`, the
+npm and pip caches in your home folder), but never the root's parent,
+the folders beside the root, or your home folder itself.
+
+This is a guard rail, not a sandbox: a command can still reach other
+files in ways its words don't show, such as a script or a path built at
+run time. Treat a task like running a script you haven't read.
 
 To reduce the risk:
 
@@ -61,9 +74,11 @@ the first action is rejected and the task stops with
   after the task, so the agent never starts in the folder that holds
   every project.
 
-These rules decide which folder the agent *starts* in. Certo also tells
-the agent that this folder is its project root, and that nothing above or
-outside it is part of the task.
+These rules decide the project root, the folder the agent starts in.
+Certo tells the agent that nothing above or outside it is part of the
+task, and blocks actions that reach outside it (see "What the agent can
+do" above). In Docker the container holds only the project, so no
+guard is needed there.
 
 ## Certo's own environment
 
