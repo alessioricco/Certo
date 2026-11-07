@@ -205,6 +205,8 @@ def milestone_task(plan: MilestonePlan, number: int, handover: str | None = None
         )
     if handover:
         parts.append(handover)
+    # --auto-model classifies a milestone by this heading first
+    # (model_catalog.classification_titles): keep its shape in step.
     parts.append(f"## Now: milestone {number} of {total}: {milestone.label}\n\n{milestone.text}")
     if number < total:
         parts.append(

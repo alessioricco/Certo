@@ -16,14 +16,17 @@ from certo.model_catalog import (
     ModelCatalogEntry,
     ModelCatalogError,
     TaskProfile,
+    classification_titles,
     classify_task,
     find_trigger,
+    find_trigger_in,
     load_model_catalog,
     rank_candidates,
     rank_for_profile,
     score_entry,
     task_title,
 )
+from certo.milestones import milestone_task, parse_milestones
 
 _MINIMAL_YAML = """
 models:
@@ -313,6 +316,28 @@ def test_classify_task_reads_only_the_first_line_with_text():
     assert find_trigger("# Fix the parser\nmore text", debugging) == "fix"
 
 
+def test_a_milestone_is_classified_by_its_own_title_first():
+    debugging = TaskProfile(name="debugging", triggers=("fix",), weights={"a": 3})
+    build = TaskProfile(name="build", triggers=("game",), weights={"a": 2})
+    default = TaskProfile(name="default", weights={"a": 1})
+    catalog = _catalog_with_profiles(debugging, build, default)
+    plan = parse_milestones(
+        "# A platform game\n\n## Milestone 1: The level\n\nDraw it.\n\n"
+        "## Milestone 2: Fix the flaky tests\n\nMake them pass.\n"
+    )
+    first, second = milestone_task(plan, 1), milestone_task(plan, 2)
+
+    assert classification_titles(second) == ["Fix the flaky tests", "A platform game"]
+    # Its own title has a trigger: it wins over the task's.
+    assert classify_task(second, catalog).name == "debugging"
+    assert find_trigger_in(second, debugging) == ("fix", "Fix the flaky tests")
+    # No trigger in its own title: the task's title decides.
+    assert classify_task(first, catalog).name == "build"
+    assert find_trigger_in(first, build) == ("game", "A platform game")
+    # A whole task is classified by its title alone, as before.
+    assert classification_titles("# Fix it\n\n## Now: nothing") == ["Fix it"]
+
+
 _BUNDLED_TASKS = Path(__file__).resolve().parent.parent / "src" / "certo"
 
 
@@ -333,6 +358,9 @@ _BUNDLED_TASKS = Path(__file__).resolve().parent.parent / "src" / "certo"
         ("starter/tasks/hanoi.md", "default"),
         ("starter/tasks/mazeman.md", "default"),
         ("starter/tasks/invaders.md", "default"),
+        ("starter/tasks/sky-hopper.md", "build"),
+        ("starter/tasks/iron-horizon.md", "build"),
+        ("starter/tasks/team-board.md", "build"),
     ],
 )
 def test_shipped_profiles_classify_the_bundled_tasks(tmp_path, task_file, expected):

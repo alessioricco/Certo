@@ -627,8 +627,10 @@ A broken key or a model without tool calling shows up here, before a run.
 **One task: `--task`.** `certo check --task "Fix the bugs in the parser"`
 shows what `--auto-model` would do with that task, without running it:
 the task's title, the profile it matches and why, and every active model
-in the order Certo would try it. It makes no model call and doesn't check
-the main model:
+in the order Certo would try it. For a task file written in milestones,
+one more line per milestone gives its profile and first model: a
+milestone is classified by its own title first, then by the task's. It
+makes no model call and doesn't check the main model:
 
 ```text
 Task title: Fix the bugs in the parser

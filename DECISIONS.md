@@ -1726,3 +1726,19 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   so before the run; `--no-milestones` restores the old behaviour; a file
   that has the headings but doesn't parse is refused (before, it ran
   whole). CLI only: MCP and the server keep their explicit option.
+
+- **`--auto-model` classifies each milestone by its own title first, and
+  the example profiles gain `build`** (2026-11-07, the Author's request,
+  after a Sky Hopper run where all four milestones were `default`). Each
+  milestone was already ranked afresh, but every milestone prompt starts
+  with the task's title, so all of them matched the same profile. Now the
+  milestone's title is tried first and the task's title only when it has
+  no trigger word. Still titles only, never the text under them (whole-text
+  matching made 12 of 14 tasks `debugging`, 2026-10-19). `build` (build,
+  implement, app, application, game, website, feature; code 3, cost 3,
+  reasoning and precision 0.5) gives app and game builds a profile that
+  weighs code, where `default` weighed cost alone: Haiku built all three
+  milestone samples verified, so a cheap strong coder first is right.
+  Declared after the other profiles, so "fix" or "refactor" in the same
+  title wins. Rejected for now: classifying with a model call (costs a
+  call per run, and less predictable).

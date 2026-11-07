@@ -633,25 +633,56 @@ def _trigger_pattern(trigger: str) -> re.Pattern[str]:
     return re.compile(r"(?<!\w)" + re.escape(trigger.lower()) + r"(?:s|es)?(?!\w)")
 
 
+# The heading `milestones.milestone_task` gives the milestone a run is
+# for. Its own title is classified before the task's, so a milestone
+# called "Fix the flaky tests" is `debugging` in a task that isn't.
+_MILESTONE_HEADING = re.compile(r"^## Now: milestone \d+ of \d+: (.+)$", re.MULTILINE)
+
+
+def classification_titles(task_text: str) -> list[str]:
+    """The lines a task is classified by, in order: for one milestone of a
+    task written in milestones, the milestone's title, then the task's
+    title (`task_title`); otherwise the task's title alone."""
+    titles = []
+    milestone = _MILESTONE_HEADING.search(task_text)
+    if milestone:
+        titles.append(milestone.group(1).strip())
+    titles.append(task_title(task_text))
+    return [t for t in titles if t]
+
+
+def find_trigger_in(task_text: str, profile: TaskProfile) -> tuple[str, str] | None:
+    """The first of the profile's triggers found, and the title it was found
+    in: the milestone's title first, then the task's."""
+    for title in classification_titles(task_text):
+        lowered = title.lower()
+        for trigger in profile.triggers:
+            if _trigger_pattern(trigger).search(lowered):
+                return trigger, title
+    return None
+
+
 def find_trigger(task_text: str, profile: TaskProfile) -> str | None:
-    """The first of the profile's triggers found in the task's title."""
-    title = task_title(task_text).lower()
-    return next((t for t in profile.triggers if _trigger_pattern(t).search(title)), None)
+    """The first of the profile's triggers found in the task's titles."""
+    found = find_trigger_in(task_text, profile)
+    return found[0] if found else None
 
 
 def classify_task(task_text: str, catalog: ModelCatalog) -> TaskProfile:
-    """First declared task profile with a trigger in the task's title
-    (`task_title`, whole words) wins — same tie-break convention as
-    `_LANGUAGE_MARKERS` in `verification.py`. Falls back to a profile named
-    `default` if one is declared, else a synthesized empty-weights profile
-    (every model scores 0 and the declared order breaks the tie — see
-    `rank_candidates`).
+    """The titles of `classification_titles` are tried in order (a
+    milestone's own title, then the task's); in each, the first declared
+    task profile with a trigger in it (whole words) wins — same tie-break
+    convention as `_LANGUAGE_MARKERS` in `verification.py`. Falls back to a
+    profile named `default` if one is declared, else a synthesized
+    empty-weights profile (every model scores 0 and the declared order
+    breaks the tie — see `rank_candidates`).
     """
-    for profile in catalog.task_profiles:
-        if profile.name == "default":
-            continue
-        if find_trigger(task_text, profile) is not None:
-            return profile
+    for title in classification_titles(task_text):
+        for profile in catalog.task_profiles:
+            if profile.name == "default":
+                continue
+            if any(_trigger_pattern(t).search(title.lower()) for t in profile.triggers):
+                return profile
     for profile in catalog.task_profiles:
         if profile.name == "default":
             return profile

@@ -20,13 +20,14 @@ from .model_catalog import (
     ModelCatalogError,
     TaskProfile,
     classify_task,
-    find_trigger,
+    find_trigger_in,
     load_model_catalog,
     rank_for_profile,
     score_entry,
     task_title,
 )
 from .model_files import find, missing_message, resolve, resolve_optional
+from .milestones import MilestoneError, milestone_task, parse_milestones, written_in_milestones
 from .model_selection import config_for_entry
 
 # llm_check.explain() names the CERTO_LLM_* settings; for a catalog entry the fix
@@ -170,9 +171,9 @@ def print_task_routing(out: TextIO, task_text: str) -> bool:
     title = task_title(task_text)
     print(f"Task title: {title or '(empty)'}", file=out)
     profile = classify_task(task_text, catalog)
-    trigger = find_trigger(task_text, profile) if profile.name != "default" else None
-    if trigger is not None:
-        why = f'"{trigger}" is in the title'
+    found = find_trigger_in(task_text, profile) if profile.name != "default" else None
+    if found is not None:
+        why = f'"{found[0]}" is in the title'
     elif profile in catalog.task_profiles:
         why = "no other profile's trigger word is in the title"
     else:
@@ -194,7 +195,38 @@ def print_task_routing(out: TextIO, task_text: str) -> bool:
         "fails, or if a fix attempt still fails Certo's checks.",
         file=out,
     )
+    _print_milestone_routing(out, task_text, catalog)
     return True
+
+
+def _print_milestone_routing(out: TextIO, task_text: str, catalog: ModelCatalog) -> None:
+    """For a task file written in milestones: the profile and first model of
+    each milestone, which is classified by its own title first."""
+    if not written_in_milestones(task_text):
+        return
+    try:
+        plan = parse_milestones(task_text)
+    except MilestoneError:
+        return
+    print(
+        "\nIt runs milestone by milestone. Each milestone is classified by its own "
+        "title first, then by the task's:",
+        file=out,
+    )
+    for milestone in plan.milestones:
+        text = milestone_task(plan, milestone.number)
+        profile = classify_task(text, catalog)
+        found = find_trigger_in(text, profile) if profile.name != "default" else None
+        if found is None:
+            why = "no trigger word"
+        elif found[1] == milestone.label:
+            why = f'"{found[0]}" in the milestone\'s title'
+        else:
+            why = f'"{found[0]}" in the task\'s title'
+        ranked = _ranked(catalog, profile)
+        first = ranked[0][0] if ranked else "no active model"
+        name = profile.name if profile in catalog.task_profiles else "(none)"
+        print(f"  {milestone.number}. {milestone.label}: {name} ({why}), {first} first", file=out)
 
 
 def print_catalog_report(

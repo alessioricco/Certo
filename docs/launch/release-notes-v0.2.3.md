@@ -19,6 +19,9 @@ easier to start:
 - **Three bigger samples, in milestones**: a platform game with
   parallax, a 3D wireframe tank game, and a team task board web app with
   SQLite.
+- **`--auto-model` chooses per milestone**, by the milestone's own
+  title first, and the example task profiles gain `build`, for apps,
+  games and features.
 - **`certo init` offers more models.** After a passing model check, it
   asks whether to set up more models now, and on yes runs
   `certo init models` at once.
@@ -147,6 +150,34 @@ certo tasks/team-board.md --project team-board
 ```
 
 See [Run a task in milestones](../guides/run-in-milestones.md).
+
+## New: `--auto-model` chooses per milestone, and a `build` profile
+
+`--auto-model` picks a task profile from trigger words in the task's
+title. In a task written in milestones every milestone was matched by
+the task's title, so all of them got the same profile. Now each
+milestone is classified by its own title first: in a game whose title
+matches `build`, a milestone called "Fix the flaky tests" is
+`debugging`, and goes to the models that profile ranks first. A
+milestone whose title has no trigger word falls back to the task's
+title, as before. Only titles are read, never the text under them.
+
+The example `task_profiles.yaml` has a new profile, `build` (build,
+implement, app, application, game, website, feature), which weighs code
+and cost. Before, an app or a game usually matched no profile and got
+`default`, which weighs cost most. Copy the new profile into your own
+`task_profiles.yaml` to use it: Certo never changes your copy.
+
+`certo check --task` shows, for a task file written in milestones, each
+milestone's profile and first model:
+
+```text
+It runs milestone by milestone. Each milestone is classified by its own title first, then by the task's:
+  1. The level and the camera: build ("game" in the task's title), claude-haiku-5-5 first
+  2. Running and jumping: build ("game" in the task's title), claude-haiku-5-5 first
+```
+
+See [Pick models automatically](../guides/pick-models-automatically.md#how-a-model-is-chosen).
 
 ## New: `certo init` offers more models
 

@@ -120,7 +120,12 @@ project folder or registry entry. An existing project folder is kept.
    when it is one line. A trigger matches a whole word, or its plural, in
    any case. The first profile in the file that matches wins. If none
    matches, it uses the profile named `default`. `MODEL_DECISIONS.md` says
-   which word matched.
+   which word matched. A task written in milestones is classified again
+   for each milestone: by the milestone's own title first (`## Milestone
+   2: Fix the flaky tests` is `debugging`), and by the task's title when
+   the milestone's has no trigger word. Only titles are read, never the
+   text under them: a spec that says "raise an error" isn't a debugging
+   task.
 2. **Score every active model.** The score is the sum of
    `rating × weight` over the profile's weights.
 3. **Run the best one.** Models are ranked by score, once, at the start.
@@ -200,6 +205,18 @@ Models, in the order --auto-model tries them (ranked by the profile's weights):
 The first model runs the task. The next one takes over if its provider fails, or if a fix attempt still fails Certo's checks.
 ```
 
+For a task file written in milestones, it also gives each milestone's
+profile and first model. With the example profiles, `tasks/sky-hopper.md`
+ends with:
+
+```text
+It runs milestone by milestone. Each milestone is classified by its own title first, then by the task's:
+  1. The level and the camera: build ("game" in the task's title), claude-haiku-5-5 first
+  2. Running and jumping: build ("game" in the task's title), claude-haiku-5-5 first
+  3. Parallax, coins and blocks: build ("game" in the task's title), claude-haiku-5-5 first
+  4. Enemies, the flag and the next level: build ("game" in the task's title), claude-haiku-5-5 first
+```
+
 Neither one calls a model, so you can change `task_profiles.yaml` and run
 them again as often as you like:
 
@@ -227,7 +244,7 @@ when the task failed. For the task and file above:
 
 ## initial — 2026-10-19T20:29:17.140969+00:00
 
-Reason: Task classified as 'debugging': "fix" in the task's first line ('Fix the failing test in payments.py') (weights: {'reasoning': 3.0, 'precision': 2.0, 'code': 2.0, 'cost': 0.5}). Model order: ranked by the profile's weights.
+Reason: Task classified as 'debugging': "fix" in 'Fix the failing test in payments.py' (weights: {'reasoning': 3.0, 'precision': 2.0, 'code': 2.0, 'cost': 0.5}). Model order: ranked by the profile's weights.
 
 Task profile: `debugging` (weights: {'reasoning': 3.0, 'precision': 2.0, 'code': 2.0, 'cost': 0.5})
 

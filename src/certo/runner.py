@@ -95,10 +95,10 @@ from .escalation import (
 )
 from .model_catalog import (
     ModelCatalog,
+    classification_titles,
     classify_task,
-    find_trigger,
+    find_trigger_in,
     rank_for_profile,
-    task_title,
 )
 from .model_pricing import estimate_run_cost, is_local
 from .model_selection import (
@@ -1861,11 +1861,12 @@ def _stream_task(
         profile = classify_task(task, catalog)
         ranked, how = rank_for_profile(catalog, profile)
         chosen_index = 0
-        trigger = find_trigger(task, profile)
+        found = find_trigger_in(task, profile)
         matched = (
-            f'"{trigger}" in the task\'s first line ({task_title(task)!r})'
-            if trigger
-            else "no profile's trigger in the task's first line"
+            f'"{found[0]}" in {found[1]!r}'
+            if found
+            else "no profile's trigger in "
+            + " or ".join(repr(t) for t in classification_titles(task))
         )
         reason = (
             f"Task classified as '{profile.name}': {matched} (weights: {profile.weights}). "

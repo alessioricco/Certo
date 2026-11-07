@@ -22,6 +22,10 @@
 # position doesn't matter for that purpose, but keep it last for
 # readability.
 #
+# A milestone of a task written in milestones is classified by its own
+# title first ("## Milestone 2: Fix the flaky tests" is `debugging`), and
+# by the task's title when its own has no trigger word.
+#
 # A profile can also name a model with `model:` (a name from
 # models_list.yaml): that model runs first when it is enabled in
 # models.yaml, and the weights order the fallbacks after it.
@@ -69,6 +73,13 @@ task_profiles:
   agent:
     triggers: [agent, agentic, "multi-step", "long-running", "tool use", tools, automate, automation, workflow]
     weights: {reasoning: 3, code: 2, precision: 2, cost: 1}
+
+  # Building an app, a game or a feature: code matters most, cost as much,
+  # since a build is long. Late in the list, so a "fix" or "refactor" in
+  # the same title wins.
+  build:
+    triggers: [build, implement, app, application, game, website, feature]
+    weights: {code: 3, cost: 3, reasoning: 0.5, precision: 0.5}
 
   # Default balanced profile — used when nothing above matches.
   default:
