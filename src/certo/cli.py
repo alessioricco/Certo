@@ -300,7 +300,8 @@ def _build_parser() -> argparse.ArgumentParser:
             "record of the last verdict and failing checks."
         ),
     )
-    parser.add_argument(
+    milestones = parser.add_mutually_exclusive_group()
+    milestones.add_argument(
         "--milestones",
         action="store_true",
         help=(
@@ -308,7 +309,16 @@ def _build_parser() -> argparse.ArgumentParser:
             "heading starts one, run in its own conversation and verified before "
             "the next starts. A milestone may hold an ```acceptance block, the same "
             "JSON as --acceptance-checks. --resume continues the first milestone "
-            "not verified."
+            "not verified. A task file with two or more such headings, numbered "
+            "1, 2, 3..., runs this way without the flag."
+        ),
+    )
+    milestones.add_argument(
+        "--no-milestones",
+        action="store_true",
+        help=(
+            "Send a task file written in milestones as one task, as it is, instead "
+            "of running it milestone by milestone."
         ),
     )
     parser.add_argument(
@@ -629,6 +639,19 @@ def _main(argv: list[str]) -> int:
     return code
 
 
+def _written_in_milestones(args: argparse.Namespace, task: str | None) -> int:
+    """How many milestones the task file is written in, when the run should
+    switch to milestones by itself: a file (not text or a URL), a new run,
+    neither --milestones nor --no-milestones given. 0 otherwise."""
+    from .milestones import written_in_milestones
+
+    if task is None or args.milestones or args.no_milestones or args.resume:
+        return 0
+    if not os.path.isfile(args.task):
+        return 0
+    return written_in_milestones(task)
+
+
 def _project_from_task(args: argparse.Namespace, task: str | None, cfg: Any) -> str | None:
     """The project name Certo picks for a new task run from a Certo
     workspace without --project, after printing it; None when Certo keeps
@@ -675,6 +698,14 @@ def _run_task_command(
         except ValueError as exc:
             print(f"Error: {exc}", file=sys.stderr)
             return 1
+    # A task file written in milestones runs in milestones (DECISIONS.md).
+    auto_milestones = _written_in_milestones(args, task)
+    if auto_milestones:
+        args.milestones = True
+        print(
+            f"Certo: {args.task} is written in {auto_milestones} milestones, so it runs "
+            "milestone by milestone (--no-milestones runs it as one task)."
+        )
 
     options = RunOptions(
         project=args.project,
@@ -723,7 +754,13 @@ def _run_task_command(
         print(exc)
         return 0
     except UsageError as exc:
-        print(f"Error: {exc}", file=sys.stderr)
+        hint = (
+            " It has milestone headings, so Certo read it as milestones; "
+            "--no-milestones sends it as one task."
+            if auto_milestones
+            else ""
+        )
+        print(f"Error: {exc}{hint}", file=sys.stderr)
         return 1
     resume_from = plan.resume_from
     milestone_state = plan.milestones

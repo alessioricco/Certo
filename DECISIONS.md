@@ -1714,3 +1714,15 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   total is capped by `CERTO_TRUSTED_SKILLS_TOKENS` (4000 by default, a
   guess until the benchmark; 0 turns it off) so a 32K local model keeps
   its context. `suggest` shows the very same choice.
+
+- **A task file written in milestones runs in milestones without the
+  flag** (2026-11-07, the Author's request; supersedes "without the flag
+  a task file is sent as it is" in the milestone-mode design of
+  2026-10-29). Sent whole, such a file showed its acceptance blocks to the
+  agent as plain text and never checked them: a trap for anyone who
+  forgot the flag. Detection is strict so an ordinary file keeps its
+  meaning: a file only (not text or a URL), two or more `## Milestone N`
+  headings outside code fences, numbered 1, 2, 3... in order. Certo says
+  so before the run; `--no-milestones` restores the old behaviour; a file
+  that has the headings but doesn't parse is refused (before, it ran
+  whole). CLI only: MCP and the server keep their explicit option.

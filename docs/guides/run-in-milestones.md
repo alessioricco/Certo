@@ -59,6 +59,21 @@ certo --milestones tasks/team-board.md --project team-board
 certo --milestones task.md --project temps
 ```
 
+A task file written in milestones runs this way without the flag, too:
+`certo task.md --project temps` does the same, when the file has two or
+more `## Milestone N` headings numbered 1, 2, 3... in order. Certo says
+so before it starts:
+
+```text
+Certo: task.md is written in 2 milestones, so it runs milestone by milestone (--no-milestones runs it as one task).
+```
+
+`--no-milestones` sends such a file as one task, as it is (its acceptance
+blocks are then plain text, and not checked). A file with milestone
+headings that can't be read as milestones, such as a broken acceptance
+block, is refused before any model call, and the error names
+`--no-milestones`.
+
 `--milestones` needs the task in a file; text or a URL is refused. Keep
 the file outside the project folder, so the agent doesn't read the
 acceptance checks.

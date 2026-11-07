@@ -2923,3 +2923,81 @@ def test_otherwise_the_folder_stays_as_it_was(monkeypatch, tmp_path, argv, setup
     assert calls["project"] == expected
     if expected is None:
         assert calls["cfg"].workspace == "."
+
+
+# --- a task file written in milestones runs in milestones without the flag ------
+
+
+def test_a_file_written_in_milestones_runs_in_milestones(monkeypatch, tmp_path, capsys):
+    calls: list = []
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))
+    monkeypatch.setattr(cli, "run_task", _milestone_run_task(calls, ["verified", "verified"]))
+    path = _milestone_file(tmp_path)
+
+    assert cli.main([path]) == 0
+
+    assert len(calls) == 2
+    assert "milestone 1 of 2: storage" in calls[0]["task"]
+    out = capsys.readouterr().out
+    assert (
+        f"Certo: {path} is written in 2 milestones, so it runs milestone by milestone "
+        "(--no-milestones runs it as one task)."
+    ) in out
+
+
+def test_no_milestones_sends_the_file_whole(monkeypatch, tmp_path, capsys):
+    calls: list = []
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))
+    monkeypatch.setattr(cli, "run_task", _milestone_run_task(calls, ["verified"]))
+
+    assert cli.main(["--no-milestones", _milestone_file(tmp_path)]) == 0
+
+    assert len(calls) == 1
+    assert "## Milestone 2: due dates" in calls[0]["task"]  # sent as written
+    assert "is written in" not in capsys.readouterr().out
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "A todo app.\n\n## Milestone 1: storage\nSave items.\n",  # one heading
+        "## Milestone 2: b\nx\n\n## Milestone 1: a\ny\n",  # out of order
+        "Example:\n```\n## Milestone 1: a\n## Milestone 2: b\n```\n",  # in a code block
+    ],
+)
+def test_other_files_run_as_one_task(monkeypatch, tmp_path, text):
+    calls: list = []
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))
+    monkeypatch.setattr(cli, "run_task", _milestone_run_task(calls, ["verified"]))
+
+    assert cli.main([_milestone_file(tmp_path, text)]) == 0
+
+    assert len(calls) == 1
+
+
+def test_text_with_milestone_headings_runs_as_one_task(monkeypatch, tmp_path):
+    calls: list = []
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))
+    monkeypatch.setattr(cli, "run_task", _milestone_run_task(calls, ["verified"]))
+
+    assert cli.main([_MILESTONE_TASK]) == 0  # text, not a file
+
+    assert len(calls) == 1
+
+
+def test_a_broken_milestone_file_is_refused_with_the_way_out(monkeypatch, tmp_path, capsys):
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))
+    monkeypatch.setattr(cli, "run_task", lambda *a, **k: pytest.fail("no run expected"))
+    broken = "## Milestone 1: a\nx\n```acceptance\nnot json\n```\n\n## Milestone 2: b\ny\n"
+
+    assert cli.main([_milestone_file(tmp_path, broken)]) == 1
+
+    err = capsys.readouterr().err
+    assert "milestone 1" in err
+    assert "--no-milestones sends it as one task" in err
+
+
+def test_milestones_and_no_milestones_together_are_refused(capsys):
+    with pytest.raises(SystemExit):
+        cli.main(["--milestones", "--no-milestones", "task.md"])
+    assert "not allowed with argument" in capsys.readouterr().err

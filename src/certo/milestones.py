@@ -64,6 +64,36 @@ class MilestonePlan:
         return self.milestones[number - 1]
 
 
+def _heading_numbers(text: str) -> list[int]:
+    """The numbers of the `## Milestone N` headings outside code fences, in
+    the order they appear: the same reading `parse_milestones` does."""
+    numbers: list[int] = []
+    fence: str | None = None
+    for line in text.splitlines():
+        match = _FENCE.match(line)
+        if match:
+            if fence is None:
+                fence = match.group(1)
+            elif match.group(1).startswith(fence[0]) and len(match.group(1)) >= len(fence):
+                fence = None
+            continue
+        heading = _HEADING.match(line) if fence is None else None
+        if heading:
+            numbers.append(int(heading.group(1)))
+    return numbers
+
+
+def written_in_milestones(text: str) -> int:
+    """How many milestones a task file is written in, for running it in
+    milestones without `--milestones`: at least two `## Milestone N`
+    headings, numbered 1, 2, 3... in order. 0 for any other file, which a
+    run then sends whole, as before (DECISIONS.md)."""
+    numbers = _heading_numbers(text)
+    if len(numbers) >= 2 and numbers == list(range(1, len(numbers) + 1)):
+        return len(numbers)
+    return 0
+
+
 def parse_milestones(text: str) -> MilestonePlan:
     """Split a task file into its milestones, or raise `MilestoneError`."""
     context: list[str] = []
