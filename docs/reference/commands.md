@@ -497,7 +497,46 @@ their hash, in the skills folder's `.trusted/` folder, next to
 repository couldn't be downloaded.
 
 Runs don't use these skills yet: for now `assess` shows what your
-trusted repositories hold.
+trusted repositories hold, and `certo skills suggest` which of them fit.
+
+### `certo skills suggest`
+
+```text
+certo skills suggest [--project NAME] [--task TEXT_OR_FILE] [--limit N]
+```
+
+| Flag | Default | Effect |
+|---|---|---|
+| `--project NAME` | `.` | The project to match: a project in `CERTO_PROJECTS_DIR`, or `.` for the current folder. |
+| `--task TEXT_OR_FILE` | none | The task to match too: text, or a file. |
+| `--limit N` | `10` | Show at most `N` skills. |
+
+Match the skills `certo skills assess` saved, yours for every project
+and the project's own (a project skill replaces a global one of the same
+name), against the project and the task. Installs nothing. Only kept
+copies whose files still match their hash are read.
+
+A skill fits when concrete links tie it to the work. Each link is shown
+as a reason:
+
+| Link | Weight |
+|---|---|
+| Its trigger fires on the task (`the task says "uv"`) | 3 |
+| A project file matches one of its path triggers, or a trigger word that is a file name (`the project has uv.lock`) | 2 |
+| Its ecosystems include the project's (`for python`); for an empty project, the ecosystems the task names | 2 |
+| Each of its steps the task names (`about testing`: "tests"; `about debugging`: "fix", "bug") | 1 |
+
+A skill fits from a weight of 3: its trigger alone, or two links together.
+Three rules leave a skill out:
+
+- it is made for another ecosystem, and its trigger didn't fire;
+- its author gave it trigger words (not slash commands), and none fired
+  and no project file matched: those words say when it applies;
+- it is an integration (Slack, Jira, Kubernetes...), and the task doesn't
+  name the service.
+
+Usable skills are listed best first, with how each would come into a run.
+Skills that fit but need review are listed apart, with the reasons.
 
 ## `certo check`
 

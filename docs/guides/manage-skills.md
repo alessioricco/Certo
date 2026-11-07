@@ -290,9 +290,33 @@ github:OpenHands/extensions (skills) at 210f2c08fbf5: 73 skills (52 usable, 15 n
 A repository in your list is your trust: its `usable` skills will need no
 `certo skills enable`. Skills to review still need your look first.
 
-> **Not used by runs yet.** For now `assess` only shows what your trusted
-> repositories hold. Using them in runs comes next. Every option is in
-> [`certo skills assess`](../reference/commands.md#certo-skills-assess).
+Then see which of them fit a project and a task:
+
+```bash
+certo skills suggest --project my-api --task "Set up uv and add pytest tests"
+```
+
+It lists the usable skills that fit, best first, each with its reasons
+(`the task says "uv"`, `the project has uv.lock`, `for python`,
+`about testing`), and installs nothing. One link alone isn't enough: a
+skill made for Node doesn't fit a project only because it is a Node
+project. Matched against your own workspace on 2026-11-07, with the
+OpenHands skills assessed:
+
+```text
+=== Review this project's code for security problems and fix what you find.
+Usable skills that fit, best first:
+  security (global, about 261 tokens): the task says "security", about review, security; it fires on its own
+=== Write a Javadoc for the Java classes
+Usable skills that fit, best first:
+  add-javadoc (global, about 212 tokens): the task says "javadoc", for java; it fires on its own
+```
+
+> **Not used by runs yet.** For now `assess` and `suggest` only show what
+> your trusted repositories hold and what fits. Using them in runs comes
+> next. Every rule is in
+> [`certo skills assess`](../reference/commands.md#certo-skills-assess) and
+> [`certo skills suggest`](../reference/commands.md#certo-skills-suggest).
 
 ## The project's own skills
 

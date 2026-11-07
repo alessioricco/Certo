@@ -350,14 +350,15 @@ from a trusted repo with no `add`/`enable`, and the benchmark shows no
 loss. Docs: `manage-skills.md`, `reference/commands.md`,
 `concepts/safety.md`.
 
-*Progress:* steps 1 and 2 done (0.2.3: `skill_sources.yaml`,
-`certo skills assess`, index in `<skills folder>/.trusted/`); both
-decisions settled (DECISIONS.md). On `OpenHands/extensions` (2026-11-07):
-73 skills, 52 usable, 15 to review, 6 rejected (links outside their
-folder). Next is step 3. Found then: several usable skills fire on
-common words (`npm`, `docker`, `security`, `linear`) and many are
-service integrations, so matching must use the class, not only the
-trigger.
+*Progress:* steps 1-3 done (0.2.3: `skill_sources.yaml`,
+`certo skills assess`, index in `<skills folder>/.trusted/`;
+`certo skills suggest`, `skill_match.py`); both decisions settled
+(DECISIONS.md). On `OpenHands/extensions` (2026-11-07): 73 skills, 52
+usable, 15 to review, 6 rejected (links outside their folder). Matching
+needed two links or the skill's own trigger: one link alone suggested
+`npm`/`deno` for every Node project. Against Certo's own tasks the repo
+has little for building apps (`frontend-design` names only an
+ecosystem). Next is step 4, reusing `skill_match.suggest`.
 
 ## Smaller bugs
 

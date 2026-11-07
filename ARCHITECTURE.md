@@ -343,7 +343,11 @@ given design was chosen.
   `_fetch_and_stage` so `add` and `assess` share one rule set. Kept copies
   and `index.json` live in `<skills dir>/.trusted/` (a dot folder: the
   layers never load it), built in a temp folder and swapped in whole.
-  Not loaded by runs yet (TODO step 4).
+  Not loaded by runs yet (TODO step 4). **`skill_match.py`**: rule-based
+  fit of the indexes (global, then project) to a project's files
+  (`project_files`, dependency folders skipped) and a task; reads a kept
+  copy only when `compute_integrity` still equals the index's hash.
+  `certo skills suggest` prints it; step 4 is meant to reuse `suggest`.
 - **`project_state.py`** + `certo --resume` — stdlib only. The CLI
   passes `save_state=True` (`CERTO_SAVE_STATE`, default on) to
   `stream_task`, which then builds the `Conversation` with

@@ -28,6 +28,7 @@ from openhands.sdk.skills.utils import find_skill_md
 from . import skill_assess as assessing
 from . import skill_library as lib
 from . import third_party_skills as tps
+from .skill_match import Fit, suggest
 from .skill_sources import EXAMPLE, SourcesError, read_sources, sources_path
 from .config import ConfigError, defer_llm_check, load_config, resolve_project_dir
 from .init_cmd import Cancelled, Prompter
@@ -124,6 +125,28 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     _scope(assess)
+
+    suggest = sub.add_parser(
+        "suggest",
+        help="Show which assessed skills fit a project and a task, and why. Installs nothing.",
+        description=(
+            "Match the skills `certo skills assess` saved (yours for every project, and the "
+            "project's own) against a project's files and a task, with fixed rules. Prints "
+            "the skills that fit, best first, with the reasons. Installs nothing."
+        ),
+    )
+    suggest.add_argument(
+        "--project",
+        metavar="NAME",
+        default=".",
+        help="The project to match (in CERTO_PROJECTS_DIR; default . is the current folder).",
+    )
+    suggest.add_argument(
+        "--task", metavar="TEXT_OR_FILE", default="", help="The task: text or a file."
+    )
+    suggest.add_argument(
+        "--limit", type=int, default=10, metavar="N", help="Show at most N skills (default 10)."
+    )
     return parser
 
 
@@ -158,6 +181,8 @@ def skills_main(
             cfg = load_config()
         if args.command == "list":
             return _list(cfg, args, prompter)
+        if args.command == "suggest":
+            return _suggest(cfg, args, prompter)
         root, scope = _folder(cfg, args)
         if args.command == "add":
             return _add(cfg, args, root, scope, prompter, interactive)
@@ -514,3 +539,56 @@ def _assessed_line(skill: assessing.Assessed) -> str:
     if skill.reasons:
         line += ". Review: " + "; ".join(skill.reasons)
     return line
+
+
+# --- suggest: match assessed skills to a project ------------------------------------------------
+
+
+def _suggest(cfg, args: argparse.Namespace, prompter: Prompter) -> int:
+    workspace = _project(cfg, args.project)
+    task = args.task
+    if task and Path(task).is_file():
+        task = Path(task).read_text(encoding="utf-8")
+    scopes = [("global", lib.global_dir()), ("project", lib.project_dir(workspace))]
+    found = suggest(scopes, workspace, task)
+    if found.indexed == 0:
+        raise SkillsError(
+            "No assessed skills yet. List the repositories you trust in "
+            "skill_sources.yaml, then run: certo skills assess --global"
+        )
+    what = ", ".join(found.project_ecosystems) or "no known ecosystem"
+    steps = ", ".join(found.task_steps) or "none named"
+    prompter.say(f"Project {workspace} ({what}); steps in the task: {steps}.")
+    if not found.fits:
+        prompter.say(
+            "No usable skill fits this project and task."
+            if task
+            else "No usable skill fits this project. Give --task to match a task too."
+        )
+    else:
+        prompter.say("Usable skills that fit, best first:")
+        for fit in found.fits[: args.limit]:
+            prompter.say(f"  {_fit_line(fit)}")
+        if len(found.fits) > args.limit:
+            prompter.say(f"  ... and {len(found.fits) - args.limit} more (--limit).")
+    if found.after_review:
+        prompter.say("Would fit once reviewed:")
+        for fit in found.after_review[: args.limit]:
+            reasons = "; ".join(fit.entry.reasons)
+            prompter.say(f"  {fit.entry.name}: {', '.join(fit.reasons)}. Review: {reasons}")
+    prompter.say("Runs don't load these skills yet.")
+    return 0
+
+
+def _fit_line(fit: Fit) -> str:
+    entry = fit.entry
+    if fit.fires_alone:
+        how = "it fires on its own"
+    elif entry.fires_kind == "on request":
+        how = "the agent would see it listed and may ask for it"
+    else:
+        how = f"it fires {entry.fires}"
+    return (
+        f"{entry.name} ({fit.scope}, about {entry.tokens:,} tokens): "
+        f"{', '.join(fit.reasons)}; {how}"
+    )
