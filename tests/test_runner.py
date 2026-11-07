@@ -3945,3 +3945,24 @@ def test_a_broken_trusted_index_never_stops_a_run(monkeypatch, tmp_path):
 
     assert runner._trusted_skills(_cfg(workspace=str(tmp_path)), "t", lambda _m: None) == []
     assert notices == ["Certo: trusted skills skipped: index.json: bad"]
+
+
+def test_blocked_actions_are_counted(tmp_path):
+    counter = [0]
+    guard = runner._root_guard(_cfg(workspace=str(tmp_path)), lambda _m: None, counter)
+
+    guard.emit("x is outside the project root")
+    guard.emit("y is outside the project root")
+
+    assert counter == [2]
+
+
+def test_the_run_summary_reports_blocked_actions():
+    from certo.run_summary import RunSummary, combine_summaries
+
+    summary = RunSummary(duration_seconds=1.0, blocked_outside_root=2)
+
+    assert "Blocked outside the project root: 2 actions" in summary.format_lines()
+    assert summary.to_dict()["blocked_outside_root"] == 2
+    merged = combine_summaries([summary, RunSummary(duration_seconds=1.0, blocked_outside_root=1)])
+    assert merged.blocked_outside_root == 3

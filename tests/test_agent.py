@@ -255,3 +255,12 @@ def test_in_docker_the_root_is_the_containers_folder():
 
     assert project_root(_cfg(execution="docker", workspace="/home/me/app")) == "/workspace"
     assert project_root(_cfg(workspace=".")) == os.path.abspath(".")
+
+
+def test_a_bench_arm_can_leave_the_root_sentence_out(tmp_path):
+    suffix = build_agent(
+        _cfg(workspace=str(tmp_path), root_prompt=False)
+    ).agent_context.system_message_suffix
+
+    assert "The project root is" not in suffix
+    assert _README_SUFFIX in suffix

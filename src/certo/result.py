@@ -68,6 +68,7 @@ def _usage(outcome: TaskOutcome) -> dict[str, Any] | None:
         "cost": round(sum(m.cost for m in summary.models), 6),
         "cost_known": all(m.cost_known for m in summary.models),
         "condensations": summary.condensations,
+        "blocked_outside_root": summary.blocked_outside_root,
         "models": [
             {
                 "model": m.model,

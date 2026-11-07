@@ -360,6 +360,9 @@ def execute_run(
         "tool_call_reminders": attempt.tool_call_reminders if attempt else 0,
         # How often older steps were summarized (the context window filled up).
         "condensations": summary.condensations if summary else 0,
+        # Actions the root guard blocked (root_guard.py): a run that kept
+        # reaching outside its folder, or a guard false positive.
+        "blocked_outside_root": summary.blocked_outside_root if summary else 0,
         # Escalation only: every rung that ran, and which one gave the verdict.
         "rungs": list(attempt.rungs) if attempt else [],
         "final_rung": attempt.final_rung if attempt else None,
@@ -579,6 +582,8 @@ def _print_plan(
             note += f" (context window {arm.params['context_tokens']:,} tokens)"
         if arm.params.get("condense") is False:
             note += " (no condensing)"
+        if arm.params.get("root_prompt") is False:
+            note += " (no project-root sentence)"
         if arm.params.get("max_task_seconds"):
             note += f" (time budget {_duration(arm.params['max_task_seconds'])} per run)"
         if arm.params.get("milestones"):

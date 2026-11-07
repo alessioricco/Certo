@@ -240,9 +240,10 @@ def build_agent(
     # non-interactive tool flags, keeping .certo/, verify-before-finish,
     # lifecycle skills).
     suffixes = [_AUTONOMOUS_SUFFIX] if not cfg.interactive else []
+    if cfg.root_prompt:
+        suffixes.append(_project_root_suffix(project_root(cfg)))
     suffixes.extend(
         [
-            _project_root_suffix(project_root(cfg)),
             _README_SUFFIX,
             _NONINTERACTIVE_TOOLING_SUFFIX,
             _CERTO_STATE_SUFFIX,

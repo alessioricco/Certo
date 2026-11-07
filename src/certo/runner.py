@@ -341,14 +341,22 @@ def _trusted_skills(cfg: Config, task: str, emit: Callable[[Message], None]) -> 
     return picked.skills
 
 
-def _root_guard(cfg: Config, emit: Callable[[Message], None]) -> RootGuard | None:
+def _root_guard(
+    cfg: Config, emit: Callable[[Message], None], blocked: list[int] | None = None
+) -> RootGuard | None:
     """The guard that keeps the agent in its project root (root_guard.py);
     None in Docker, where the container only has the project. A blocked
-    action is said as a Certo notice: the SDK's own panel calls it a "User
-    Rejected Action"."""
+    action is said as a Certo notice (the SDK's own panel calls it a "User
+    Rejected Action") and counted in `blocked[0]` for the run summary."""
     if cfg.execution != "local":
         return None
-    return RootGuard(project_root(cfg), emit=lambda text: _emit_notice(emit, text))
+
+    def said(text: str) -> None:
+        if blocked is not None:
+            blocked[0] += 1
+        _emit_notice(emit, text)
+
+    return RootGuard(project_root(cfg), emit=said)
 
 
 def _with_guard(guard: RootGuard | None, on_event: Callable[[Any], None]) -> list:
@@ -1781,6 +1789,7 @@ def _stream_task(
         cfg = replace(cfg, checkpoints=False)
 
     condensed = [0]
+    blocked = [0]  # actions the root guard blocked (root_guard.py)
 
     def on_event(event: Event) -> None:
         if isinstance(event, LLMConvertibleEvent):
@@ -1882,7 +1891,7 @@ def _stream_task(
         project_env = _prepare_agent_env(task, cfg, runner, emit)
         _warn_small_window(agent_cfg, emit)
 
-        guard = _root_guard(cfg, emit)
+        guard = _root_guard(cfg, emit, blocked)
 
         def new_conversation(**persistence: Any) -> Conversation:
             return Conversation(
@@ -1997,7 +2006,11 @@ def _stream_task(
                 per_model_metrics.update(written.metrics)
                 efforts.update(dict.fromkeys(written.usage_ids, agent_cfg.reasoning_effort))
             run_summary = summarize_run(
-                time.monotonic() - run_started, per_model_metrics, efforts, condensed[0]
+                time.monotonic() - run_started,
+                per_model_metrics,
+                efforts,
+                condensed[0],
+                blocked[0],
             )
             if captured_error is not None:
                 # The exception is the only value that leaves this function
@@ -2481,6 +2494,7 @@ class _EscalationIO:
     run_progress: RunProgress | None = None
     # How many times the condenser summarized older steps, over every rung.
     condensed: list[int] = field(default_factory=lambda: [0])
+    blocked: list[int] = field(default_factory=lambda: [0])
 
     def notify(self, text: str) -> None:
         """An escalation line: a notice in the transcript, and printed."""
@@ -2719,7 +2733,7 @@ def _stream_escalation(
                 efforts[usage_id] = rung_cfg.reasoning_effort
                 _warn_small_window(rung_cfg, io.emit)
 
-                guard = _root_guard(cfg, io.emit)
+                guard = _root_guard(cfg, io.emit, io.blocked)
 
                 def new_conversation(
                     rung_cfg: Config = rung_cfg,
@@ -2934,7 +2948,11 @@ def _stream_escalation(
             shutil.rmtree(written.scratch, ignore_errors=True)
         write_model_decisions(cfg.workspace, decisions)
         run_summary = summarize_run(
-            time.monotonic() - run_started, per_model_metrics, efforts, io.condensed[0]
+            time.monotonic() - run_started,
+            per_model_metrics,
+            efforts,
+            io.condensed[0],
+            io.blocked[0],
         )
         if captured_error is not None:
             # The exception is the only value that leaves this function on a
@@ -2974,7 +2992,11 @@ def _stream_escalation(
             _attach_run_summary(
                 last_error,
                 summarize_run(
-                    time.monotonic() - run_started, per_model_metrics, efforts, io.condensed[0]
+                    time.monotonic() - run_started,
+                    per_model_metrics,
+                    efforts,
+                    io.condensed[0],
+                    io.blocked[0],
                 ),
             )
         raise last_error  # type: ignore[misc]
@@ -2985,7 +3007,11 @@ def _stream_escalation(
         model_decisions=tuple(decisions),
         tool_call_reminders=sum(r.tool_call_reminders for r in rungs),
         run_summary=summarize_run(
-            time.monotonic() - run_started, per_model_metrics, efforts, io.condensed[0]
+            time.monotonic() - run_started,
+            per_model_metrics,
+            efforts,
+            io.condensed[0],
+            io.blocked[0],
         ),
     )
 

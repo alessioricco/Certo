@@ -116,6 +116,10 @@ class Config:
     # Official skills a run doesn't get, by name. No setting reads it; a
     # `certo bench` arm sets it (`skills_off`) to measure what a skill
     # changes (agent.py).
+    # False leaves the project-root sentence out of the system prompt
+    # (agent.py). Only a `certo bench` arm sets it (`root_prompt: false`),
+    # to measure what the sentence changes; the root guard stays on.
+    root_prompt: bool = True
     skills_off: tuple[str, ...] = ()
 
     # Only consulted when execution == "docker" (see workspace.py).

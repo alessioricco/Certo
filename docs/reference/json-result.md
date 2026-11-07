@@ -69,6 +69,7 @@ shortened):
     "cost": 0.005309,
     "cost_known": true,
     "condensations": 0,
+    "blocked_outside_root": 0,
     "models": [
       {
         "model": "anthropic/claude-haiku-5-5",
@@ -106,7 +107,7 @@ shortened):
 | `independent_tests` | With `--independent-tests`: `status`, `summary`, the `model` that wrote them, `output_tail` (the end of their output), and `sets`, each set's `status` and `summary`. Otherwise `null`. See [Independent tests](../guides/independent-tests.md). |
 | `check_file_changes` | Changes the agent made to the files the checks rely on, such as the test files: `path`, `deleted`, and the lines `removed`, `added` and `changed`. |
 | `files_changed` | The files the run created, modified and deleted in the project folder, each a list of paths relative to it, compared before and after the run (Certo's own files, `.certo/`, `.git/`, environments, caches and build output such as `dist/` or `target/` left out). `null` when the run stopped with an error. |
-| `usage` | Time and tokens for the whole run: `duration_seconds`, `total_tokens`, `prompt_tokens` (cached ones included), `completion_tokens`, `cache_read_tokens`, `cost` in US dollars, `cost_known` (false when a model has no price), `condensations`, and the same per model in `models`. `null` when the run stopped with an error. |
+| `usage` | Time and tokens for the whole run: `duration_seconds`, `total_tokens`, `prompt_tokens` (cached ones included), `completion_tokens`, `cache_read_tokens`, `cost` in US dollars, `cost_known` (false when a model has no price), `condensations`, `blocked_outside_root` (actions Certo blocked because they reached outside the project root), and the same per model in `models`. `null` when the run stopped with an error. |
 | `rungs` | With `--escalate`: one entry per model that ran, with `final: true` on the one whose verdict this is, and the fields listed for `rungs` in [Server API](server-api.md#get-taskstask_id). Otherwise `null`. See [Escalate between models](../guides/escalate-between-models.md). |
 | `model_decisions` | With `--escalate` or `--auto-model`: how each model was chosen, as `MODEL_DECISIONS.md` in the project tells it. Each decision has `kind`, `timestamp`, `task_profile` and `weights` (with `--auto-model`), `candidates` (each `name` and `score`), `scored_by` (`score`, a weighted rating, with `--auto-model`; `capability` on a ladder), `chosen` and `reason`. Otherwise `null`. An example follows the table. |
 | `milestones` | With `--milestones`: each milestone's `number`, `title` and `verdict` (`null` if it didn't start). Otherwise `null`. |

@@ -735,3 +735,37 @@ def test_context_tokens_is_for_single_arms_only(tmp_path):
     )
     with pytest.raises(BenchConfigError, match="strategy 'single' only"):
         load_bench_config(_write(tmp_path, bench))
+
+
+def test_root_prompt_is_an_arm_option(tmp_path):
+    bench = (
+        "arms:\n"
+        "  - {name: no-root, strategy: single, model: cloud, root_prompt: false}\n"
+        "  - {name: plain, strategy: single, model: cloud}\n"
+    )
+    cfg = load_bench_config(_write(tmp_path, bench))
+    no_root, plain = cfg.arms
+    assert no_root.params == {"model": "cloud", "root_prompt": False}
+    assert plain.params == {"model": "cloud"}  # left out at its default, for --resume
+    seen = []
+
+    def fake_stream(task, *, cfg, ladder=None):
+        seen.append(cfg.root_prompt)
+        return SimpleNamespace(
+            verification_state="verified",
+            retries_used=0,
+            run_summary=None,
+            rungs=(),
+            final_rung=None,
+        )
+
+    ctx = RunContext("do it", "/ws", cfg.catalog, "/iso", fake_stream, cfg.model_catalog)
+    for arm in cfg.arms:
+        STRATEGIES[arm.strategy].run(ctx, arm.params)
+    assert seen == [False, True]
+
+
+def test_a_bad_root_prompt_is_refused(tmp_path):
+    bench = "arms:\n  - {name: a, strategy: single, model: cloud, root_prompt: 'no'}\n"
+    with pytest.raises(BenchConfigError, match="'root_prompt' must be true or false"):
+        load_bench_config(_write(tmp_path, bench))

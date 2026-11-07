@@ -101,6 +101,7 @@ _ARM_OPTIONS = (
     "tool_call_reminders",
     "skills_off",
     "milestones",
+    "root_prompt",
 )
 
 
@@ -210,6 +211,9 @@ def _arms(raw: Any, catalog: dict[str, ModelCatalogEntry], where: str) -> list[A
         milestones = item.get("milestones", False)
         if not isinstance(milestones, bool):
             raise BenchConfigError(f"{arm_where}: 'milestones' must be true or false.")
+        root_prompt = item.get("root_prompt", True)
+        if not isinstance(root_prompt, bool):
+            raise BenchConfigError(f"{arm_where}: 'root_prompt' must be true or false.")
         rest = {k: v for k, v in item.items() if k not in _ARM_OPTIONS}
         params = STRATEGIES[strategy].parse(rest, catalog, arm_where)
         if independent:
@@ -226,6 +230,8 @@ def _arms(raw: Any, catalog: dict[str, ModelCatalogEntry], where: str) -> list[A
             params["skills_off"] = skills_off
         if milestones:
             params["milestones"] = True
+        if not root_prompt:
+            params["root_prompt"] = False
         arms.append(Arm(name=name, strategy=strategy, params=params))
     return arms
 

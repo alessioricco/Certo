@@ -65,6 +65,9 @@ class RunSummary:
     # How often the SDK's condenser summarized older steps because the
     # conversation neared the model's context window (agent.py).
     condensations: int = 0
+    # Actions the root guard blocked because they reached outside the
+    # project root (root_guard.py).
+    blocked_outside_root: int = 0
 
     @property
     def total_tokens(self) -> int:
@@ -95,6 +98,7 @@ class RunSummary:
         return {
             "duration_seconds": round(self.duration_seconds, 3),
             "condensations": self.condensations,
+            "blocked_outside_root": self.blocked_outside_root,
             "models": [
                 {
                     "model": m.model,
@@ -142,6 +146,11 @@ class RunSummary:
         if self.condensations:
             times = "once" if self.condensations == 1 else f"{self.condensations} times"
             lines.append(f"Older steps summarized: {times} (the context window was nearly full)")
+        if self.blocked_outside_root:
+            count = self.blocked_outside_root
+            lines.append(
+                f"Blocked outside the project root: {count} action{'s' if count != 1 else ''}"
+            )
         return lines
 
 
@@ -165,6 +174,7 @@ def summarize_run(
     per_model_metrics: Mapping[str, Mapping[str, Any]],
     efforts: Mapping[str, str | None] | None = None,
     condensations: int = 0,
+    blocked_outside_root: int = 0,
 ) -> RunSummary:
     """Build a `RunSummary` from `{usage_id: Metrics.get()}` dicts.
 
@@ -211,7 +221,12 @@ def summarize_run(
         for (model, effort), t in merged.items()
         if t["prompt"] or t["completion"] or t["cost"]
     )
-    return RunSummary(duration_seconds=duration_seconds, models=models, condensations=condensations)
+    return RunSummary(
+        duration_seconds=duration_seconds,
+        models=models,
+        condensations=condensations,
+        blocked_outside_root=blocked_outside_root,
+    )
 
 
 def combine_summaries(summaries: Sequence[RunSummary]) -> RunSummary:
@@ -240,4 +255,5 @@ def combine_summaries(summaries: Sequence[RunSummary]) -> RunSummary:
         duration_seconds=sum(s.duration_seconds for s in summaries),
         models=tuple(merged.values()),
         condensations=sum(s.condensations for s in summaries),
+        blocked_outside_root=sum(s.blocked_outside_root for s in summaries),
     )

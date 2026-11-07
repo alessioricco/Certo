@@ -21,6 +21,10 @@ System and tool folders stay allowed for commands (`/usr`, `/tmp`, the
 npm and pip caches in your home folder), but never the root's parent,
 the folders beside the root, or your home folder itself.
 
+The run summary counts the blocked actions
+(`Blocked outside the project root: 2 actions`), and so does the JSON
+result (`blocked_outside_root`).
+
 This is a guard rail, not a sandbox: a command can still reach other
 files in ways its words don't show, such as a script or a path built at
 run time. Treat a task like running a script you haven't read.
