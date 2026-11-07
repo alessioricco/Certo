@@ -1742,3 +1742,14 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   Declared after the other profiles, so "fix" or "refactor" in the same
   title wins. Rejected for now: classifying with a model call (costs a
   call per run, and less predictable).
+
+- **The example list's `cost` is worked out from the price, to one
+  decimal** (2026-11-07, the Author's request; supersedes the price bands
+  of the rating rubric). The bands ($3-10 → 2) rated Opus 5.5 ($8
+  blended) as cheap as Sonnet 5.5 ($4), so `build` ranked Opus above
+  Sonnet. `cost = 4 − log2(p)/2`, kept within 1-4.9, 5 for local: a log
+  scale because prices span 100×, and a straight scale would bunch every
+  cheap model at the top. The rated price is the first "$X in / $Y out"
+  in the description; a test checks every cloud model, so a price change
+  can't leave a stale rating. The capability axes stay whole numbers:
+  their benchmarks aren't precise enough for decimals.

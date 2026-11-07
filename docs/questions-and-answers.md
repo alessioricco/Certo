@@ -11,7 +11,8 @@ No, there is a default to start from. Certo's example model list,
 `models_list.yaml`, rates each model from 1 to 5 on reasoning,
 precision, code and cost (on every rating, higher is better, so `cost: 5`
 means cheapest). The ratings are based on public benchmarks that compare
-providers. They are not measured on your projects. `certo init models`
+providers; `cost` comes from the list price by a formula, to one decimal,
+so a model twice as expensive is always rated lower. They are not measured on your projects. `certo init models`
 uses them as they are.
 
 You rate a model only when it isn't in the list: `certo init models`

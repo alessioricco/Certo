@@ -22,6 +22,9 @@ easier to start:
 - **`--auto-model` chooses per milestone**, by the milestone's own
   title first, and the example task profiles gain `build`, for apps,
   games and features.
+- **The example model list, checked again** (2026-11-07): `cost`
+  now follows the price to one decimal, five models re-rated, four new
+  ones, Kimi K2.7 Code out.
 - **`certo init` offers more models.** After a passing model check, it
   asks whether to set up more models now, and on yes runs
   `certo init models` at once.
@@ -178,6 +181,54 @@ It runs milestone by milestone. Each milestone is classified by its own title fi
 ```
 
 See [Pick models automatically](../guides/pick-models-automatically.md#how-a-model-is-chosen).
+
+## Changed: the example model list, checked again
+
+Every model in `models_list.yaml.example` was checked against its
+provider's pages and the public leaderboards on 2026-11-07.
+
+**`cost` follows the price, to one decimal.** It was a band: every model
+between $3 and $10 per 1M tokens (blended, 3 input to 1 output) got 2,
+so Opus 5.5 rated as cheap as Sonnet 5.5 at twice the price. Now
+`cost = 4 − log2(price) / 2`, kept between 1 and 4.9 (5 is for local
+models): each doubling of the price takes half a point. Sonnet 5.5 is
+3.0, Opus 5.5 2.5, Fable 5.1 1.8, Haiku 5.5 and GPT-6 Luna 4.9. A test
+checks every rating against the price in the model's description.
+
+**Re-rated:**
+
+- GPT-6.1 Sol: code 4 → 5 (Terminal-Bench 4.0 58.2% on the public
+  leaderboard, level with GPT-6 Astra).
+- Claude Fable 5.1: reasoning and precision 5 → 4. Artificial Analysis
+  scores it 50, Opus 5.5 59, and Opus 5.5 leads on every benchmark both
+  report, at less than half the price. A FrontierMath number in its
+  description had no source and is gone.
+- DeepSeek Flash: code 3 → 4, now served by V4.1-Flash (Terminal-Bench
+  4.0 42.3%, vendor-reported).
+- Gemma 4 31B (both tags): code 1 → 2. The weak agentic numbers in its
+  description had no source; it passed 26 of 27 hidden tests in Certo's
+  own baseline.
+
+**New:** GPT-6.1 Terra ($1 / $5, Terminal-Bench 4.0 50.3%), Kimi K3.1
+Pro ($2 / $10, Terminal-Bench 4.0 65.7%, vendor), and two local models,
+Nemotron 3.5 Lightning (fast, weak at coding) and Flint 40B
+(vendor-reported only, to measure).
+
+**Out:** Kimi K2.7 Code, closed to new users and retiring by the end of
+2026. Its `certo init` preset is now Kimi K3.1 Pro.
+
+**Descriptions:** Gemini 4 Argon is generally available and works
+through LiteLLM's normal path (the warning is gone); its price rises to
+$4 / $20 on 1 Dec, and it is rated at that price. GPT-5.6 Sol's
+promotion ends on 30 Nov. GPT-4.1 and GPT-4.1 mini retire on 14 Jan
+2027. Llama 3 has no tool calling in Ollama, so it can't run Certo's
+agent. Artificial Analysis changed its index scale in October; the
+numbers are now on the new one.
+
+With these ratings, `--auto-model` puts Opus 5.5 first for debugging and
+research, and Haiku 5.5 first for builds, with GPT-6.1 Sol and Sonnet
+5.5 next. Your own `models_list.yaml` is never changed:
+`certo models update` brings it up to date and keeps your changes.
 
 ## New: `certo init` offers more models
 

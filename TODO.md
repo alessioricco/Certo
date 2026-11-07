@@ -377,6 +377,11 @@ before the 0.2.3 release; also decide the default budget from it.
 
 ## Smaller bugs
 
+- **Anthropic's API version 2026-10-21 refuses `temperature`, `top_p`
+  and `top_k`** (400 error; Anthropic's deprecations page, checked
+  2026-11-07). Today's runs work on the version LiteLLM sends now. Before
+  upgrading LiteLLM or the SDK, check whether either sends `temperature`
+  to Claude; done when a Claude run on the new version passes.
 - **`MODEL_DECISIONS.md` keeps only the last milestone's choice.** Each
   milestone's run rewrites the file, so in a milestone run the earlier
   milestones' profiles and model switches are lost (seen in the

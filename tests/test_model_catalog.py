@@ -5,6 +5,8 @@ no mocking of yaml.safe_load itself.
 
 from __future__ import annotations
 
+import math
+import re
 from pathlib import Path
 
 import pytest
@@ -960,3 +962,34 @@ def test_context_tokens_is_read_from_both_files_and_checked(tmp_path):
     mine.write_text("models:\n  - name: q\n    context_tokens: lots\n")
     with pytest.raises(ModelCatalogError, match="'context_tokens' must be"):
         load_model_catalog(str(listed), str(mine))
+
+
+# --- the cost rating follows the price -------------------------------------
+
+_PRICE = re.compile(r"\$([0-9.]+) in\s*/\s*\$([0-9.]+) out")
+
+
+def _cost_from_price(text: str) -> float:
+    """The rubric in models_list.yaml.example: the blended price p per 1M
+    tokens (3 input to 1 output), cost = 4 - log2(p) / 2, one decimal, kept
+    between 1 and 4.9."""
+    found = _PRICE.search(" ".join(text.split()))
+    assert found, "no '$X in / $Y out' price in the description"
+    price_in, price_out = (float(v) for v in found.groups())
+    blended = (3 * price_in + price_out) / 4
+    return round(min(4.9, max(1.0, 4 - math.log2(blended) / 2)), 1)
+
+
+def test_every_cloud_models_cost_follows_its_price():
+    example = _BUNDLED_TASKS / "examples" / "models_list.yaml.example"
+    wrong = []
+    for model in yaml.safe_load(example.read_text())["models"]:
+        cost = model["ratings"]["cost"]
+        if model["model"].startswith("ollama/"):
+            if cost != 5:
+                wrong.append(f"{model['name']}: local, cost {cost}, should be 5")
+            continue
+        expected = _cost_from_price(model["description"])
+        if cost != expected:
+            wrong.append(f"{model['name']}: cost {cost}, the price gives {expected}")
+    assert wrong == []

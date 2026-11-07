@@ -87,7 +87,7 @@ models:          # required, a non-empty list
 | `timeout_seconds` | no | As `CERTO_LLM_TIMEOUT_SECONDS`: how long one call to this model may take, a whole number of seconds. Default `300`; `0` means no limit. |
 | `context_tokens` | no | As `CERTO_LLM_CONTEXT_TOKENS`: the model's context window, in tokens. Default `0`: what the provider reports, or for Ollama what the server gives the model. For Ollama, a set value is asked from the server. |
 | `description` | no | Shown when `--interactive` asks you to pick a model. |
-| `ratings` | no | A map of axis name to number, usually 1 to 5. |
+| `ratings` | no | A map of axis name to number, usually 1 to 5. Decimals are allowed: the example list's `cost` has one, worked out from the price (the formula is at the top of the example). |
 
 `api_key`, `base_url` and `activated` are not allowed here: they are
 personal and go in `models.yaml`.

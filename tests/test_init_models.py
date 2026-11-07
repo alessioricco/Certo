@@ -14,7 +14,7 @@ from certo.init_models import init_models_main
 from certo.llm_check import LLMCheckResult
 
 SECRET = "sk-test-SECRET-never-shown"
-_INSTALLED = ["qwen3.8:27b", "gemma4:31b-it-qat", "qwen3.6:35b", "nemotron-3.5-lightning:30b"]
+_INSTALLED = ["qwen3.8:27b", "gemma4:31b-it-qat", "qwen3.6:35b", "bonsai-2:27b"]
 
 
 @pytest.fixture
@@ -88,7 +88,7 @@ def test_the_menu_starts_from_the_saved_model_and_offers_what_is_reachable(home)
 
     assert "  Your model\n   1. [x] qwen3.8-27b-local  already set up" in text
     assert "  On gpu-box:11434" in text
-    assert "gemma4-31b-qat-local  reasoning 2 · precision 2 · code 1 · cost 5" in text
+    assert "gemma4-31b-qat-local  reasoning 2 · precision 2 · code 2 · cost 5" in text
     # Not in the list: a name of its own, never one the list already uses
     # (qwen3.6-35b-local is qwen3.6:35b-a3b there).
     assert "qwen3.6-35b-local-2  not in Certo's list: you rate it" in text
@@ -187,24 +187,24 @@ def test_a_key_for_another_provider_goes_only_to_the_settings_file(home):
 def test_a_model_not_in_the_list_is_rated_by_the_user_next_to_listed_ones(home):
     menu = _menu(home)
     gemma = _number(menu, "gemma4-31b-qat-local ")
-    nemotron = _number(menu, "nemotron-3.5-lightning-30b-local ")
+    bonsai = _number(menu, "bonsai-2-27b-local ")
 
-    code, text, _seen = _run([f"{gemma} {nemotron}", "", "2", "", "3", "5", ""])
+    code, text, _seen = _run([f"{gemma} {bonsai}", "", "2", "", "3", "5", ""])
 
     assert code == 0
     assert "For comparison, Certo's list rates:" in text
-    assert "  gemma4-31b-qat-local: reasoning 2 · precision 2 · code 1 · cost 5" in text
+    assert "  gemma4-31b-qat-local: reasoning 2 · precision 2 · code 2 · cost 5" in text
     listed = yaml.safe_load((home / "models_list.yaml").read_text())["models"]
-    mine = next(m for m in listed if m["name"] == "nemotron-3.5-lightning-30b-local")
-    assert mine["model"] == "ollama/nemotron-3.5-lightning:30b"
+    mine = next(m for m in listed if m["name"] == "bonsai-2-27b-local")
+    assert mine["model"] == "ollama/bonsai-2:27b"
     assert mine["ratings"] == {"reasoning": 2, "precision": 3, "code": 3, "cost": 5}
 
 
 def test_rating_zero_leaves_the_model_out(home):
     menu = _menu(home)
-    nemotron = _number(menu, "nemotron-3.5-lightning-30b-local ")
+    bonsai = _number(menu, "bonsai-2-27b-local ")
 
-    code, text, seen = _run([nemotron, "", "0"])
+    code, text, seen = _run([bonsai, "", "0"])
 
     assert code == 0
     assert "nothing was written" in text
