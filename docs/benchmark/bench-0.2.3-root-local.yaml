@@ -1,0 +1,13 @@
+# The project-root sentence on a local model (Certo 0.2.3): the same two
+# arms as bench-0.2.3-root-cloud.yaml, on qwen3.8:27b with thinking on.
+# A night slot, under caffeinate -i:
+#   caffeinate -i certo bench --config docs/benchmark/bench-0.2.3-root-local.yaml --yes
+# The Ollama server is the one on another machine on the local network
+# (models-0.2.2-effort.yaml).
+models_file: docs/benchmark/models-0.2.2-effort.yaml
+models_list_file: docs/benchmark/models_list-0.2.2-effort.yaml
+tasks: all
+repeats: 2
+arms:
+  - {name: qwen-root, strategy: single, model: qwen-high}
+  - {name: qwen-no-root, strategy: single, model: qwen-high, root_prompt: false}

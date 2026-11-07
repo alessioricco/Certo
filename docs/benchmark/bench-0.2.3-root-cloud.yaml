@@ -1,0 +1,16 @@
+# The project-root sentence (Certo 0.2.3, TODO "Benchmark the
+# project-root sentence"): every run's system prompt now names the
+# project root and forbids looking outside it. Same model, with and
+# without the sentence; the root guard blocks outside actions in both
+# arms, and each run counts them (blocked_outside_root).
+# Run it from the repository root with:
+#   certo bench --config docs/benchmark/bench-0.2.3-root-cloud.yaml --parallel 3 --max-cost 4
+# The model files below name the key as ${ANTHROPIC_API_KEY}, read from
+# the environment.
+models_file: docs/benchmark/models-0.2.2-effort.yaml
+models_list_file: docs/benchmark/models_list-0.2.2-effort.yaml
+tasks: all
+repeats: 3
+arms:
+  - {name: haiku-root, strategy: single, model: haiku-high}
+  - {name: haiku-no-root, strategy: single, model: haiku-high, root_prompt: false}
