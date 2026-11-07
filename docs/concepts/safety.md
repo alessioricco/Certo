@@ -61,8 +61,9 @@ the first action is rejected and the task stops with
   after the task, so the agent never starts in the folder that holds
   every project.
 
-These rules decide which folder the agent *starts* in. They don't stop its
-commands from going elsewhere; see "What the agent can do".
+These rules decide which folder the agent *starts* in. Certo also tells
+the agent that this folder is its project root, and that nothing above or
+outside it is part of the task.
 
 ## Certo's own environment
 

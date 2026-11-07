@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from collections.abc import Mapping
 
 from openhands.sdk import LLM, Agent, AgentContext
@@ -67,6 +68,23 @@ _README_SUFFIX = (
 # harness already points the terminal at it; this says so, so the agent
 # installs into it rather than reaching for some other interpreter — live,
 # an agent tried `<Certo's own python> -m pip install pytest`.
+def project_root(cfg: Config) -> str:
+    """The folder the agent works in, as its tools see it: the project's
+    absolute path, or the container's mount in Docker (workspace.py)."""
+    return "/workspace" if cfg.execution == "docker" else os.path.abspath(cfg.workspace)
+
+
+def _project_root_suffix(root: str) -> str:
+    return (
+        f"The project root is {root}. Work only inside it: create, edit, read, "
+        "list and search files there, and run commands from there. Never read, "
+        "list or search anything above or outside it (its parent folders, other "
+        "projects, your home folder): none of it is part of the task, and "
+        "another project's files are not yours to copy or change. Tools may "
+        "still use their own installs and caches."
+    )
+
+
 def _project_env_suffix(env: ProjectEnv) -> str:
     return (
         f"This project has its own Python environment at {env.venv_dir}, and "
@@ -222,6 +240,7 @@ def build_agent(
     suffixes = [_AUTONOMOUS_SUFFIX] if not cfg.interactive else []
     suffixes.extend(
         [
+            _project_root_suffix(project_root(cfg)),
             _README_SUFFIX,
             _NONINTERACTIVE_TOOLING_SUFFIX,
             _CERTO_STATE_SUFFIX,

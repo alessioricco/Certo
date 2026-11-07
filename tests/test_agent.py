@@ -4,6 +4,8 @@ objects, it never calls the LLM.
 
 from __future__ import annotations
 
+import os
+
 from certo.agent import (
     _AUTONOMOUS_SUFFIX,
     _CERTO_STATE_SUFFIX,
@@ -239,3 +241,17 @@ def test_the_condenser_summarizes_only_near_the_context_window():
 
 def test_the_condenser_can_be_turned_off():
     assert build_agent(_cfg(condense=False)).condenser is None
+
+
+def test_the_agent_is_told_its_project_root(tmp_path):
+    suffix = build_agent(_cfg(workspace=str(tmp_path))).agent_context.system_message_suffix
+
+    assert f"The project root is {tmp_path}. Work only inside it" in suffix
+    assert "Never read, list or search anything above or outside it" in suffix
+
+
+def test_in_docker_the_root_is_the_containers_folder():
+    from certo.agent import project_root
+
+    assert project_root(_cfg(execution="docker", workspace="/home/me/app")) == "/workspace"
+    assert project_root(_cfg(workspace=".")) == os.path.abspath(".")
