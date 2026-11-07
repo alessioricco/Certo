@@ -24,7 +24,9 @@ easier to start:
   games and features.
 - **The example model list, checked again** (2026-11-07): `cost`
   now follows the price to one decimal, five models re-rated, four new
-  ones, Kimi K2.7 Code out.
+  ones, Kimi K2.7 Code out. **`certo models check`** compares your list's
+  prices and cost ratings with LiteLLM's price list, and `--fix` sets
+  each cost from its price.
 - **`certo init` offers more models.** After a passing model check, it
   asks whether to set up more models now, and on yes runs
   `certo init models` at once.
@@ -225,6 +227,14 @@ promotion ends on 30 Nov. GPT-4.1 and GPT-4.1 mini retire on 14 Jan
 2027. Llama 3 has no tool calling in Ollama, so it can't run Certo's
 agent. Artificial Analysis changed its index scale in October; the
 numbers are now on the new one.
+
+**`certo models check`** keeps your own list honest the same way. It
+compares every model's price with the price list of the installed
+LiteLLM, with no network and no key, and reports an id LiteLLM doesn't
+know, a price that differs and a `cost` that isn't what its price gives.
+`--fix` sets those costs; a price that differs is for you to settle with
+the provider's pricing page. See
+[`certo models check`](../reference/commands.md#certo-models-check).
 
 With these ratings, `--auto-model` puts Opus 5.5 first for debugging and
 research, and Haiku 5.5 first for builds, with GPT-6.1 Sol and Sonnet

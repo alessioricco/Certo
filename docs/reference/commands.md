@@ -351,6 +351,48 @@ at `  - name:` with their fields indented below), nothing is written and
 the message says so. Exit code 0, or 1 when there is no list or it can't
 be edited safely.
 
+### `certo models check`
+
+Check the prices and `cost` ratings of your `models_list.yaml` against
+the price list of the installed LiteLLM. It uses no network, calls no
+model and reads no key: only `models_list.yaml`, never `models.yaml`.
+
+```text
+certo models check [--file PATH] [--fix]
+```
+
+| Flag | Effect |
+|---|---|
+| `--file PATH` | The list to check. Default: `CERTO_MODELS_LIST_FILE`, else `./models_list.yaml`, else the one in your user settings folder. |
+| `--fix` | Set each wrong `cost` rating to what its price gives. Only those numbers change, so your comments and layout stay; the old file is kept with `.bak` added to its name. A `ratings` map written over several lines is left for you to change by hand. |
+
+For each cloud model it reports:
+
+- **an id LiteLLM's price list doesn't know**: often a typo or a retired
+  model, sometimes a model newer than your LiteLLM;
+- **a price that differs**: the first "$X in / $Y out" in the model's
+  description against LiteLLM's;
+- **a `cost` that isn't what its price gives**: `cost = 4 − log2(p) / 2`,
+  one decimal, between 1 and 4.9, where `p` is the price per 1M tokens
+  at 3 input to 1 output. A local model is free, so its cost is 5.
+
+The `reasoning`, `precision` and `code` ratings come from benchmarks and
+aren't checked. A price that differs needs a person: the provider's
+pricing page says which is right, since LiteLLM's list can lag and a
+description can be out of date. On the example list of Certo 0.2.3, on
+7 November 2026, a price rise and a promotion showed up:
+
+```text
+src/certo/examples/models_list.yaml.example: 39 models, against LiteLLM's price list.
+  gpt-5.6-sol (openai/gpt-5.6-sol)
+    - price $5 / $30 in its description, $4 / $20 in LiteLLM's list
+  gemini-4-argon (gemini/gemini-4-argon)
+    - price $4 / $20 in its description, $2 / $10 in LiteLLM's list
+```
+
+Exit code 0 when everything agrees (or `--fix` fixed all of it), 1 when
+something needs a look, 2 when there is no list or it can't be read.
+
 ## `certo skills`
 
 See, add and remove the skills a run gets. **Official** skills come with

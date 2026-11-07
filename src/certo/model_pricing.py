@@ -5,6 +5,8 @@ local model costs nothing."""
 from __future__ import annotations
 
 import ipaddress
+import math
+import re
 from urllib.parse import urlparse
 
 from .model_catalog import ModelCatalogEntry
@@ -56,3 +58,43 @@ def estimate_run_cost(entry: ModelCatalogEntry) -> float | None:
         return None
     total = prompt + completion
     return total if total > 0 else None
+
+
+# --- the `cost` rating from a price (models_list.yaml.example's rubric) --------
+
+# The price a catalog entry is rated at: the first "$X in / $Y out" of its
+# description (per 1M tokens).
+_DESCRIBED_PRICE = re.compile(r"\$([0-9]+(?:\.[0-9]+)?) in\s*/\s*\$([0-9]+(?:\.[0-9]+)?) out")
+
+
+def described_price(description: str) -> tuple[float, float] | None:
+    """(input, output) USD per 1M tokens from a catalog description, or None."""
+    found = _DESCRIBED_PRICE.search(" ".join(description.split()))
+    return (float(found.group(1)), float(found.group(2))) if found else None
+
+
+def cost_rating(price_in: float, price_out: float) -> float:
+    """The `cost` rating of a cloud model: from the blended price p per 1M
+    tokens (3 input to 1 output), 4 - log2(p) / 2, one decimal, kept between
+    1 and 4.9 (5 is for local models). Each doubling of the price takes
+    half a point."""
+    blended = (3 * price_in + price_out) / 4
+    if blended <= 0:
+        return 4.9
+    return round(min(4.9, max(1.0, 4 - math.log2(blended) / 2)), 1)
+
+
+def litellm_price(model: str) -> tuple[float, float] | None:
+    """(input, output) USD per 1M tokens from the price list of the
+    installed LiteLLM (no network), or None when it doesn't know the id."""
+    try:
+        import litellm
+    except ImportError:
+        return None
+    for key in (model, model.split("/", 1)[-1]):
+        info = litellm.model_cost.get(key)
+        if info and info.get("input_cost_per_token") is not None:
+            per_in = float(info.get("input_cost_per_token") or 0) * 1_000_000
+            per_out = float(info.get("output_cost_per_token") or 0) * 1_000_000
+            return round(per_in, 4), round(per_out, 4)
+    return None

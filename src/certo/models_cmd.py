@@ -1,5 +1,7 @@
 """`certo models update`: bring your `models_list.yaml` up to date with
 the example list of the installed Certo, without losing your changes.
+`certo models check` (model_price_check.py): its prices and cost ratings
+against LiteLLM's price list.
 
 It is a three-way merge, per model entry: your file, the example it was
 copied from (the "base", saved next to your file as
@@ -275,7 +277,86 @@ def build_parser() -> argparse.ArgumentParser:
             "both changed. Needed without a terminal."
         ),
     )
+    check = sub.add_parser(
+        "check",
+        help="Check the prices and cost ratings of your models_list.yaml against LiteLLM's.",
+        description=(
+            "Compare every model of your models_list.yaml with the price list of the "
+            "installed LiteLLM, without the network or any key: a cloud model id it "
+            "doesn't know, a price in a description that differs from LiteLLM's, and a "
+            "cost rating that isn't what its price gives. Exit code 1 when something "
+            "needs a look. The other ratings come from benchmarks and aren't checked."
+        ),
+    )
+    check.add_argument(
+        "--file",
+        metavar="PATH",
+        default="",
+        help=(
+            "The models list to check. Default: CERTO_MODELS_LIST_FILE, else "
+            "./models_list.yaml, else the one in your user settings folder."
+        ),
+    )
+    check.add_argument(
+        "--fix",
+        action="store_true",
+        help=(
+            "Set each wrong cost rating to what its price gives (the price in the "
+            "description first, else LiteLLM's). Only those numbers change; the old "
+            "file is kept with .bak added to its name."
+        ),
+    )
     return parser
+
+
+def check_main(args: argparse.Namespace, *, prompter: Prompter, lookup=None) -> int:
+    """`certo models check`. 0 when nothing needs a look (or `--fix` fixed
+    all of it), 1 otherwise, 2 when the file can't be read."""
+    from .model_price_check import fix_costs, read_prices
+
+    path = find(LIST_FILE, args.file or os.environ.get("CERTO_MODELS_LIST_FILE", ""))
+    if path is None:
+        prompter.say(
+            f"No {LIST_FILE} to check (Certo looked in the current folder and in "
+            f"{user_dir()}). Run certo init models to set up your models."
+        )
+        return 2
+    read = (lambda t: read_prices(t, lookup)) if lookup else read_prices
+    try:
+        text = open(path, encoding="utf-8").read()
+        rows = read(text)
+    except (OSError, ValueError, yaml.YAMLError) as exc:
+        prompter.say(f"Error: couldn't read {path}: {exc}")
+        return 2
+    prompter.say(f"{path}: {len(rows)} models, against LiteLLM's price list.")
+    flagged = [(r, r.problems()) for r in rows if r.problems()]
+    if not flagged:
+        prompter.say("Every price and cost rating agrees.")
+        return 0
+    for row, problems in flagged:
+        prompter.say(f"  {row.name} ({row.model})")
+        for problem in problems:
+            prompter.say(f"    - {problem}")
+    if args.fix:
+        new_text, fixed, by_hand = fix_costs(text, rows)
+        if fixed:
+            shutil.copyfile(path, path + ".bak")
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(new_text)
+            prompter.say(
+                f"\nFixed the cost of {len(fixed)} model(s): {', '.join(fixed)}. "
+                f"The old file is {os.path.basename(path)}.bak."
+            )
+        if by_hand:
+            prompter.say(f"Change the cost of {', '.join(by_hand)} by hand.")
+        if not any(r.problems() for r in read(new_text)):
+            return 0
+    prompter.say(
+        "\nA price that differs needs a person: the provider's pricing page says which "
+        "is right (LiteLLM's list can lag, and a description can be out of date)."
+        + ("" if args.fix else " certo models check --fix sets each cost from its price.")
+    )
+    return 1
 
 
 def _used_models() -> set[str]:
@@ -411,4 +492,6 @@ def models_main(
     interactive = sys.stdin.isatty() if interactive is None else interactive
     if args.command == "update":
         return update_main(args, prompter=prompter, interactive=interactive, example=example)
+    if args.command == "check":
+        return check_main(args, prompter=prompter)
     return 2

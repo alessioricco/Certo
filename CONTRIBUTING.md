@@ -132,6 +132,43 @@ are exported and expects `Verification: verified`. The script needs `uv`
 and network access. Run it directly, not through `uv run`. The release
 workflow runs the non-LLM part against the exact wheel it publishes.
 
+## Check the example model list
+
+`src/certo/examples/models_list.yaml.example` goes stale: prices change,
+models retire, new ones ship. Check it about once a month and before a
+release. The last full check was 2026-11-07.
+
+1. **Prices and ids, by command.** Upgrade LiteLLM to the version the
+   release will pin, then run
+   `certo models check --file src/certo/examples/models_list.yaml.example`.
+   For every flag, the provider's pricing page decides: fix the
+   description, or note why it differs (a promotion, a price change on a
+   known date). `--fix` then sets each `cost` from its price.
+   `tests/test_model_catalog.py` fails on any `cost` that doesn't follow
+   its description's price.
+2. **Retirements and new models.** Read each provider's deprecations page
+   and changelog since the last check (OpenAI, Anthropic, Google,
+   DeepSeek, Moonshot), and Ollama's newest models for local ones. A
+   retiring model gets its date in the description; a retired one leaves
+   the list, and any preset that names it (`src/certo/starter/providers.toml`)
+   moves to its replacement.
+3. **Benchmarks, by hand.** For each changed or new model, look for the
+   rubric's benchmarks (Terminal-Bench 4.0, SWE-Bench Pro, the Artificial
+   Analysis Intelligence Index, GPQA Diamond...), from the vendor's model
+   card and from an independent leaderboard. Record which is which:
+   numbers are vendor-reported unless the description says otherwise. A
+   number you can't find a source for comes out of the description.
+4. **Our own measurements win ties.** A benchmark record under
+   `docs/benchmark/` that contradicts a public number (a model that
+   passes everything, or one that can't call tools) goes in the
+   description, and can move a rating by one step.
+5. **Ratings follow the rubric** at the top of the file. Update its
+   "checked on" date, add an entry to the release notes saying what
+   moved and why, and, when the rubric itself changes, to `DECISIONS.md`.
+
+Leaderboard pages sometimes load with no rows and some vendor sites
+refuse scripts; say so in the change rather than guessing a number.
+
 ## Versioning
 
 Each change that adds a feature bumps the third digit of the version

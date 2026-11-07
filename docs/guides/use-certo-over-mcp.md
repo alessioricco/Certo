@@ -93,7 +93,8 @@ The skills commands that download or turn on code (`certo skills add`
 from git, `update`, `sync` and `enable`) never get a tool: accepting a
 skill's license, or running code someone else wrote, is for you to
 decide, not an agent. `certo skills add` with a file or folder of your
-own, `remove` and `disable` have no tool yet; ask if you need one.
+own, `remove` and `disable`, and `certo models check`, have no tool yet;
+ask if you need one.
 
 Each project also has two resources, which a client can show or read:
 

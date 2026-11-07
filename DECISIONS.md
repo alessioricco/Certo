@@ -1753,3 +1753,14 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   in the description; a test checks every cloud model, so a price change
   can't leave a stale rating. The capability axes stay whole numbers:
   their benchmarks aren't precise enough for decimals.
+
+- **`certo models check` checks prices only, offline, against the
+  installed LiteLLM's price list** (2026-11-07, the Author's request).
+  Prices and ids can be checked mechanically; the capability ratings
+  can't (leaderboards that don't load, vendor vs independent numbers, a
+  changed index scale), so they follow a written procedure in
+  CONTRIBUTING.md instead. No network: LiteLLM ships its price list,
+  and a check that fetches pages would break in CI and offline. A price
+  that differs is reported, never "fixed": either side can be the stale
+  one, so only `cost` (derived from the description's price) is written
+  by `--fix`.

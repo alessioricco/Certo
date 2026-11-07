@@ -17,7 +17,9 @@ whether to use `--auto-model` for every run. See
 [the reference](../reference/commands.md#certo-init-models). The rest of
 this section is what it writes, for when you want to edit the files
 yourself. After a Certo upgrade, `certo models update` adds the example
-list's new models and ratings to your copy, keeping your edits.
+list's new models and ratings to your copy, keeping your edits, and
+`certo models check` tells you when a price or a `cost` rating in it is
+out of date.
 
 `--auto-model` uses three files, and Certo ships each only as an example:
 

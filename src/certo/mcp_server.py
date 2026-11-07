@@ -44,6 +44,7 @@ NO_TOOL: dict[str, str] = {
     "certo init": "asks questions and writes your settings file: run it in a terminal",
     "certo init models": "asks questions and writes your model files: run it in a terminal",
     "certo models update": "asks about each change to your models list: run it in a terminal",
+    "certo models check": "a maintenance check of your models list's prices: on request",
     "certo skills add": (
         "from git it downloads code, with a license only a person may accept: run it in a "
         "terminal; a skill file or folder of yours: on request"
