@@ -1654,3 +1654,12 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   `task_profiles.yaml` name personal models, so next to a published
   file's own models they can only fail; it uses the ones it names.
   Without its own `models_file` it still looks them up, as before.
+
+- **No "thinking off first" ladder for local models either** (2026-11-07,
+  `docs/benchmark/effort-0.2.2.md`; closes what the entry above left
+  open). On `qwen3.8`, 3 more repeats overturned the single one: thinking
+  off then on was faster (median 3m 52s against 6m 13s) but was fooled 4
+  times in 39 against 1, three of them on the thinking-off rung, where
+  passing checks stop the climb. Over all four repeats both arms passed
+  43/52. One effort per model stays; a hand-written ladder can still
+  name the same model twice with two efforts.

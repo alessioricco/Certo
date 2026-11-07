@@ -386,8 +386,9 @@ costs.
 One model on two rungs, a lower effort then `high`, is
 [A lower reasoning effort first in 0.2.2](../benchmark/effort-0.2.2.md):
 on Haiku, `low` first was fooled by its own passing checks, so the
-ladder never climbed; on a local `qwen3.8`, thinking off first was
-faster and climbed when its checks failed.
+ladder never climbed. On a local `qwen3.8`, thinking off first was
+faster, but over three repeats it was fooled the same way more often
+than thinking on alone.
 
 ## Related
 

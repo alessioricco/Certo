@@ -24,8 +24,10 @@ first item is the suggested next one.
   larger tasks against 3/8 with 30; the only right work the budget
   stopped had no tests. Not shown to help. The Author agreed
   (2026-11-06) that a longer budget can be chosen later: pick the value
-  from data, e.g. the budget hits in the 3-repeat effort run
-  (`bench-results/effort-local-3x-0.2.2`).
+  from data. The 3-repeat effort run (`docs/benchmark/effort-0.2.2.md`)
+  hit the 30 minutes in 10 of 78 runs on the small bundled tasks; 5 of
+  them were `library-loans`, which never passed, and only 1 run that
+  hit it had right work.
 - **Baselines, when the Author chooses.** `docs/benchmark/baseline-<version>.md`
   (local vs cloud, fooled rate, cost per solved task), run when the
   Author decides; minor releases may skip it (2026-10-23). Also a README
@@ -149,18 +151,6 @@ first item is the suggested next one.
   switch ran live on 2026-10-19 (ARCHITECTURE.md). The other path, a fix
   attempt that still fails the checks, has only run against a fake; it
   needs a model that fails on purpose, so it may take a few tries.
-- **Thinking off first, on local models only: repeat the measurement.**
-  `docs/benchmark/effort-0.2.2.md`: on Haiku, low effort first is
-  ruled out (DECISIONS.md). On `qwen3.8`, thinking off (`minimal`) then
-  on gave 12/13 hidden passes, 0 fooled, median 4m 52s, against 11/13,
-  1 fooled, 7m 57s for thinking on only, but from one repeat and with 17
-  tool-call reminders. Re-run `bench-0.2.2-effort-local.yaml` with 3
-  repeats in night slots; build a local-only, opt-in derived ladder (and
-  `--auto-model` choosing it) only if the result holds. That build also
-  needs, per model in `models_list.yaml`, the effort levels it accepts:
-  on Ollama, `low`/`medium`/`high` all mean thinking on (only `gpt-oss`
-  gets the level) and `minimal` means off; other providers name levels
-  differently, and a wrong level fails only when the model is called.
 - **Benchmark `--auto-model` for the README.** The bench `auto` arm
   exists (0.1.25); a two-task live check picked Sonnet for a `debugging`
   task and Haiku for a `default` one, both verified. Left: a full run of

@@ -28,8 +28,16 @@ faster and rarely fails.
   on), 1 repeat, 26 runs, from the night of 2026-11-04 to the evening
   of 2026-11-05 (Ollama 0.40.6, model digest `aaee06c39dcf`).
   **File:** [bench-0.2.2-effort-local.yaml](bench-0.2.2-effort-local.yaml).
-- **Results folders:** `bench-results/effort-cloud-0.2.2` and
-  `bench-results/effort-local-0.2.2`, on the machine that ran them.
+- **Local, repeated:** the same two arms with 3 repeats, 78 runs, at
+  Certo 0.2.2 (commit `06f11b9`, then `b58b91f` for the second night;
+  the commits between them don't change how a run works), in two
+  nights: 2026-11-05 21:35 UTC
+  to 2026-11-06 07:20, and 2026-11-06 20:39 to 2026-11-07 00:59. Same
+  server, Ollama version and model digest.
+  **File:** [bench-0.2.2-effort-local-3x.yaml](bench-0.2.2-effort-local-3x.yaml).
+- **Results folders:** `bench-results/effort-cloud-0.2.2`,
+  `bench-results/effort-local-0.2.2` and
+  `bench-results/effort-local-3x-0.2.2`, on the machine that ran them.
 
 ## Why the local arms use thinking off, not low
 
@@ -134,7 +142,78 @@ Both arms cost nothing: the model runs on a local server.
   passes or in fooled runs, can be chance. Thinking off also needs more
   tool-call reminders. Before building a local-only "thinking off
   first" ladder, repeat the local arms (3 repeats, at night) to see if
-  the result holds.
+  the result holds. It didn't: see the next section.
+
+## Local results, 3 repeats
+
+| Arm | Hidden tests passed | Verified | Fooled | Caught | Median time | Tokens in / out | Tool-call reminders |
+|---|---|---|---|---|---|---|---|
+| `qwen-high` (thinking on) | 32/39 | 30/39 | 1 | 3 | 6m 13s | 11,800,428 / 653,897 | 55 |
+| `qwen-nothink-then-high` | 31/39 | 35/39 | 4 | 0 | 3m 52s | 13,979,289 / 478,006 | 47 |
+
+Per repeat, hidden tests passed: 11, 11 and 10 for thinking on only;
+11, 10 and 10 for thinking off first.
+
+- **Which rung gave the final result:** thinking off in 29 of 39 runs;
+  the ladder climbed in 10.
+- **Time:** thinking off first was faster on 9 of the 13 tasks (by the
+  median of the three repeats) and slower on 3.
+- **Fooled:** 4 runs with thinking off first against 1 with thinking on
+  only. Three of the four ended on the first rung, with thinking off:
+  the checks passed, so the ladder never climbed.
+
+| Arm | Task | Repeat | Rung that ended it | Hidden tests |
+|---|---|---|---|---|
+| `qwen-high` | `todo-deps` | 1 | | 10 passed, 1 failed |
+| `qwen-nothink-then-high` | `todo-deps` | 1 | 1 | 10 passed, 1 failed |
+| `qwen-nothink-then-high` | `todo-deps` | 2 | 1 | 7 passed, 4 failed |
+| `qwen-nothink-then-high` | `slugify` | 3 | 1 | 8 passed, 1 failed |
+| `qwen-nothink-then-high` | `library-loans` | 2 | 2 | 10 passed, 1 failed |
+
+- **`room-bookings`:** 3/3 with thinking on only, 1/3 with thinking
+  off first. In repeats 2 and 3 the ladder climbed, and the 30-minute
+  budget ran out on the second rung.
+- **Tool-call reminders:** both arms needed them this time (55 and 47),
+  so the single repeat's "only thinking off writes tool calls as text"
+  doesn't hold. The one `unchanged` run (`qwen-high`, `ledger-transfers`,
+  repeat 3) is one of these: the model wrote the same command as text
+  four times in a row, the reminders ran out, and no file had changed.
+- **The 30-minute budget ran out in 10 of 78 runs:** 6 with thinking on
+  only, 4 with thinking off first. `library-loans` ran out in 5 of its
+  6 runs and passed in none, in either arm. One run that ran out still
+  passed the hidden tests (`qwen-high`, `room-bookings`, repeat 3).
+
+| Task | `qwen-high` | `qwen-nothink-then-high` |
+|---|---|---|
+| `duration-parser` | 6m 53s | 2m 45s |
+| `inventory-fix` | 3m 06s | 2m 46s |
+| `ledger-transfers` | 23m 52s | 22m 23s |
+| `library-loans` | 30m 05s | 30m 06s |
+| `page-ranges` | 24m 12s | 2m 36s |
+| `pedestrian-crossing` | 6m 13s | 3m 03s |
+| `room-bookings` | 15m 36s | 30m 03s |
+| `semver-order` | 6m 09s | 3m 52s |
+| `slugify` | 3m 35s | 4m 04s |
+| `temperature-table` | 4m 44s | 1m 28s |
+| `todo-deps` | 30m 04s | 11m 57s |
+| `token-bucket` | 3m 48s | 3m 24s |
+| `wordle-score` | 5m 39s | 6m 32s |
+
+(Median of the three repeats.)
+
+### What the repeat says
+
+- **The single repeat's result doesn't hold.** Over all four repeats
+  (the first run and these three), both arms passed 43 of 52, but
+  thinking off first was fooled 4 times against 2.
+- **Thinking off is faster, and fails the way low effort did on
+  Haiku.** Most of its fooled runs passed every check on the first
+  rung, so the ladder never reached thinking on. Escalation can't help
+  there, on a local model as on a cloud one.
+- **The rule says don't build it:** thinking off first is much faster,
+  but it doesn't rarely fail. Certo keeps one effort per model; a
+  ladder can still name the same model twice with two efforts, by hand
+  ([Escalate between models](../guides/escalate-between-models.md)).
 
 ## Related
 

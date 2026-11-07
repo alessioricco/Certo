@@ -1,0 +1,13 @@
+# Escalate on reasoning effort (Certo 0.2.2), on a local model, repeated:
+# the same two arms as bench-0.2.2-effort-local.yaml, 3 repeats instead of
+# 1, to see if thinking off first (`minimal`) then on still beats thinking
+# on only. 78 runs: several nights, with --stop-at and --resume.
+# Run it from the repository root with:
+#   certo bench --config docs/benchmark/bench-0.2.2-effort-local-3x.yaml --stop-at 07:00
+models_file: docs/benchmark/models-0.2.2-effort.yaml
+models_list_file: docs/benchmark/models_list-0.2.2-effort.yaml
+tasks: all
+repeats: 3
+arms:
+  - {name: qwen-high, strategy: single, model: qwen-high}
+  - {name: qwen-nothink-then-high, strategy: escalate, models: [qwen-nothink, qwen-high]}
