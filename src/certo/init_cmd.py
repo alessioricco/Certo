@@ -939,6 +939,12 @@ SAMPLES = (
     ),
 )
 
+# Bigger samples, written in milestones (`certo --milestones`): copied with
+# the others, but not offered in the menu above: much bigger, so a run
+# takes much longer and costs more (not measured yet). The sample README
+# lists them.
+MILESTONE_SAMPLES = ("sky-hopper.md", "iron-horizon.md", "team-board.md")
+
 
 _MORE_MODELS = (
     "No, one model is enough for now",

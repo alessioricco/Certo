@@ -32,6 +32,23 @@ to see one, then write your own the same way. The other samples:
 
 The browser games need Node 18 or newer, for their tests.
 
+Three bigger samples are written in **milestones**: each milestone is
+built and checked before the next one starts, and if one fails, Certo
+stops there and `certo --resume --project NAME` continues from it. They
+are much bigger than the samples above, so a run takes much longer and
+uses more model credits:
+
+- `tasks/sky-hopper.md`: a side-scrolling platform game with parallax
+  backgrounds, in the browser;
+- `tasks/iron-horizon.md`: a first-person 3D tank game in wireframe, in
+  the browser, with no 3D library;
+- `tasks/team-board.md`: a team task board web app, with accounts, roles,
+  a SQLite database and drag-and-drop cards, in Python.
+
+```bash
+certo --milestones tasks/team-board.md --project team-board
+```
+
 ## 3. Find the result
 
 Each project lands in its own folder under `projects/`, here

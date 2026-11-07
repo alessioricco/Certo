@@ -70,6 +70,14 @@ first item is the suggested next one.
 
 ## 2. Complex tasks
 
+- **Run the three milestone samples** (added 2026-11-07, the Author's
+  request: `sky-hopper`, `iron-horizon`, `team-board` in
+  `starter/tasks/`). Never run yet. Run each once on a cloud model
+  (`--milestones`), record time, cost and each milestone's verdict in
+  `docs/benchmark/`, fix what the runs show is unclear in the tasks, then
+  decide whether they join the menu at the end of `certo init` (with
+  their measured times) and the benchmark task set. Done when each has a
+  recorded run.
 - **Milestone mode: what's left.** Phase 3 closed on 2026-10-31 (the
   Author): `app-tasks/expenses` (apps-2), qwen3.8 `verified` in 2/3
   runs, 80/80 hidden (`docs/benchmark/expenses-0.1.27.md`). The

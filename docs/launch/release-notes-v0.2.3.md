@@ -16,6 +16,10 @@ up more than one model:
   trust in `skill_sources.yaml`; `certo skills assess` checks and
   classifies every skill in them; a run adds the ones that fit its
   project and task, and `certo skills suggest` shows which.
+- **Three bigger samples, in milestones**: a platform game with
+  parallax, a 3D wireframe tank game, and a team task board web app with
+  SQLite. `certo init` puts them in `tasks/`; run one with
+  `certo --milestones tasks/team-board.md --project team-board`.
 - **`certo check` gives an Ollama model's real speed**, in tokens a
   second, as Ollama measures it.
 - **`certo --help` lists every command**, each in its own section.

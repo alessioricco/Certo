@@ -97,7 +97,8 @@ model works and can call tools, which Certo's agent needs:
 Checking the model openai/gpt-6.1-sol... ok: reachable, tool calling works.
 ```
 
-It also creates `certo-workspace/`, with five sample tasks in `tasks/` and
+It also creates `certo-workspace/`, with eight sample tasks in `tasks/`
+(three of them bigger ones, built in milestones) and
 a `README.md` with these next steps.
 
 When the check passed and the settings are for all projects, `init` then

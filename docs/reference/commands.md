@@ -177,7 +177,13 @@ then every other provider's lines commented out.
 `artifacts/`; an existing file only gains missing lines), `tasks/wordle.md`
 and `tasks/hanoi.md` (Python, in the terminal), `tasks/space-rocks.md`,
 `tasks/mazeman.md` and `tasks/invaders.md` (browser games, Node 18+),
-and a `README.md` with next steps. A `README.md`
+three bigger samples written in milestones, for
+[`certo --milestones`](../guides/run-in-milestones.md):
+`tasks/sky-hopper.md` (a platform game with parallax, browser),
+`tasks/iron-horizon.md` (a 3D wireframe tank game, browser) and
+`tasks/team-board.md` (a task board web app with SQLite, Python), and a
+`README.md` with next steps. The bigger samples aren't in the menu at the
+end of `init`. A `README.md`
 that `init` didn't write is never replaced. With "All projects", the
 folder gets no `.env`, and a folder that already has files is skipped.
 

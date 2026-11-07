@@ -615,7 +615,7 @@ def test_the_menu_offers_every_sample(tmp_path, monkeypatch, checks):
     assert "open projects/mazeman/ to see what the agent built" in text
     # Every task `init` copies is in the menu.
     copied = {p.name for p in (tmp_path / "w" / "tasks").iterdir()}
-    assert copied == {sample.file for sample in init_cmd.SAMPLES}
+    assert copied == {sample.file for sample in init_cmd.SAMPLES} | set(init_cmd.MILESTONE_SAMPLES)
 
 
 def test_without_node_the_browser_games_are_not_offered(tmp_path, monkeypatch, checks):
@@ -717,8 +717,11 @@ def test_creates_the_workspace_files(tmp_path, monkeypatch, no_check):
     assert sorted(p.name for p in (folder / "tasks").iterdir()) == [
         "hanoi.md",
         "invaders.md",
+        "iron-horizon.md",
         "mazeman.md",
+        "sky-hopper.md",
         "space-rocks.md",
+        "team-board.md",
         "wordle.md",
     ]
     readme = (folder / "README.md").read_text()
@@ -1647,3 +1650,21 @@ def test_yes_starts_init_models_from_the_model_just_saved(tmp_path, monkeypatch,
     assert SECRET not in script.text
     # Nothing was written, so Next still names it.
     assert "  certo init models\n" in script.text.split("Next:", 1)[1]
+
+
+def test_the_milestone_samples_parse_and_are_never_in_the_menu():
+    from certo.milestones import parse_milestones
+
+    tasks = init_cmd._STARTER.joinpath("tasks")
+    menu = {sample.file for sample in init_cmd.SAMPLES}
+    for name in init_cmd.MILESTONE_SAMPLES:
+        assert name not in menu
+        text = tasks.joinpath(name).read_text(encoding="utf-8")
+        plan = parse_milestones(text)
+        assert len(plan.milestones) >= 4, name
+        assert f"certo --milestones tasks/{name}" in text, name
+        for milestone in plan.milestones:
+            milestone.checks()  # every acceptance block is valid
+    readme = init_cmd._STARTER.joinpath("README.md").read_text(encoding="utf-8")
+    for name in init_cmd.MILESTONE_SAMPLES:
+        assert f"tasks/{name}" in readme
