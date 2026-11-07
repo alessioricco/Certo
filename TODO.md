@@ -186,6 +186,25 @@ first item is the suggested next one.
 
 ## 4. Models and strategies
 
+- **Estimates from measured runs, not a fixed guess** (the Author,
+  2026-11-07). `model_pricing.estimate_run_cost` assumes 500K input and
+  20K output tokens at list price per run: the 0.1.15 baseline plan said
+  ~$14.54 and cost $1.22 (most input is cached). Simple and fast:
+  - **Store:** after every run (and bench run), append one line to
+    `~/.config/certo/run_stats.csv`: date, model id, task profile (or
+    "bench"), verdict, seconds, input tokens, cached tokens, output
+    tokens, cost. Append-only, no database; model names only, no keys.
+  - **Estimate:** read the last 20 lines for that model (and profile,
+    when it has 3 or more); median cost and median time per run, with
+    the lowest and highest as the range. Fall back to today's fixed
+    guess, marked as a guess, when there are fewer than 3.
+  - **Use:** the bench plan, the escalation prompt, and a line in
+    `certo check --task`.
+  - **Track the error:** each line also holds the estimate Certo gave
+    before the run (empty when none), so `certo check` can show how far
+    its estimates were off over the last runs, and whether that shrinks.
+  Done when a bench plan's estimate is within 2x of its actual cost on a
+  model with history.
 - **Live check of the auto-model quality fallback.** The provider-failure
   switch ran live on 2026-10-19 (ARCHITECTURE.md). The other path, a fix
   attempt that still fails the checks, has only run against a fake; it
