@@ -161,16 +161,49 @@ class RootGuard:
             words = list(lexer)
         except ValueError:  # unbalanced quotes
             words = command.split()
+        # The folder the command is in, word by word: `cd sub && ... && cd ..`
+        # comes back to the root, not above it (0.2.3 cloud benchmark, run 2).
+        # None after `cd` to a place no word shows (`cd "$D"`): relative paths
+        # are then not judged, absolute ones still are.
+        here: str | None = self.cwd
+        skip = -1
         for index, word in enumerate(words):
+            if index == skip:
+                continue
             if word == "cd":
                 following = words[index + 1] if index + 1 < len(words) else None
-                if following is None or following in _SEPARATORS:
+                if following is None or following in _SEPARATORS or following == "~":
                     return self._reason(self.home)
+                skip = index + 1
+                target = self._resolve(following, here)
+                if target is None:
+                    here = None
+                    continue
+                outside = self._outside(following, base=here or self.root, allow_tools=True)
+                if outside:
+                    return self._reason(outside)
+                here = target
+                continue
             for candidate in self._path_words(word):
-                outside = self._outside(candidate, base=self.cwd, allow_tools=True)
+                if here is None and not candidate.startswith(("/", "~", "$HOME", "${HOME}")):
+                    continue
+                outside = self._outside(candidate, base=here or self.root, allow_tools=True)
                 if outside:
                     return self._reason(outside)
         return None
+
+    def _resolve(self, value: str, base: str | None) -> str | None:
+        """Where `cd value` goes from `base`, or None when a word can't say
+        (a variable, `-`, or a relative path from an unknown folder)."""
+        value = re.sub(r"^\$\{?HOME\}?", "~", value)
+        if value == "-" or "$" in value or "`" in value:
+            return None
+        expanded = os.path.expanduser(value)
+        if os.path.isabs(expanded):
+            return os.path.realpath(expanded)
+        if base is None:
+            return None
+        return os.path.realpath(os.path.join(base, expanded))
 
     def _path_words(self, word: str) -> list[str]:
         """The parts of one command word that may be paths."""

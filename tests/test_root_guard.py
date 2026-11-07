@@ -208,3 +208,34 @@ def test_the_command_around_a_heredoc_is_still_checked(layout):
     command = "cat > f.txt <<'EOF'\nhello\nEOF\nls ../other"
 
     assert "is outside the project root" in _guard(layout).check(_run(command))
+
+
+@posix_only
+@pytest.mark.parametrize(
+    "command",
+    [
+        # Seen in the 0.2.3 cloud benchmark, run 2: a scratch folder inside
+        # the root, then back.
+        "mkdir _check && cd _check && pytest -q; cd .. && rm -rf _check && ls",
+        "cd src && ls ../README.md",
+        "cd src/ && cd .. && ls",
+        'D=$(mktemp -d) && cd "$D" && ls .. ; echo done',  # unknown folder: relative not judged
+    ],
+)
+def test_cd_inside_a_command_is_followed(layout, command):
+    assert _guard(layout).check(_run(command)) is None
+
+
+@posix_only
+@pytest.mark.parametrize(
+    "command",
+    [
+        "cd src && cd ../..",
+        "cd src && ls ../../other",
+        'cd "$D" && cat ~/.ssh/id_rsa',  # absolute paths are still judged
+        "cd ../other",
+        "cd / && ls",
+    ],
+)
+def test_cd_outside_is_still_blocked(layout, command):
+    assert "is outside the project root" in _guard(layout).check(_run(command))
