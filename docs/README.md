@@ -87,6 +87,7 @@ takes you from install to your first verified project.
 | Set up my project so Certo can check it | [Make your project checkable](guides/make-a-project-checkable.md) |
 | Check projects in CI | [Verify in CI](guides/verify-in-ci.md) |
 | Check my work before each commit | [Verify before every commit](guides/verify-before-commit.md) |
+| Check what another AI tool wrote (Claude Code, Cursor, Aider...) | [Check another AI tool's work](guides/verify-another-tools-work.md) |
 | Add my own pass/fail rules for a task | [Acceptance checks](guides/acceptance-checks.md) |
 | Check the work with tests written before the build | [Independent tests](guides/independent-tests.md) |
 | Run the agent inside a container | [Run in Docker](guides/run-in-docker.md) |

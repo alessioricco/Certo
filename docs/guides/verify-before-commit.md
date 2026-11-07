@@ -85,3 +85,8 @@ Use it deliberately, for example for a commit that only touches
 documentation. A full verification run can be slow on a project with a
 large test suite, which is the usual reason to skip it; a skipped check is
 not a passed check.
+
+## Related
+
+- [Verify in CI](verify-in-ci.md): the same checks in a pipeline, and every exit code
+- [Check another AI tool's work](verify-another-tools-work.md): the same checks after Claude Code, Cursor or Aider
