@@ -99,9 +99,9 @@ run version 0 "certo $wheel_version" "$certo" --version
 
 echo "== certo --help"
 run help 0 "" "$certo" --help
-echo "$last_output" | grep -q "certo verify \[PATH\]" && pass "help mentions certo verify" || fail "help doesn't mention certo verify"
+echo "$last_output" | grep -qE "^  verify \[PATH\] " && pass "help lists certo verify" || fail "help doesn't list certo verify"
 
-echo "$last_output" | grep -q "certo init" && pass "help mentions certo init" || fail "help doesn't mention certo init"
+echo "$last_output" | grep -qE "^  init \[FOLDER\] " && pass "help lists certo init" || fail "help doesn't list certo init"
 
 echo "== certo init"
 # No provider key may leak in from the caller: --yes would use it.
