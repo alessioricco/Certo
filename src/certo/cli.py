@@ -7,7 +7,9 @@ import contextlib
 import json
 import os
 import shlex
+import shutil
 import sys
+import textwrap
 import urllib.error
 import urllib.request
 from collections.abc import Sequence
@@ -234,16 +236,48 @@ def resolve_acceptance_checks(value: str) -> list[AcceptanceCheck]:
         raise ValueError(str(exc)) from exc
 
 
+# The subcommands `_main` dispatches before argparse runs, listed in `certo
+# --help` the way argparse lists options.
+_COMMANDS: tuple[tuple[str, str], ...] = (
+    ("init [FOLDER]", "Create a ready-to-use workspace: settings, a model and sample tasks."),
+    ("check", "Test that the configured model works, with one small real call."),
+    ("verify [PATH]", "Run Certo's checks on a project, without an agent or a model."),
+    ("bench", "Compare models and strategies on tasks graded by hidden tests."),
+    ("checkpoints [PATH]", "List the snapshots Certo took of a project during its runs."),
+    ("rollback N [PATH]", "Put a project's files back as they were at checkpoint N."),
+    ("skills", "See, add and remove the skills a run gets."),
+    ("models", "Manage your list of models (models_list.yaml)."),
+    ("mcp", "Run Certo as an MCP server, for an editor or an agent."),
+)
+
+
+def _commands_help(width: int | None = None) -> str:
+    """The "commands:" section of `certo --help`, laid out as argparse lays
+    out options: names indented 2, help from column 24, wrapped to the
+    terminal's width."""
+    if width is None:
+        width = shutil.get_terminal_size().columns - 2
+    help_col = 24
+    lines = ["commands:"]
+    for name, text in _COMMANDS:
+        wrapped = textwrap.wrap(text, max(width - help_col, 20))
+        head = f"  {name}"
+        if len(head) + 2 > help_col:
+            lines.append(head)
+        else:
+            lines.append(head.ljust(help_col) + wrapped.pop(0))
+        lines.extend(" " * help_col + line for line in wrapped)
+    lines.append("")
+    lines.append("Each command takes --help.")
+    return "\n".join(lines)
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="certo",
         description="Run a coding task through Certo.",
-        epilog=(
-            "Other commands: certo init [FOLDER] creates a ready-to-use workspace; "
-            "certo check tests that the configured model works; certo verify [PATH] "
-            "checks a project without running an agent; certo bench compares models on "
-            "tasks with hidden tests. Each takes --help."
-        ),
+        epilog=_commands_help(),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     parser.add_argument(

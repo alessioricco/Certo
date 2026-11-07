@@ -1883,8 +1883,25 @@ def test_verify_rejects_a_missing_directory(tmp_path, capsys):
     assert "is not a directory" in capsys.readouterr().err
 
 
-def test_task_help_mentions_the_verify_subcommand():
-    assert "certo verify [PATH]" in cli._build_parser().format_help()
+def test_task_help_lists_every_subcommand():
+    import inspect
+    import re
+
+    dispatched = re.findall(r'argv\[0\] == "(\w+)"', inspect.getsource(cli._main))
+    listed = [name.split()[0] for name, _ in cli._COMMANDS]
+    assert sorted(listed) == sorted(dispatched)
+    help_text = cli._build_parser().format_help()
+    assert "\ncommands:\n  init [FOLDER]" in help_text
+    assert "verify [PATH]" in help_text
+
+
+def test_commands_help_wraps_like_the_options():
+    text = cli._commands_help(width=60)
+    lines = text.splitlines()
+    assert lines[1].startswith("  init [FOLDER]") and lines[1][24] != " "
+    assert all(len(line) <= 60 for line in lines)
+    # a wrapped line starts at the help column
+    assert lines[2].startswith(" " * 24) and lines[2][24] != " "
 
 
 # --- certo --resume ------------------------------------------------------------

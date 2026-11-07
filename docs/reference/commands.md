@@ -6,7 +6,9 @@ things up; for a walk-through, see [Getting started](../getting-started.md).
 Certo installs three commands: `certo`, `certo-server` and `certo-admin`.
 `certo` also has these subcommands: `certo verify`, `certo init`,
 `certo check`, `certo models`, `certo skills`, `certo bench`,
-`certo checkpoints` and `certo rollback`. Every command and subcommand accepts `-h` / `--help`.
+`certo checkpoints`, `certo rollback` and `certo mcp`. Every command and
+subcommand accepts `-h` / `--help`; `certo --help` lists the subcommands
+under `commands:`, after the options.
 
 All three commands hide the OpenHands SDK's start-up banner. Set
 `OPENHANDS_SUPPRESS_BANNER=0` to see it.
