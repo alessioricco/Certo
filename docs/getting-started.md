@@ -155,7 +155,9 @@ certo tasks/wordle.md --project wordle
 - `tasks/wordle.md` is a plain text file that describes a terminal Wordle
   game in Python. A task can be a file, a URL, or text in quotes.
 - `--project wordle` puts the result in its own folder,
-  `projects/wordle/`.
+  `projects/wordle/`. In this folder you can leave it out: a task gets a
+  project named after it (`tasks/wordle.md` gives `wordle`), and the
+  agent works only there.
 
 Certo first prints a banner with its version and the settings for this
 run, so you can stop it (Ctrl-C) if the model or the folder is wrong:

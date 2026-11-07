@@ -42,7 +42,7 @@ current folder, the file is read instead.
 | Flag | Default | Effect |
 |---|---|---|
 | `--version` | | Print the version, e.g. `certo 0.1.5`, and exit. |
-| `--project NAME` | none | Work in `CERTO_PROJECTS_DIR/NAME`, created if missing. Without it, Certo works in `CERTO_WORKSPACE` (default: the current folder). `NAME` must be a relative path with no `..`, and must stay inside `CERTO_PROJECTS_DIR`. |
+| `--project NAME` | none | Work in `CERTO_PROJECTS_DIR/NAME`, created if missing. Without it, Certo works in `CERTO_WORKSPACE` (default: the current folder), except in a Certo workspace, where a new task gets a project named after it (see "The project folder" below). `NAME` must be a relative path with no `..`, and must stay inside `CERTO_PROJECTS_DIR`. |
 | `--execution {local,docker}` | `CERTO_EXECUTION` | Where the agent's tools run, for this run. `docker` is [experimental](../README.md#experimental-features). See [Run in Docker](../guides/run-in-docker.md). |
 | `--model MODEL` | `CERTO_LLM_MODEL` | Model for this run only. Enough on its own: you do not need `CERTO_LLM_MODEL` set already. |
 | `--api-key KEY` | `CERTO_LLM_API_KEY` | API key for this run only. It ends up in your shell history. |
@@ -87,6 +87,24 @@ verdict, a last line names `.certo/STATUS.md` and the `certo --resume`
 command (unless `CERTO_SAVE_STATE` is off). When `CERTO_PROJECTS_DIR` is
 not the default, that command starts with `CERTO_PROJECTS_DIR=...` so a
 copy-paste resume uses the same projects folder.
+
+**The project folder.** Without `--project` and without `--resume`, when
+the current folder is a Certo workspace (it has the `CERTO_PROJECTS_DIR`
+folder, `projects/`, and isn't a project itself), Certo names a project
+after the task and works in `projects/<name>`, as if `--project <name>`
+was given. The name is the task file's or URL's name (`tasks/wordle.md`
+gives `wordle`), else the task's Markdown title, else its first words
+(`"Build a crypto price dashboard"` gives `crypto-price-dashboard`). If
+that folder exists, Certo uses a new one (`wordle-2`) and says so; give
+`--project wordle` to work on the existing one. Certo prints the folder
+before the run:
+
+```text
+Project: ./projects/wordle, named after the task. The agent works only in that folder.
+```
+
+In any other folder, or with `CERTO_WORKSPACE` set to another folder,
+Certo works where it always did.
 
 **Project creation.** With `--project`, configuration checks run before
 Certo creates a missing project folder or records it as Certo-created.
@@ -155,7 +173,7 @@ access follows the folder's inherited permissions; Certo does not set a
 Windows ACL. The file holds your chosen lines,
 then every other provider's lines commented out.
 
-**The sample folder** gets `.gitignore` (`.env`, `projects/`,
+**The sample folder** gets an empty `projects/` folder, `.gitignore` (`.env`, `projects/`,
 `artifacts/`; an existing file only gains missing lines), `tasks/wordle.md`
 and `tasks/hanoi.md` (Python, in the terminal), `tasks/space-rocks.md`,
 `tasks/mazeman.md` and `tasks/invaders.md` (browser games, Node 18+),

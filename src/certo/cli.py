@@ -629,6 +629,31 @@ def _main(argv: list[str]) -> int:
     return code
 
 
+def _project_from_task(args: argparse.Namespace, task: str | None, cfg: Any) -> str | None:
+    """The project name Certo picks for a new task run from a Certo
+    workspace without --project, after printing it; None when Certo keeps
+    the folder it runs in (a project given, a resume, CERTO_WORKSPACE set
+    elsewhere, or a folder that is itself a project)."""
+    from .project_root import is_certo_workspace, project_name_for_task, unused_project_name
+
+    if args.project is not None or args.resume or task is None:
+        return None
+    if os.path.abspath(cfg.workspace) != os.getcwd():
+        return None
+    if not is_certo_workspace(cfg.workspace, cfg.projects_dir):
+        return None
+    wanted = project_name_for_task(args.task, task)
+    name = unused_project_name(cfg.projects_dir, wanted)
+    where = os.path.join(cfg.projects_dir, name)
+    print(f"Project: {where}, named after the task. The agent works only in that folder.")
+    if name != wanted:
+        print(
+            f"  {os.path.join(cfg.projects_dir, wanted)} already exists; "
+            f"--project {wanted} works on it instead."
+        )
+    return name
+
+
 def _run_task_command(
     args: argparse.Namespace, parser: argparse.ArgumentParser, holder: dict[str, Any] | None
 ) -> int:
@@ -674,6 +699,17 @@ def _run_task_command(
     except ConfigError as exc:
         print(f"Configuration error: {exc}", file=sys.stderr)
         return 1
+    # In a Certo workspace, a new task gets its own project folder, named
+    # after the task: the agent's root (project_root.py).
+    named = _project_from_task(args, task, cfg)
+    if named is not None:
+        args.project = named
+        options = replace(options, project=named)
+        try:
+            cfg = resolve_config(options, load=lambda: load_config(), spell=_flag)
+        except (UsageError, ConfigError) as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            return 1
     try:
         plan = plan_run(
             cfg,

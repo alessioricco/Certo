@@ -1670,3 +1670,12 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   only" isn't offered: `certo init models` reads and writes the user
   settings file, and the new folder's `.env` isn't loaded from where
   `init` runs.
+
+- **A task in a Certo workspace gets its own project folder, named by
+  rule** (2026-11-07). A run without `--project` in the folder that holds
+  every project made that folder the agent's root: the agent picked a
+  subfolder itself, read the others, and the checks were ambiguous
+  (`stuck`). The name comes from the task file, title or first words,
+  never a model call (as "No LLM-based router"); an existing folder gets
+  `-2` rather than being reused, so a new task never edits an old
+  project by accident. Other folders keep working in place.

@@ -2851,3 +2851,75 @@ def test_progress_seconds_zero_turns_the_line_off(monkeypatch, tmp_path):
     assert cli.main(["--milestones", _milestone_file(tmp_path)]) == 0
 
     assert [call["run_progress"] for call in calls] == [None, None]
+
+
+# --- the project root, named after the task (project_root.py) -----------------
+
+
+def _capture_run(monkeypatch, calls):
+    def _fake_run_task(task, cfg=None, project=None, **_kw):
+        calls["cfg"] = cfg
+        calls["project"] = project
+        return _fake_result()
+
+    monkeypatch.setattr(cli, "run_task", _fake_run_task)
+    monkeypatch.setattr(cli, "load_config", lambda: _cfg(projects_dir="./projects"))
+
+
+def test_in_a_workspace_a_task_gets_a_project_named_after_it(monkeypatch, tmp_path, capsys):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "projects" / "mazeman").mkdir(parents=True)
+    (tmp_path / "projects" / "mazeman" / "package.json").write_text("{}")
+    (tmp_path / "tasks").mkdir()
+    (tmp_path / "tasks" / "wordle.md").write_text("# Wordle\n\nA terminal Wordle game.")
+    calls = {}
+    _capture_run(monkeypatch, calls)
+
+    assert cli.main(["tasks/wordle.md"]) == 0
+
+    assert calls["project"] == "wordle"
+    assert os.path.realpath(calls["cfg"].workspace) == os.path.realpath(
+        tmp_path / "projects" / "wordle"
+    )
+    out = capsys.readouterr().out
+    assert "Project: ./projects/wordle, named after the task." in out
+
+
+def test_a_task_whose_folder_exists_gets_a_new_one(monkeypatch, tmp_path, capsys):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "projects" / "tower-hanoi").mkdir(parents=True)
+    calls = {}
+    _capture_run(monkeypatch, calls)
+
+    assert cli.main(["# Tower of Hanoi\nIn the terminal."]) == 0
+
+    assert calls["project"] == "tower-hanoi-2"
+    out = capsys.readouterr().out
+    assert (
+        "./projects/tower-hanoi already exists; --project tower-hanoi works on it instead." in out
+    )
+
+
+@pytest.mark.parametrize(
+    ("argv", "setup"),
+    [
+        (["do something", "--project", "mine"], "workspace"),  # a project given
+        (["do something"], "project"),  # the folder is a project itself
+        (["do something"], "no-projects"),  # not a Certo workspace
+    ],
+)
+def test_otherwise_the_folder_stays_as_it_was(monkeypatch, tmp_path, argv, setup):
+    monkeypatch.chdir(tmp_path)
+    if setup != "no-projects":
+        (tmp_path / "projects").mkdir()
+    if setup == "project":
+        (tmp_path / "pyproject.toml").write_text("[project]\nname='x'\n")
+    calls = {}
+    _capture_run(monkeypatch, calls)
+
+    assert cli.main(argv) == 0
+
+    expected = "mine" if "--project" in argv else None
+    assert calls["project"] == expected
+    if expected is None:
+        assert calls["cfg"].workspace == "."

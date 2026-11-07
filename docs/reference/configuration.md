@@ -60,7 +60,7 @@ enough for a local model that needs no key.
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `CERTO_WORKSPACE` | `.` | The folder the agent works in when `--project` is not given. |
+| `CERTO_WORKSPACE` | `.` | The folder the agent works in when `--project` is not given. In a Certo workspace (a folder with `projects/`), a new task gets `projects/<name>` instead, named after the task. |
 | `CERTO_PROJECTS_DIR` | `./projects` | The parent folder for `--project NAME`, which becomes `CERTO_PROJECTS_DIR/NAME`. |
 | `CERTO_NO_WORKTREE_WARNING` | `false` | `true` turns off the warning printed before the agent edits a folder with uncommitted changes, or a folder outside git. |
 | `CERTO_CONTEXT_WARN_TOKENS` | `32768` | Warn at the start of a run (and of each escalation rung) when the model's context window is smaller than this, in tokens. The run still starts. Certo knows the window when `CERTO_LLM_CONTEXT_TOKENS` or `context_tokens` sets it, or by asking Ollama; a cloud model's window isn't checked. `0` turns the warning off. Under 16,384 tokens the run is refused instead. See [Give the model a large enough context window](../guides/ollama-and-local-models.md#give-the-model-a-large-enough-context-window). |

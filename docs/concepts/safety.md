@@ -56,6 +56,10 @@ the first action is rejected and the task stops with
 - Acceptance check paths follow the same rule, inside the task's folder.
 - `--agents-md` needs `--project`, so it can't write into whatever folder
   you happen to be in.
+- In a Certo workspace (a folder with `projects/`, as `certo init` makes),
+  a task without `--project` gets its own `projects/<name>` folder, named
+  after the task, so the agent never starts in the folder that holds
+  every project.
 
 These rules decide which folder the agent *starts* in. They don't stop its
 commands from going elsewhere; see "What the agent can do".

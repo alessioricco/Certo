@@ -16,7 +16,10 @@ certo "Fix the failing test in payments.py"
 
 The agent works directly on the files in this folder. With no `--project`,
 Certo uses the folder you run it from (the `CERTO_WORKSPACE` setting,
-default `.`).
+default `.`). The one exception is a Certo workspace, the folder
+`certo init` makes, with a `projects/` folder in it: there a new task
+gets its own `projects/<name>` folder, named after the task (see
+[`certo`](../reference/commands.md#certo)).
 
 `--project NAME` is different: it puts the work in
 `CERTO_PROJECTS_DIR/NAME` (default `./projects/NAME`) and creates that

@@ -315,6 +315,14 @@ given design was chosen.
   `catalog_report.py` is `certo check`'s catalog part and `--models`.
   `model_pricing.py` holds `is_local`/`estimate_run_cost` (moved from
   `bench.py`). `bench_strategies.EscalateStrategy` is `strategy: escalate`.
+- **`project_root.py`** — the agent's root. `cli._project_from_task`:
+  without `--project`/`--resume`, when the cwd is a Certo workspace
+  (`is_certo_workspace`: `CERTO_PROJECTS_DIR` exists and `detect_project`
+  finds no project at the cwd itself), names a project after the task
+  (`project_name_for_task`: file/URL stem, Markdown title, first words;
+  deterministic) and re-resolves the config as if `--project` was given.
+  CLI only: MCP and the server take an explicit folder. `init` creates
+  the empty `projects/` so a new sample folder qualifies.
 - **`project_state.py`** + `certo --resume` — stdlib only. The CLI
   passes `save_state=True` (`CERTO_SAVE_STATE`, default on) to
   `stream_task`, which then builds the `Conversation` with

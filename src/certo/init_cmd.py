@@ -434,6 +434,9 @@ def write_workspace(folder: str, env_text: str | None, settings_file: str = "`.e
     """
     notes = []
     os.makedirs(os.path.join(folder, "tasks"), exist_ok=True)
+    # Empty for now: it marks FOLDER as a Certo workspace, where a task run
+    # without --project gets its own projects/<name> folder (project_root.py).
+    os.makedirs(os.path.join(folder, "projects"), exist_ok=True)
     if env_text is not None:
         _write_private(os.path.join(folder, ".env"), env_text)
     _merge_gitignore(

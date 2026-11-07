@@ -384,7 +384,12 @@ def test_all_projects_writes_the_user_file_and_a_sample_folder_without_env(
         assert stat.S_IMODE(os.stat(user).st_mode) == 0o600
     assert dotenv_values(user)["CERTO_LLM_API_KEY"] == SECRET
     folder = tmp_path / "w"
-    assert sorted(p.name for p in folder.iterdir()) == [".gitignore", "README.md", "tasks"]
+    assert sorted(p.name for p in folder.iterdir()) == [
+        ".gitignore",
+        "README.md",
+        "projects",
+        "tasks",
+    ]
     readme = (folder / "README.md").read_text()
     assert str(user) in readme
     assert "SETTINGS_FILE" not in readme
