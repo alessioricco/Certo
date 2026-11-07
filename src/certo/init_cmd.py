@@ -855,6 +855,15 @@ def init_main(
             file=out,
         )
 
+    # More models, in the same session. Only with settings for all projects:
+    # `certo init models` reads and writes the user settings file.
+    more_models = None
+    if ask and scope == USER_SCOPE and save and checked_ok is True:
+        try:
+            more_models = _offer_more_models(prompter, fetch_models)
+        except Cancelled:
+            more_models = None
+
     ran_sample = None
     if ask and samples and checked_ok is True and run_sample is not None:
         try:
@@ -867,6 +876,9 @@ def init_main(
         print(f"  cd {folder}", file=out)
     if checked_ok is not True:
         print("  certo check", file=out)
+    if not more_models:
+        print("  certo init models", file=out)
+        print("      more models and keys, for --auto-model and --escalate", file=out)
     if samples and not ran_sample:
         print("  certo tasks/wordle.md --project wordle", file=out)
         print("      builds the Wordle sample; every file in tasks/ works the same way", file=out)
@@ -923,6 +935,32 @@ SAMPLES = (
         "invaders.md", "invaders", "Invaders: a cannon against an alien fleet, in the browser", True
     ),
 )
+
+
+_MORE_MODELS = (
+    "No, one model is enough for now",
+    "Yes: add models and keys, then choose how Certo uses them",
+)
+
+
+def _offer_more_models(prompter: Prompter, fetch_models: Callable[[str], list[str]]) -> bool:
+    """Ask whether to set up more models now and, on yes, run `certo init
+    models`. True when it ended without an error and wrote models.yaml
+    (fewer than two models chosen writes nothing)."""
+    prompter.say(
+        "\nCerto can use more than one model: --auto-model picks one for each kind of\n"
+        "task, and --escalate starts with a cheap model and moves to a stronger one\n"
+        "when it can't finish. Your model above works on its own."
+    )
+    if prompter.choose("Set up more models now?", list(_MORE_MODELS)) == 0:
+        return False
+    from .init_models import init_models_main
+    from .model_catalog import MODELS_FILE
+
+    prompter.say()
+    code = init_models_main([], prompter=prompter, fetch_models=fetch_models, interactive=True)
+    written = os.path.join(os.path.dirname(user_settings_path()), MODELS_FILE)
+    return code == 0 and os.path.exists(written)
 
 
 def _offer_sample(

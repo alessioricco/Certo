@@ -1663,3 +1663,10 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   passing checks stop the climb. Over all four repeats both arms passed
   43/52. One effort per model stays; a hand-written ladder can still
   name the same model twice with two efforts.
+
+- **`certo init` offers more models, default No, only for all-projects
+  settings** (2026-11-07, 0.2.3). Users didn't find `certo init models`.
+  The default stays one model so the first run stays short. "This folder
+  only" isn't offered: `certo init models` reads and writes the user
+  settings file, and the new folder's `.env` isn't loaded from where
+  `init` runs.

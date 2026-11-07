@@ -364,7 +364,7 @@ def _active_lines(path):
 def test_all_projects_writes_the_user_file_and_a_sample_folder_without_env(
     tmp_path, monkeypatch, checks
 ):
-    script = Script(answers=["2", "", "", ""], secrets=[SECRET])
+    script = Script(answers=["2", "", "", "", ""], secrets=[SECRET])
 
     code, script = _run(tmp_path, monkeypatch, ["w"], script, local=False)
 
@@ -375,6 +375,7 @@ def test_all_projects_writes_the_user_file_and_a_sample_folder_without_env(
         "API key (hidden): ",
         "Choice [1]: ",
         "Create a folder with sample tasks to try? [Y/n]: ",
+        "Choice [1]: ",
     ]
     assert "Save these settings for:\n  1. All projects on this computer (recommended)\n" \
         "  2. This folder only\n" in script.text  # fmt: skip
@@ -395,7 +396,7 @@ def test_all_projects_writes_the_user_file_and_a_sample_folder_without_env(
 
 
 def test_all_projects_without_samples_creates_no_folder(tmp_path, monkeypatch, checks):
-    script = Script(answers=["2", "", "1", "n"], secrets=[SECRET])
+    script = Script(answers=["2", "", "1", "n", "1"], secrets=[SECRET])
 
     code, script = _run(tmp_path, monkeypatch, ["w"], script, local=False)
 
@@ -446,7 +447,7 @@ def test_an_existing_user_file_is_shown_without_its_key_and_kept_on_no(
 
 def test_an_existing_user_file_is_replaced_on_yes(tmp_path, monkeypatch, checks):
     user = _existing_user_file(tmp_path)
-    script = Script(answers=["3", "", "1", "y", "n"], secrets=["other-key"])
+    script = Script(answers=["3", "", "1", "y", "n", "1"], secrets=["other-key"])
 
     code, _ = _run(tmp_path, monkeypatch, ["w"], script, local=False)
 
@@ -1552,3 +1553,92 @@ def test_run_check_failure_still_shows_details(monkeypatch):
     assert "Ollama 0.5.7" in text
     assert "8,192" in text
     assert "can't use this model as configured" in text
+
+
+# --- more models, after a passing check ---------------------------------------
+
+
+def test_one_model_is_the_default_and_next_names_init_models(tmp_path, monkeypatch, checks):
+    script = Script(answers=["2", "", "1", "n", ""], secrets=[SECRET])
+
+    code, script = _run(tmp_path, monkeypatch, ["w"], script, local=False)
+
+    assert code == 0
+    assert "Set up more models now?\n  1. No, one model is enough for now\n" in script.text
+    next_steps = script.text.split("Next:", 1)[1]
+    assert "  certo init models\n      more models and keys" in next_steps
+
+
+def test_yes_runs_init_models_in_the_same_session(tmp_path, monkeypatch, checks):
+    from certo import init_models
+
+    seen = []
+
+    def fake(argv, *, prompter, fetch_models, interactive):
+        seen.append((argv, interactive, os.path.exists(_user_file(tmp_path))))
+        (_user_file(tmp_path).parent / "models.yaml").write_text("models: {}\n")
+        return 0
+
+    monkeypatch.setattr(init_models, "init_models_main", fake)
+    script = Script(answers=["2", "", "1", "n", "2"], secrets=[SECRET])
+
+    code, script = _run(tmp_path, monkeypatch, ["w"], script, local=False)
+
+    assert code == 0
+    # Run after the user settings file is written, which it reads.
+    assert seen == [([], True, True)]
+    assert "certo init models" not in script.text.split("Next:", 1)[1]
+
+
+def test_a_failed_init_models_keeps_it_in_next(tmp_path, monkeypatch, checks):
+    from certo import init_models
+
+    monkeypatch.setattr(init_models, "init_models_main", lambda *a, **k: 1)
+    script = Script(answers=["2", "", "1", "n", "2"], secrets=[SECRET])
+
+    code, script = _run(tmp_path, monkeypatch, ["w"], script, local=False)
+
+    assert code == 0
+    assert "  certo init models\n" in script.text.split("Next:", 1)[1]
+
+
+def test_more_models_are_not_offered_for_this_folder_only(tmp_path, monkeypatch, checks):
+    script = Script(answers=["2", "", "2"], secrets=[SECRET])
+
+    code, script = _run(tmp_path, monkeypatch, ["w"], script, local=False)
+
+    assert code == 0
+    assert "Set up more models now?" not in script.text
+    assert "  certo init models\n" in script.text.split("Next:", 1)[1]
+
+
+def test_more_models_are_not_offered_when_the_check_failed(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        init_cmd, "check_tool_calling", lambda cfg, **_k: _result("authentication", "bad key")
+    )
+    script = Script(answers=["2", "", "1", "n"], secrets=[SECRET])
+
+    code, script = _run(tmp_path, monkeypatch, ["w"], script, local=False)
+
+    assert "Set up more models now?" not in script.text
+
+
+def test_yes_starts_init_models_from_the_model_just_saved(tmp_path, monkeypatch, checks):
+    from certo import init_models
+
+    # init models loads the settings into os.environ: restore them after.
+    for name in ("CERTO_LLM_MODEL", "CERTO_LLM_API_KEY", "CERTO_LLM_BASE_URL", "ANTHROPIC_API_KEY"):
+        monkeypatch.setenv(name, "")
+    monkeypatch.setattr(init_models, "check_tool_calling", lambda *a, **k: pytest.fail("no test"))
+    # Yes, then end the model checklist with only the saved model.
+    script = Script(answers=["2", "", "1", "n", "2", ""], secrets=[SECRET])
+
+    code, script = _run(tmp_path, monkeypatch, ["w"], script, local=False)
+
+    assert code == 0
+    assert "  Your model\n" in script.text
+    assert "[x] claude-sonnet-5-5  already set up" in script.text
+    assert "Your single model works as it is." in script.text
+    assert SECRET not in script.text
+    # Nothing was written, so Next still names it.
+    assert "  certo init models\n" in script.text.split("Next:", 1)[1]

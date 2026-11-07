@@ -40,6 +40,13 @@ exactly as before. To compare it with `--auto-model`, see
 
 ## Set up a ladder
 
+**The quick way:** answer Yes when `certo init` asks "Set up more models
+now?", or run `certo init models` at any time. It sets up your models and
+keys, tests each one, shows how `--escalate` would climb, and asks whether
+to escalate on every run. See
+[the reference](../reference/commands.md#certo-init-models). The rest of
+this section is for when you want your own ladders.
+
 Escalation uses three model files (see
 [The model files](../reference/models-yaml.md)):
 `models_list.yaml` describes the models; `models.yaml` holds your keys and

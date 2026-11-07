@@ -10,7 +10,8 @@ extra model call.
 
 ## 1. Create the model files
 
-**The quick way:** run `certo init models`. It offers the models this
+**The quick way:** answer Yes when `certo init` asks "Set up more models
+now?", or run `certo init models` at any time. It offers the models this
 computer can reach, tests each one, writes the files below and asks
 whether to use `--auto-model` for every run. See
 [the reference](../reference/commands.md#certo-init-models). The rest of

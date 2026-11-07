@@ -210,6 +210,13 @@ cut that first run's output from 2,949 lines to 1,021.)
   that path. Measured 2026-10-19 in an empty home folder: 88.5s from
   `uv tool install` to `verified` (`docs/benchmark/first-run-0.1.19.md`).
   Still to do: a truly clean machine (no Python, no uv).
+- **One menu at the start of `certo init` for one or several models?**
+  (Author's request, 2026-11-07.) 0.2.3 asks "Set up more models now?"
+  after a passing check and runs `certo init models` on yes. If users
+  still miss it: ask "one model / several" first, and explain the three
+  modes (one model, `--auto-model`, `--escalate`) in plain words, with
+  what each costs. Also open: offering it with "This folder only".
+  Done when a new user reaches the mode choice without reading the docs.
 - **GitHub Action**: an issue labelled `certo` becomes a pull request with
   the verdict and checks in its description.
 - **Docs articles still to write** (ideas from 2026-10-18):

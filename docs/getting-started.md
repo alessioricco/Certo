@@ -100,6 +100,21 @@ Checking the model openai/gpt-6.1-sol... ok: reachable, tool calling works.
 It also creates `certo-workspace/`, with five sample tasks in `tasks/` and
 a `README.md` with these next steps.
 
+When the check passed and the settings are for all projects, `init` then
+asks whether to set up more models:
+
+```text
+Set up more models now?
+▸  1. No, one model is enough for now
+   2. Yes: add models and keys, then choose how Certo uses them
+```
+
+One model is all you need to start, so the default is No. Yes runs
+[`certo init models`](reference/commands.md#certo-init-models) at once:
+you pick more models, add keys for other providers, and choose to use one
+model, `--auto-model` or `--escalate` for every run. You can also run it
+later.
+
 ## 3. Check the model: `certo check`
 
 You can run the same model check at any time, from any folder:

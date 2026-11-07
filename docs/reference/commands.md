@@ -165,7 +165,8 @@ folder gets no `.env`, and a folder that already has files is skipped.
 
 **Questions**, on a terminal: provider; model; API key (hidden), or the
 Ollama address and installed model (or another model, typed); where to
-save; whether to create the sample folder. The choices are arrow-key
+save; whether to create the sample folder; whether to set up more models
+(see below). The choices are arrow-key
 menus (↑↓ and Enter). Without a full terminal (output piped, or
 `TERM=dumb`), the same questions are numbered, and you type the number. If you already have a user settings file, `init` shows its
 provider and model (never the key) and asks before replacing it. Nothing
@@ -185,6 +186,14 @@ quality depends on the model. It is never offered with `--yes` or
 `--no-check`. Under "Next", `init` then prints the command for the Wordle
 sample (unless a sample ran) and an example for a project of your own:
 `certo "A command-line to-do list in Python, with tests" --project todo`.
+
+**More models.** On a terminal, when the settings are for all projects and
+the model check passed, `init` asks "Set up more models now?" before the
+sample menu. The default is No. Yes runs
+[`certo init models`](#certo-init-models) in the same session, starting
+from the model just saved. It is not asked with "This folder only",
+`--yes` or `--no-check`. Under "Next", `init` lists `certo init models`
+unless that run wrote a `models.yaml`.
 
 **Without a terminal** and without `--provider`, `--model` or `--yes`,
 `init` asks nothing and writes `FOLDER/.env` with every provider commented
