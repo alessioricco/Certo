@@ -137,8 +137,9 @@ block, say) is refused before any model call. Text, URLs and files with
 a single heading run as one task, as before.
 
 `certo init` puts three bigger samples in `tasks/`, each written in 4 or
-5 milestones. They aren't in the menu at the end of `init`, and haven't
-been measured yet:
+5 milestones. They aren't in the menu at the end of `init`. Their first
+runs, on Claude Haiku 5.5, verified every milestone, for $0.34 to $1.11
+each ([the record](../benchmark/milestone-samples-0.2.3.md)):
 
 - `sky-hopper.md`: a side-scrolling platform game with a camera and
   three parallax layers, in the browser;
