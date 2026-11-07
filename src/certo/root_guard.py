@@ -75,6 +75,27 @@ _SEPARATORS = {";", "&&", "||", "|", "&"}
 _REDIRECT = re.compile(r"^\d*[<>]+&?")
 
 
+_HEREDOC = re.compile(r"<<(-?)\s*(['\"]?)([A-Za-z_][A-Za-z0-9_]*)\2")
+
+
+def without_heredoc_bodies(command: str) -> str:
+    """`command` without the lines of its here-documents (`cat > f <<'EOF'`
+    ... `EOF`): they are a file's content, not words of the command. Read as
+    words, a Go comment (`// Package api`) was the path `/`: 8 of the 11
+    actions blocked in the 0.2.3 cloud benchmark."""
+    kept: list[str] = []
+    waiting: list[tuple[str, bool]] = []  # (delimiter, tabs allowed before it)
+    for line in command.split("\n"):
+        if waiting:
+            delimiter, dash = waiting[0]
+            if (line.lstrip("\t") if dash else line) == delimiter:
+                waiting.pop(0)
+            continue
+        kept.append(line)
+        waiting = [(m.group(3), m.group(1) == "-") for m in _HEREDOC.finditer(line)]
+    return "\n".join(kept)
+
+
 def _inside(path: str, folder: str) -> bool:
     try:
         return os.path.commonpath([path, folder]) == folder
@@ -131,6 +152,7 @@ class RootGuard:
         return None
 
     def check_command(self, command: str) -> str | None:
+        command = without_heredoc_bodies(command)
         # punctuation_chars: `;`, `&&`, `|` and redirections are words of
         # their own, so `cd;` is `cd` then `;`.
         lexer = shlex.shlex(command, posix=True, punctuation_chars=True)

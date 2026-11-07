@@ -186,3 +186,25 @@ def test_the_terminals_folder_follows_its_observations(layout):
     )
 
     assert guard.cwd == os.path.realpath(layout / "src")
+
+
+@posix_only
+@pytest.mark.parametrize(
+    "command",
+    [
+        # Seen in the 0.2.3 cloud benchmark: a file's content is not a path.
+        "cat > api/api.go <<'EOF'\n// Package api is the API.\npackage api\nEOF",
+        'cat >> tests/test_money.py <<"EOF"\nassert 1 / 2\nx = "/"\nEOF\npytest -q',
+        "cat <<EOF > notes.txt\nsee ../other and ~/secrets\nEOF",
+        "cat <<-END > a.sh\n\tcd /\n\tEND\nbash a.sh",
+    ],
+)
+def test_heredoc_bodies_are_content_not_paths(layout, command):
+    assert _guard(layout).check(_run(command)) is None
+
+
+@posix_only
+def test_the_command_around_a_heredoc_is_still_checked(layout):
+    command = "cat > f.txt <<'EOF'\nhello\nEOF\nls ../other"
+
+    assert "is outside the project root" in _guard(layout).check(_run(command))
