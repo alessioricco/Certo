@@ -1,7 +1,5 @@
 # Certo v0.2.2
 
-Not released yet.
-
 This release shows more while a run goes, and measures whether a lower
 reasoning effort first saves time without hurting results:
 
