@@ -230,6 +230,10 @@ class Config:
     # CERTO_PROGRESS_SECONDS: how often a terminal run prints its progress
     # line while the agent works (run_progress.py); 0 turns the line off.
     progress_seconds: int = 120
+    # CERTO_TRUSTED_SKILLS_TOKENS: how much of the system prompt skills
+    # from trusted repositories (skill_match.skills_for_run) may take in a
+    # run, in rough tokens; 0 turns them off.
+    trusted_skills_tokens: int = 4000
 
     # Deterministic auto model selection (see model_catalog.py/
     # model_selection.py). Default ("manual") is byte-for-byte the
@@ -694,6 +698,7 @@ def load_config(
     )
     verbose = _parse_bool(env, "VERBOSE", default=False)
     progress_seconds = _parse_nonnegative_int(env, "PROGRESS_SECONDS", default=120)
+    trusted_skills_tokens = _parse_nonnegative_int(env, "TRUSTED_SKILLS_TOKENS", default=4000)
     independent_tests_strict = _parse_bool(env, "INDEPENDENT_TESTS_STRICT", default=False)
     independent_tests = (
         _parse_bool(env, "INDEPENDENT_TESTS", default=False) or independent_tests_strict
@@ -776,6 +781,7 @@ def load_config(
         tool_call_reminders=tool_call_reminders,
         verbose=verbose,
         progress_seconds=progress_seconds,
+        trusted_skills_tokens=trusted_skills_tokens,
         model_selection=model_selection,
         models_file=models_file,
         models_list_file=models_list_file,

@@ -1702,3 +1702,15 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   come later, recorded in the index, and the run-time choice stays
   rule-based ("No LLM-based router" holds). Each scope (global, project)
   has its own sources file and index; the project's wins at run time.
+
+- **A run adds fitting trusted skills whole, as always-on context, within
+  a token budget** (2026-11-07). The skills `skill_match` picks are added
+  as copies with no trigger, so the SDK puts their content in the system
+  prompt for that run; the skill's own trigger alone would often never
+  fire (a `uv` skill picked for a project's `uv.lock`). Picked per run and
+  per milestone, so "the best skill for the step" is per step. Names a
+  run already has win; slash-command skills come in only when the task
+  names the command (their authors meant them to be asked for); the
+  total is capped by `CERTO_TRUSTED_SKILLS_TOKENS` (4000 by default, a
+  guess until the benchmark; 0 turns it off) so a 32K local model keeps
+  its context. `suggest` shows the very same choice.

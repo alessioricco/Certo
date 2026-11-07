@@ -152,6 +152,15 @@ the ones in your user folders, or in a repository around a generated
 project, into every run. Certo checks before a run and doesn't start if
 it finds one. See [OpenHands plugins](../guides/manage-skills.md#openhands-plugins).
 
+**Trusted repositories.** A repository you list in `skill_sources.yaml`
+is your trust in it. `certo skills assess` checks its skills with the
+same rules, and a run may add a skill rated `usable` with no `enable`:
+one with a recognised license, no scripts, no inline snippets, no
+`.mcp.json`, at most 8,000 tokens. Skills that need review are never
+added. A run reads only the copies `assess` kept, and only while their
+files match the recorded hash; each skill added is named before the run
+starts. See [Trust a whole repository](../guides/manage-skills.md#trust-a-whole-repository).
+
 A skill you add from a file or folder is on at once: you chose it. Its
 `.mcp.json` is still ignored and its inline snippets still turned into
 text, as for a downloaded one. Third-party skills live in

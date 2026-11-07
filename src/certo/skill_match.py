@@ -35,6 +35,7 @@ import fnmatch
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 from openhands.sdk.skills import KeywordTrigger, PathTrigger, Skill, TaskTrigger
 from openhands.sdk.skills.utils import find_skill_md
@@ -64,6 +65,7 @@ class Fit:
     score: int
     reasons: list[str] = field(default_factory=list)
     fires_alone: str | None = None  # why a run would load it from the task alone
+    skill: Skill | None = None  # the kept copy, checked against its hash
 
 
 @dataclass
@@ -184,7 +186,7 @@ def _fit(
         reasons.append(f"about {', '.join(shared_steps)}")
     if score < MIN_SCORE:
         return None
-    return Fit(entry, scope, score, reasons, fires_alone)
+    return Fit(entry, scope, score, reasons, fires_alone, skill)
 
 
 def suggest(scopes: list[tuple[str, Path]], workspace: Path | None, task: str = "") -> Suggestions:
@@ -198,6 +200,9 @@ def suggest(scopes: list[tuple[str, Path]], workspace: Path | None, task: str = 
             indexed += 1
             if entry.verdict != assessing.REJECTED:
                 by_name[entry.name] = (scope, skills_dir, entry)
+    if not by_name:
+        # Nothing assessed (most runs): don't walk the project at all.
+        return Suggestions([], [], [], [], indexed)
     files = project_files(workspace) if workspace is not None and workspace.is_dir() else []
     ecosystems = (
         project_ecosystems(workspace, files, task)
@@ -219,3 +224,58 @@ def suggest(scopes: list[tuple[str, Path]], workspace: Path | None, task: str = 
     return Suggestions(
         sorted(fits, key=order), sorted(after_review, key=order), ecosystems, steps, indexed
     )
+
+
+@dataclass
+class RunSkills:
+    """The trusted skills a run gets, one line about each, and why the other
+    fits are left out (`certo skills suggest` shows it)."""
+
+    skills: list[Skill]
+    notices: list[str]
+    left_out: dict[str, str] = field(default_factory=dict)
+    found: Suggestions | None = None
+
+
+def skills_for_run(cfg: Any, task: str) -> RunSkills:
+    """The usable trusted skills that fit this run's folder and task, as
+    always-on context, best first, within `cfg.trusted_skills_tokens`.
+
+    A skill whose name a run already has (official, yours, the project's
+    own) is left out: those win. So is a slash-command skill whose command
+    isn't in the task: its author meant it to be asked for by name. Each
+    one added is a copy with no trigger, so the SDK puts its whole content
+    in the system prompt for this run (`AgentContext._partition_skills`,
+    SDK 1.47)."""
+    workspace = Path(cfg.workspace)
+    global_root = Path(cfg.global_skills_dir) if cfg.global_skills_dir else lib.global_dir()
+    scopes = [("global", global_root), ("project", lib.project_dir(workspace))]
+    found = suggest(scopes, workspace, task)
+    picked = RunSkills([], [], found=found)
+    if not found.fits:
+        return picked
+    taken = {row.name for row in lib.collect(cfg, workspace).rows if row.skill is not None}
+    budget = cfg.trusted_skills_tokens
+    for fit in found.fits:
+        name = fit.entry.name
+        if budget <= 0 and cfg.trusted_skills_tokens <= 0:
+            picked.left_out[name] = "CERTO_TRUSTED_SKILLS_TOKENS is 0"
+        elif fit.skill is None:
+            picked.left_out[name] = "its files changed since assess"
+        elif name in taken:
+            picked.left_out[name] = "the run already has a skill of that name"
+        elif fit.entry.fires_kind == "slash command" and fit.fires_alone is None:
+            command = fit.entry.fires.rsplit(": ", 1)[-1]
+            picked.left_out[name] = f"only when the task says {command}"
+        elif fit.entry.tokens > budget:
+            picked.left_out[name] = "over the CERTO_TRUSTED_SKILLS_TOKENS budget"
+        else:
+            budget -= fit.entry.tokens
+            picked.skills.append(
+                fit.skill.model_copy(update={"trigger": None, "is_agentskills_format": False})
+            )
+            picked.notices.append(
+                f"Certo: added the trusted skill '{name}' ({fit.entry.repo}, "
+                f"about {fit.entry.tokens:,} tokens): {', '.join(fit.reasons)}."
+            )
+    return picked

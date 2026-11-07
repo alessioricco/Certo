@@ -496,8 +496,8 @@ their hash, in the skills folder's `.trusted/` folder, next to
 `index.json`, the result. Assessing again replaces both. Exit 1 when a
 repository couldn't be downloaded.
 
-Runs don't use these skills yet: for now `assess` shows what your
-trusted repositories hold, and `certo skills suggest` which of them fit.
+A run then adds the usable skills that fit its project and task (see
+[`certo skills suggest`](#certo-skills-suggest)).
 
 ### `certo skills suggest`
 
@@ -535,8 +535,28 @@ Three rules leave a skill out:
 - it is an integration (Slack, Jira, Kubernetes...), and the task doesn't
   name the service.
 
-Usable skills are listed best first, with how each would come into a run.
-Skills that fit but need review are listed apart, with the reasons.
+Usable skills are listed best first, each with what a run in that
+folder would do with it: `a run adds it`, or `a run leaves it out` and
+why. Skills that fit but need review are listed apart, with the reasons;
+a run leaves them out.
+
+**In a run.** At the start of each run (each milestone, with
+`--milestones`, and each escalation run), Certo makes the same choice
+for the run's folder and task, and adds the skills whole to the agent's
+instructions for that run, best first, until
+`CERTO_TRUSTED_SKILLS_TOKENS` (default 4000) is used up. It leaves out:
+
+- a skill whose name the run already has (an official skill, one of
+  yours, or the project's own): those win;
+- a slash-command skill whose command isn't in the task: its author
+  meant it to be asked for by name;
+- a skill larger than what is left of the budget.
+
+Each skill added is said before the run starts:
+
+```text
+Certo: added the trusted skill 'uv' (github:OpenHands/extensions, about 591 tokens): the task says "uv", for python.
+```
 
 ## `certo check`
 

@@ -347,7 +347,13 @@ given design was chosen.
   fit of the indexes (global, then project) to a project's files
   (`project_files`, dependency folders skipped) and a task; reads a kept
   copy only when `compute_integrity` still equals the index's hash.
-  `certo skills suggest` prints it; step 4 is meant to reuse `suggest`.
+  `skills_for_run` (runner `_trusted_skills`, once per `_stream_task` and
+  per `_stream_escalation`, before the workspace) turns the fits into
+  copies with `trigger=None, is_agentskills_format=False`: the SDK 1.47
+  `AgentContext._partition_skills` puts such a skill's whole content in
+  REPO_CONTEXT. Passed to `build_agent(trusted_skills=...)` after the
+  layered skills. `certo skills suggest` calls the same function, so it
+  shows a run's exact choice and `left_out` reasons.
 - **`project_state.py`** + `certo --resume` — stdlib only. The CLI
   passes `save_state=True` (`CERTO_SAVE_STATE`, default on) to
   `stream_task`, which then builds the `Conversation` with

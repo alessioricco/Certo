@@ -18,6 +18,7 @@ skills of the trusted repositories in `skill_sources.yaml`
 from __future__ import annotations
 
 import argparse
+from dataclasses import replace
 import shutil
 import sys
 from pathlib import Path
@@ -28,7 +29,7 @@ from openhands.sdk.skills.utils import find_skill_md
 from . import skill_assess as assessing
 from . import skill_library as lib
 from . import third_party_skills as tps
-from .skill_match import Fit, suggest
+from .skill_match import skills_for_run
 from .skill_sources import EXAMPLE, SourcesError, read_sources, sources_path
 from .config import ConfigError, defer_llm_check, load_config, resolve_project_dir
 from .init_cmd import Cancelled, Prompter
@@ -526,7 +527,8 @@ def _assess(root: Path, scope: str, prompter: Prompter) -> int:
         f"Saved in {lib.describe_dir(assessing.trusted_dir(root))}: "
         f"{result.count(assessing.USABLE)} usable, "
         f"{result.count(assessing.NEEDS_REVIEW)} to review, "
-        f"{result.count(assessing.REJECTED)} rejected. Runs don't use them yet."
+        f"{result.count(assessing.REJECTED)} rejected. A run adds the usable ones that fit "
+        "its project and task; certo skills suggest shows which."
     )
     return 1 if failed else 0
 
@@ -549,9 +551,10 @@ def _suggest(cfg, args: argparse.Namespace, prompter: Prompter) -> int:
     task = args.task
     if task and Path(task).is_file():
         task = Path(task).read_text(encoding="utf-8")
-    scopes = [("global", lib.global_dir()), ("project", lib.project_dir(workspace))]
-    found = suggest(scopes, workspace, task)
-    if found.indexed == 0:
+    # The same choice a run in this folder makes (skill_match.skills_for_run).
+    picked = skills_for_run(replace(cfg, workspace=str(workspace)), task)
+    found = picked.found
+    if found is None or found.indexed == 0:
         raise SkillsError(
             "No assessed skills yet. List the repositories you trust in "
             "skill_sources.yaml, then run: certo skills assess --global"
@@ -568,27 +571,17 @@ def _suggest(cfg, args: argparse.Namespace, prompter: Prompter) -> int:
     else:
         prompter.say("Usable skills that fit, best first:")
         for fit in found.fits[: args.limit]:
-            prompter.say(f"  {_fit_line(fit)}")
+            why_not = picked.left_out.get(fit.entry.name)
+            run = f"a run leaves it out: {why_not}" if why_not else "a run adds it"
+            prompter.say(
+                f"  {fit.entry.name} ({fit.scope}, about {fit.entry.tokens:,} tokens): "
+                f"{', '.join(fit.reasons)}; {run}"
+            )
         if len(found.fits) > args.limit:
             prompter.say(f"  ... and {len(found.fits) - args.limit} more (--limit).")
     if found.after_review:
-        prompter.say("Would fit once reviewed:")
+        prompter.say("Would fit once reviewed (a run leaves them out):")
         for fit in found.after_review[: args.limit]:
             reasons = "; ".join(fit.entry.reasons)
             prompter.say(f"  {fit.entry.name}: {', '.join(fit.reasons)}. Review: {reasons}")
-    prompter.say("Runs don't load these skills yet.")
     return 0
-
-
-def _fit_line(fit: Fit) -> str:
-    entry = fit.entry
-    if fit.fires_alone:
-        how = "it fires on its own"
-    elif entry.fires_kind == "on request":
-        how = "the agent would see it listed and may ask for it"
-    else:
-        how = f"it fires {entry.fires}"
-    return (
-        f"{entry.name} ({fit.scope}, about {entry.tokens:,} tokens): "
-        f"{', '.join(fit.reasons)}; {how}"
-    )

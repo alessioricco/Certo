@@ -14,8 +14,8 @@ up more than one model:
   `certo init models` at once.
 - **Trusted skill repositories (first step).** List the repositories you
   trust in `skill_sources.yaml`; `certo skills assess` checks and
-  classifies every skill in them, and `certo skills suggest` shows which
-  fit a project and a task.
+  classifies every skill in them; a run adds the ones that fit its
+  project and task, and `certo skills suggest` shows which.
 - **`certo --help` lists every command**, each in its own section.
 
 ## New: the agent stays in its project root
@@ -95,7 +95,16 @@ and a task, best first, each with its reasons (`the task says "uv"`,
 links, or the skill's own trigger, so a Node skill doesn't fit every
 Node project. It installs nothing.
 
-Runs don't use these skills yet; that is the next step. See
+A run then adds the usable skills that fit its project and task, whole,
+up to `CERTO_TRUSTED_SKILLS_TOKENS` (default 4000; `0` turns them off),
+and says which before it starts:
+
+```text
+Certo: added the trusted skill 'uv' (github:OpenHands/extensions, about 591 tokens): the task says "uv", for python.
+```
+
+Official skills, yours and the project's own win over a trusted skill of
+the same name. No benchmark yet shows whether these skills help. See
 [Trust a whole repository](../guides/manage-skills.md#trust-a-whole-repository).
 
 ## Also

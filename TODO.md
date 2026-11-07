@@ -350,15 +350,20 @@ from a trusted repo with no `add`/`enable`, and the benchmark shows no
 loss. Docs: `manage-skills.md`, `reference/commands.md`,
 `concepts/safety.md`.
 
-*Progress:* steps 1-3 done (0.2.3: `skill_sources.yaml`,
+*Progress:* steps 1-4 done (0.2.3: `skill_sources.yaml`,
 `certo skills assess`, index in `<skills folder>/.trusted/`;
-`certo skills suggest`, `skill_match.py`); both decisions settled
-(DECISIONS.md). On `OpenHands/extensions` (2026-11-07): 73 skills, 52
-usable, 15 to review, 6 rejected (links outside their folder). Matching
-needed two links or the skill's own trigger: one link alone suggested
-`npm`/`deno` for every Node project. Against Certo's own tasks the repo
-has little for building apps (`frontend-design` names only an
-ecosystem). Next is step 4, reusing `skill_match.suggest`.
+`certo skills suggest` and `skill_match.py`; runs add the fits as
+always-on context within `CERTO_TRUSTED_SKILLS_TOKENS`, default 4000).
+Both decisions settled (DECISIONS.md). On `OpenHands/extensions`
+(2026-11-07): 73 skills, 52 usable, 15 to review, 6 rejected (links
+outside their folder). Matching needed two links or the skill's own
+trigger: one link alone suggested `npm`/`deno` for every Node project.
+The repo has little for building apps (`frontend-design` names only an
+ecosystem), so better sources matter as much as the matching. One live
+Haiku run (`docs/benchmark/trusted-skills-0.2.3.md`) shows a skill
+reaching a run, not that it helps. **Next: step 5**, a bench arm with
+`CERTO_TRUSTED_SKILLS_TOKENS=0` against the default, local and cloud,
+before the 0.2.3 release; also decide the default budget from it.
 
 ## Smaller bugs
 

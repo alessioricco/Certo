@@ -290,7 +290,14 @@ github:OpenHands/extensions (skills) at 210f2c08fbf5: 73 skills (52 usable, 15 n
 A repository in your list is your trust: its `usable` skills will need no
 `certo skills enable`. Skills to review still need your look first.
 
-Then see which of them fit a project and a task:
+A run then adds the usable skills that fit its project and task, and
+says which before it starts:
+
+```text
+Certo: added the trusted skill 'uv' (github:OpenHands/extensions, about 591 tokens): the task says "uv", for python.
+```
+
+To see which fit a project and a task before a run:
 
 ```bash
 certo skills suggest --project my-api --task "Set up uv and add pytest tests"
@@ -298,25 +305,27 @@ certo skills suggest --project my-api --task "Set up uv and add pytest tests"
 
 It lists the usable skills that fit, best first, each with its reasons
 (`the task says "uv"`, `the project has uv.lock`, `for python`,
-`about testing`), and installs nothing. One link alone isn't enough: a
-skill made for Node doesn't fit a project only because it is a Node
-project. Matched against your own workspace on 2026-11-07, with the
-OpenHands skills assessed:
+`about testing`) and what a run would do with it. It installs nothing.
+One link alone isn't enough: a skill made for Node doesn't fit a project
+only because it is a Node project. A real example, on 2026-11-07:
 
 ```text
-=== Review this project's code for security problems and fix what you find.
+$ certo skills suggest --project crypto-dashboard --task "Review this project's code for security problems, then /qa-changes"
+Project /Users/alessioricco/Documents/GitHub/certo-workspace/projects/crypto-dashboard (node, web); steps in the task: testing, review, security.
 Usable skills that fit, best first:
-  security (global, about 261 tokens): the task says "security", about review, security; it fires on its own
-=== Write a Javadoc for the Java classes
-Usable skills that fit, best first:
-  add-javadoc (global, about 212 tokens): the task says "javadoc", for java; it fires on its own
+  security (global, about 261 tokens): the task says "security", about review, security; a run adds it
+  qa-changes (global, about 4,190 tokens): the task says "/qa-changes", about testing; a run leaves it out: over the CERTO_TRUSTED_SKILLS_TOKENS budget
 ```
 
-> **Not used by runs yet.** For now `assess` and `suggest` only show what
-> your trusted repositories hold and what fits. Using them in runs comes
-> next. Every rule is in
-> [`certo skills assess`](../reference/commands.md#certo-skills-assess) and
-> [`certo skills suggest`](../reference/commands.md#certo-skills-suggest).
+`CERTO_TRUSTED_SKILLS_TOKENS` (default 4000) caps how much of the
+agent's instructions these skills may take, so a small local model keeps
+its context; `0` turns them off. Every rule is in
+[`certo skills assess`](../reference/commands.md#certo-skills-assess) and
+[`certo skills suggest`](../reference/commands.md#certo-skills-suggest).
+
+> **Not measured yet.** No benchmark has shown yet whether these skills
+> make results better or worse. Turn them off with
+> `CERTO_TRUSTED_SKILLS_TOKENS=0` to compare.
 
 ## The project's own skills
 

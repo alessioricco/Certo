@@ -3908,3 +3908,40 @@ def test_a_blocked_action_is_said_as_a_certo_notice(tmp_path):
 
     assert runner.is_notice(said[0])
     assert said[0].content[0].text == "x is outside the project root"
+
+
+def test_trusted_skills_are_said_and_given_to_the_agent(monkeypatch, tmp_path):
+    from certo.skill_match import RunSkills
+
+    _stub_for_state_tests(monkeypatch)
+    seen = {}
+    monkeypatch.setattr(
+        runner,
+        "build_agent",
+        lambda cfg, **kw: seen.setdefault("trusted", kw.get("trusted_skills")) or "fake-agent",
+    )
+    monkeypatch.setattr(
+        runner,
+        "skills_for_run",
+        lambda cfg, task: RunSkills(["a-skill"], ["Certo: added the trusted skill 'uv' (...)."]),
+    )
+    notices: list = []
+    monkeypatch.setattr(runner, "_emit_notice", lambda _emit, text: notices.append(text))
+    monkeypatch.setattr(runner, "_run_stream_task_phases", lambda *a, **k: _verified_outcome())
+
+    runner.stream_task("Set up uv", cfg=_cfg(workspace=str(tmp_path)))
+
+    assert seen["trusted"] == ["a-skill"]
+    assert "Certo: added the trusted skill 'uv' (...)." in notices
+
+
+def test_a_broken_trusted_index_never_stops_a_run(monkeypatch, tmp_path):
+    def broken(cfg, task):
+        raise ValueError("index.json: bad")
+
+    monkeypatch.setattr(runner, "skills_for_run", broken)
+    notices: list = []
+    monkeypatch.setattr(runner, "_emit_notice", lambda _emit, text: notices.append(text))
+
+    assert runner._trusted_skills(_cfg(workspace=str(tmp_path)), "t", lambda _m: None) == []
+    assert notices == ["Certo: trusted skills skipped: index.json: bad"]

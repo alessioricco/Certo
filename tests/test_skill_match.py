@@ -182,18 +182,29 @@ def _cli(tmp_path, monkeypatch, argv):
     return code, out.getvalue()
 
 
-def test_suggest_prints_the_fits_and_their_reasons(tmp_path, monkeypatch, config):
+def test_suggest_prints_the_fits_and_what_a_run_does(tmp_path, monkeypatch, config):
     code, out = _cli(tmp_path, monkeypatch, ["suggest", "--task", "Set up uv and add pytest tests"])
 
     assert code == 0
     assert "(python); steps in the task: setup, testing." in out
-    assert (
-        "uv (global, about " in out and 'the task says "uv"' in out and "it fires on its own" in out
-    )
+    assert "uv (global, about " in out and 'the task says "uv"' in out
+    assert "; a run adds it" in out
     assert "pytest-style (global, about" in out
-    assert "the agent would see it listed and may ask for it" in out
-    assert "Would fit once reviewed:\n  py-runner:" in out
-    assert out.rstrip().endswith("Runs don't load these skills yet.")
+    assert "Would fit once reviewed (a run leaves them out):\n  py-runner:" in out
+
+
+def test_suggest_says_why_a_run_leaves_a_fit_out(tmp_path, monkeypatch, config):
+    monkeypatch.chdir(tmp_path)
+    node = _node_project(tmp_path)
+    monkeypatch.chdir(node)
+    out = io.StringIO()
+    code = skills_main(
+        ["suggest", "--task", "Review the changes"], prompter=Prompter(out=out), interactive=False
+    )
+
+    assert code == 0
+    assert "qa-node (global, about" in out.getvalue()
+    assert "a run leaves it out: only when the task says /qa-node" in out.getvalue()
 
 
 def test_suggest_before_any_assess_says_what_to_do(tmp_path, monkeypatch, capsys):
@@ -202,3 +213,99 @@ def test_suggest_before_any_assess_says_what_to_do(tmp_path, monkeypatch, capsys
 
     assert code == 1
     assert "No assessed skills yet" in capsys.readouterr().err
+
+
+# --- skills for a run ------------------------------------------------------------------
+
+
+def _node_project(tmp_path: Path) -> str:
+    folder = tmp_path / "node-app"
+    folder.mkdir(exist_ok=True)
+    (folder / "package.json").write_text("{}")
+    return str(folder)
+
+
+def _run_cfg(tmp_path, config, **overrides):
+    from certo.config import Config
+
+    base = dict(
+        model="openai/gpt-4o",
+        api_key="key",
+        base_url=None,
+        workspace=str(_project(tmp_path, "pyproject.toml")),
+        max_iterations=10,
+        confirm_mode="never",
+        execution="local",
+        global_skills_dir=str(config),
+    )
+    base.update(overrides)
+    return Config(**base)
+
+
+def test_a_run_gets_the_fitting_skills_as_always_on_context(tmp_path, config):
+    picked = matching.skills_for_run(_run_cfg(tmp_path, config), "Set up uv and add pytest tests")
+
+    names = [s.name for s in picked.skills]
+    assert names[0] == "uv"
+    assert "pytest-style" in names
+    for skill in picked.skills:
+        assert skill.trigger is None and not skill.is_agentskills_format
+    assert picked.notices[0].startswith(
+        "Certo: added the trusted skill 'uv' (github:acme/skills, about "
+    )
+    assert 'the task says "uv"' in picked.notices[0]
+
+
+def test_skills_to_review_and_unasked_slash_commands_stay_out(tmp_path, config):
+    cfg = _run_cfg(tmp_path, config, workspace=_node_project(tmp_path))
+
+    picked = matching.skills_for_run(cfg, "Review the changes and run the tests")
+
+    names = [s.name for s in picked.skills]
+    assert "qa-node" not in names  # fits, but its command, /qa-node, isn't in the task
+    assert "py-runner" not in names  # needs review
+
+
+def test_an_asked_slash_command_comes_in(tmp_path, config):
+    cfg = _run_cfg(tmp_path, config, workspace=_node_project(tmp_path))
+
+    assert [s.name for s in matching.skills_for_run(cfg, "/qa-node the changes").skills] == [
+        "qa-node"
+    ]
+
+
+def test_the_token_budget_bounds_what_comes_in(tmp_path, config):
+    cfg = _run_cfg(tmp_path, config, trusted_skills_tokens=1)
+
+    assert matching.skills_for_run(cfg, "Set up uv and add pytest tests").skills == []
+
+
+def test_zero_turns_trusted_skills_off(tmp_path, config):
+    cfg = _run_cfg(tmp_path, config, trusted_skills_tokens=0)
+
+    assert matching.skills_for_run(cfg, "Set up uv").skills == []
+
+
+def test_a_skill_name_the_run_already_has_wins(tmp_path, config):
+    cfg = _run_cfg(tmp_path, config)
+    own = Path(cfg.workspace) / ".agents" / "skills" / "uv"
+    own.mkdir(parents=True)
+    (own / "SKILL.md").write_text(
+        "---\nname: uv\ndescription: The project's own uv rules.\n---\nx\n"
+    )
+
+    picked = matching.skills_for_run(cfg, "Set up uv")
+
+    assert "uv" not in [s.name for s in picked.skills]
+
+
+def test_the_agent_gets_them_in_its_system_prompt(tmp_path, config):
+    from certo.agent import build_agent
+
+    cfg = _run_cfg(tmp_path, config)
+    picked = matching.skills_for_run(cfg, "Set up uv")
+
+    agent = build_agent(cfg, trusted_skills=picked.skills)
+
+    repo_skills, _listed = agent.agent_context._partition_skills()
+    assert "uv" in [s.name for s in repo_skills]

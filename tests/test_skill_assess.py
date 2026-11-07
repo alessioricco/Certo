@@ -253,4 +253,4 @@ def test_assess_prints_each_verdict(tmp_path, monkeypatch, fetch):
     )
     assert "pytest-helper (testing, python): fires when the task says: pytest; about" in out
     assert "deploy-bot (release, integration): fires when the task says: /deploy" in out
-    assert ": 1 usable, 1 to review, 1 rejected. Runs don't use them yet." in out
+    assert ": 1 usable, 1 to review, 1 rejected. A run adds the usable ones that fit" in out

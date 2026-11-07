@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import os
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 
 from openhands.sdk import LLM, Agent, AgentContext
+from openhands.sdk.skills import Skill
 from openhands.sdk.context.condenser import LLMSummarizingCondenser
 
 from .config import Config
@@ -223,6 +224,7 @@ def build_agent(
     usage_id: str = "certo",
     project_env: ProjectEnv | None = None,
     terminal_env: Mapping[str, str] | None = None,
+    trusted_skills: Sequence[Skill] = (),
 ) -> Agent:
     # usage_id is forwarded to build_llm() unchanged (default preserves the
     # single-model behavior everything used before). Auto model selection
@@ -255,7 +257,10 @@ def build_agent(
     # Official, then third-party (global, then this project's), one skill
     # per name: AgentContext rejects duplicate names (skill_library.py).
     # Minus the official ones a benchmark arm turned off.
+    # trusted_skills: the run's picks from trusted repositories
+    # (skill_match.skills_for_run), after every skill already named.
     skills = collect(cfg, cfg.workspace, own=False).without_official(cfg.skills_off)
+    skills += list(trusted_skills)
     agent_context = AgentContext(
         skills=skills,
         # Resolved lazily by the Conversation once the real workspace path is

@@ -32,6 +32,7 @@ from openhands.sdk import (
     TextContent,
 )
 from openhands.sdk.conversation import ConversationState
+from openhands.sdk.skills import Skill
 from openhands.sdk.conversation.exceptions import ConversationRunError
 from openhands.sdk.event import ActionEvent, Condensation, MessageEvent, ObservationEvent
 from openhands.sdk.event.conversation_error import ConversationErrorEvent
@@ -61,6 +62,7 @@ from .checkpoints import (
 )
 from .cost_limit import cost_limit, cost_limit_reached, pause_at_cost_limit, set_cost_limit
 from .root_guard import RootGuard
+from .skill_match import skills_for_run
 from .run_progress import RunProgress, attach_progress, checks_ran, fix_attempt, report_progress
 from .cancel import RunCancelled, cancel_token, raise_if_cancelled, stop_when_cancelled
 from .deadline import stop_at_deadline
@@ -324,6 +326,19 @@ class TaskResult(list):
     def __init__(self, messages, outcome: TaskOutcome) -> None:
         super().__init__(messages)
         self.outcome = outcome
+
+
+def _trusted_skills(cfg: Config, task: str, emit: Callable[[Message], None]) -> list[Skill]:
+    """The skills from trusted repositories that fit this run (skill_match.py),
+    each said in a notice. A broken index never stops a run."""
+    try:
+        picked = skills_for_run(cfg, task)
+    except (OSError, ValueError, TypeError, KeyError) as exc:
+        _emit_notice(emit, f"Certo: trusted skills skipped: {exc}")
+        return []
+    for line in picked.notices:
+        _emit_notice(emit, line)
+    return picked.skills
 
 
 def _root_guard(cfg: Config, emit: Callable[[Message], None]) -> RootGuard | None:
@@ -1861,6 +1876,7 @@ def _stream_task(
     written = _write_independent_tests(task, agent_cfg, cfg, emit, resuming=resume_from is not None)
     _checkpoint(cfg, "before the resumed run" if resume_from is not None else "before the agent")
 
+    trusted = _trusted_skills(cfg, task, emit)
     with build_workspace(cfg) as workspace:
         runner = _command_runner(cfg, workspace)
         project_env = _prepare_agent_env(task, cfg, runner, emit)
@@ -1875,6 +1891,7 @@ def _stream_task(
                     usage_id=agent_usage_id,
                     project_env=project_env,
                     terminal_env=terminal_env(project_env, runner),
+                    trusted_skills=trusted,
                 ),
                 callbacks=_with_guard(guard, on_event),
                 workspace=workspace,
@@ -2690,6 +2707,7 @@ def _stream_escalation(
         efforts.update(dict.fromkeys(written.usage_ids, first_cfg.reasoning_effort))
     captured_error: BaseException | None = None
     try:
+        trusted = _trusted_skills(cfg, task, io.emit)
         with build_workspace(cfg) as workspace:
             runner = _command_runner(cfg, workspace)
             project_env = _prepare_agent_env(task, cfg, runner, io.emit)
@@ -2715,6 +2733,7 @@ def _stream_escalation(
                             usage_id=usage_id,
                             project_env=project_env,
                             terminal_env=terminal_env(project_env, runner),
+                            trusted_skills=trusted,
                         ),
                         callbacks=_with_guard(guard, io.on_event),
                         workspace=workspace,
