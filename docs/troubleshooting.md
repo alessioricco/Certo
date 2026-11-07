@@ -409,8 +409,10 @@ done, sharing the limit of the reminders above
 **Cause:** the model is larger than your GPU or unified memory, so Ollama
 runs part of it on the CPU.
 
-**Fix:** check `ollama ps` while the model is loaded. If the `PROCESSOR`
-column shows a CPU share, use a smaller model (for example
+**Fix:** run `certo check`: its `Speed:` line says how many tokens a
+second the model writes. A few tokens a second means part of it runs on
+the CPU. To confirm, check `ollama ps` while the model is loaded. If the
+`PROCESSOR` column shows a CPU share, use a smaller model (for example
 `qwen2.5-coder:7b` instead of `qwen3.8:27b`) or a smaller quantization.
 
 If one answer takes longer than `CERTO_LLM_TIMEOUT_SECONDS` (300 seconds

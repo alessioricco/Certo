@@ -16,6 +16,8 @@ up more than one model:
   trust in `skill_sources.yaml`; `certo skills assess` checks and
   classifies every skill in them; a run adds the ones that fit its
   project and task, and `certo skills suggest` shows which.
+- **`certo check` gives an Ollama model's real speed**, in tokens a
+  second, as Ollama measures it.
 - **`certo --help` lists every command**, each in its own section.
 
 ## New: the agent stays in its project root

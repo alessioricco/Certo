@@ -127,6 +127,10 @@ class LLMCheckResult:
     context_source: str | None = None
     context_warning: str | None = None  # the run's own warning text, if any
     thinking: str | None = None  # thinking_line(), when the server says
+    # Ollama's own measure of how fast the model writes (`_ollama_speed`):
+    # tokens written per second, and how many it wrote to measure it.
+    tokens_per_second: float | None = None
+    speed_tokens: int = 0
 
 
 def _scrub(text: str, secret: str | None) -> str:
@@ -201,7 +205,7 @@ def check_llm(cfg: Config, *, timeout: int = DEFAULT_TIMEOUT_SECONDS) -> LLMChec
         latency_seconds=latency,
         reply=reply,
         **_usage(response),
-        **_ollama_details(cfg),
+        **_ollama_details(cfg, speed=True),
         error_kind=None if reply else "no_reply",
         error=None if reply else "The model answered, but with no text content.",
         hint=None,
@@ -235,7 +239,7 @@ def check_tool_calling(cfg: Config, *, timeout: int = DEFAULT_TIMEOUT_SECONDS) -
         latency_seconds=latency,
         reply=reply,
         **_usage(response),
-        **_ollama_details(cfg),
+        **_ollama_details(cfg, speed=bool(calls)),
         error_kind=None if calls else "no_tool_call",
         error=None if calls else "The model answered without calling a tool.",
         hint=None,
@@ -324,7 +328,43 @@ def _is_ollama(model: str) -> bool:
     return model.split("/", 1)[0] in ("ollama", "ollama_chat")
 
 
-def _ollama_details(cfg: Config, *, timeout: int | None = None) -> dict:
+# The speed request: a short answer, long enough to time the writing.
+SPEED_PROMPT = "Count from 1 to 100, separated by commas."
+SPEED_TOKENS = 64
+
+
+def _ollama_speed(cfg: Config, timeout: float) -> dict:
+    """How fast the model writes, measured by Ollama itself: one short
+    `/api/generate` request, and its `eval_count` / `eval_duration`. The
+    check's own time includes loading the model and reading the prompt, so
+    it can't give a speed. Same `num_ctx` as the check when one is set, so
+    Ollama doesn't load the model again. Never raises; {} when unknown."""
+    options: dict = {"num_predict": SPEED_TOKENS}
+    if cfg.llm_context_tokens:
+        options["num_ctx"] = cfg.llm_context_tokens
+    body = {
+        "model": cfg.model.split("/", 1)[1],
+        "prompt": SPEED_PROMPT,
+        "stream": False,
+        "options": options,
+    }
+    base = (cfg.base_url or context_window._DEFAULT_OLLAMA_URL).rstrip("/")
+    try:
+        answer = context_window._post(f"{base}/api/generate", body, timeout)
+    except Exception:  # noqa: BLE001 - best effort
+        return {}
+    count, nanoseconds = answer.get("eval_count"), answer.get("eval_duration")
+    if (
+        not isinstance(count, int)
+        or not isinstance(nanoseconds, int)
+        or count <= 0
+        or nanoseconds <= 0
+    ):
+        return {}
+    return {"tokens_per_second": count / (nanoseconds / 1e9), "speed_tokens": count}
+
+
+def _ollama_details(cfg: Config, *, timeout: int | None = None, speed: bool = False) -> dict:
     """Version, effective context window (and its source), and the run's
     own small-window warning. Never raises: a check must still report
     the request result if the server can't answer this.
@@ -364,6 +404,8 @@ def _ollama_details(cfg: Config, *, timeout: int | None = None) -> dict:
                 )
     except Exception:  # noqa: BLE001
         pass
+    if speed:
+        details.update(_ollama_speed(cfg, t))
     return details
 
 
@@ -417,11 +459,16 @@ def detail_lines(result: LLMCheckResult) -> list[str]:
         if result.context_source:
             window += f" (from {result.context_source})"
         parts.append(window)
-    # The time alone: it includes loading the model and reading the prompt,
-    # and the answer is a short tool call, so tokens per second would read
-    # far below the model's real speed.
+    # The check request's time: loading the model and reading the prompt
+    # included. The real speed is Ollama's own measure, on its own line.
     parts.append(f"{result.latency_seconds:.1f}s")
     lines = [" · ".join(parts)]
+    if result.tokens_per_second:
+        seconds = result.speed_tokens / result.tokens_per_second
+        lines.append(
+            f"Speed: {result.tokens_per_second:.1f} tokens a second "
+            f"({result.speed_tokens} tokens written in {seconds:.1f}s, measured by Ollama)."
+        )
     if result.thinking:
         lines.append(result.thinking)
     if result.context_warning:

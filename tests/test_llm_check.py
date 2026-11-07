@@ -531,3 +531,76 @@ def test_detail_lines_failure_still_shows_version_and_window():
     assert lines
     assert "Ollama 0.5.7" in lines[0]
     assert "8,192" in lines[0]
+
+
+# --- _ollama_speed: Ollama's own measure ------------------------------------------
+
+
+def test_the_speed_comes_from_ollamas_eval_count_and_duration(monkeypatch):
+    seen = {}
+
+    def post(url, body, timeout):
+        seen.update(url=url, body=body)
+        # Recorded from qwen3.8:27b on 2026-11-07 (the response text left out).
+        return {"eval_count": 64, "eval_duration": 1971937000, "load_duration": 8355172209}
+
+    monkeypatch.setattr(llm_check.context_window, "_post", post)
+    cfg = _cfg(
+        model="ollama/qwen3.8:27b", base_url="http://gpu-box:11434/", llm_context_tokens=32768
+    )
+
+    speed = llm_check._ollama_speed(cfg, 30)
+
+    assert speed["speed_tokens"] == 64
+    assert round(speed["tokens_per_second"], 1) == 32.5
+    assert seen["url"] == "http://gpu-box:11434/api/generate"
+    assert seen["body"]["model"] == "qwen3.8:27b"
+    assert seen["body"]["stream"] is False
+    # The check's window, so Ollama doesn't load the model again.
+    assert seen["body"]["options"] == {"num_predict": 64, "num_ctx": 32768}
+
+
+@pytest.mark.parametrize(
+    "answer",
+    [OSError("down"), {}, {"eval_count": 0, "eval_duration": 5}, {"eval_count": "64"}],
+)
+def test_an_unknown_speed_is_left_out(monkeypatch, answer):
+    def post(url, body, timeout):
+        if isinstance(answer, Exception):
+            raise answer
+        return answer
+
+    monkeypatch.setattr(llm_check.context_window, "_post", post)
+
+    assert llm_check._ollama_speed(_cfg(model="ollama/llama3"), 5) == {}
+
+
+def test_the_speed_is_measured_only_when_asked(monkeypatch):
+    calls = []
+    monkeypatch.setattr(llm_check, "_ollama_speed", lambda cfg, t: calls.append(1) or {})
+    for name in ("ollama_version", "ollama_capabilities", "known_context_tokens"):
+        monkeypatch.setattr(llm_check.context_window, name, lambda *a, **k: None)
+
+    llm_check._ollama_details(_cfg(model="ollama/llama3"))
+    assert calls == []
+    llm_check._ollama_details(_cfg(model="ollama/llama3"), speed=True)
+    assert calls == [1]
+
+
+def test_detail_lines_show_the_speed_on_its_own_line():
+    result = llm_check.LLMCheckResult(
+        ok=True,
+        model="ollama/qwen3.8:27b",
+        base_url=None,
+        latency_seconds=11.0,
+        ollama_version="0.40.6",
+        context_tokens=131072,
+        context_source="server",
+        tokens_per_second=32.456,
+        speed_tokens=64,
+    )
+
+    assert llm_check.detail_lines(result)[:2] == [
+        "Ollama 0.40.6 · context window 131,072 tokens (from server) · 11.0s",
+        "Speed: 32.5 tokens a second (64 tokens written in 2.0s, measured by Ollama).",
+    ]
