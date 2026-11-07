@@ -72,7 +72,9 @@ def test_commands_that_reach_outside_are_blocked(layout, command):
         "python -c 'import os; print(os.listdir(\"../..\"))'",  # code, not a path
         "grep -rE '/api/v1' src",  # not a path
         "curl http://127.0.0.1:5173/api",
-        "ls /tmp && ls /usr/bin",
+        # System folders, never above the root (pytest's temp folder may be
+        # in /tmp, and the folders above the root are always blocked).
+        "ls /usr/bin && cat /etc/hosts",
         "ls ~/.npm ~/.cache/ms-playwright",
         f"ls {os.path.join('.', 'src')}",
         "PATH=/usr/local/bin:$PATH npm run build",

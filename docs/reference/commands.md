@@ -100,7 +100,7 @@ that folder exists, Certo uses a new one (`wordle-2`) and says so; give
 before the run:
 
 ```text
-Project: ./projects/wordle, named after the task. The agent works only in that folder.
+Project: projects/wordle, named after the task. The agent works only in that folder.
 ```
 
 In any other folder, or with `CERTO_WORKSPACE` set to another folder,

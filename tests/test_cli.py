@@ -2882,7 +2882,8 @@ def test_in_a_workspace_a_task_gets_a_project_named_after_it(monkeypatch, tmp_pa
         tmp_path / "projects" / "wordle"
     )
     out = capsys.readouterr().out
-    assert "Project: ./projects/wordle, named after the task." in out
+    where = os.path.join("projects", "wordle")
+    assert f"Project: {where}, named after the task." in out
 
 
 def test_a_task_whose_folder_exists_gets_a_new_one(monkeypatch, tmp_path, capsys):
@@ -2895,9 +2896,8 @@ def test_a_task_whose_folder_exists_gets_a_new_one(monkeypatch, tmp_path, capsys
 
     assert calls["project"] == "tower-hanoi-2"
     out = capsys.readouterr().out
-    assert (
-        "./projects/tower-hanoi already exists; --project tower-hanoi works on it instead." in out
-    )
+    old = os.path.join("projects", "tower-hanoi")
+    assert f"{old} already exists; --project tower-hanoi works on it instead." in out
 
 
 @pytest.mark.parametrize(

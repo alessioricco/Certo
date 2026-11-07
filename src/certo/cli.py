@@ -644,11 +644,11 @@ def _project_from_task(args: argparse.Namespace, task: str | None, cfg: Any) -> 
         return None
     wanted = project_name_for_task(args.task, task)
     name = unused_project_name(cfg.projects_dir, wanted)
-    where = os.path.join(cfg.projects_dir, name)
+    where = os.path.normpath(os.path.join(cfg.projects_dir, name))
     print(f"Project: {where}, named after the task. The agent works only in that folder.")
     if name != wanted:
         print(
-            f"  {os.path.join(cfg.projects_dir, wanted)} already exists; "
+            f"  {os.path.normpath(os.path.join(cfg.projects_dir, wanted))} already exists; "
             f"--project {wanted} works on it instead."
         )
     return name

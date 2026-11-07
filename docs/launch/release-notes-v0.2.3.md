@@ -26,7 +26,7 @@ the other projects, and Certo's checks found several projects and ended
   title or its first words, and Certo says which before the run:
 
   ```text
-  Project: ./projects/farewell, named after the task. The agent works only in that folder.
+  Project: projects/farewell, named after the task. The agent works only in that folder.
   ```
 
   A folder that already exists isn't reused: the new task gets
