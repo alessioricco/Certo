@@ -167,7 +167,7 @@ def test_provider_menu_lists_the_choices_in_order(tmp_path, monkeypatch, checks)
         ("2", "anthropic/claude-sonnet-5-5", ["OpenAI", "Google Gemini", "Ollama"]),
         ("3", "gemini/gemini-3.8-flash", ["OpenAI", "Anthropic (Claude)", "Ollama"]),
         ("4", "deepseek/deepseek-flash", ["OpenAI", "Kimi (Moonshot AI)", "Ollama"]),
-        ("5", "moonshot/kimi-k2.7-code", ["OpenAI", "DeepSeek", "Ollama"]),
+        ("5", "moonshot/kimi-k3.1-pro", ["OpenAI", "DeepSeek", "Ollama"]),
     ],
 )
 def test_cloud_provider_env(tmp_path, monkeypatch, checks, choice, model, other_presets):

@@ -20,7 +20,7 @@ the API key. The default models are:
 | Anthropic | `anthropic` | `anthropic/claude-sonnet-5-5` | `ANTHROPIC_API_KEY` |
 | Google Gemini | `gemini` | `gemini/gemini-3.8-flash` | `GEMINI_API_KEY` |
 | DeepSeek | `deepseek` | `deepseek/deepseek-flash` | `DEEPSEEK_API_KEY` |
-| Kimi (Moonshot AI) | `moonshot` | `moonshot/kimi-k2.7-code` | `MOONSHOT_API_KEY` |
+| Kimi (Moonshot AI) | `moonshot` | `moonshot/kimi-k3.1-pro` | `MOONSHOT_API_KEY` |
 
 With DeepSeek, the run summary may show the cost as unknown: LiteLLM's
 price list doesn't know the name `deepseek-flash` yet.

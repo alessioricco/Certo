@@ -51,11 +51,13 @@ checked = "2026-10-20"
 # The id is LiteLLM's prefix for Kimi models (moonshot/...).
 id = "moonshot"
 label = "Kimi (Moonshot AI)"
-model = "moonshot/kimi-k2.7-code"
+# Kimi K2 models are closed to new users since 31 Oct 2026 and retire by
+# the end of 2026; K3.1 Pro is the current one (in LiteLLM's price list).
+model = "moonshot/kimi-k3.1-pro"
 key_env = "MOONSHOT_API_KEY"
 key_url = "https://platform.kimi.ai/console/api-keys"
 source = "https://platform.kimi.ai/docs/pricing/chat"
-checked = "2026-10-20"
+checked = "2026-11-07"
 
 [[provider]]
 id = "ollama"
