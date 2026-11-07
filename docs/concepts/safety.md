@@ -141,5 +141,6 @@ they are.
 
 ## Related
 
+- [Review the agent's work safely](../guides/review-the-agents-work.md): a routine before and after each run
 - [Configuration](../reference/configuration.md)
 - [How verification works](how-verification-works.md)

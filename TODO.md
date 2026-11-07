@@ -212,7 +212,7 @@ cut that first run's output from 2,949 lines to 1,021.)
   Still to do: a truly clean machine (no Python, no uv).
 - **GitHub Action**: an issue labelled `certo` becomes a pull request with
   the verdict and checks in its description.
-- **Docs articles still to write** (ideas from 2026-10-18): review the agent's work safely;
+- **Docs articles still to write** (ideas from 2026-10-18):
   share your benchmark results (with the benchmark file, as `docs/benchmark/` does); use `certo verify`
   without the agent (pre-commit: done in #16; any AI tool: [#31](https://github.com/alessioricco/certo/issues/31)).
 - **Prebuilt Docker image.** Docker execution from a pip install fails:
