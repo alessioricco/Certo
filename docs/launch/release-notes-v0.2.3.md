@@ -12,6 +12,9 @@ up more than one model:
 - **`certo init` offers more models.** After a passing model check, it
   asks whether to set up more models now, and on yes runs
   `certo init models` at once.
+- **Trusted skill repositories (first step).** List the repositories you
+  trust in `skill_sources.yaml`; `certo skills assess` checks and
+  classifies every skill in them.
 - **`certo --help` lists every command**, each in its own section.
 
 ## New: the agent stays in its project root
@@ -67,6 +70,26 @@ The default is No: one model is all you need to start. Yes runs
 just saved. Under "Next", `certo init` now also lists
 `certo init models`, so you can do it later. See
 [`certo init`](../reference/commands.md#certo-init).
+
+## New: trusted skill repositories, first step
+
+Instead of adding skills one by one, list the git repositories you trust
+in `skill_sources.yaml` (`~/.config/certo/` for every project, or
+`<project>/.certo/` for one), then run:
+
+```bash
+certo skills assess --global
+```
+
+Certo downloads each repository at an exact commit and checks every skill
+in it with the same rules as `certo skills add`: license, scripts, size,
+how it fires. Each skill is classified (testing, review, setup...;
+python, node...) by fixed rules, with no model call, and gets a verdict:
+`usable`, `needs review` or `rejected`. On `OpenHands/extensions`, 73
+skills: 52 usable, 15 to review, 6 rejected.
+
+Runs don't use these skills yet; that is the next step. See
+[Trust a whole repository](../guides/manage-skills.md#trust-a-whole-repository).
 
 ## Also
 

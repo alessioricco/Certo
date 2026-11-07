@@ -53,6 +53,9 @@ NO_TOOL: dict[str, str] = {
     "certo skills disable": "changes the skills every run gets: on request",
     "certo skills update": "downloads code, with a license only a person may accept: run it in a terminal",
     "certo skills sync": "downloads code, with a license only a person may accept: run it in a terminal",
+    "certo skills assess": (
+        "downloads code from repositories a person chose to trust: run it in a terminal"
+    ),
     "certo bench": "runs for hours, and is set up and read in a terminal",
     "certo mcp": "it is this server",
     "certo-server": "another server, over HTTP",

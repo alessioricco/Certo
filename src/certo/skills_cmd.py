@@ -10,7 +10,9 @@ folders: `skill_library.py`.
 A file or folder is checked with the SDK's own loader before it is
 copied, and its trigger and size are printed. A git source keeps the
 rules of downloaded skills (`third_party_skills.py`): exact commit,
-license check, off until `enable`.
+license check, off until `enable`. `assess` checks and classifies the
+skills of the trusted repositories in `skill_sources.yaml`
+(`skill_sources.py`, `skill_assess.py`).
 """
 
 from __future__ import annotations
@@ -23,8 +25,10 @@ from typing import TextIO
 
 from openhands.sdk.skills.utils import find_skill_md
 
+from . import skill_assess as assessing
 from . import skill_library as lib
 from . import third_party_skills as tps
+from .skill_sources import EXAMPLE, SourcesError, read_sources, sources_path
 from .config import ConfigError, defer_llm_check, load_config, resolve_project_dir
 from .init_cmd import Cancelled, Prompter
 from .project_state import ensure_state_dir
@@ -107,6 +111,19 @@ def build_parser() -> argparse.ArgumentParser:
         "sync", help="Restore git skills whose files are missing or changed, at their commit."
     )
     _scope(sync)
+
+    assess = sub.add_parser(
+        "assess",
+        help="Check and classify every skill of your trusted repositories (skill_sources.yaml).",
+        description=(
+            "Fetch the repositories listed in skill_sources.yaml (next to the skills folder: "
+            "~/.config/certo/ with --global, <project>/.certo/ with --project) and check "
+            "every skill in them: license, scripts, size, how it fires, what it is for. "
+            "Each gets a verdict: usable, needs review or rejected. The result is saved for "
+            "later use; assessing again replaces it."
+        ),
+    )
+    _scope(assess)
     return parser
 
 
@@ -146,8 +163,10 @@ def skills_main(
             return _add(cfg, args, root, scope, prompter, interactive)
         if args.command == "remove":
             return _remove(args.name, root, scope, prompter)
+        if args.command == "assess":
+            return _assess(root, scope, prompter)
         return _downloaded_command(args, root, scope, prompter)
-    except (SkillsError, tps.ThirdPartySkillError, ConfigError) as exc:
+    except (SkillsError, tps.ThirdPartySkillError, ConfigError, SourcesError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
     except Cancelled:
@@ -439,3 +458,59 @@ def _downloaded_command(
                 f"certo skills enable {args.name} {scope}"
             )
     return 0
+
+
+# --- assess: trusted repositories -------------------------------------------------------------
+
+
+def _assess(root: Path, scope: str, prompter: Prompter) -> int:
+    path = sources_path(root)
+    sources = read_sources(path)
+    if not sources:
+        raise SkillsError(
+            f"No trusted repositories: {path} lists none. Create it, for example:\n\n"
+            f"{EXAMPLE}\nthen run: certo skills assess {scope}"
+        )
+    if scope.startswith("--project"):
+        ensure_state_dir(str(root.parent.parent))
+    prompter.say(
+        f"Assessing {len(sources)} trusted repositor{'y' if len(sources) == 1 else 'ies'}..."
+    )
+    result = assessing.assess(root, sources, reserved=[s.name for s in lib.official_skills()])
+    failed = False
+    for source_result in result.results:
+        prompter.say()
+        label = source_result.source.label
+        if source_result.error:
+            failed = True
+            prompter.say(f"{label}: not assessed. {source_result.error}")
+            continue
+        skills = source_result.skills
+        counts = ", ".join(
+            f"{sum(1 for s in skills if s.verdict == v)} {v}" for v in assessing.VERDICTS
+        )
+        prompter.say(f"{label} at {source_result.revision[:12]}: {len(skills)} skills ({counts}).")
+        for verdict in assessing.VERDICTS:
+            group = [s for s in skills if s.verdict == verdict]
+            if group:
+                prompter.say(f"  {verdict.capitalize()}:")
+            for skill in group:
+                prompter.say(f"    {_assessed_line(skill)}")
+    prompter.say()
+    prompter.say(
+        f"Saved in {lib.describe_dir(assessing.trusted_dir(root))}: "
+        f"{result.count(assessing.USABLE)} usable, "
+        f"{result.count(assessing.NEEDS_REVIEW)} to review, "
+        f"{result.count(assessing.REJECTED)} rejected. Runs don't use them yet."
+    )
+    return 1 if failed else 0
+
+
+def _assessed_line(skill: assessing.Assessed) -> str:
+    if skill.verdict == assessing.REJECTED:
+        return f"{skill.name}: {'; '.join(skill.reasons)}"
+    what = ", ".join(skill.steps + skill.ecosystems) or "general"
+    line = f"{skill.name} ({what}): fires {skill.fires}; about {skill.tokens:,} tokens"
+    if skill.reasons:
+        line += ". Review: " + "; ".join(skill.reasons)
+    return line

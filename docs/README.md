@@ -138,7 +138,7 @@ how handoff decides, what the next model gets, and verdicts in CI.
 
 ## Experimental features
 
-Six features are **experimental**: they work and have tests, but haven't
+Seven features are **experimental**: they work and have tests, but haven't
 been proven in real use the way the core has (verification, escalation and
 the benchmark). Use them, report what breaks, and expect them to change
 between minor versions. Fixes to the core come first.
@@ -151,6 +151,7 @@ between minor versions. Fixes to the core come first.
 | [Milestone mode](guides/run-in-milestones.md) (`--milestones`) | Benchmarked on two app tasks only ([the spreadsheet](benchmark/milestones-60min-0.1.27.md), [the expense ledger](benchmark/expenses-0.1.27.md)). Not in server mode (`certo-server`), and Certo doesn't plan the milestones itself. A climb inside a milestone has been seen live once, not in a benchmark. |
 | [The MCP server](guides/use-certo-over-mcp.md) (`certo mcp`) | Checked live from Claude Code and from the `mcp` Python package's client, over stdio; not yet from other editors. Only the core tools and the project resources so far; the other commands come in later 0.2 versions. Runs are kept in memory and stop when the client closes. |
 | [Skills downloaded from git](guides/manage-skills.md#download-a-skill-from-git) (`certo skills add github:...`) | Licenses are detected with a text match, only `SKILL.md` folders can be installed, and no third-party skill has been benchmarked. |
+| [Trusted skill repositories](guides/manage-skills.md#trust-a-whole-repository) (`certo skills assess`) | Only the first step: skills are checked and classified, but runs don't use them yet. The classification is a word match on each skill's name and description. |
 
 The rest of server mode (`POST /tasks`, the WebSocket stream, the memory
 store) is not experimental, but has no authentication: see the first

@@ -1690,3 +1690,15 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   project itself sits in an allowed folder such as `/tmp`. No switch to
   turn it off: a task that needs `../shared` runs from the folder that
   holds both.
+
+- **Trusted skill repositories: listing a repo plus a `usable` verdict is
+  the opt-in; classification by rules** (2026-11-07, the Author's choice;
+  supersedes "downloaded is not on" for listed repositories only). A
+  skill from a repo in `skill_sources.yaml` needs no `enable` when
+  `certo skills assess` rated it `usable` (license known, no scripts,
+  inline commands or MCP config, at most 8,000 tokens, has a trigger);
+  `needs review` skills still need a person. `assess` classifies by fixed
+  word lists and trigger kinds, no model call; a model-assisted pass may
+  come later, recorded in the index, and the run-time choice stays
+  rule-based ("No LLM-based router" holds). Each scope (global, project)
+  has its own sources file and index; the project's wins at run time.

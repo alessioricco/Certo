@@ -252,6 +252,48 @@ Two things to know about the OpenHands skills:
   Warning: Skipped links inside the skill (what they point to is copied on its own): .claude-plugin, .codex-plugin.
   ```
 
+## Trust a whole repository
+
+Instead of adding skills one by one, list the repositories you trust in
+`skill_sources.yaml`, and let Certo check every skill in them:
+
+```bash
+mkdir -p ~/.config/certo
+cat > ~/.config/certo/skill_sources.yaml <<'EOF'
+sources:
+  - repo: github:OpenHands/extensions
+    ref: main
+    path: skills
+EOF
+certo skills assess --global
+```
+
+For one project, the file is `<project>/.certo/skill_sources.yaml` and the
+command `certo skills assess --project NAME`.
+
+Certo downloads each repository once, at an exact commit, and checks each
+skill as `certo skills add` would. It says what each skill is for, when it
+fires, its size, and gives a verdict: `usable`, `needs review` (with the
+reasons) or `rejected`. Part of a real run, on 2026-11-07:
+
+```text
+github:OpenHands/extensions (skills) at 210f2c08fbf5: 73 skills (52 usable, 15 needs review, 6 rejected).
+  Usable:
+    code-review (review, security): fires when the task says: /codereview, /codereview-roasted; about 2,051 tokens
+    uv (setup, python): fires when the task says: uv, uv.lock; about 591 tokens
+  Needs review:
+    github (setup, git, integration): fires when the task says: github; about 1,860 tokens. Review: it ships scripts its instructions may ask the agent to run
+  Rejected:
+    github-issue-to-pr: Upstream skill contains a symlink that leads outside it (scripts/agent_conversation.py); refusing to install.
+```
+
+A repository in your list is your trust: its `usable` skills will need no
+`certo skills enable`. Skills to review still need your look first.
+
+> **Not used by runs yet.** For now `assess` only shows what your trusted
+> repositories hold. Using them in runs comes next. Every option is in
+> [`certo skills assess`](../reference/commands.md#certo-skills-assess).
+
 ## The project's own skills
 
 `AGENTS.md` and `.agents/skills/` at the top of a project are part of the

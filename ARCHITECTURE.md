@@ -334,6 +334,16 @@ given design was chosen.
   Terminal words are read with `shlex(punctuation_chars=True)`; the
   current folder follows `TerminalObservation.metadata.working_dir`.
   Heuristic by design (DECISIONS.md); Docker is the sandbox.
+- **`skill_sources.py`** + **`skill_assess.py`** — trusted skill
+  repositories. `skill_sources.yaml` sits next to a scope's third-party
+  skills folder (`sources_path`). `assess` fetches each repo whole with
+  `tps.fetch_checkout` (`repo_path=None`; the same `.cache` as `add`),
+  finds `SKILL.md` folders (dot folders and symlinked `SKILL.md` skipped),
+  and checks each with `tps.stage_fetched`, split out of
+  `_fetch_and_stage` so `add` and `assess` share one rule set. Kept copies
+  and `index.json` live in `<skills dir>/.trusted/` (a dot folder: the
+  layers never load it), built in a temp folder and swapped in whole.
+  Not loaded by runs yet (TODO step 4).
 - **`project_state.py`** + `certo --resume` — stdlib only. The CLI
   passes `save_state=True` (`CERTO_SAVE_STATE`, default on) to
   `stream_task`, which then builds the `Conversation` with

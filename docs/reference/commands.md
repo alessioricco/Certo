@@ -449,6 +449,56 @@ Restore every downloaded skill in that folder at its recorded commit, and
 check its files against the recorded hash. A skill whose files don't match
 is not restored (exit 1). Never turns a skill on or off.
 
+### `certo skills assess`
+
+```text
+certo skills assess (--global | --project NAME)
+```
+
+Check and classify every skill of the repositories you trust. They are
+listed in `skill_sources.yaml`, next to the skills folder:
+`~/.config/certo/skill_sources.yaml` with `--global`,
+`<project>/.certo/skill_sources.yaml` with `--project NAME`.
+
+```yaml
+sources:
+  - repo: github:OpenHands/extensions
+    # A branch, tag or commit; assess records the exact commit.
+    ref: main
+    # Optional: only the skills under this folder.
+    path: skills
+    # Optional: only these skill folders.
+    skills: [code-review, qa-changes]
+```
+
+`repo` is `github:OWNER/REPO` or an `https://` git URL, as for
+`certo skills add`. Each repository is downloaded once, at an exact
+commit. Every folder with a `SKILL.md` in it (folders starting with a dot
+are skipped) is checked with the same rules as `certo skills add` from
+git, and gets:
+
+- **what it is for**: the steps (planning, setup, testing, debugging,
+  review, refactoring, security, documentation, git, release,
+  integration) and ecosystems (python, node, go, rust, java, web) its
+  name and description name. The words are matched by fixed rules, with
+  no model call.
+- **how it fires** and its size, as `certo skills list` shows them.
+- **a verdict**:
+
+| Verdict | Meaning |
+|---|---|
+| `usable` | Passed every check. Its repository is in your list, so it needs no `certo skills enable`. |
+| `needs review` | Loads, but the reasons say what to read first: a license Certo can't recognise, scripts its instructions may ask the agent to run, inline `` !`command` `` lines, an MCP server config, more than 8,000 tokens, or no trigger (it would go into every run). |
+| `rejected` | Can't be used: it doesn't load, has a link to a file outside its folder, its name is taken (by an official skill or a skill from another listed repository), or it is in `skills:` but not found. |
+
+The checked files of usable skills and skills to review are kept, with
+their hash, in the skills folder's `.trusted/` folder, next to
+`index.json`, the result. Assessing again replaces both. Exit 1 when a
+repository couldn't be downloaded.
+
+Runs don't use these skills yet: for now `assess` shows what your
+trusted repositories hold.
+
 ## `certo check`
 
 Check that the configured model works.

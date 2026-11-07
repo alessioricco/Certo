@@ -379,6 +379,30 @@ class _Staged:
     warnings: list[str]
 
 
+def fetch_checkout(
+    clone_url: str, ref: str | None, cache_dir: Path, repo_path: str | None = None
+) -> tuple[Path, str]:
+    """Fetch `clone_url` at `ref` with the SDK's git fetch; return the
+    checkout (or `repo_path` inside it) and the exact commit."""
+    where = f" ({repo_path})" if repo_path else ""
+    try:
+        fetched, revision = fetch_skill_with_resolution(
+            source=clone_url,
+            cache_dir=cache_dir,
+            ref=ref,
+            update=True,
+            repo_path=repo_path,
+        )
+    except SkillFetchError as exc:
+        cause = exc.__cause__ or exc
+        raise ThirdPartySkillError(f"Could not fetch {clone_url}{where}: {cause}") from exc
+    if not revision or not _SHA_RE.match(revision):
+        raise ThirdPartySkillError(
+            f"Could not resolve an immutable commit for {clone_url} (got {revision!r})."
+        )
+    return Path(fetched), revision
+
+
 def _fetch_and_stage(
     clone_url: str,
     web_base: str | None,
@@ -387,22 +411,21 @@ def _fetch_and_stage(
     install_dir: Path,
     staging_root: Path,
 ) -> _Staged:
-    try:
-        fetched, revision = fetch_skill_with_resolution(
-            source=clone_url,
-            cache_dir=install_dir / ".cache",
-            ref=ref,
-            update=True,
-            repo_path=skill_path,
-        )
-    except SkillFetchError as exc:
-        cause = exc.__cause__ or exc
-        raise ThirdPartySkillError(f"Could not fetch {clone_url} ({skill_path}): {cause}") from exc
-    if not revision or not _SHA_RE.match(revision):
-        raise ThirdPartySkillError(
-            f"Could not resolve an immutable commit for {clone_url} (got {revision!r})."
-        )
-    fetched = Path(fetched)
+    fetched, revision = fetch_checkout(clone_url, ref, install_dir / ".cache", skill_path)
+    return stage_fetched(fetched, clone_url, web_base, skill_path, ref, revision, staging_root)
+
+
+def stage_fetched(
+    fetched: Path,
+    clone_url: str,
+    web_base: str | None,
+    skill_path: str,
+    ref: str | None,
+    revision: str,
+    staging_root: Path,
+) -> _Staged:
+    """Check one skill folder of a fetched repository and copy it to
+    `staging_root`: strict load, name, license, warnings, hash."""
     if find_skill_md(fetched) is None:
         raise ThirdPartySkillError(
             f"{skill_path!r} at {revision[:12]} has no SKILL.md; only AgentSkills-format "
