@@ -300,6 +300,39 @@ Vite/React, Next.js, Express, Django, FastAPI (extend
 no real network), `database-basics` (SQLite, migrations, an isolated test
 database).
 
+**Trusted skill repositories** (Author's request, 2026-11-07). An archive
+of trusted skills Certo can draw on when it builds projects, instead of
+adding skills one by one (`certo skills add` + `enable` today).
+- *Sources file:* `skill_sources.yaml` in `~/.config/certo/`, replaced
+  or extended by `<project>/.certo/skill_sources.yaml` (the project file
+  wins, as the skill layers do). Each entry: a git repo, pinned to a
+  commit, with an optional allowlist of skill paths.
+- *An assessment command* (e.g. `certo skills assess`): fetches the
+  sources, then checks and classifies every skill once, for later runs.
+  Per skill: license (as `enable` does), format and size, the
+  `` !`command` `` lines and scripts it asks the agent to run, its
+  ecosystem and lifecycle step (setup, testing, framework, git...), and
+  its triggers, or ones derived from its description and paths. It
+  writes an index (commit, hash, class, verdict: usable / needs review /
+  rejected), so a run reads the index and never the repos. Re-run after
+  `update`; a changed skill is assessed again.
+- *Use at run time:* the index's triggers are matched against the task,
+  the milestone/step and the project's files; a matching skill is loaded
+  for that step only. Official and hand-added skills keep precedence.
+- *Decisions to settle first (DECISIONS.md):* (1) does listing a repo
+  count as the opt-in that `enable` gives today ("downloaded is not on"),
+  or does each assessed skill still need an OK; (2) the classification
+  and the choice stay deterministic (rules, frontmatter, keywords), or
+  use a model call, which reopens "No LLM-based router" (ROADMAP). A
+  middle way: a model may help classify during `assess`, run by the
+  user and recorded in the index, while the run-time choice stays
+  rule-based.
+- *Done when:* a project's sources file and one `assess` give a run
+  skills from a trusted repo with no `add`/`enable`, and `certo bench`
+  on a local and a cloud model shows no loss (every skill that fires
+  costs context a 32K local model can't spare). Docs: `manage-skills.md`,
+  `reference/commands.md`, `concepts/safety.md`.
+
 ## Smaller bugs
 
 - **`certo skills`: turn an official skill off**, globally or for one
