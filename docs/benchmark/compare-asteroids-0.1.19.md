@@ -11,7 +11,7 @@ the [benchmark](../guides/benchmark.md).
 
 - **Certo:** 0.1.19, from a source checkout. **Run:** 2026-10-19, from
   16:54 to 17:50 UTC, one model after the other.
-- **Task:** [examples/asteroids.md](https://github.com/alessioricco/certo/blob/main/examples/asteroids.md),
+- **Task:** [compare-asteroids.task.md](compare-asteroids.task.md) (then `examples/asteroids.md`),
   a complete browser game in JavaScript, with tests for the game logic
   and every configured build, test, lint and type check passing.
 - **Settings:** the defaults. Checks on, up to 2 fix attempts, 30
@@ -128,7 +128,7 @@ run ollama/qwen3.8:27b            ""  http://localhost:11434
 ```
 
 ```bash
-./compare-models.sh examples/asteroids.md
+./compare-models.sh docs/benchmark/compare-asteroids.task.md
 ```
 
 The four cloud runs cost $3.00 in all. Your results will differ: a model

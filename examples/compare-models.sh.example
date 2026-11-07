@@ -4,7 +4,7 @@
 #
 #   cp examples/compare-models.sh.example compare-models.sh
 #   chmod +x compare-models.sh
-#   ./compare-models.sh examples/hanoi.md
+#   ./compare-models.sh src/certo/starter/tasks/hanoi.md
 #
 # Each model builds its own copy of the project, and a summary table is
 # written at the end. Keys come from environment variables, never from
@@ -12,7 +12,7 @@
 set -uo pipefail
 
 if [ $# -ne 1 ] || [ ! -f "$1" ]; then
-  echo "Usage: $0 TASK_FILE   (for example: $0 examples/hanoi.md)" >&2
+  echo "Usage: $0 TASK_FILE   (for example: $0 src/certo/starter/tasks/hanoi.md)" >&2
   exit 2
 fi
 TASK_FILE="$1"

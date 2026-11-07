@@ -27,6 +27,19 @@ See [`CLAUDE.md`](CLAUDE.md) for the project's working rules,
 and [`ARCHITECTURE.md`](ARCHITECTURE.md) for how the code is built. To add a benchmark task, see
 [Write or contribute a benchmark task](docs/guides/contribute-a-benchmark-task.md).
 
+Three folders hold examples of different kinds:
+
+- `src/certo/starter/tasks/`: the sample tasks. `certo init` copies them,
+  with `src/certo/starter/README.md`, into a new workspace; they ship in
+  the package. Add a sample there, and list it in that README and in
+  `init_cmd.py` (`SAMPLES`, or `MILESTONE_SAMPLES` for one in milestones).
+- `src/certo/examples/`: example settings files (`models.yaml.example`,
+  `bench.yaml.example`...), which commands copy or point to.
+- `examples/`: only the script that compares models on one task. Not in
+  the package.
+
+Task files of recorded runs live next to their record in `docs/benchmark/`.
+
 If you work with Claude Code, download the skills this project uses
 from [Anthropic's skills repository](https://github.com/anthropics/skills)
 into `.claude/skills/` (git-ignored). The list and the pinned commit are

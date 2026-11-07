@@ -83,8 +83,9 @@ Give it the task file:
 ./compare-models.sh my-task.md
 ```
 
-Any task file works, for example one from Certo's
-[examples folder](https://github.com/alessioricco/certo/tree/main/examples).
+Any task file works, for example one of the samples in your workspace's
+`tasks/` folder (made by `certo init`; in a checkout of Certo they are in
+[`src/certo/starter/tasks/`](https://github.com/alessioricco/certo/tree/main/src/certo/starter/tasks)).
 For each model it prints the model and its log file when the run starts,
 and the verdict, time and cost when it ends. The table comes last.
 

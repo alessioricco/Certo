@@ -1,24 +1,12 @@
 # Examples
 
-Task files to try Certo on, and a script that runs one task with several
-models so you can compare them.
+A script that runs one task with several models, one after the other, so
+you can compare them.
 
-## Task files
-
-Each file is a task description you can give to Certo as it is:
-
-| File | What it asks for |
-|---|---|
-| `asteroids.md` | An asteroid-dodging arcade game for the browser, in JavaScript |
-| `hanoi.md` | A Tower of Hanoi game in the terminal, in Python |
-| `invaders.md` | A Space Invaders–style game for the browser, in JavaScript |
-| `mazeman.md` | A maze-chase arcade game for the browser |
-
-The browser games need Node 18 or newer.
-
-```bash
-certo examples/hanoi.md --project hanoi
-```
+The sample tasks are not here: they are in
+[`src/certo/starter/tasks/`](../src/certo/starter/tasks/), the files
+`certo init` copies into a new workspace's `tasks/` folder. Any task file
+works with the script.
 
 ## Compare models on the same task
 
@@ -31,7 +19,7 @@ cp examples/compare-models.sh.example compare-models.sh
 chmod +x compare-models.sh
 # edit the model lines between the two "# ----" markers, then:
 export ANTHROPIC_API_KEY=...   # one variable per provider you listed
-./compare-models.sh examples/hanoi.md
+./compare-models.sh src/certo/starter/tasks/hanoi.md
 ```
 
 How to write the model lines, where the results go and how to read
