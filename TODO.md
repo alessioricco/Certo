@@ -76,6 +76,16 @@ first item is the suggested next one.
   judges how they look and play; then decide whether they join the menu
   at the end of `certo init` (with those times) and the benchmark task
   set. A run on a local model is still to try (at night).
+- **The milestone samples on other models** (the Author's wish,
+  2026-11-07, "not now"). Same three tasks, same way, one model each, to
+  compare by eye and by numbers: `gpt-6.1-sol` first (the Author's
+  choice: discounted in November 2026), then maybe Sonnet 5.5 and qwen3.8
+  at night. `examples/compare-models.sh.example` already runs one task per
+  model and tabulates verdict, time and cost (a milestone file now runs
+  in milestones without the flag). Estimate first: Haiku took $2.28 for
+  all three; Sonnet costs 20x per token. Start with `iron-horizon`, the
+  cheapest. Done when each model's projects can be opened side by side,
+  with a record page.
 - **Milestone mode: what's left.** Phase 3 closed on 2026-10-31 (the
   Author): `app-tasks/expenses` (apps-2), qwen3.8 `verified` in 2/3
   runs, 80/80 hidden (`docs/benchmark/expenses-0.1.27.md`). The
