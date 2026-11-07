@@ -42,7 +42,8 @@ certo 0.1.19
 ```
 
 This page needs version 0.1.19 or newer. If you see an older version, run
-`uv tool upgrade certo` (or `pip install -U certo`).
+`uv tool install --upgrade certo`, or `pip install -U certo` with the
+`pip` of the environment Certo is in.
 
 ## 2. Save your settings: `certo init`
 

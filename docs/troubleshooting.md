@@ -11,6 +11,7 @@ setting comes from and makes one small call to the model.
 
 - Setup: [`certo init` runs an agent](#certo-init-runs-an-agent-instead-of-asking-questions),
   [externally managed environment](#externally-managed-environment-from-pip),
+  [no matching distribution](#no-matching-distribution-found-for-certo-from-pip),
   [no model configured](#no-model-configured),
   [old `LLM_*` names](#certo_llm_model-is-required-although-llm_model-is-set),
   [settings from an unexpected place](#a-setting-comes-from-a-place-you-didnt-expect),
@@ -73,6 +74,27 @@ setting comes from and makes one small call to the model.
 
 **Fix:** run `certo --version`, then upgrade: `uv tool upgrade certo` or
 `pip install -U certo`.
+
+### "No matching distribution found for certo" from pip
+
+**You see:** `pip install -U certo` fails, and lists every version as
+`Requires-Python >=3.12`:
+
+```text
+ERROR: Ignored the following versions that require a different python version: ... 0.2.1 Requires-Python >=3.12; 0.2.2 Requires-Python >=3.12
+ERROR: Could not find a version that satisfies the requirement certo (from versions: none)
+ERROR: No matching distribution found for certo
+```
+
+**Cause:** that `pip` belongs to a Python older than 3.12, often an old
+system or Homebrew one that comes first on your `PATH`. `pip --version`
+says which Python it uses.
+
+**Fix:** if you installed Certo with uv, upgrade it with uv, which uses
+its own Python: `uv tool install --upgrade certo`. Otherwise use the
+`pip` of the virtual environment Certo is in
+(`~/.venvs/certo/bin/pip install -U certo`), or make a new one with
+Python 3.12 or newer, as in [Getting started](getting-started.md#1-install).
 
 ### "externally-managed-environment" from pip
 
