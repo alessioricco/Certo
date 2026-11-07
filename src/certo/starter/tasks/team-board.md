@@ -16,8 +16,9 @@ in plain HTML, CSS and JavaScript.
 
 - Layout: a package `taskboard/` with `app.py` (the FastAPI application,
   named `app`), `db.py` (the schema and the connection), and one module
-  per area (`auth.py`, `ordering.py`, `query.py`...); the browser files
-  in `taskboard/static/`; tests in `tests/`.
+  per area, named in each milestone (`auth.py`, `projects.py`,
+  `ordering.py`, `query.py`...); the browser files in
+  `taskboard/static/`; tests in `tests/`.
 - The database is one SQLite file, at the path in the environment
   variable `TASKBOARD_DB` (default `taskboard.db`). `db.py` creates the
   tables when they don't exist, with foreign keys on. Use SQL with `?`
@@ -67,10 +68,11 @@ deletes it.
 
 A `viewer` can read everything in the project and change nothing (403 on
 every change, here and in the later milestones). A `member` can change
-the board but not the members.
+the board but not the members. These endpoints and the role rules live
+in `taskboard/projects.py`.
 
 ```acceptance
-[{"kind": "file_contains", "path": "taskboard/app.py", "contains": "/members"}]
+[{"kind": "file_contains", "path": "taskboard/projects.py", "contains": "/members"}]
 ```
 
 ## Milestone 3: Columns and cards
