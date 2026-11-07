@@ -180,6 +180,12 @@ System prompt: 270 lines (--verbose shows it)
 Task: Wordle in the terminal (210 lines with the skills; --verbose shows them)
 ```
 
+The skills are short guides that come with Certo: how to set a project
+up, write tests, write the README, and more. Certo adds the ones the
+task or the project's files call for. You don't need to set any up;
+`certo skills list` shows them, and [Next steps](#next-steps) says how
+to add your own.
+
 The agent now works for a few minutes. Each step it takes is printed as
 it happens: it writes files, runs commands and runs the tests. When it says it is done, Certo checks the result itself.
 The end of the output looks like this:
@@ -303,8 +309,13 @@ export CERTO_LLM_API_KEY=sk-...
   For example a local model first, then a cloud one; which local model to
   start with: [Choose a local model](guides/choose-a-local-model.md).
 - Write tasks Certo can check: [Write a task Certo can check](guides/write-a-good-task.md).
-- Teach the agent your conventions, for every project or one:
-  [Manage skills](guides/manage-skills.md) (`certo skills`).
+- Give the agent more skills, for every project or one:
+  - your own conventions, as a skill file: [Add a skill you wrote](guides/manage-skills.md#add-a-skill-you-wrote);
+  - whole repositories of skills you trust, such as
+    `github:OpenHands/extensions`: list them in
+    `~/.config/certo/skill_sources.yaml`, run `certo skills assess --global`,
+    and each run adds the skills that fit its project and task
+    (experimental): [Trust a whole repository](guides/manage-skills.md#trust-a-whole-repository).
 - What to do after each verdict: [What to do after each verdict](guides/after-the-verdict.md).
 - Use a different provider: [OpenAI, Claude and Gemini](guides/openai-claude-gemini.md)
   or [Ollama and local models](guides/ollama-and-local-models.md).
