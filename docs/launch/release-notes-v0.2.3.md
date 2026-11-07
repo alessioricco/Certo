@@ -2,29 +2,29 @@
 
 Not released yet.
 
-This release keeps the agent in its project, and makes it easier to set
-up more than one model:
+This release keeps the agent in its project, lets runs use skills from
+repositories you trust, and makes bigger, milestone-by-milestone builds
+easier to start:
 
 - **A task gets its own project folder.** In a Certo workspace, a task
   run without `--project` gets `projects/<name>`, named after the task.
 - **The agent stays in its project root.** It is told its root, and
   Certo blocks an action that reaches outside it.
-- **`certo init` offers more models.** After a passing model check, it
-  asks whether to set up more models now, and on yes runs
-  `certo init models` at once.
-- **Trusted skill repositories (first step).** List the repositories you
-  trust in `skill_sources.yaml`; `certo skills assess` checks and
-  classifies every skill in them; a run adds the ones that fit its
-  project and task, and `certo skills suggest` shows which.
+- **Trusted skill repositories.** List the repositories you trust in
+  `skill_sources.yaml`; `certo skills assess` checks and classifies every
+  skill in them; a run adds the ones that fit its project and task, and
+  `certo skills suggest` shows which.
 - **A task file written in milestones runs in milestones** without
   `--milestones`; `--no-milestones` sends it as one task.
 - **Three bigger samples, in milestones**: a platform game with
   parallax, a 3D wireframe tank game, and a team task board web app with
-  SQLite. `certo init` puts them in `tasks/`; run one with
-  `certo --milestones tasks/team-board.md --project team-board`.
+  SQLite.
+- **`certo init` offers more models.** After a passing model check, it
+  asks whether to set up more models now, and on yes runs
+  `certo init models` at once.
 - **`certo check` gives an Ollama model's real speed**, in tokens a
   second, as Ollama measures it.
-- **`certo --help` lists every command**, each in its own section.
+- **A guide to check another AI tool's work** with `certo verify`.
 
 ## New: the agent stays in its project root
 
@@ -42,7 +42,10 @@ the other projects, and Certo's checks found several projects and ended
   ```
 
   A folder that already exists isn't reused: the new task gets
-  `farewell-2`, and `--project farewell` works on the old one.
+  `farewell-2`, and `--project farewell` works on the old one. In any
+  other folder (your own repository, say) Certo works where you run it,
+  as before. `certo init` now also creates the empty `projects/` folder,
+  so this works from the first run.
 - **The agent is told its project root**, and that nothing above or
   beside it is part of the task.
 - **Certo blocks an action that reaches outside the root** before it
@@ -53,12 +56,97 @@ the other projects, and Certo's checks found several projects and ended
   Certo blocked an action outside the project root: <workspace>/projects is outside the project root <workspace>/projects/farewell-3. Work only inside the project root: nothing outside it is part of the task.
   ```
 
-  It is a guard rail, not a sandbox; `--execution docker` is the
-  sandbox. Three live runs are in
+  The run summary counts them (`Blocked outside the project root: 2
+  actions`), and so do the JSON result and each benchmark run
+  (`blocked_outside_root`). It is a guard rail, not a sandbox;
+  `--execution docker` is the sandbox. Three live runs are in
   [The project root in 0.2.3](../benchmark/project-root-0.2.3.md).
+
+Measured on Claude Haiku 5.5, the 13 bundled tasks, 3 repeats per arm:
+with the root sentence, the agent tried to reach outside its root in 2 of
+39 runs, against 9 of 39 without it (the blocked actions of that run,
+checked again with the final guard), with every hidden test passing in
+both arms and about 11% fewer input tokens. The same comparison on a
+local model is still to run.
 
 See [Safety](../concepts/safety.md#what-the-agent-can-do) and
 [`certo`](../reference/commands.md#certo).
+
+## New: trusted skill repositories
+
+Instead of adding skills one by one, list the git repositories you trust
+in `skill_sources.yaml` (`~/.config/certo/` for every project, or
+`<project>/.certo/` for one), then run:
+
+```bash
+certo skills assess --global
+```
+
+Certo downloads each repository at an exact commit and checks every skill
+in it with the same rules as `certo skills add`: license, scripts, size,
+how it fires. Each skill is classified (testing, review, setup...;
+python, node...) by fixed rules, with no model call, and gets a verdict:
+`usable`, `needs review` or `rejected`. On `OpenHands/extensions`, 73
+skills: 52 usable, 15 to review, 6 rejected.
+
+A run then adds the usable skills that fit its project and task, whole,
+up to `CERTO_TRUSTED_SKILLS_TOKENS` (default 4000; `0` turns them off),
+and says which before it starts:
+
+```text
+Certo: added the trusted skill 'uv' (github:OpenHands/extensions, about 591 tokens): the task says "uv", for python.
+```
+
+A skill fits when its own trigger fires on the task, or when two links
+tie it to the work (a project file it names, the project's ecosystem, a
+step the task names), so a Node skill doesn't fit every Node project.
+Official skills, yours and the project's own win over a trusted skill of
+the same name. `certo skills suggest` shows the same choice before a
+run, with the reasons, and installs nothing:
+
+```bash
+certo skills suggest --project my-api --task "Set up uv and add pytest tests"
+```
+
+Experimental: no benchmark yet shows whether these skills help. See
+[Trust a whole repository](../guides/manage-skills.md#trust-a-whole-repository).
+Getting started now says what the built-in skills are, and how to add
+your own or a trusted repository.
+
+## New: milestones without the flag, and three bigger samples
+
+A task file written in milestones (two or more `## Milestone N`
+headings, numbered 1, 2, 3...) now runs milestone by milestone without
+`--milestones`. Before, it was sent as one task, and its acceptance
+blocks reached the agent as plain text and were never checked. Certo
+says so before it starts:
+
+```text
+Certo: tasks/team-board.md is written in 5 milestones, so it runs milestone by milestone (--no-milestones runs it as one task).
+```
+
+`--no-milestones` sends such a file as one task, as before. A file with
+milestone headings that can't be read as milestones (a broken acceptance
+block, say) is refused before any model call. Text, URLs and files with
+a single heading run as one task, as before.
+
+`certo init` puts three bigger samples in `tasks/`, each written in 4 or
+5 milestones. They aren't in the menu at the end of `init`, and haven't
+been measured yet:
+
+- `sky-hopper.md`: a side-scrolling platform game with a camera and
+  three parallax layers, in the browser;
+- `iron-horizon.md`: a first-person 3D tank game in wireframe, with its
+  own 3D drawing and no library, in the browser;
+- `team-board.md`: a team task board web app in Python: accounts and
+  sessions, projects with roles, columns and drag-and-drop cards,
+  comments, history and search, on a SQLite database.
+
+```bash
+certo tasks/team-board.md --project team-board
+```
+
+See [Run a task in milestones](../guides/run-in-milestones.md).
 
 ## New: `certo init` offers more models
 
@@ -80,45 +168,35 @@ just saved. Under "Next", `certo init` now also lists
 `certo init models`, so you can do it later. See
 [`certo init`](../reference/commands.md#certo-init).
 
-## New: trusted skill repositories, first step
+## New: an Ollama model's real speed in `certo check`
 
-Instead of adding skills one by one, list the git repositories you trust
-in `skill_sources.yaml` (`~/.config/certo/` for every project, or
-`<project>/.certo/` for one), then run:
-
-```bash
-certo skills assess --global
-```
-
-Certo downloads each repository at an exact commit and checks every skill
-in it with the same rules as `certo skills add`: license, scripts, size,
-how it fires. Each skill is classified (testing, review, setup...;
-python, node...) by fixed rules, with no model call, and gets a verdict:
-`usable`, `needs review` or `rejected`. On `OpenHands/extensions`, 73
-skills: 52 usable, 15 to review, 6 rejected.
-
-`certo skills suggest` then shows which assessed skills fit a project
-and a task, best first, each with its reasons (`the task says "uv"`,
-`the project has uv.lock`, `for python`, `about testing`). It needs two
-links, or the skill's own trigger, so a Node skill doesn't fit every
-Node project. It installs nothing.
-
-A run then adds the usable skills that fit its project and task, whole,
-up to `CERTO_TRUSTED_SKILLS_TOKENS` (default 4000; `0` turns them off),
-and says which before it starts:
+`certo check` timed the whole test request, loading the model included,
+so it couldn't tell how fast a local model writes. It now asks Ollama for
+one short answer and reports Ollama's own measure:
 
 ```text
-Certo: added the trusted skill 'uv' (github:OpenHands/extensions, about 591 tokens): the task says "uv", for python.
+Ollama 0.40.6 · context window 131,072 tokens (from server) · 2.0s
+Speed: 37.8 tokens a second (64 tokens written in 1.7s, measured by Ollama).
 ```
 
-Official skills, yours and the project's own win over a trusted skill of
-the same name. No benchmark yet shows whether these skills help. See
-[Trust a whole repository](../guides/manage-skills.md#trust-a-whole-repository).
+A few tokens a second usually means part of the model runs on the CPU;
+see [Troubleshooting](../troubleshooting.md#every-step-is-very-slow).
+Cloud models print nothing new.
 
 ## Also
 
+- **Check another AI tool's work:** a new guide shows `certo verify`
+  after Claude Code, Cursor, Aider or your own edits, and what each
+  verdict says about the tool's "done" (issue #31). See
+  [Check another AI tool's work](../guides/verify-another-tools-work.md).
 - **`certo --help` lists every subcommand** (`init`, `check`, `models`,
   `skills` and the others) in a section of its own, like the options.
 - **Troubleshooting:** `pip` from a Python older than 3.12 finds no
   Certo; the page shows how to install it with uv, which brings its own
   Python.
+- **Benchmarks:** an arm can leave out the project-root sentence
+  (`root_prompt: false`), to measure what it changes.
+- **One home for the sample tasks:** `src/certo/starter/tasks/`, the
+  files `certo init` copies. Older drafts in the repository's `examples/`
+  folder are gone; it now holds only the script that compares models on
+  one task.
