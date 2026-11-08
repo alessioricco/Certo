@@ -149,10 +149,11 @@ def test_an_escalation_shows_each_rung_and_how_the_model_was_chosen():
     text = render_report(result, _STARTED)
 
     assert (
-        "| 1 | local (`ollama/qwen3.8:27b`) | provider error | 0 | 1m 01s | $0.0000 | - |" in text
+        "| 1 | local (`ollama/qwen3.8:27b`) | provider error | 0 | none | 1m 01s | 0 / 0 | $0.0000 | - |"
+        in text
     )
     assert (
-        "| 2 | haiku (`anthropic/claude-haiku-5-5`) | verified | 1 | 4m 11s | $0.0500 | yes |"
+        "| 2 | haiku (`anthropic/claude-haiku-5-5`) | verified | 1 | none | 4m 11s | 0 / 0 | $0.0500 | yes |"
         in text
     )
     assert "- Chose `local` (ladder): the first rung" in text
@@ -172,13 +173,39 @@ def test_the_report_lists_the_skills_the_run_had():
     assert "## Skills\n\nThe run had no skills.\n" in _report(_outcome())
 
 
-def test_a_milestone_runs_report_lists_each_milestones_skills():
+def test_a_milestone_runs_report_has_a_row_per_milestone_with_models_skills_and_cost():
+    from certo.result import usage_dict
+    from certo.run_summary import ModelUsage, RunSummary
+
+    usage = usage_dict(
+        RunSummary(
+            duration_seconds=60,
+            models=(
+                ModelUsage(
+                    model="openai/gpt-6.1-sol",
+                    prompt_tokens=120000,
+                    completion_tokens=8000,
+                    cost=0.41,
+                ),
+            ),
+        )
+    )
     milestones = [
-        {"number": 1, "title": "Set up", "verdict": "verified", "skills": ["repository-discovery"]},
-        {"number": 2, "title": "Play", "verdict": "verified", "skills": []},
-        {"number": 3, "title": "Ship", "verdict": None, "skills": None},  # not run
+        {
+            "number": 1,
+            "title": "Set up",
+            "verdict": "verified",
+            "skills": ["repository-discovery"],
+            "usage": usage,
+        },
+        {"number": 2, "title": "Play", "verdict": None, "skills": None, "usage": None},
     ]
     text = _report(_outcome(skills_used=("x",)), milestones=milestones)
 
-    assert "## Skills\n\n- Milestone 1: repository-discovery\n- Milestone 2: none\n\n" in text
-    assert "Milestone 3:" not in text.split("## Skills")[1].split("##")[0]
+    assert "| Milestone | Verdict | Models | Skills | Tokens in / out | Cost |" in text
+    assert (
+        "| 1. Set up | verified | `openai/gpt-6.1-sol` | repository-discovery "
+        "| 120,000 / 8,000 | $0.4100 |"
+    ) in text
+    assert "| 2. Play | not started | - | - | - | - |" in text
+    assert "## Skills\n\nEach milestone's are in the Milestones table above.\n" in text

@@ -244,10 +244,20 @@ Time 22.3s · tokens 131,548 in / 3,121 out · cost $0.0053
   file the agent touched, or the agent itself brought in. For the same
   task on Certo 0.2.3 it reads `testing-and-verification,
   pytest-conventions` ("test" and "pytest" are in the task). With
-  `--milestones`, one line per milestone. To see which skills a task
+  milestones, each milestone's are in the Milestones table. To see which skills a task
   would get before running it: `certo skills list --task`.
-- With `--milestones`, a table gives each milestone's verdict; with
-  `--escalate`, one row per rung, and how each model was chosen.
+- With `--milestones`, a table gives one row per milestone: its verdict,
+  and the models, skills, tokens and cost of its own run. With
+  `--escalate`, one row per rung (model, verdict, fix attempts, skills,
+  time, tokens, cost), and how each model was chosen. From a real
+  two-milestone run on Haiku (Certo 0.2.3):
+
+  ```markdown
+  | Milestone | Verdict | Models | Skills | Tokens in / out | Cost |
+  |---|---|---|---|---|---|
+  | 1. Count the words | verified | `anthropic/claude-haiku-5-5` | repository-discovery, testing-and-verification, python-environment, pytest-conventions, pin-dependencies | 182,358 / 6,003 | $0.0080 |
+  | 2. Fix the empty file case | verified | `anthropic/claude-haiku-5-5` | debugging-and-failure-repair, documentation-and-operational-readiness, repository-discovery, testing-and-verification, python-environment, pytest-conventions | 212,266 / 5,273 | $0.0070 |
+  ```
 - A run stopped by Ctrl-C or an error gets its report too, with the
   reason, and says what isn't known yet.
 - The page is built from the same facts as [`certo --json`](../reference/json-result.md).

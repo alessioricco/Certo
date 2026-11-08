@@ -84,14 +84,25 @@ def _why(result: dict[str, Any]) -> list[str]:
     return [f"- {r}" for r in reasons] or ["- Every check Certo ran passed."]
 
 
+def _milestone_row(m: dict[str, Any]) -> tuple[str, ...]:
+    """One milestone: its verdict, and what its own run used and cost
+    (empty cells for a milestone that didn't run in this session)."""
+    usage = m.get("usage")
+    skills = m.get("skills")
+    return (
+        f"{m['number']}. {m['title']}",
+        m["verdict"] or "not started",
+        ", ".join(f"`{x['model']}`" for x in usage["models"]) if usage else "",
+        (", ".join(skills) or "none") if skills is not None else "",
+        f"{usage['prompt_tokens']:,} / {usage['completion_tokens']:,}" if usage else "",
+        _cost(usage["cost"], usage["cost_known"]) if usage else "",
+    )
+
+
 def _skills(result: dict[str, Any]) -> list[str]:
-    """The skills the run had, and for milestones each milestone's."""
-    milestones = [m for m in result.get("milestones") or [] if m.get("skills") is not None]
-    if milestones:
-        return [
-            *(f"- Milestone {m['number']}: {', '.join(m['skills']) or 'none'}" for m in milestones),
-            "",
-        ]
+    """The skills the run had (for milestones, each one's is in their table)."""
+    if any(m.get("skills") is not None for m in result.get("milestones") or []):
+        return ["Each milestone's are in the Milestones table above.", ""]
     skills = result.get("skills") or []
     if not skills:
         return ["The run had no skills.", ""]
@@ -142,14 +153,26 @@ def _models(result: dict[str, Any]) -> list[str]:
         lines.append("Escalation, one row per rung:")
         lines.append("")
         lines += _table(
-            ("Rung", "Model", "Verdict", "Fix attempts", "Time", "Cost", "Final"),
+            (
+                "Rung",
+                "Model",
+                "Verdict",
+                "Fix attempts",
+                "Skills",
+                "Time",
+                "Tokens in / out",
+                "Cost",
+                "Final",
+            ),
             [
                 (
                     r["rung"],
                     f"{r['name']} (`{r['model']}`)",
                     r["verdict"] or r.get("failure"),
                     r["fix_attempts"],
+                    ", ".join(r.get("skills") or []) or "none",
                     format_duration(r["duration_seconds"]),
+                    f"{r.get('prompt_tokens', 0):,} / {r.get('completion_tokens', 0):,}",
                     _cost(r["cost"], r["cost_known"]),
                     "yes" if r.get("final") else "",
                 )
@@ -195,8 +218,8 @@ def render_report(result: dict[str, Any], started_at: datetime) -> str:
     if milestones:
         lines += ["## Milestones", ""]
         lines += _table(
-            ("Milestone", "Verdict"),
-            [(f"{m['number']}. {m['title']}", m["verdict"] or "not started") for m in milestones],
+            ("Milestone", "Verdict", "Models", "Skills", "Tokens in / out", "Cost"),
+            [_milestone_row(m) for m in milestones],
         )
 
     checks = result.get("checks") or []

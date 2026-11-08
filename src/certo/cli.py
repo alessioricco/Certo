@@ -46,7 +46,7 @@ from .milestones import (
 from .project_state import (
     status_path,
 )
-from .result import run_result
+from .result import run_result, usage_dict
 from .run_history import append_run, note_models_in_readme, run_entry
 from .run_progress import RunProgress
 from .run_report import report_relpath, write_report
@@ -890,6 +890,7 @@ def _run_task_command(
                         if m.number in milestone_state.skills
                         else None
                     ),
+                    "usage": usage_dict(milestone_state.usage.get(m.number)),
                 }
                 for m in milestone_state.plan.milestones
             ]

@@ -22,6 +22,7 @@ import os
 import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
+from typing import Any
 
 from .acceptance import AcceptanceCheck, AcceptanceCheckError, parse_acceptance_checks
 from .escalation import workspace_listing
@@ -364,6 +365,8 @@ class MilestoneState:
     # The skills each milestone run in this session had (not saved: a
     # resume knows only the milestones it runs itself).
     skills: dict[int, tuple[str, ...]] = field(default_factory=dict)
+    # Each milestone's own time, tokens and cost (a RunSummary), same rule.
+    usage: dict[int, Any] = field(default_factory=dict)
 
     @classmethod
     def from_text(cls, text: str, source: str) -> MilestoneState:

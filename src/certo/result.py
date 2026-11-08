@@ -17,6 +17,7 @@ from . import __version__
 from .escalation import rung_dicts
 
 if TYPE_CHECKING:  # the SDK loads with runner; `certo --help` mustn't wait for it
+    from .run_summary import RunSummary
     from .runner import TaskOutcome
 
 RESULT_VERSION = 1
@@ -56,7 +57,11 @@ def _independent(found: Any) -> dict[str, Any] | None:
 
 
 def _usage(outcome: TaskOutcome) -> dict[str, Any] | None:
-    summary = outcome.run_summary
+    return usage_dict(outcome.run_summary)
+
+
+def usage_dict(summary: RunSummary | None) -> dict[str, Any] | None:
+    """A run's (or one milestone's) time, tokens, cost and models."""
     if summary is None:
         return None
     return {

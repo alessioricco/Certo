@@ -112,7 +112,7 @@ shortened):
 | `rungs` | With `--escalate`: one entry per model that ran, with `final: true` on the one whose verdict this is, and the fields listed for `rungs` in [Server API](server-api.md#get-taskstask_id). Otherwise `null`. See [Escalate between models](../guides/escalate-between-models.md). |
 | `model_decisions` | With `--escalate` or `--auto-model`: how each model was chosen, as `MODEL_DECISIONS.md` in the project tells it. Each decision has `kind`, `timestamp`, `task_profile` and `weights` (with `--auto-model`), `candidates` (each `name` and `score`), `scored_by` (`score`, a weighted rating, with `--auto-model`; `capability` on a ladder), `chosen` and `reason`. Otherwise `null`. An example follows the table. |
 | `skills` | The skills the run had, by name: the always-on ones first, then those its task's words, a file the agent touched, or the agent itself brought in. Empty when none (and when the run stopped with an error). For milestones, the last milestone's; each milestone's own are under `milestones`. |
-| `milestones` | With `--milestones`: each milestone's `number`, `title`, `verdict` (`null` if it didn't start) and `skills` (`null` when it didn't run in this session). Otherwise `null`. |
+| `milestones` | With `--milestones`: each milestone's `number`, `title`, `verdict` (`null` if it didn't start), `skills` and `usage` (its own run's time, tokens, cost and models, in the same form as the top-level `usage`; both `null` when it didn't run in this session). Otherwise `null`. |
 | `error` | Why the run stopped without a verdict (`interrupted`, or the error), or `null`. |
 
 The result never holds an API key.
