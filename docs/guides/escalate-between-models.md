@@ -322,6 +322,11 @@ cost so far and a rough price for the next model:
 qwen-local couldn't finish (no_progress). Try gpt-luna next? Cost so far: $0.0000. gpt-luna: roughly $0.24 for a run, from LiteLLM's prices. [Y/n]
 ```
 
+The price is the median of the next model's last recorded task runs when
+there are 3 or more (`roughly $0.05 for a run, the median of your last
+12`), else the rough price above. See
+[Measured runs](run-records-and-costs.md#measured-runs).
+
 Enter climbs; `n` stops with the current verdict. Without `--interactive`
 escalation is automatic, and in server mode it is always automatic.
 

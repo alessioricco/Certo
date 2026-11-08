@@ -434,6 +434,14 @@ given design was chosen.
   not free, except for a local-prefix model id, which is free). Built in `stream_task`'s `finally` on every run, attached to
   `TaskOutcome.run_summary`, printed by `cli.py`, written to
   `metadata.json`/`metrics.json`.
+- **`run_stats.py`** — pure stdlib: `record_run()` appends one CSV line
+  per model to `run_stats.csv` beside the user settings file (called by
+  `stream_task` after a finished run, `kind` from `stats_kind`, else
+  `milestone`/`task`; never raises); `measured_estimate()` /
+  `estimate_for()` give the median and range of the last 20 runs, used by
+  the bench plan, `_escalation_question` and `certo check --task`;
+  `estimate_error()` compares stored estimates with real cost. Tests get
+  their own file (conftest `run_stats_file`).
 - **`llm_check.py`** + `certo-admin check-llm` — one direct
   `LLM.completion()` built via `build_llm()` (same config path as a real
   run), `num_retries=0` plus a short timeout, pass = non-empty text.

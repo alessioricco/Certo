@@ -57,9 +57,15 @@ from .milestones import (
     parse_milestones,
     whole_task,
 )
+from .run_stats import MeasuredEstimate, measured_estimate, read_rows, short_duration
 from .run_summary import combine_summaries
 from .escalation import ESCALATING_VERDICTS, EscalationError, derive_ladder
-from .model_catalog import ModelCatalogError, classify_task, rank_for_profile
+from .model_catalog import (
+    ModelCatalogEntry,
+    ModelCatalogError,
+    classify_task,
+    rank_for_profile,
+)
 from .model_pricing import (
     ESTIMATE_INPUT_TOKENS,
     ESTIMATE_OUTPUT_TOKENS,
@@ -530,20 +536,39 @@ def _print_plan(
     history = climb_history(out_dir.parent, cfg)
     at_most, likely, unknown = 0.0, 0.0, []
     likely_known = True
+    stats = read_rows()
+    guessed = False
+
+    def per_run_cost(entry: ModelCatalogEntry) -> tuple[float | None, MeasuredEstimate | None]:
+        # Measured bench runs of the model when there are enough, else
+        # the fixed guess; a local model costs nothing either way.
+        nonlocal guessed
+        measured = measured_estimate(entry.model, "bench", rows=stats)
+        if is_local(entry):
+            return 0.0, measured
+        if measured is not None:
+            return measured.cost, measured
+        guessed = True
+        return estimate_run_cost(entry), None
+
     for arm in cfg.arms:
         runs = sum(1 for p in todo if p.arm.name == arm.name)
         names = _plan_models(cfg, arm)
         parts, costs = [], []
         for name in names:
             entry = cfg.catalog[name]
-            per_run = estimate_run_cost(entry)
+            per_run, measured = per_run_cost(entry)
             if per_run == 0.0:
                 price = "local, no cost"
             elif per_run is None:
                 price = "price unknown"
                 unknown.append(name)
+            elif measured is not None:
+                price = f"~${per_run:.2f} per run, measured over {measured.runs} runs"
             else:
                 price = f"~${per_run:.2f} per run"
+            if measured is not None and measured.seconds is not None:
+                price += f", ~{short_duration(measured.seconds)} each"
             costs.append(per_run or 0.0)
             parts.append(f"{name} ({entry.model}, {price})")
         worst = sum(costs)
@@ -571,7 +596,7 @@ def _print_plan(
             # One model per run, the one the task's profile ranks first;
             # the others only on a fallback.
             picks = _auto_picks(cfg, arm, [p.task for p in todo if p.arm.name == arm.name])
-            likely += sum((estimate_run_cost(cfg.catalog[n]) or 0.0) * c for n, c in picks.items())
+            likely += sum((per_run_cost(cfg.catalog[n])[0] or 0.0) * c for n, c in picks.items())
             chosen = ", ".join(f"{n} for {c} run(s)" for n, c in picks.items())
             note = f" (picks {chosen}; the others only on a fallback)" if picks else ""
         else:
@@ -594,10 +619,13 @@ def _print_plan(
     line = f"  Estimated cost: at most ~${at_most:.2f}"
     if likely_known and abs(likely - at_most) > 0.005:
         line += f", likely ~${likely:.2f}"
-    line += (
-        f" (rough: assumes ~{ESTIMATE_INPUT_TOKENS // 1000}k input and "
-        f"~{ESTIMATE_OUTPUT_TOKENS // 1000}k output tokens per run)"
-    )
+    if guessed:
+        line += (
+            f" (rough where not measured: assumes ~{ESTIMATE_INPUT_TOKENS // 1000}k input "
+            f"and ~{ESTIMATE_OUTPUT_TOKENS // 1000}k output tokens per run)"
+        )
+    else:
+        line += " (from your measured bench runs)"
     if unknown:
         line += f"; no price known for {', '.join(sorted(set(unknown)))}"
     print(line)
@@ -708,8 +736,17 @@ def _init_out_dir(cfg: BenchConfig, out_dir: Path, estimate: dict[str, Any]) -> 
 def _default_stream(
     task: str, *, cfg, ladder=None, on_message=None, model_catalog=None, acceptance_checks=None
 ) -> Any:
+    from .model_pricing import is_local_model
     from .runner import stream_task
+    from .run_stats import estimate_for
 
+    # Recorded in run_stats.csv as a `bench` run, with the cost expected
+    # for its (first) model: the error of these estimates is tracked.
+    estimate = None
+    if cfg is not None:
+        estimate, _ = estimate_for(
+            cfg.model, "bench", local=is_local_model(cfg.model, cfg.base_url)
+        )
     return stream_task(
         task,
         cfg=cfg,
@@ -717,6 +754,8 @@ def _default_stream(
         on_message=on_message,
         model_catalog=model_catalog,
         acceptance_checks=acceptance_checks,
+        stats_kind="bench",
+        cost_estimate=estimate,
     )
 
 

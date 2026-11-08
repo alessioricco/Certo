@@ -1668,3 +1668,44 @@ def test_the_milestone_samples_parse_and_are_never_in_the_menu():
     readme = init_cmd._STARTER.joinpath("README.md").read_text(encoding="utf-8")
     for name in init_cmd.MILESTONE_SAMPLES:
         assert f"tasks/{name}" in readme
+
+
+def test_certo_check_task_says_what_the_first_models_runs_measured(tmp_path, monkeypatch, checks):
+    from certo.run_stats import record_run
+    from certo.run_summary import ModelUsage, RunSummary
+
+    code, text = _split_check(tmp_path, monkeypatch, ["--task", "Fix the bugs in the parser"])
+    assert "Measured: fewer than 3 task runs of gpt-luna recorded" in text
+
+    for cost, seconds in ((0.01, 30), (0.02, 60), (0.05, 90)):
+        usage = ModelUsage(model="openai/gpt-5.6-luna", cost=cost)
+        record_run(
+            RunSummary(duration_seconds=seconds, models=(usage,)),
+            kind="task",
+            verdict="verified",
+            profile="debugging",
+        )
+    code, text = _split_check(tmp_path, monkeypatch, ["--task", "Fix the bugs in the parser"])
+
+    assert code == 0
+    assert (
+        "Measured for gpt-luna: ~$0.02 per run ($0.01-$0.05), ~1m 00s (30s-1m 30s), "
+        "from your last 3 task runs with profile debugging."
+    ) in text
+
+
+def test_certo_check_shows_how_far_off_the_cost_estimates_were(tmp_path, monkeypatch, checks):
+    from certo.run_stats import record_run
+    from certo.run_summary import ModelUsage, RunSummary
+
+    for _ in range(3):
+        usage = ModelUsage(model="openai/main", cost=0.5)
+        record_run(
+            RunSummary(duration_seconds=10, models=(usage,)),
+            kind="bench",
+            verdict="verified",
+            estimate=1.0,
+        )
+    code, text = _split_check(tmp_path, monkeypatch, [])
+
+    assert "Cost estimates, last 3 runs: actual 0.5x the estimate." in text

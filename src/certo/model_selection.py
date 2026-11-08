@@ -209,9 +209,7 @@ def write_model_decisions(
     if milestone:
         number, total, title = milestone
         earlier = [
-            block.rstrip("\n")
-            for found, block in _milestone_sections(path)
-            if found < number
+            block.rstrip("\n") for found, block in _milestone_sections(path) if found < number
         ]
         body = "\n\n".join([*earlier, f"## Milestone {number} of {total}: {title}\n\n{body}"])
     with open(path, "w", encoding="utf-8") as f:

@@ -30,6 +30,7 @@ from dataclasses import dataclass, field
 from importlib import resources
 from typing import TextIO
 
+from .run_stats import describe_error, estimate_error
 from . import menus as _menus
 from .catalog_report import print_catalog_report, print_task_routing
 from .config import (
@@ -587,6 +588,9 @@ def check_main(argv: list[str], *, out: TextIO | None = None) -> int:
         check=lambda cfg, timeout: check_tool_calling(cfg, timeout=timeout),
         explain=lambda result, _provider: explain(result, _provider_name(result.model)),
     )
+    error = estimate_error()
+    if error is not None:
+        print(f"\n{describe_error(error)}", file=out)
     if not ok or not catalog_ok:
         print("Fix the settings as described, then run: certo check", file=out)
     return 0 if ok and catalog_ok else 1

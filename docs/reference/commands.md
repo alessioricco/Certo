@@ -671,8 +671,10 @@ shows what `--auto-model` would do with that task, without running it:
 the task's title, the profile it matches and why, and every active model
 in the order Certo would try it. For a task file written in milestones,
 one more line per milestone gives its profile and first model: a
-milestone is classified by its own title first, then by the task's. It
-makes no model call and doesn't check the main model:
+milestone is classified by its own title first, then by the task's. A
+`Measured` line says what the first model's recorded runs of this kind
+cost and took (see [Measured runs](../guides/run-records-and-costs.md#measured-runs)).
+It makes no model call and doesn't check the main model:
 
 ```text
 Task title: Fix the bugs in the parser
@@ -682,7 +684,19 @@ Models, in the order --auto-model tries them (the profile names gpt-luna; fallba
   2. claude-sonnet (score 20)
   3. qwen-local (score 9)
 The first model runs the task. The next one takes over if its provider fails, or if a fix attempt still fails Certo's checks.
+Measured for gpt-luna: ~$0.02 per run ($0.01-$0.05), ~1m 00s (30s-1m 30s), from your last 3 task runs with profile debugging.
 ```
+
+With fewer than 3 recorded runs, the line says so: `Measured: fewer
+than 3 task runs of gpt-luna recorded, so cost estimates are a fixed
+guess.`
+
+**How far off the estimates were.** Once 3 or more recorded runs had a
+cost estimate before they started (the benchmark gives one to every
+run), `certo check` ends with how their real cost compared, over the
+last 20 such runs and the 20 before them:
+`Cost estimates, last 20 runs: actual 0.4x the estimate (the 20 before: 0.1x).`
+1x is right; under 1 the estimates were too high.
 
 **Exit code.** 0 when the model check passes, the catalog has no error,
 and (with `--models`) every model passes; 1 otherwise. `--models` without

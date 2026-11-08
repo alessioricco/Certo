@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import os
 from collections.abc import Callable
+from dataclasses import replace
 from typing import TextIO
 
 from .catalog_check import check_catalog, usable_rungs
@@ -28,7 +29,9 @@ from .model_catalog import (
 )
 from .model_files import find, missing_message, resolve, resolve_optional
 from .milestones import MilestoneError, milestone_task, parse_milestones, written_in_milestones
+from .model_pricing import is_local
 from .model_selection import config_for_entry
+from .run_stats import MIN_RUNS, measured_estimate
 
 # llm_check.explain() names the CERTO_LLM_* settings; for a catalog entry the fix
 # is in its models.yaml fields instead.
@@ -183,7 +186,7 @@ def print_task_routing(out: TextIO, task_text: str) -> bool:
         file=out,
     )
     try:
-        _ranked_entries, how = rank_for_profile(catalog, profile)
+        ranked_entries, how = rank_for_profile(catalog, profile)
     except ModelCatalogError as exc:
         print(f"  Error: {exc}", file=out)
         return False
@@ -195,8 +198,24 @@ def print_task_routing(out: TextIO, task_text: str) -> bool:
         "fails, or if a fix attempt still fails Certo's checks.",
         file=out,
     )
+    if ranked_entries:
+        kind = "milestone" if written_in_milestones(task_text) else "task"
+        print(_measured_line(ranked_entries[0], kind, profile.name), file=out)
     _print_milestone_routing(out, task_text, catalog)
     return True
+
+
+def _measured_line(entry: ModelCatalogEntry, kind: str, profile: str) -> str:
+    """What `entry`'s recorded runs of this kind say to expect (run_stats.py)."""
+    measured = measured_estimate(entry.model, kind, profile)
+    if measured is None:
+        return (
+            f"Measured: fewer than {MIN_RUNS} {kind} runs of {entry.name} recorded, "
+            "so cost estimates are a fixed guess."
+        )
+    if is_local(entry):
+        measured = replace(measured, cost=0.0, cost_low=0.0, cost_high=0.0)
+    return f"Measured for {entry.name}: {measured.describe()}."
 
 
 def _print_milestone_routing(out: TextIO, task_text: str, catalog: ModelCatalog) -> None:

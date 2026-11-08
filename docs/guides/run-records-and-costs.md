@@ -260,6 +260,26 @@ ladder, how it was built, every climb with its reason, and why the climb
 stopped. It is written whether or not `CERTO_ARTIFACTS_DIR` is set. See
 [Pick models automatically](pick-models-automatically.md).
 
+## Measured runs
+
+Every finished run adds one line per model it used to `run_stats.csv` in
+your Certo folder (`~/.config/certo/`, or under `$XDG_CONFIG_HOME`): the
+date, the model id, the kind of run (`task`, `milestone`, or `bench` for a
+benchmark run), the task profile `--auto-model` chose, the verdict, the
+time in seconds, the input, cached and output tokens, the cost, and the
+cost estimate the run had before it started (empty when none). The time
+is left empty when several models shared the run. It holds model ids and
+numbers only, never a key or the task. Delete the file to start again.
+
+Certo reads it back for its estimates: a model's last 20 runs of the same
+kind (of the same profile too, when there are 3 or more of them), with
+the median as the estimate and the lowest and highest as the range. With
+fewer than 3 runs it falls back to a fixed guess. The estimates appear in
+the [benchmark plan](benchmark.md), in the [escalation
+prompt](escalate-between-models.md#confirm-each-climb), and in
+[`certo check --task`](../reference/commands.md#certo-check). A run that
+stops on an error isn't recorded.
+
 ## Related
 
 - [Configuration](../reference/configuration.md)

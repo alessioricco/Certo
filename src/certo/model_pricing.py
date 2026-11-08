@@ -27,9 +27,14 @@ def is_local_model_id(model: str) -> bool:
 
 def is_local(entry: ModelCatalogEntry) -> bool:
     """A model served on this machine or this network (Ollama and friends)."""
-    if is_local_model_id(entry.model):
+    return is_local_model(entry.model, entry.base_url)
+
+
+def is_local_model(model: str, base_url: str | None) -> bool:
+    """`is_local` for a model id and its server address."""
+    if is_local_model_id(model):
         return True
-    host = urlparse(entry.base_url or "").hostname
+    host = urlparse(base_url or "").hostname
     if not host:
         return False
     if host == "localhost":
@@ -44,13 +49,18 @@ def is_local(entry: ModelCatalogEntry) -> bool:
 def estimate_run_cost(entry: ModelCatalogEntry) -> float | None:
     """A rough cost of one run in USD, from LiteLLM's prices, or None when
     the model has no known price."""
-    if is_local(entry):
-        return 0.0
+    return 0.0 if is_local(entry) else guess_run_cost(entry.model)
+
+
+def guess_run_cost(model: str) -> float | None:
+    """The fixed guess for one run of a cloud model: ESTIMATE_INPUT_TOKENS
+    and ESTIMATE_OUTPUT_TOKENS at LiteLLM's list price, or None when the
+    model has no known price. run_stats.estimate_for prefers measured runs."""
     try:
         import litellm
 
         prompt, completion = litellm.cost_per_token(
-            model=entry.model,
+            model=model,
             prompt_tokens=ESTIMATE_INPUT_TOKENS,
             completion_tokens=ESTIMATE_OUTPUT_TOKENS,
         )

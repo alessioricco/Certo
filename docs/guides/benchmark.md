@@ -111,9 +111,14 @@ Before anything runs, Certo prints the plan: tasks × arms × repeats, and a
 rough cost estimate for paid models where LiteLLM knows the price. Answer
 `y` to start, or pass `--yes` (needed when there is no terminal).
 
-**The cost estimate.** Each run is priced at about 500k input and 20k
-output tokens, from LiteLLM's price list; local models cost nothing. It is
-rough: real runs vary a lot.
+**The cost estimate.** A model with 3 or more benchmark runs recorded on
+this computer is priced at the median cost of its last 20, with their
+median time: `~$0.03 per run, measured over 3 runs, ~45s each` (see
+[Measured runs](run-records-and-costs.md#measured-runs)). Any other model
+is priced at about 500k input and 20k output tokens, from LiteLLM's price
+list, and the estimate line says it is rough where not measured. Local
+models cost nothing. Each run records the estimate it had, so
+`certo check` can say how far off the estimates were.
 
 - An `escalate` arm is shown with **at most** the cost of every rung
   running. A derived arm lists only the ladder it will use (the same for
@@ -131,7 +136,7 @@ For example (no earlier results yet):
 
 ```text
   derived: escalate, qwen3.8-27b-local (ollama/qwen3.8:27b, local, no cost); claude-haiku-5-5 (anthropic/claude-haiku-5-5, ~$0.30 per run); claude-opus-5-5 (anthropic/claude-opus-5-5, ~$2.40 per run), 9 run(s) (derived from the ratings, the same for every task; at most ~$2.70 per run if every rung runs; no earlier results for qwen3.8-27b-local, claude-haiku-5-5 to say more)
-  Estimated cost: at most ~$70.20 (rough: assumes ~500k input and ~20k output tokens per run)
+  Estimated cost: at most ~$70.20 (rough where not measured: assumes ~500k input and ~20k output tokens per run)
 ```
 
 `--max-cost` (below) works on the recorded cost, not on the estimate.

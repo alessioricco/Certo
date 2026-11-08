@@ -27,6 +27,11 @@ easier to start:
   ones, Kimi K2.7 Code out. **`certo models check`** compares your list's
   prices and cost ratings with LiteLLM's price list, and `--fix` sets
   each cost from its price.
+- **Estimates from your own runs.** Every run is recorded in
+  `run_stats.csv`; the benchmark plan, the escalation prompt and
+  `certo check --task` estimate a model's cost and time from its last
+  runs instead of a fixed guess, and `certo check` says how far off the
+  estimates were.
 - **`certo init` offers more models.** After a passing model check, it
   asks whether to set up more models now, and on yes runs
   `certo init models` at once.
@@ -244,6 +249,29 @@ With these ratings, `--auto-model` puts Opus 5.5 first for debugging and
 research, and Haiku 5.5 first for builds, with GPT-6.1 Sol and Sonnet
 5.5 next. Your own `models_list.yaml` is never changed:
 `certo models update` brings it up to date and keeps your changes.
+
+## New: estimates from your own runs
+
+Cost estimates were a fixed guess: every run priced at about 500k input
+and 20k output tokens at list price. Most input is cached, so the guess
+was far off: the 0.1.15 baseline's plan said ~$14.54, and the runs cost
+$1.22.
+
+Now every finished run adds a line per model to `run_stats.csv` in your
+Certo folder (`~/.config/certo/`): the model, the kind of run (`task`,
+`milestone`, `bench`), the task profile, the verdict, the time, the
+tokens, the cost, and the estimate it had. Model ids and numbers only.
+With 3 or more runs of a model of the same kind, an estimate is the
+median of its last 20, with the range:
+
+- the benchmark plan: `~$0.03 per run, measured over 3 runs, ~45s each`;
+- the escalation prompt: `roughly $0.05 for a run, the median of your last 12`;
+- `certo check --task`: `Measured for gpt-luna: ~$0.02 per run ($0.01-$0.05), ~1m 00s (30s-1m 30s), from your last 3 task runs with profile debugging.`
+
+`certo check` also says how far the estimates given before runs were
+from the real cost: `Cost estimates, last 20 runs: actual 0.4x the
+estimate (the 20 before: 0.1x).` See
+[Measured runs](../guides/run-records-and-costs.md#measured-runs).
 
 ## New: `certo init` offers more models
 

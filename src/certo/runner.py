@@ -96,6 +96,7 @@ from .escalation import (
 from .model_catalog import (
     ModelCatalog,
     classification_titles,
+    current_milestone,
     classify_task,
     find_trigger_in,
     rank_for_profile,
@@ -129,6 +130,7 @@ from .project_state import (
     resume_message,
     save_record,
 )
+from .run_stats import measured_estimate, record_run
 from .run_summary import RunSummary, summarize_run
 from .text_tool_calls import NEXT_STEP_REMINDER
 from .text_tool_calls import REMINDER as TOOL_CALL_REMINDER
@@ -1670,6 +1672,8 @@ def stream_task(
     model_catalog: ModelCatalog | None = None,
     run_progress: RunProgress | None = None,
     cancel: threading.Event | None = None,
+    stats_kind: str | None = None,
+    cost_estimate: float | None = None,
 ) -> TaskOutcome:
     """Run a task, invoking `on_message` with each message as it's produced,
     and return the terminal `TaskOutcome` once verification has settled.
@@ -1712,6 +1716,11 @@ def stream_task(
 
     `cancel`, when set from another thread, stops the run at its next step
     with `RunCancelled` (cancel.py).
+
+    A finished run is added to the user's `run_stats.csv` (run_stats.py):
+    `stats_kind` names the kind of run (default: `milestone` for one
+    milestone's run, else `task`), `cost_estimate` the cost estimate given
+    before it, if any.
     """
     if cfg is None:
         cfg = load_config()
@@ -1740,7 +1749,22 @@ def stream_task(
             model_catalog=model_catalog,
             run_progress=run_progress,
         )
+    _record_stats(outcome, task, stats_kind, cost_estimate)
     return replace(outcome, files_changed=_files_changed(cfg.workspace, before))
+
+
+def _record_stats(
+    outcome: TaskOutcome, task: str, kind: str | None, estimate: float | None
+) -> None:
+    """Add the finished run to run_stats.csv: one line per model used."""
+    profile = next((d.task_profile for d in outcome.model_decisions if d.task_profile), "")
+    record_run(
+        outcome.run_summary,
+        kind=kind or ("milestone" if current_milestone(task) else "task"),
+        verdict=outcome.verification_state,
+        profile=profile,
+        estimate=estimate,
+    )
 
 
 def _files_changed(workspace: str, before: dict[str, tuple[int, int]]) -> FileChanges:
@@ -2585,11 +2609,14 @@ def _escalation_stop_reason(cfg: Config, deadline: float, rungs: Sequence[RungRe
 
 
 def _escalation_question(previous: RungResult, nxt: Rung, rungs: Sequence[RungResult]) -> str:
-    estimate = estimate_run_cost(nxt.entry)
+    measured = None if is_local(nxt.entry) else measured_estimate(nxt.entry.model, "task")
+    estimate = measured.cost if measured is not None else estimate_run_cost(nxt.entry)
     if estimate is None:
         price = "no price known"
     elif estimate == 0:
         price = "local, no cost"
+    elif measured is not None:
+        price = f"roughly ${estimate:.2f} for a run, the median of your last {measured.runs}"
     else:
         price = f"roughly ${estimate:.2f} for a run, from LiteLLM's prices"
     return (

@@ -32,6 +32,17 @@ def user_plugins_dir(tmp_path_factory, monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def run_stats_file(tmp_path_factory, monkeypatch):
+    """Each test's runs go to its own empty run_stats.csv (run_stats.py),
+    so the runs one test records never change another test's estimates."""
+    from certo import run_stats
+
+    path = str(tmp_path_factory.mktemp("run-stats") / "run_stats.csv")
+    monkeypatch.setattr(run_stats, "stats_path", lambda environ=None: path)
+    return path
+
+
+@pytest.fixture(autouse=True)
 def no_ollama_server(monkeypatch):
     """No test asks a real Ollama server for its context window, version,
     model digest or capabilities (context_window.py); a test that needs it

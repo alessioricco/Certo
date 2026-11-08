@@ -1764,3 +1764,18 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   that differs is reported, never "fixed": either side can be the stale
   one, so only `cost` (derived from the description's price) is written
   by `--fix`.
+
+- **Estimates come from a CSV of measured runs in the user's Certo
+  folder** (2026-11-08, the Author's request: "simple and fast"; partly
+  supersedes the fixed 500k/20k guess, which stays as the fallback).
+  One append-only `run_stats.csv` (model, kind, profile, verdict, time,
+  tokens, cost, the estimate given), not a database and not the bench's
+  results folders: every kind of run feeds it, it is read in
+  milliseconds, and a user can open or delete it. Median of the last 20
+  runs of the same model and kind (and profile when it has 3+), range =
+  min-max: robust to the long tails local runs have, no fitting. Kinds
+  are kept apart because a bench task costs ~$0.02 and a milestone
+  sample ~$0.30 on the same model. Runs that end on an error aren't
+  recorded (an unreachable server would add zero-cost rows). The
+  estimate given is stored per row so the error of the estimates can be
+  tracked (`certo check`).

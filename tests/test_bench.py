@@ -619,6 +619,28 @@ def test_a_derived_arm_is_planned_and_priced_on_its_ladder_only(tmp_path, monkey
     assert "likely" not in out
 
 
+def test_the_plan_uses_measured_bench_runs_when_there_are_enough(
+    tmp_path, monkeypatch, capsys, run_stats_file
+):
+    from certo.run_stats import record_run
+    from certo.run_summary import ModelUsage, RunSummary
+
+    for cost in (0.02, 0.03, 0.04):
+        usage = ModelUsage(model="anthropic/test-model-a", cost=cost)
+        record_run(
+            RunSummary(duration_seconds=45, models=(usage,)), kind="bench", verdict="verified"
+        )
+
+    out = _plan(tmp_path, monkeypatch, capsys)
+
+    assert (
+        "cloud-a (anthropic/test-model-a, ~$0.03 per run, measured over 3 runs, ~45s each)" in out
+    )
+    # cloud-b has no measured runs: the fixed guess, and the plan says so.
+    assert "cloud-b (openai/test-model-b, ~$4.00 per run)" in out
+    assert "rough where not measured" in out
+
+
 def test_meta_keeps_a_derived_arms_ladder_outside_the_fingerprint(tmp_path):
     from certo.bench_config import load_bench_config
 
