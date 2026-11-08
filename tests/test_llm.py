@@ -217,3 +217,39 @@ def test_a_window_below_the_minimum_is_refused_with_the_fix(monkeypatch):
 
     with pytest.raises(LLMContextWindowTooSmallError, match="CERTO_LLM_CONTEXT_TOKENS=32768"):
         build_llm(load_config(_base_env(CERTO_LLM_MODEL="ollama/qwen3.8:27b")))
+
+
+@pytest.mark.parametrize("effort", ["", "none", "low", "high", "max"])
+@pytest.mark.parametrize(
+    "model",
+    ["anthropic/claude-haiku-5-5", "anthropic/claude-sonnet-5-5", "anthropic/claude-opus-5-5"],
+)
+def test_claude_requests_carry_no_sampling_parameters(monkeypatch, model, effort):
+    # Anthropic's API version 2026-10-21 refuses temperature, top_p and
+    # top_k (checked live 2026-11-08: "Extra inputs are not permitted").
+    # Today's SDK drops them for Claude; this catches an upgrade that
+    # starts sending them. The request is captured before it leaves.
+    import httpx
+
+    sent: list[httpx.Request] = []
+
+    class Captured(Exception):
+        pass
+
+    def capture(self, request, *args, **kwargs):
+        sent.append(request)
+        raise Captured
+
+    monkeypatch.setattr(httpx.Client, "send", capture)
+    cfg = override_llm(
+        load_config({"CERTO_LLM_MODEL": model, "CERTO_LLM_API_KEY": "test-key"}),
+        reasoning_effort=effort,
+    )
+    llm = build_llm(cfg)
+    llm.num_retries = 0
+    with pytest.raises(Exception):  # noqa: B017 - the capture stops every call
+        llm.completion([Message(role="user", content=[TextContent(text="hi")])])
+
+    assert sent, "no request reached the HTTP client"
+    body = json.loads(sent[-1].content)
+    assert not {"temperature", "top_p", "top_k"} & body.keys()

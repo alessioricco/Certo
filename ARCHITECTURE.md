@@ -126,7 +126,14 @@ given design was chosen.
   the level itself for a `gpt-oss*` model, else `effort in {low, medium,
   high}`, so `minimal`, `xhigh` and `max` all send `think: false`
   (checked in LiteLLM's source, 2026-11-06). `llm_check.thinking_line`
-  mirrors it, from `/api/show` `capabilities` (`ollama_capabilities()`). `AgentContext.system_message_suffix` carries five
+  mirrors it, from `/api/show` `capabilities` (`ollama_capabilities()`).
+  Claude requests carry no `temperature`/`top_p`/`top_k` (which API
+  version 2026-10-21 refuses), at every effort including `none`: the SDK's
+  `select_chat_options` drops them for reasoning models, and LiteLLM
+  1.100.4's `AnthropicConfig._apply_sampling_param` drops them again even
+  when sent. LiteLLM still sends `anthropic-version: 2023-06-01`. Checked
+  2026-11-08 by capturing the request; `tests/test_llm.py` guards it
+  offline. `AgentContext.system_message_suffix` carries five
   behavioral policies: `_AUTONOMOUS_SUFFIX` (omitted when `cfg.interactive`),
   `_README_SUFFIX` (leave a real `README.md`), `_NONINTERACTIVE_TOOLING_SUFFIX`
   (use CI/non-interactive flags, don't blindly retry a no-op command),
