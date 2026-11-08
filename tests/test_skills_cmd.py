@@ -146,6 +146,17 @@ def test_list_for_a_task_says_what_goes_in_and_why(home):
     assert '    repository-discovery (official): "build" is in the task' in out
 
 
+def test_list_for_a_task_reads_a_task_file(home):
+    task = home / "game.md"
+    task.write_text("# A snake game in the browser\n\nBuild it with tests.\n")
+
+    code, out = _run(["list", "--task", str(task)])
+
+    assert code == 0
+    assert "For the task 'A snake game in the browser':" in out
+    assert '    testable-interactive-apps (official): "game" is in the task' in out
+
+
 def test_an_unknown_project_is_an_error(home, capsys):
     assert _run(["list", "--project", "nope"])[0] == 1
     assert "There is no project 'nope'" in capsys.readouterr().err

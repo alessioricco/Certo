@@ -340,6 +340,9 @@ Cloud models print nothing new.
   `inconclusive`, like a project with no tests. Checked on real
   projects with Jest 30, Vitest 5, Mocha 12 and Node 22. See
   [Verification by language](../reference/verification-by-language.md#node-in-detail).
+- **`certo skills list --task` reads a task file**, as `certo check
+  --task` does. Before, a file's path was matched as if it were the
+  task's text, so it said no skill goes in.
 - **Claude on Anthropic's newer API version:** version 2026-10-21
   refuses `temperature`, `top_p` and `top_k`. Certo sends none of them to
   Claude, at any reasoning effort, so runs keep working when the tools

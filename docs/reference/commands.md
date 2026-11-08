@@ -413,13 +413,13 @@ commands needs a model. Guide: [Manage skills](../guides/manage-skills.md).
 ### `certo skills list`
 
 ```text
-certo skills list [--project NAME] [--task TEXT]
+certo skills list [--project NAME] [--task TEXT_OR_FILE]
 ```
 
 | Flag | Effect |
 |---|---|
 | `--project NAME` | Also list that project's skills, and its own `.agents/skills/` and `AGENTS.md`. |
-| `--task TEXT` | Say which skills would go into a run of this task, and why, with their size; and which may come in later. |
+| `--task TEXT_OR_FILE` | Say which skills would go into a run of this task (text, or a task file), and why, with their size; and which may come in later. |
 
 Lists official and third-party skills in separate sections. For each:
 how it fires, its size in tokens (roughly), `from git` for a downloaded

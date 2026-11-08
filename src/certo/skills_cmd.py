@@ -63,8 +63,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     listing.add_argument(
         "--task",
-        metavar="TEXT",
-        help="Show which skills would go into a run of this task, and why.",
+        metavar="TEXT_OR_FILE",
+        help="Show which skills would go into a run of this task (text or a file), and why.",
     )
 
     add = sub.add_parser(
@@ -252,7 +252,10 @@ def _list(cfg, args: argparse.Namespace, prompter: Prompter) -> int:
     if workspace is None:
         prompter.say("Add --project NAME to see a project's skills too.")
     if args.task:
-        _for_task(found, args.task, prompter)
+        task = args.task
+        if Path(task).is_file():  # a task file, as `certo check --task` reads it
+            task = Path(task).read_text(encoding="utf-8")
+        _for_task(found, task, prompter)
     return 0
 
 
