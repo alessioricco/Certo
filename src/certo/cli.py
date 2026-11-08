@@ -885,6 +885,11 @@ def _run_task_command(
                     "number": m.number,
                     "title": m.title,
                     "verdict": milestone_state.verdicts.get(m.number),
+                    "skills": (
+                        list(milestone_state.skills[m.number])
+                        if m.number in milestone_state.skills
+                        else None
+                    ),
                 }
                 for m in milestone_state.plan.milestones
             ]

@@ -399,6 +399,15 @@ before the 0.2.3 release; also decide the default budget from it.
 
 ## Smaller bugs
 
+- **`pytest-conventions` goes into non-Python runs.** Its trigger is the
+  word "test" (and "tests", "unit test"), so a browser JavaScript game
+  (Iron Horizon, 2026-11-08) gets it from "test" in the task. Narrow it
+  to Python projects (a Python file or `pyproject.toml` in the folder, or
+  "pytest"/"python" in the task). It changes what runs get, so bench it
+  with `skills_off` on a Python and a Node task before release. Done when
+  `certo skills list --task` on a Node game leaves it out and a Python
+  task still gets it.
+
 - **The root guard blocks `/Applications`.** In the milestone samples'
   first runs the agent looked there for a browser (Chromium) to check a
   game, and was blocked. Add `/Applications` to the allowed system

@@ -3966,3 +3966,34 @@ def test_the_run_summary_reports_blocked_actions():
     assert summary.to_dict()["blocked_outside_root"] == 2
     merged = combine_summaries([summary, RunSummary(duration_seconds=1.0, blocked_outside_root=1)])
     assert merged.blocked_outside_root == 3
+
+
+def test_skills_used_lists_always_on_then_activated_skills_once_each():
+    from types import SimpleNamespace
+
+    from certo.runner import _skills_used
+
+    def skill(name, trigger=None, agentskills=False):
+        return SimpleNamespace(name=name, trigger=trigger, is_agentskills_format=agentskills)
+
+    context = SimpleNamespace(
+        skills=[
+            skill("trusted-one"),  # no trigger: always on
+            skill("pytest-conventions", trigger="keywords"),  # only when triggered
+            skill("progressive", agentskills=True),  # only when invoked
+        ]
+    )
+    state = SimpleNamespace(
+        activated_knowledge_skills=["pytest-conventions"],
+        activated_path_rules=["pin-dependencies"],
+        invoked_skills=["progressive", "pytest-conventions"],
+    )
+    conversation = SimpleNamespace(agent=SimpleNamespace(agent_context=context), state=state)
+
+    assert _skills_used(conversation) == (
+        "trusted-one",
+        "pytest-conventions",
+        "pin-dependencies",
+        "progressive",
+    )
+    assert _skills_used(SimpleNamespace()) == ()

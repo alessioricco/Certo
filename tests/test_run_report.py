@@ -163,3 +163,22 @@ def test_a_checks_command_is_shown_inside_the_project(tmp_path):
     result["checks"][0]["command"] = f"{tmp_path}{os.sep}.venv/bin/python -m pytest -q"
 
     assert "| `.venv/bin/python -m pytest -q` |" in render_report(result, _STARTED)
+
+
+def test_the_report_lists_the_skills_the_run_had():
+    text = _report(_outcome(skills_used=("testing-and-verification", "pytest-conventions")))
+    assert "## Skills\n\ntesting-and-verification, pytest-conventions\n" in text
+
+    assert "## Skills\n\nThe run had no skills.\n" in _report(_outcome())
+
+
+def test_a_milestone_runs_report_lists_each_milestones_skills():
+    milestones = [
+        {"number": 1, "title": "Set up", "verdict": "verified", "skills": ["repository-discovery"]},
+        {"number": 2, "title": "Play", "verdict": "verified", "skills": []},
+        {"number": 3, "title": "Ship", "verdict": None, "skills": None},  # not run
+    ]
+    text = _report(_outcome(skills_used=("x",)), milestones=milestones)
+
+    assert "## Skills\n\n- Milestone 1: repository-discovery\n- Milestone 2: none\n\n" in text
+    assert "Milestone 3:" not in text.split("## Skills")[1].split("##")[0]

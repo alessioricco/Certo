@@ -361,6 +361,9 @@ class MilestoneState:
     fingerprint: str
     verdicts: dict[int, str] = field(default_factory=dict)
     current: int | None = None
+    # The skills each milestone run in this session had (not saved: a
+    # resume knows only the milestones it runs itself).
+    skills: dict[int, tuple[str, ...]] = field(default_factory=dict)
 
     @classmethod
     def from_text(cls, text: str, source: str) -> MilestoneState:

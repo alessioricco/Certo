@@ -312,6 +312,10 @@ class TaskOutcome:
     # CERTO_TOOL_CALL_REMINDERS), in all, not in a row. An
     # escalation run sums every rung's own count (RungResult below).
     tool_call_reminders: int = 0
+    # The skills the run had (`_skills_used`): always-on ones, then those
+    # the task's words, a file the agent touched, or the agent itself
+    # brought in. Empty when the run had none.
+    skills_used: tuple[str, ...] = ()
 
     @property
     def success(self) -> bool:
@@ -746,6 +750,29 @@ def _outcome_for_run_result(
 _TOOL_CALL_REMINDERS: weakref.WeakKeyDictionary[Any, tuple[int, int, str]] = (
     weakref.WeakKeyDictionary()
 )
+
+
+def _skills_used(conversation: Conversation) -> tuple[str, ...]:
+    """The skills this conversation had, in order and once each: the
+    always-on ones in the system prompt (no trigger, not AgentSkills
+    format, as the SDK's `AgentContext._partition_skills` puts them in its
+    repo context), then those the SDK recorded on its state: triggered by
+    a message's words (`activated_knowledge_skills`), by a file the agent
+    touched (`activated_path_rules`), or invoked by the agent with its
+    `invoke_skill` tool (`invoked_skills`). SDK 1.47."""
+    names: list[str] = []
+    context = getattr(getattr(conversation, "agent", None), "agent_context", None)
+    for skill in getattr(context, "skills", None) or ():
+        if skill.trigger is None and not skill.is_agentskills_format:
+            names.append(skill.name)
+    state = getattr(conversation, "state", None)
+    for field_name in ("activated_knowledge_skills", "activated_path_rules", "invoked_skills"):
+        # A remote conversation has them as its own properties.
+        found = getattr(state, field_name, None)
+        if found is None:
+            found = getattr(conversation, field_name, None)
+        names.extend(found or ())
+    return tuple(dict.fromkeys(names))
 
 
 def _reminders_sent(conversation: Conversation) -> int:
@@ -2076,7 +2103,11 @@ def _stream_task(
                 )
         if model_chain is not None:
             outcome = replace(outcome, model_decisions=tuple(model_chain.decisions))
-        outcome = replace(outcome, tool_call_reminders=_reminders_sent(conversation))
+        outcome = replace(
+            outcome,
+            tool_call_reminders=_reminders_sent(conversation),
+            skills_used=_skills_used(conversation),
+        )
         if state_writer is not None:
             state_writer.finish(outcome)
         _checkpoint(cfg, f"finished: {outcome.verification_state}")
@@ -2870,6 +2901,7 @@ def _stream_escalation(
                     verdict=outcome.verification_state if outcome is not None else None,
                     retries_used=outcome.retries_used if outcome is not None else 0,
                     tool_call_reminders=_reminders_sent(conversation),
+                    skills_used=_skills_used(conversation),
                     duration_seconds=duration,
                     summary=summarize_run(duration, rung_metrics, efforts),
                     failure=failure,
@@ -3037,6 +3069,7 @@ def _stream_escalation(
         final_rung=final_rung,
         model_decisions=tuple(decisions),
         tool_call_reminders=sum(r.tool_call_reminders for r in rungs),
+        skills_used=tuple(dict.fromkeys(s for r in rungs for s in r.skills_used)),
         run_summary=summarize_run(
             time.monotonic() - run_started,
             per_model_metrics,

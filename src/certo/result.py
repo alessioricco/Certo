@@ -134,6 +134,7 @@ def run_result(
         "usage": None,
         "rungs": None,
         "model_decisions": None,
+        "skills": [],
         "milestones": list(milestones) if milestones is not None else None,
         "error": error,
     }
@@ -163,5 +164,6 @@ def run_result(
         usage=_usage(outcome),
         rungs=rung_dicts(outcome.rungs, outcome.final_rung) if outcome.rungs else None,
         model_decisions=_decisions(outcome),
+        skills=list(outcome.skills_used),
     )
     return result

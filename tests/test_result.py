@@ -147,3 +147,9 @@ def test_model_decisions_say_how_each_model_was_chosen():
     ]
     assert run_result(_outcome(), task="t", workspace="/p")["model_decisions"] is None
     json.dumps(result)
+
+
+def test_the_result_lists_the_skills_the_run_had():
+    result = run_result(_outcome(skills_used=("a", "b")), task="t", workspace="/p")
+    assert result["skills"] == ["a", "b"]
+    assert run_result(None, task="t", workspace="/p", error="x")["skills"] == []

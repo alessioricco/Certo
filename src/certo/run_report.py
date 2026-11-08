@@ -84,6 +84,20 @@ def _why(result: dict[str, Any]) -> list[str]:
     return [f"- {r}" for r in reasons] or ["- Every check Certo ran passed."]
 
 
+def _skills(result: dict[str, Any]) -> list[str]:
+    """The skills the run had, and for milestones each milestone's."""
+    milestones = [m for m in result.get("milestones") or [] if m.get("skills") is not None]
+    if milestones:
+        return [
+            *(f"- Milestone {m['number']}: {', '.join(m['skills']) or 'none'}" for m in milestones),
+            "",
+        ]
+    skills = result.get("skills") or []
+    if not skills:
+        return ["The run had no skills.", ""]
+    return [", ".join(skills), ""]
+
+
 def _files(result: dict[str, Any]) -> list[str]:
     changed = result.get("files_changed")
     if changed is None:
@@ -228,6 +242,7 @@ def render_report(result: dict[str, Any], started_at: datetime) -> str:
         )
         lines.append("")
 
+    lines += ["## Skills", "", *_skills(result)]
     lines += ["## Files changed", "", *_files(result)]
     lines += ["## Models, time and cost", "", *_models(result)]
     return "\n".join(lines).rstrip() + "\n"

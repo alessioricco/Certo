@@ -334,6 +334,7 @@ class RungResult:
     reasoning_effort: str | None = None  # None: no effort set
     # How many tool-call reminders this rung's own conversation was sent.
     tool_call_reminders: int = 0
+    skills_used: tuple[str, ...] = ()
 
     @property
     def described(self) -> str:

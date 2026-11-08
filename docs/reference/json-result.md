@@ -84,6 +84,7 @@ shortened):
   },
   "rungs": null,
   "model_decisions": null,
+  "skills": ["testing-and-verification", "pytest-conventions"],
   "milestones": null,
   "error": null
 }
@@ -110,7 +111,8 @@ shortened):
 | `usage` | Time and tokens for the whole run: `duration_seconds`, `total_tokens`, `prompt_tokens` (cached ones included), `completion_tokens`, `cache_read_tokens`, `cost` in US dollars, `cost_known` (false when a model has no price), `condensations`, `blocked_outside_root` (actions Certo blocked because they reached outside the project root), and the same per model in `models`. `null` when the run stopped with an error. |
 | `rungs` | With `--escalate`: one entry per model that ran, with `final: true` on the one whose verdict this is, and the fields listed for `rungs` in [Server API](server-api.md#get-taskstask_id). Otherwise `null`. See [Escalate between models](../guides/escalate-between-models.md). |
 | `model_decisions` | With `--escalate` or `--auto-model`: how each model was chosen, as `MODEL_DECISIONS.md` in the project tells it. Each decision has `kind`, `timestamp`, `task_profile` and `weights` (with `--auto-model`), `candidates` (each `name` and `score`), `scored_by` (`score`, a weighted rating, with `--auto-model`; `capability` on a ladder), `chosen` and `reason`. Otherwise `null`. An example follows the table. |
-| `milestones` | With `--milestones`: each milestone's `number`, `title` and `verdict` (`null` if it didn't start). Otherwise `null`. |
+| `skills` | The skills the run had, by name: the always-on ones first, then those its task's words, a file the agent touched, or the agent itself brought in. Empty when none (and when the run stopped with an error). For milestones, the last milestone's; each milestone's own are under `milestones`. |
+| `milestones` | With `--milestones`: each milestone's `number`, `title`, `verdict` (`null` if it didn't start) and `skills` (`null` when it didn't run in this session). Otherwise `null`. |
 | `error` | Why the run stopped without a verdict (`interrupted`, or the error), or `null`. |
 
 The result never holds an API key.

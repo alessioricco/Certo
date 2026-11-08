@@ -340,6 +340,10 @@ Cloud models print nothing new.
   `inconclusive`, like a project with no tests. Checked on real
   projects with Jest 30, Vitest 5, Mocha 12 and Node 22. See
   [Verification by language](../reference/verification-by-language.md#node-in-detail).
+- **Each run says which skills it had**: a Skills section in the run's
+  report (one line per milestone), and `skills` in `certo --json`'s
+  result and in each milestone's entry. Before, only `--verbose`
+  showed them, during the run.
 - **`certo skills list --task` reads a task file**, as `certo check
   --task` does. Before, a file's path was matched as if it were the
   task's text, so it said no skill goes in.
