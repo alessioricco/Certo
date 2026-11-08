@@ -325,3 +325,14 @@ Cloud models print nothing new.
   files `certo init` copies. Older drafts in the repository's `examples/`
   folder are gone; it now holds only the script that compares models on
   one task.
+- **`--auto-model`'s fallback, described as it works.** When a model's
+  work fails Certo's checks, the next model in the ranking takes over
+  and makes the fix attempt; the first model doesn't get one first.
+  `MODEL_DECISIONS.md`, the terminal notice, `certo check --task` and the
+  docs said "when a fix attempt still fails". The next model is the next
+  best fit for the task, not a stronger one; for that, use `--escalate`
+  (see [Pick models automatically](../guides/pick-models-automatically.md#limits)).
+- **Claude on Anthropic's newer API version:** version 2026-10-21
+  refuses `temperature`, `top_p` and `top_k`. Certo sends none of them to
+  Claude, at any reasoning effort, so runs keep working when the tools
+  Certo builds on move to that version.
