@@ -25,7 +25,7 @@ turn each on. The step-by-step setup is in two guides:
 | **When it decides** | Once, before the run, from the task text | Step by step, after each run, from Certo's verdict |
 | **What it uses** | Task profiles (`task_profiles.yaml`): trigger words and weights | A ladder (`escalation.yaml`): one you write, or one derived from capability and cost |
 | **First model** | The best fit for the task's profile, often an expensive one | The first rung of the ladder: usually the cheapest |
-| **Changes model when** | The provider fails (rate limit, outage, bad key), or a fix attempt still fails Certo's checks, or the model uses all its steps with the checks failing | The model's whole run fails (checks still fail after all its fix attempts, a check timed out, the agent is stuck, or it changed no file), or its provider fails (outage, rate limit, rejected key). Not when the task's own time budget or cost cap runs out: that stops the climb |
+| **Changes model when** | The provider fails (rate limit, outage, bad key), or its work fails Certo's checks (the next model makes the fix attempt), or the model uses all its steps with the checks failing | The model's whole run fails (checks still fail after all its fix attempts, a check timed out, the agent is stuck, or it changed no file), or its provider fails (outage, rate limit, rejected key). Not when the task's own time budget or cost cap runs out: that stops the climb |
 | **How it changes** | Inside the same conversation: the next model carries on from where the last one was | A new conversation in the same folder, with a note on what the previous model did |
 | **Next model** | The next best fit, not necessarily a stronger one | The next rung: usually a stronger model, or one from another provider |
 | **Cost** | Set by the choice | Low when the cheap model succeeds; more when it climbs |
@@ -46,8 +46,9 @@ The two modes can't be combined: `--escalate` with `--auto-model` or
    the profile's weight for it, added up.
 3. **It runs the model with the highest score**, or the model the profile
    names with `model:`, when that one is enabled. If the provider fails,
-   or a fix attempt still fails Certo's checks, Certo moves to the next
-   model in the same order and carries on in the same conversation. The
+   or the model's work fails Certo's checks, Certo moves to the next
+   model in the same order, which carries on in the same conversation
+   and makes the fix attempt. The
    order is computed once, so the next model is the next best fit for the
    task, not necessarily a stronger one. (Under `--execution docker`,
    only the first choice works: Certo can't switch models during a run.)

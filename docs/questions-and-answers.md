@@ -177,7 +177,8 @@ each model did, keep the run records (next question).
 No. [`--auto-model`](guides/pick-models-automatically.md) keeps the
 **same conversation** and swaps only the model, so the next model sees
 the full history as well as the files. It switches when the provider
-fails, or when a fix attempt still fails the checks. Under
+fails, or when the current model's work fails the checks (the next model
+then makes the fix attempt). Under
 `--execution docker` it can't switch in the middle of a task.
 `--escalate` starts a fresh conversation for each model, as described
 above. Which to use: [Auto model or escalation](concepts/auto-model-or-escalation.md).

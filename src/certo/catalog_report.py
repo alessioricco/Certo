@@ -195,7 +195,7 @@ def print_task_routing(out: TextIO, task_text: str) -> bool:
         print(f"  {i}. {name} ({note})", file=out)
     print(
         "The first model runs the task. The next one takes over if its provider "
-        "fails, or if a fix attempt still fails Certo's checks.",
+        "fails, or makes the fix attempt when the current model's work fails Certo's checks.",
         file=out,
     )
     if ranked_entries:

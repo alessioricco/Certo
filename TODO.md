@@ -186,10 +186,6 @@ first item is the suggested next one.
 
 ## 4. Models and strategies
 
-- **Live check of the auto-model quality fallback.** The provider-failure
-  switch ran live on 2026-10-19 (ARCHITECTURE.md). The other path, a fix
-  attempt that still fails the checks, has only run against a fake; it
-  needs a model that fails on purpose, so it may take a few tries.
 - **Benchmark `--auto-model` for the README.** The bench `auto` arm
   exists (0.1.25); a two-task live check picked Sonnet for a `debugging`
   task and Haiku for a `default` one, both verified. Left: a full run of

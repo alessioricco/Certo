@@ -193,8 +193,11 @@ given design was chosen.
   a `ConversationRunError` wrapping the SDK's own `LLMError` hierarchy
   (the provider-failure path, through the real `switch_llm`, confirmed
   live 2026-10-19: a wrong OpenAI key on the first pick switched to
-  `claude-haiku-5-5`, `verified`, $0.0054; the quality-failure path is
-  still fake-tested only);
+  `claude-haiku-5-5`, `verified`, $0.0054; the quality-failure path
+  confirmed live 2026-11-08: Haiku's tests-only step failed the checks,
+  Certo switched to Sonnet before the first fix attempt, $0.08. The
+  switch comes on the first failed verification, so the first model never
+  makes a fix attempt itself);
   `write_model_decisions()`/artifact-writing both run in a `finally` block
   around the whole task so they still fire when every candidate fails.
   `CERTO_ARTIFACTS_DIR` mints a `run_id` (or uses the caller's, e.g.

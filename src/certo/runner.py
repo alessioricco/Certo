@@ -1181,13 +1181,16 @@ def _verify_and_report(
             failed_name = model_chain.current.name
             next_entry = model_chain.advance(
                 kind="escalation_quality_failure",
-                reason=f"{failed_name}'s fix attempt still failed verification ({run.state}).",
+                reason=(
+                    f"{failed_name}'s work failed verification ({run.state}); "
+                    "the next model makes the fix attempt."
+                ),
             )
             if next_entry is not None:
                 _emit_notice(
                     emit,
                     f"Certo: escalating from {failed_name} to {next_entry.name} "
-                    "after a failed verification retry.",
+                    "after its work failed verification; the fix attempt is theirs.",
                 )
                 conversation.switch_llm(
                     llm_for_entry(cfg, next_entry, usage_id=f"certo:{next_entry.name}")

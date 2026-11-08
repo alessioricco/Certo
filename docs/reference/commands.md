@@ -683,7 +683,7 @@ Models, in the order --auto-model tries them (the profile names gpt-luna; fallba
   1. gpt-luna (named by the profile, score 13)
   2. claude-sonnet (score 20)
   3. qwen-local (score 9)
-The first model runs the task. The next one takes over if its provider fails, or if a fix attempt still fails Certo's checks.
+The first model runs the task. The next one takes over if its provider fails, or makes the fix attempt when the current model's work fails Certo's checks.
 Measured for gpt-luna: ~$0.02 per run ($0.01-$0.05), ~1m 00s (30s-1m 30s), from your last 3 task runs with profile debugging.
 ```
 

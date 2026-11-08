@@ -138,7 +138,8 @@ project folder or registry entry. An existing project folder is kept.
    when the current one:
    - fails at the provider (bad key, rate limit, outage, context too long),
      or
-   - makes a fix attempt that still fails Certo's checks, or
+   - leaves work that fails Certo's checks (the next model makes the fix
+     attempt, and so on for each failed attempt), or
    - uses all its steps (`CERTO_MAX_ITERATIONS`) with the checks still
      failing. The next model carries on in the same conversation, with a
      fresh set of steps. If the checks pass, nothing switches: the task is
@@ -168,8 +169,8 @@ task_profiles:
 - It runs first only when it is enabled in `models.yaml`. If it isn't
   (no key for it, or `activated: false`), the weights pick the model as
   before, and `MODEL_DECISIONS.md` says why the named model wasn't used.
-- If it fails (the provider refuses it, or a fix attempt still fails the
-  checks), Certo moves on to the model the weights rank first, and so on.
+- If it fails (the provider refuses it, or its work fails the checks),
+  Certo moves on to the model the weights rank first, and so on.
 - `certo check` reports a name that isn't in `models_list.yaml` as an
   error, and a model that isn't enabled as a warning.
 
@@ -204,7 +205,7 @@ Models, in the order --auto-model tries them (ranked by the profile's weights):
   1. claude-sonnet (score 12)
   2. gpt-luna (score 11)
   3. qwen-local (score 10)
-The first model runs the task. The next one takes over if its provider fails, or if a fix attempt still fails Certo's checks.
+The first model runs the task. The next one takes over if its provider fails, or makes the fix attempt when the current model's work fails Certo's checks.
 ```
 
 For a task file written in milestones, it also gives each milestone's
