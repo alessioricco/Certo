@@ -891,9 +891,28 @@ def test_counting_the_tests_go_and_cargo_ran(count, output, ran):
     assert count(output) == ran
 
 
-# Real `node --test` output (Node 22, no terminal), and Jest/Vitest lines.
+# Real summaries (2026-11-08, CI=true, no terminal): Node 22's
+# `node --test`, Jest 30, Vitest 5, Mocha 12.
 _NODE_NO_TESTS = "TAP version 13\n1..0\n# tests 0\n# suites 0\n# pass 0\n# fail 0\n"
 _NODE_TWO_TESTS = "TAP version 13\nok 1 - one\nok 2 - two\n1..2\n# tests 2\n# pass 2\n"
+_NODE_ALL_SKIPPED = (
+    "# tests 2\n# suites 0\n# pass 0\n# fail 0\n# cancelled 0\n# skipped 2\n# todo 0\n"
+)
+_JEST_PASS = (
+    "Test Suites: 1 passed, 1 total\nTests:       2 passed, 2 total\n"
+    "Snapshots:   0 total\nTime:        0.246 s\nRan all test suites.\n"
+)
+_JEST_SKIPPED = "Test Suites: 1 skipped, 0 of 1 total\nTests:       2 skipped, 2 total\n"
+_JEST_MIXED = (
+    "Test Suites: 1 failed, 1 total\nTests:       1 failed, 1 skipped, 1 passed, 3 total\n"
+)
+_VITEST_PASS = " Test Files  1 passed (1)\n      Tests  2 passed (2)\n   Start at  14:55:51\n"
+_VITEST_SKIPPED = " Test Files  1 skipped (1)\n      Tests  2 skipped (2)\n"
+_VITEST_MIXED = " Test Files  1 failed (1)\n      Tests  1 failed | 1 passed | 1 skipped (3)\n"
+_MOCHA_PASS = "  \x1b[32m\u2714\x1b[39m one\n  \x1b[32m\u2714\x1b[39m two\n\n  2 passing (2ms)\n"
+_MOCHA_EMPTY_FILE = "\n\n  0 passing (1ms)\n\n"
+_MOCHA_SKIPPED = "  - one\n  - two\n\n  0 passing (1ms)\n  2 pending\n"
+_MOCHA_MIXED = "  1 passing (2ms)\n  1 pending\n  1 failing\n"
 
 
 @pytest.mark.parametrize(
@@ -901,10 +920,21 @@ _NODE_TWO_TESTS = "TAP version 13\nok 1 - one\nok 2 - two\n1..2\n# tests 2\n# pa
     [
         (_NODE_NO_TESTS, 0),
         (_NODE_TWO_TESTS, 2),
+        (_NODE_ALL_SKIPPED, 0),
         ("\u2139 tests 3\n\u2139 pass 3\n", 3),  # the spec reporter
+        ("# tests 3\n", 3),  # a total alone still counts
         ("No tests found, exiting with code 0\n", 0),  # jest --passWithNoTests
         ("No test files found, exiting with code 0\n", 0),  # vitest
-        (" Tests  4 passed (4)\n", -1),  # not recognised: the exit code decides
+        (_JEST_PASS, 2),
+        (_JEST_SKIPPED, 0),
+        (_JEST_MIXED, 2),
+        (_VITEST_PASS, 2),
+        (_VITEST_SKIPPED, 0),
+        (_VITEST_MIXED, 2),
+        (_MOCHA_PASS, 2),
+        (_MOCHA_EMPTY_FILE, 0),
+        (_MOCHA_SKIPPED, 0),
+        (_MOCHA_MIXED, 2),
         ("ok\n", -1),
     ],
 )
@@ -963,7 +993,7 @@ def test_a_successful_run_of_no_tests_is_skipped(tmp_path):
 
     assert (outcome.status, outcome.summary) == (
         "skipped",
-        "cargo test ran no tests: the project has none",
+        "cargo test ran no tests: none were found, or every one was skipped",
     )
 
 

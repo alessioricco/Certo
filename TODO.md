@@ -165,8 +165,6 @@ first item is the suggested next one.
 - **Run-the-app verification.** Start a server and probe an HTTP
   endpoint; build a frontend and load it in a headless browser (the SDK
   ships a browser tool) for a blank page or console errors.
-- **Node: detect jest/vitest/mocha.** Today `build`/`test` scripts run as
-  opaque commands; the runner and its results aren't parsed.
 - **Node: infer ESLint/`tsc` from config**, as `_ruff_configured()` does
   for Python. Flat-config variants make this harder than the Python case.
   Open for contributors: [#33](https://github.com/alessioricco/certo/issues/33).

@@ -109,12 +109,23 @@ the scripts as they are; it doesn't read jest or vitest settings.
 If `package.json` has neither a `build` nor a real `test` script, the main
 check is `unavailable` and the verdict is `inconclusive`.
 
-**No tests.** `node --test` exits successfully when it finds no test
-files. Certo reads how many tests `npm test` ran from its summary
-(`# tests 0`, or `ℹ tests 0` with the spec reporter, and Jest's or
-Vitest's `No tests found, exiting with code 0`): none makes the check
-`skipped` and the verdict `inconclusive`, not `verified`. From a real
-`certo verify` on a project whose `package.json` has
+**No tests.** A test script can succeed without running a test:
+`node --test` with no test files, Mocha with an empty test file
+(`0 passing`), or any runner when every test is skipped. Certo reads how
+many tests `npm test` ran, passed plus failed, from the summary of the
+runner it recognises:
+
+| Runner | Summary Certo reads |
+|---|---|
+| `node --test` | `# pass 2` and `# fail 0` (or `ℹ pass 2` with the spec reporter) |
+| Jest | `Tests:       1 failed, 1 skipped, 1 passed, 3 total` |
+| Vitest | `Tests  1 failed \| 1 passed \| 1 skipped (3)` |
+| Mocha | `2 passing`, `1 failing` |
+
+Skipped and pending tests don't count, and Jest's or Vitest's
+`No tests found, exiting with code 0` counts as none. None makes the
+check `skipped` and the verdict `inconclusive`, not `verified`. From a
+real `certo verify` on a project whose `package.json` has
 `"test": "node --test"` and no test file (the path to `npm` is
 shortened):
 

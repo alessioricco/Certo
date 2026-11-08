@@ -392,7 +392,7 @@ def execute_check(
             status="skipped",
             exit_code=0,
             project_root=spec.cwd,
-            summary=f"{spec.name} ran no tests: the project has none",
+            summary=f"{spec.name} ran no tests: none were found, or every one was skipped",
             output=output[-4000:],
         )
     if result.returncode in spec.usage_exit_codes and _USAGE_LINE.search(output):
@@ -890,21 +890,44 @@ def _node_plan(root: str, runner: CommandRunner) -> list[CheckSpec]:
     return specs
 
 
-# `node --test`'s summary: `# tests 3` (TAP, its default without a
-# terminal) or `ℹ tests 3` (the spec reporter).
-_NODE_TEST_COUNT = re.compile(r"^\s*(?:#|ℹ)\s*tests (\d+)\s*$", re.MULTILINE)
+# Test runners' summaries, read for how many tests `npm test` really ran:
+# passed plus failed, so skipped and pending tests don't count. Formats
+# from real runs (Node 22's `node --test`, Jest 30, Vitest 5, Mocha 12,
+# with CI=true and no terminal):
+# - node --test: `# pass 2` / `# fail 0` (TAP) or `ℹ pass 2` (spec
+#   reporter), after `# tests 2`, which counts skipped tests too;
+# - Jest: `Tests:       1 failed, 1 skipped, 1 passed, 3 total`;
+# - Vitest: `      Tests  1 failed | 1 passed | 1 skipped (3)`;
+# - Mocha: `  2 passing (2ms)`, `  1 failing`, `  2 pending`.
+_ANSI = re.compile(r"\x1b\[[0-9;]*m")
+_NODE_TAP_COUNT = re.compile(r"^\s*(?:#|ℹ)\s*(tests|pass|fail) (\d+)\s*$", re.MULTILINE)
+_JEST_VITEST_TESTS = re.compile(r"^\s*Tests:?\s+(.*\d.*)$", re.MULTILINE)
+_PASSED_FAILED = re.compile(r"(\d+) (?:passed|failed)\b")
+_MOCHA_COUNT = re.compile(r"^\s*(\d+) (?:passing|failing)\b", re.MULTILINE)
 # Jest and Vitest with --passWithNoTests.
 _NODE_NO_TESTS_FOUND = re.compile(r"No test(?: file)?s found, exiting with code 0")
 
 
 def _node_tests_run(output: str) -> int:
-    """Tests that `npm test` ran, when its output says: 0 only when it
-    plainly ran none (`node --test` exits 0 with no test files, #23).
-    Output Certo doesn't recognise counts as tests run (-1), so the
-    script's own exit code decides, as before."""
-    counts = [int(n) for n in _NODE_TEST_COUNT.findall(output)]
-    if counts:
-        return sum(counts)
+    """Tests that `npm test` ran (passed plus failed), when its output
+    says: 0 when it plainly ran none, such as `node --test` with no test
+    files (#23), every test skipped, or Mocha's `0 passing`. Output Certo
+    doesn't recognise counts as tests run (-1), so the script's own exit
+    code decides, as before."""
+    output = _ANSI.sub("", output)
+    tap: dict[str, int] = {}
+    for key, number in _NODE_TAP_COUNT.findall(output):
+        tap[key] = tap.get(key, 0) + int(number)
+    if "pass" in tap or "fail" in tap:
+        return tap.get("pass", 0) + tap.get("fail", 0)
+    if "tests" in tap:
+        return tap["tests"]
+    summaries = _JEST_VITEST_TESTS.findall(output)
+    if summaries:
+        return sum(int(n) for line in summaries for n in _PASSED_FAILED.findall(line))
+    mocha = _MOCHA_COUNT.findall(output)
+    if mocha:
+        return sum(int(n) for n in mocha)
     if _NODE_NO_TESTS_FOUND.search(output):
         return 0
     return -1

@@ -332,6 +332,14 @@ Cloud models print nothing new.
   docs said "when a fix attempt still fails". The next model is the next
   best fit for the task, not a stronger one; for that, use `--escalate`
   (see [Pick models automatically](../guides/pick-models-automatically.md#limits)).
+- **Node tests that run nothing no longer pass as `verified`.** Certo
+  now reads Jest's, Vitest's and Mocha's summaries as well as
+  `node --test`'s, and counts the tests that ran, passed plus failed. A
+  Mocha test file with no tests, or a suite whose tests are all skipped,
+  made `npm test` succeed and the run `verified`; it is now
+  `inconclusive`, like a project with no tests. Checked on real
+  projects with Jest 30, Vitest 5, Mocha 12 and Node 22. See
+  [Verification by language](../reference/verification-by-language.md#node-in-detail).
 - **Claude on Anthropic's newer API version:** version 2026-10-21
   refuses `temperature`, `top_p` and `top_k`. Certo sends none of them to
   Claude, at any reasoning effort, so runs keep working when the tools
