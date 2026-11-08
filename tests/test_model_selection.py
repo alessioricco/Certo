@@ -232,3 +232,53 @@ def test_llm_for_entry_uses_the_entrys_timeout_not_the_env_one():
 
     assert llm_for_entry(cfg, slow, usage_id="certo:local").timeout == 1200
     assert llm_for_entry(cfg, default, usage_id="certo:hosted").timeout == 300
+
+
+def _milestone_text(number: int, total: int, label: str) -> str:
+    return f"# Build a game\n\n## Now: milestone {number} of {total}: {label}\n\nDo it."
+
+
+def test_write_model_decisions_keeps_each_milestones_section(tmp_path):
+    for number, label, model in [(1, "Set up the page", "a"), (2, "Add the player", "b")]:
+        chain = ModelChain([_entry(model)], task_profile="build", weights={})
+        chain.record_initial(f"best fit for milestone {number}")
+        write_model_decisions(
+            str(tmp_path), chain.decisions, task_text=_milestone_text(number, 3, label)
+        )
+
+    content = (tmp_path / "MODEL_DECISIONS.md").read_text()
+    assert content.count("# Model Decisions") == 1
+    first = content.index("## Milestone 1 of 3: Set up the page")
+    second = content.index("## Milestone 2 of 3: Add the player")
+    assert first < content.index("best fit for milestone 1") < second
+    assert second < content.index("best fit for milestone 2")
+    assert "### initial" in content
+
+
+def test_write_model_decisions_rewriting_a_milestone_drops_it_and_later_ones(tmp_path):
+    for number, reason in [(1, "one"), (2, "two-old"), (3, "three-old"), (2, "two-new")]:
+        chain = ModelChain([_entry("a")], task_profile="build", weights={})
+        chain.record_initial(reason)
+        write_model_decisions(
+            str(tmp_path), chain.decisions, task_text=_milestone_text(number, 3, f"step {number}")
+        )
+
+    content = (tmp_path / "MODEL_DECISIONS.md").read_text()
+    assert "Reason: one" in content
+    assert "Reason: two-new" in content
+    assert "two-old" not in content
+    assert "three-old" not in content
+    assert content.count("## Milestone 2 of 3") == 1
+
+
+def test_write_model_decisions_without_milestones_replaces_the_file(tmp_path):
+    chain = ModelChain([_entry("a")], task_profile="build", weights={})
+    chain.record_initial("milestone run")
+    write_model_decisions(str(tmp_path), chain.decisions, task_text=_milestone_text(1, 2, "x"))
+    chain = ModelChain([_entry("b")], task_profile="default", weights={})
+    chain.record_initial("plain run")
+    write_model_decisions(str(tmp_path), chain.decisions, task_text="# Fix a bug")
+
+    content = (tmp_path / "MODEL_DECISIONS.md").read_text()
+    assert "Milestone" not in content
+    assert "## initial" in content

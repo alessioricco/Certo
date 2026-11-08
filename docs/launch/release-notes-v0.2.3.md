@@ -183,6 +183,10 @@ It runs milestone by milestone. Each milestone is classified by its own title fi
   2. Running and jumping: build ("game" in the task's title), claude-haiku-5-5 first
 ```
 
+`MODEL_DECISIONS.md` keeps every milestone's choices, each under its own
+`## Milestone N of M: title` section. Before, each milestone's run
+rewrote the file, so only the last milestone's choice was left.
+
 See [Pick models automatically](../guides/pick-models-automatically.md#how-a-model-is-chosen).
 
 ## Changed: the example model list, checked again

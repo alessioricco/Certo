@@ -13,6 +13,7 @@ and DECISIONS.md for the full design.
 from __future__ import annotations
 
 import os
+import re
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -21,7 +22,7 @@ from openhands.sdk import LLM
 
 from .config import Config, override_llm
 from .llm import build_llm
-from .model_catalog import ModelCatalogEntry, score_entry
+from .model_catalog import ModelCatalogEntry, current_milestone, score_entry
 from .run_summary import effort_label
 
 
@@ -166,7 +167,12 @@ def llm_for_entry(cfg: Config, entry: ModelCatalogEntry, *, usage_id: str) -> LL
     return build_llm(config_for_entry(cfg, entry), usage_id=usage_id)
 
 
-def write_model_decisions(workspace: str, decisions: Sequence[ModelDecisionRecord]) -> None:
+_MILESTONE_SECTION = re.compile(r"^## Milestone (\d+) of \d+: ", re.MULTILINE)
+
+
+def write_model_decisions(
+    workspace: str, decisions: Sequence[ModelDecisionRecord], *, task_text: str = ""
+) -> None:
     """(Re)write `MODEL_DECISIONS.md` in the project workspace — same
     placement convention as `skills.write_project_context`'s `AGENTS.md`.
 
@@ -174,12 +180,21 @@ def write_model_decisions(workspace: str, decisions: Sequence[ModelDecisionRecor
     than appending incrementally, so calling this again after a later
     decision can't duplicate the file's header or leave it half-written.
     A no-op when `decisions` is empty (auto mode was never engaged).
+
+    For one milestone of a task written in milestones (`task_text` holds
+    its `## Now: milestone N of M` heading), the decisions go under a
+    `## Milestone N of M: title` section, and the file keeps the sections
+    of milestones 1 to N-1 already in it: each milestone is its own run,
+    and rewriting the whole file lost the earlier ones' choices. Sections
+    from N on are dropped, so a re-run doesn't keep a stale one.
     """
     if not decisions:
         return
+    milestone = current_milestone(task_text)
+    level = "###" if milestone else "##"
     sections = []
     for d in decisions:
-        lines = [f"## {d.kind} — {d.timestamp}", "", f"Reason: {d.reason}", ""]
+        lines = [f"{level} {d.kind} — {d.timestamp}", "", f"Reason: {d.reason}", ""]
         if d.task_profile:  # escalation ladders don't use task profiles
             lines += [f"Task profile: `{d.task_profile}` (weights: {d.weights})", ""]
         lines.append(f"{d.list_title}:")
@@ -189,6 +204,31 @@ def write_model_decisions(workspace: str, decisions: Sequence[ModelDecisionRecor
         lines.append("")
         lines.append(f"Chosen: **{d.chosen}**")
         sections.append("\n".join(lines))
-    content = "# Model Decisions\n\n" + "\n\n".join(sections) + "\n"
-    with open(os.path.join(workspace, "MODEL_DECISIONS.md"), "w", encoding="utf-8") as f:
-        f.write(content)
+    body = "\n\n".join(sections)
+    path = os.path.join(workspace, "MODEL_DECISIONS.md")
+    if milestone:
+        number, total, title = milestone
+        earlier = [
+            block.rstrip("\n")
+            for found, block in _milestone_sections(path)
+            if found < number
+        ]
+        body = "\n\n".join([*earlier, f"## Milestone {number} of {total}: {title}\n\n{body}"])
+    with open(path, "w", encoding="utf-8") as f:
+        f.write("# Model Decisions\n\n" + body + "\n")
+
+
+def _milestone_sections(path: str) -> list[tuple[int, str]]:
+    """The `## Milestone N of M:` sections of an existing MODEL_DECISIONS.md,
+    as (N, the section's text); none when the file is missing or wasn't
+    written by a milestone run."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+    except OSError:
+        return []
+    starts = list(_MILESTONE_SECTION.finditer(text))
+    return [
+        (int(m.group(1)), text[m.start() : starts[i + 1].start() if i + 1 < len(starts) else None])
+        for i, m in enumerate(starts)
+    ]

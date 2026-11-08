@@ -636,7 +636,17 @@ def _trigger_pattern(trigger: str) -> re.Pattern[str]:
 # The heading `milestones.milestone_task` gives the milestone a run is
 # for. Its own title is classified before the task's, so a milestone
 # called "Fix the flaky tests" is `debugging` in a task that isn't.
-_MILESTONE_HEADING = re.compile(r"^## Now: milestone \d+ of \d+: (.+)$", re.MULTILINE)
+_MILESTONE_HEADING = re.compile(r"^## Now: milestone (\d+) of (\d+): (.+)$", re.MULTILINE)
+
+
+def current_milestone(task_text: str) -> tuple[int, int, str] | None:
+    """For one milestone's run of a task written in milestones: its number,
+    the number of milestones and its title (from the `## Now:` heading
+    `milestones.milestone_task` writes); otherwise `None`."""
+    found = _MILESTONE_HEADING.search(task_text)
+    if not found:
+        return None
+    return int(found.group(1)), int(found.group(2)), found.group(3).strip()
 
 
 def classification_titles(task_text: str) -> list[str]:
@@ -644,9 +654,9 @@ def classification_titles(task_text: str) -> list[str]:
     task written in milestones, the milestone's title, then the task's
     title (`task_title`); otherwise the task's title alone."""
     titles = []
-    milestone = _MILESTONE_HEADING.search(task_text)
+    milestone = current_milestone(task_text)
     if milestone:
-        titles.append(milestone.group(1).strip())
+        titles.append(milestone[2])
     titles.append(task_title(task_text))
     return [t for t in titles if t]
 

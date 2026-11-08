@@ -259,6 +259,12 @@ Chosen: **claude-sonnet (effort default)**
 
 Each fallback adds a section of its own, with the reason for the switch.
 
+A task written in milestones runs one milestone at a time, and each
+milestone is classified on its own. `MODEL_DECISIONS.md` then has one
+section per milestone, `## Milestone 2 of 4: <its title>`, holding that
+milestone's decisions. Running a milestone again replaces its section and
+removes those of the milestones after it.
+
 ## Limits
 
 - The ranking is computed once per task. Falling back moves to the next

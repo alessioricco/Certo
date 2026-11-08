@@ -2000,7 +2000,7 @@ def _stream_task(
             # when the escalation history matters most for debugging. See
             # the live repro this fixed in DECISIONS.md.
             if model_chain is not None:
-                write_model_decisions(cfg.workspace, model_chain.decisions)
+                write_model_decisions(cfg.workspace, model_chain.decisions, task_text=task)
             per_model_metrics = _per_model_metrics(conversation)
             efforts = _usage_efforts(cfg, agent_cfg, model_chain)
             if written is not None:
@@ -2947,7 +2947,7 @@ def _stream_escalation(
     finally:
         if written is not None:  # already gone after a normal finish
             shutil.rmtree(written.scratch, ignore_errors=True)
-        write_model_decisions(cfg.workspace, decisions)
+        write_model_decisions(cfg.workspace, decisions, task_text=task)
         run_summary = summarize_run(
             time.monotonic() - run_started,
             per_model_metrics,
