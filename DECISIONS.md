@@ -1779,3 +1779,10 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   recorded (an unreachable server would add zero-cost rows). The
   estimate given is stored per row so the error of the estimates can be
   tracked (`certo check`).
+
+- **`--auto-model` falls back to the next-best fit, not a stronger
+  model** (2026-11-08, the Author's decision). When a model's work fails
+  the checks, the next model in the profile's ranking takes over, as for
+  a provider failure. Auto-model means "the best fit for this kind of
+  task"; climbing by capability is what `--escalate` is for, and the
+  docs point there. Keeps the two modes distinct.

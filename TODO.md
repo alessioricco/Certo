@@ -212,11 +212,6 @@ first item is the suggested next one.
 - **Measured speed and context in the catalog**, filled from real runs,
   so ladders can weigh speed. A `speed` rating would count as capability
   today.
-- **Auto-model: a quality failure falls back to the next-best fit, not a
-  more capable model.** Escalation (0.1.9) answers this for `--escalate`;
-  `--auto-model`'s chain still walks one ranked-by-fit list. Decide
-  whether auto-model should climb by capability on a verification
-  failure, or point users to `--escalate`.
 - **Auto-model: no mid-task fallback under Docker.** `RemoteConversation`
   has no public `switch_llm`. Revisit when the SDK adds one.
 - **Auto-model: switching to a model with a smaller context window**

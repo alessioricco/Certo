@@ -270,6 +270,8 @@ removes those of the milestones after it.
 
 - The ranking is computed once per task. Falling back moves to the next
   best fit for this kind of task, which is not always a stronger model.
+  To move to a stronger model when the work fails, use
+  [escalation](escalate-between-models.md).
 - Under `--execution docker`, the first choice works, but Certo can't
   switch models in the middle of a task.
 
