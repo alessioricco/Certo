@@ -14,12 +14,6 @@ first item is the suggested next one.
 
 ## Before the next release
 
-- **Benchmark the project-root sentence (0.2.3).** Every run's system
-  prompt now names the project root and forbids reading outside it
-  (`agent.py`). New prompt text for every run, so measure it with
-  `certo bench` on a local and a cloud model before the release
-  (working agreement 2). Three Haiku runs only so far
-  (`docs/benchmark/project-root-0.2.3.md`). Done when both show no loss.
 - **A longer time budget from `certo init` for Ollama?** The mazeman
   sample took 41 minutes on `qwen3.8:27b` (2026-10-22), past the default
   30-minute `CERTO_MAX_TASK_SECONDS`; it ended `verified` only because the
@@ -399,6 +393,15 @@ before the 0.2.3 release; also decide the default budget from it.
 
 ## Smaller bugs
 
+- **A made-up tool result written as text gets no reminder.** In the
+  root benchmark (`docs/benchmark/root-0.2.3.md`, semver-order, round 2)
+  qwen3.8's first message was a terminal *result* as JSON
+  (`{"command": "ls -la ...", "is_error": false, "output": "..."}`), not
+  a call; `text_tool_calls.looks_like_tool_call` didn't match it (the
+  extra keys aren't the tool's arguments), so the run ended after 31s
+  with no code. Recognise an observation's shape too, with a test from
+  that transcript. It changes local runs, so bench qwen3.8 before the
+  release it goes in. Done when that message gets the reminder.
 - **`pytest-conventions` goes into non-Python runs.** Its trigger is the
   word "test" (and "tests", "unit test"), so a browser JavaScript game
   (Iron Horizon, 2026-11-08) gets it from "test" in the task. Narrow it

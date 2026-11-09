@@ -1786,3 +1786,10 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   a provider failure. Auto-model means "the best fit for this kind of
   task"; climbing by capability is what `--escalate` is for, and the
   docs point there. Keeps the two modes distinct.
+
+- **The project-root sentence stays in every run's prompt** (2026-11-09).
+  Benchmarked with and without it (`docs/benchmark/root-0.2.3.md`):
+  Haiku kept 39/39 with far fewer tries to leave the root (2 runs vs 9)
+  and 11% fewer input tokens; qwen3.8 never tried to leave in either
+  arm, and its 3-run gap (20/26 vs 23/26, p ≈ 0.47) came from the time
+  budget and tool calls as text, not the sentence. No opt-out setting.

@@ -79,8 +79,11 @@ Measured on Claude Haiku 5.5, the 13 bundled tasks, 3 repeats per arm:
 with the root sentence, the agent tried to reach outside its root in 2 of
 39 runs, against 9 of 39 without it (the blocked actions of that run,
 checked again with the final guard), with every hidden test passing in
-both arms and about 11% fewer input tokens. The same comparison on a
-local model is still to run.
+both arms and about 11% fewer input tokens. On a local model
+(`qwen3.8:27b`, 2 repeats) no run tried to leave its root in either
+arm, and the scores (20/26 with the sentence, 23/26 without) differ by
+chance and known local-model failures, not by the sentence. Details:
+[The project-root sentence, benchmarked](../benchmark/root-0.2.3.md).
 
 See [Safety](../concepts/safety.md#what-the-agent-can-do) and
 [`certo`](../reference/commands.md#certo).

@@ -64,5 +64,5 @@ notice wasn't printed (fixed before run 3).
 ## What this doesn't show
 
 One small model and one small task. The root sentence in the prompt is
-new text for every run, so it still needs the benchmark on a local and a
-cloud model before the release (`CLAUDE.md`, working agreement 2).
+new text for every run, so it was then benchmarked on a local and a
+cloud model: [The project-root sentence, benchmarked](root-0.2.3.md).
