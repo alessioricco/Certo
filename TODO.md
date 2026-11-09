@@ -14,6 +14,13 @@ first item is the suggested next one.
 
 ## Before the next release
 
+- **Bench the made-up-result reminder on qwen3.8 (0.2.3).** The tool-call
+  reminder now also answers a tool's made-up result written as text
+  (`text_tool_calls._made_up_result`; replay: 1 new match in 2,213
+  text-only messages of 1,084 saved transcripts, the target). It changes
+  local runs, so run the bundled tasks on qwen3.8 at night (working
+  agreement 2). Done when the score is no worse than the root bench's
+  (`docs/benchmark/root-0.2.3.md`, 20/26 and 23/26).
 - **A longer time budget from `certo init` for Ollama?** The mazeman
   sample took 41 minutes on `qwen3.8:27b` (2026-10-22), past the default
   30-minute `CERTO_MAX_TASK_SECONDS`; it ended `verified` only because the
@@ -393,15 +400,6 @@ before the 0.2.3 release; also decide the default budget from it.
 
 ## Smaller bugs
 
-- **A made-up tool result written as text gets no reminder.** In the
-  root benchmark (`docs/benchmark/root-0.2.3.md`, semver-order, round 2)
-  qwen3.8's first message was a terminal *result* as JSON
-  (`{"command": "ls -la ...", "is_error": false, "output": "..."}`), not
-  a call; `text_tool_calls.looks_like_tool_call` didn't match it (the
-  extra keys aren't the tool's arguments), so the run ended after 31s
-  with no code. Recognise an observation's shape too, with a test from
-  that transcript. It changes local runs, so bench qwen3.8 before the
-  release it goes in. Done when that message gets the reminder.
 - **`pytest-conventions` goes into non-Python runs.** Its trigger is the
   word "test" (and "tests", "unit test"), so a browser JavaScript game
   (Iron Horizon, 2026-11-08) gets it from "test" in the task. Narrow it

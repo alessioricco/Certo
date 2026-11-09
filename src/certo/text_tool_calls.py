@@ -22,6 +22,9 @@ Shapes seen in saved transcripts, each as the whole message:
 - the tool's name as the key: `{"task_tracker": {"task_list": [...]}}`;
 - a tool-use or tool-result block of the model API, with no tool name:
   `{"type": "tool_result", "tool_use_id": "call_1", "content": "..."}`;
+- a made-up result: a tool's arguments next to the fields of what the
+  tool would return, `{"command": "ls -la /p", "is_error": false,
+  "output": "total 16..."}`: nothing ran, the output is invented;
 - any of these cut off mid-file, so the JSON doesn't parse.
 
 JSON that names no tool and isn't one tool's arguments, such as
@@ -48,6 +51,22 @@ _NAME_KEYS = ("name", "tool_name", "tool", "tool_use")
 # `type` values of the model API's tool blocks, which a model sometimes
 # writes as text.
 _TOOL_BLOCK_TYPES = frozenset({"tool_use", "tool_result"})
+# Fields of what a tool returns (the SDK's observations, and `output`),
+# which a model sometimes writes next to the arguments, making the result
+# up instead of calling the tool.
+_RESULT_KEYS = frozenset(
+    {
+        "output",
+        "content",
+        "exit_code",
+        "is_error",
+        "error",
+        "metadata",
+        "new_content",
+        "old_content",
+        "prev_exist",
+    }
+)
 # When the runner can't read the agent's tools: the built-in coding tools
 # and their parameters (openhands-tools 1.47.0).
 DEFAULT_TOOLS: Mapping[str, frozenset[str]] = {
@@ -85,6 +104,7 @@ def looks_like_tool_call(text: str, tools: Mapping[str, Iterable[str]] | None = 
         or _names_tool(value, known)
         or any(k in known for k in value)
         or _bare_arguments(set(value), known)
+        or _made_up_result(set(value), known)
     )
 
 
@@ -108,6 +128,12 @@ def _bare_arguments(keys: set[str], known: Mapping[str, frozenset[str]]) -> bool
     one is more than the framework's own fields."""
     own = keys - _ALWAYS_ALLOWED
     return bool(own) and any(own <= params for params in known.values())
+
+
+def _made_up_result(keys: set[str], known: Mapping[str, frozenset[str]]) -> bool:
+    """A tool's arguments with the fields of its result: a call the model
+    imagined running."""
+    return bool(keys & _RESULT_KEYS) and _bare_arguments(keys - _RESULT_KEYS, known)
 
 
 def _cut_off_call(body: str, known: Mapping[str, frozenset[str]]) -> bool:

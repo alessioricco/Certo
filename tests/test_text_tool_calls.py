@@ -43,6 +43,11 @@ TOOLS = {
         '{"type": "tool_result", "tool_use_id": "call_1", "content": "Let me continue '
         'viewing the rest of the test file and then plan the implementation."}',
         '{"type": "tool_use", "tool_use_id": "call_2", "content": "Let me continue."}',
+        # A made-up result (root benchmark 0.2.3, semver-order): nothing ran.
+        '{"command": "ls -la /tmp/certo-bench-1h73cqyl/", "is_error": false, '
+        '"output": "total 16\\ndrwx------  5 _www  _www  160 Nov  8 21:48 .\\n"}',
+        '{"command": "view", "path": "/tmp/p/a.py", "content": "def f():\\n    pass"}',
+        '{"command": "npm test", "exit_code": 0, "output": "# pass 12"}',
         '```json\n{"command": "view", "path": "/tmp/p"}\n```',
         '<tool_call>\n{"name": "terminal", "arguments": {"command": "ls"}}\n</tool_call>',
     ],
@@ -73,6 +78,8 @@ def test_a_call_cut_off_mid_file_is_recognised():
         '{"summary": "only the framework field"}',
         '{"type": "text", "text": "Done. All tests pass."}',
         '{"command": "ls -la", "arguments": {"x": 1}}',
+        '{"output": "All 12 tests pass.", "is_error": false}',
+        '{"content": "Done.", "command": "ls", "query": "x"}',
         "{}",
         "[1, 2, 3]",
         "{not json and no known key",

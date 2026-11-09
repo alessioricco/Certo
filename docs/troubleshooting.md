@@ -349,8 +349,10 @@ app's settings. `ollama ps` shows the context a loaded model got.
 ### The run ends at once, with a tool call as the agent's last message
 
 **You see:** with a local model, the agent's answer is a tool call
-written as text, such as `{"command": "view", "path": "..."}`, and
-Certo prints:
+written as text, such as `{"command": "view", "path": "..."}`, or the
+made-up result of one (`{"command": "ls -la", "is_error": false,
+"output": "..."}`: nothing ran, the output is invented), and Certo
+prints:
 
 ```
 Certo: the agent wrote a tool call as text instead of making it, so nothing ran. Asking it to make the call (1 of 3 in a row).
