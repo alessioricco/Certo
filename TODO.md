@@ -411,12 +411,6 @@ before the 0.2.3 release; also decide the default budget from it.
   `certo skills list --task` on a Node game leaves it out and a Python
   task still gets it.
 
-- **The root guard blocks `/Applications`.** In the milestone samples'
-  first runs the agent looked there for a browser (Chromium) to check a
-  game, and was blocked. Add `/Applications` to the allowed system
-  folders (`root_guard._SYSTEM_DIRS`), read-only like `/usr`. After the
-  2026-11-07 night benchmark (it changes the guard). Done when a command
-  naming `/Applications/...` runs.
 - **`git` inside a project sees the workspace's repository.** A project
   in `projects/` of a workspace that is a git repository (and isn't one
   itself) makes the agent's `git status` list the whole workspace: a lure

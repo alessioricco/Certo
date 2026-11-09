@@ -78,6 +78,7 @@ def test_commands_that_reach_outside_are_blocked(layout, command):
         "ls ~/.npm ~/.cache/ms-playwright",
         f"ls {os.path.join('.', 'src')}",
         "PATH=/usr/local/bin:$PATH npm run build",
+        "'/Applications/Chromium.app/Contents/MacOS/Chromium' --headless --version",
     ],
 )
 def test_commands_inside_the_root_run(layout, command):

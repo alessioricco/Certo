@@ -63,7 +63,9 @@ the other projects, and Certo's checks found several projects and ended
   beside it is part of the task.
 - **Certo blocks an action that reaches outside the root** before it
   runs: the file editor outside the root, or a command like `ls ..`,
-  `cat ../other/file` or `cd ~`. The agent is told why and carries on:
+  `cat ../other/file` or `cd ~` (system and tool folders such as `/usr`,
+  `/tmp` and, on macOS, `/Applications` stay allowed). The agent is told
+  why and carries on:
 
   ```text
   Certo blocked an action outside the project root: <workspace>/projects is outside the project root <workspace>/projects/farewell-3. Work only inside the project root: nothing outside it is part of the task.

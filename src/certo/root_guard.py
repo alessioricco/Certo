@@ -49,6 +49,8 @@ _SYSTEM_DIRS = (
     "/private/etc",
     "/System",
     "/Library/Developer",
+    # macOS apps: a browser to check a web page (Chromium, Chrome).
+    "/Applications",
 )
 # Folders in the home folder where tools keep their installs and caches.
 _HOME_TOOL_DIRS = (

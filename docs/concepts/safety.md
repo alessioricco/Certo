@@ -17,8 +17,8 @@ runs, and tells the agent why:
 - a terminal command that names a path above or beside the root:
   `ls ..`, `cat ../other/file`, `find /`, `cd ~`, `$HOME/...`.
 
-System and tool folders stay allowed for commands (`/usr`, `/tmp`, the
-npm and pip caches in your home folder), but never the root's parent,
+System and tool folders stay allowed for commands (`/usr`, `/tmp`,
+`/Applications` on macOS, the npm and pip caches in your home folder), but never the root's parent,
 the folders beside the root, or your home folder itself.
 
 The run summary counts the blocked actions
