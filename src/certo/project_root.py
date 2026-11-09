@@ -101,3 +101,15 @@ def unused_project_name(projects_dir: str, name: str) -> str:
         number += 1
         candidate = f"{name}-{number}"
     return candidate
+
+
+def git_ceiling(workspace: str, projects_dir: str) -> str | None:
+    """The folder `git` mustn't look in, for a project in `projects_dir`:
+    `projects_dir` itself. Without it, `git status` in a project that
+    isn't a repository finds the workspace's repository, if it has one,
+    and lists every other project. None for a folder elsewhere (your own
+    repository keeps working as one)."""
+    projects = os.path.realpath(projects_dir)
+    if os.path.dirname(os.path.realpath(workspace)) != projects:
+        return None
+    return projects

@@ -110,6 +110,7 @@ from .model_selection import (
     llm_for_entry,
     write_model_decisions,
 )
+from .project_root import git_ceiling
 from .project_env import (
     CommandRunner,
     LocalRunner,
@@ -1954,7 +1955,11 @@ def _stream_task(
                     agent_cfg,
                     usage_id=agent_usage_id,
                     project_env=project_env,
-                    terminal_env=terminal_env(project_env, runner),
+                    terminal_env=terminal_env(
+                        project_env,
+                        runner,
+                        git_ceiling=git_ceiling(agent_cfg.workspace, agent_cfg.projects_dir),
+                    ),
                     trusted_skills=trusted,
                 ),
                 callbacks=_with_guard(guard, on_event),
@@ -2808,7 +2813,11 @@ def _stream_escalation(
                             rung_cfg,
                             usage_id=usage_id,
                             project_env=project_env,
-                            terminal_env=terminal_env(project_env, runner),
+                            terminal_env=terminal_env(
+                                project_env,
+                                runner,
+                                git_ceiling=git_ceiling(rung_cfg.workspace, rung_cfg.projects_dir),
+                            ),
                             trusted_skills=trusted,
                         ),
                         callbacks=_with_guard(guard, io.on_event),

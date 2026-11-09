@@ -61,6 +61,10 @@ the other projects, and Certo's checks found several projects and ended
   so this works from the first run.
 - **The agent is told its project root**, and that nothing above or
   beside it is part of the task.
+- **`git` stops at the project.** In a workspace that is a git
+  repository, a project in `projects/` that isn't one no longer sees the
+  workspace's repository: the agent's `git status` says "not a git
+  repository" instead of listing every other project.
 - **Certo blocks an action that reaches outside the root** before it
   runs: the file editor outside the root, or a command like `ls ..`,
   `cat ../other/file` or `cd ~` (system and tool folders such as `/usr`,

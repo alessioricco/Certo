@@ -21,6 +21,11 @@ System and tool folders stay allowed for commands (`/usr`, `/tmp`,
 `/Applications` on macOS, the npm and pip caches in your home folder), but never the root's parent,
 the folders beside the root, or your home folder itself.
 
+A project in the workspace's `projects/` folder is also its own world
+for `git`: when the project isn't a git repository but the workspace is,
+the agent's `git status` says "not a git repository" instead of listing
+the whole workspace. A project that is a repository works as one.
+
 The run summary counts the blocked actions
 (`Blocked outside the project root: 2 actions`), and so does the JSON
 result (`blocked_outside_root`).

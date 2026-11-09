@@ -528,23 +528,30 @@ def wants_python_env(task: str, language: str, workspace: str) -> bool:
     return False
 
 
-def terminal_env(env: ProjectEnv | None, runner: CommandRunner) -> dict[str, str] | None:
+def terminal_env(
+    env: ProjectEnv | None, runner: CommandRunner, *, git_ceiling: str | None = None
+) -> dict[str, str] | None:
     """Extra variables for the agent's terminal session.
 
     With a project environment: its VIRTUAL_ENV and bin/ first on PATH. In
     every case Certo's own bin/ is dropped from PATH, and a VIRTUAL_ENV that
     points at Certo's own environment is cleared, so the agent can't reach
-    Certo's interpreter by accident.
+    Certo's interpreter by accident. With `git_ceiling`
+    (project_root.git_ceiling), `git` stops looking for a repository there
+    (GIT_CEILING_DIRECTORIES), in local runs only.
     """
-    if env is not None:
-        return env.env_vars(runner.base_path())
     if not isinstance(runner, LocalRunner):
-        return None
+        return env.env_vars(runner.base_path()) if env is not None else None
     extra: dict[str, str] = {}
-    if os.environ.get("PATH", "") != runner.base_path():
-        extra["PATH"] = runner.base_path()
-    if os.environ.get("VIRTUAL_ENV") and os.path.realpath(
-        os.environ["VIRTUAL_ENV"]
-    ) == os.path.realpath(sys.prefix):
-        extra["VIRTUAL_ENV"] = ""
+    if env is not None:
+        extra.update(env.env_vars(runner.base_path()))
+    else:
+        if os.environ.get("PATH", "") != runner.base_path():
+            extra["PATH"] = runner.base_path()
+        if os.environ.get("VIRTUAL_ENV") and os.path.realpath(
+            os.environ["VIRTUAL_ENV"]
+        ) == os.path.realpath(sys.prefix):
+            extra["VIRTUAL_ENV"] = ""
+    if git_ceiling:
+        extra["GIT_CEILING_DIRECTORIES"] = git_ceiling
     return extra or None

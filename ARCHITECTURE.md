@@ -516,7 +516,8 @@ given design was chosen.
   and `WorkspaceRunner` (the Docker container via
   `workspace.execute_command`, host↔`/workspace` path mapping) are the two
   `CommandRunner`s. `terminal_env()` builds the agent terminal's extra
-  variables, and `wants_python_env()` decides about a workspace before the
+  variables (in local runs, `GIT_CEILING_DIRECTORIES` from
+  `project_root.git_ceiling()` for a project in `projects_dir`), and `wants_python_env()` decides about a workspace before the
   agent starts. `runner.py`'s `_prepare_agent_env()` calls it, then passes
   `project_env`/`terminal_env` to `build_agent()`. `tools.py` puts them in
   the terminal `Tool`'s `params` (`env` plus `terminal_type="subprocess"`).

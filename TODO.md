@@ -411,12 +411,6 @@ before the 0.2.3 release; also decide the default budget from it.
   `certo skills list --task` on a Node game leaves it out and a Python
   task still gets it.
 
-- **`git` inside a project sees the workspace's repository.** A project
-  in `projects/` of a workspace that is a git repository (and isn't one
-  itself) makes the agent's `git status` list the whole workspace: a lure
-  outside the root the guard can't see (no path in the command). Maybe
-  `GIT_CEILING_DIRECTORIES` in the agent's terminal for a project Certo
-  created. Done when `git` in such a project doesn't reach the parent.
 - **`certo skills`: turn an official skill off**, globally or for one
   project (later, agreed 2026-10-22). Today a third-party skill can only
   replace one.

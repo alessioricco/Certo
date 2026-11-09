@@ -355,6 +355,22 @@ def test_terminal_env_without_a_project_env_clears_certos_virtual_env(monkeypatc
     assert env == {"PATH": "/usr/bin", "VIRTUAL_ENV": ""}
 
 
+def test_terminal_env_adds_the_git_ceiling_in_local_runs_only(tmp_path, monkeypatch):
+    monkeypatch.setattr(LocalRunner, "base_path", lambda self: "/usr/bin")
+    monkeypatch.setenv("PATH", "/usr/bin")
+    monkeypatch.delenv("VIRTUAL_ENV", raising=False)
+
+    local = terminal_env(_env(tmp_path), LocalRunner(), git_ceiling="/w/projects")
+    assert local["GIT_CEILING_DIRECTORIES"] == "/w/projects"
+    assert local["VIRTUAL_ENV"] == str(tmp_path / ".venv")
+    assert terminal_env(None, LocalRunner(), git_ceiling="/w/projects") == {
+        "GIT_CEILING_DIRECTORIES": "/w/projects"
+    }
+    # Docker: the paths are the container's.
+    elsewhere = terminal_env(_env(tmp_path), FakeRunner(path="/usr/bin"), git_ceiling="/w/projects")
+    assert "GIT_CEILING_DIRECTORIES" not in elsewhere
+
+
 @pytest.mark.parametrize(
     ("task", "language", "files", "expected"),
     [
