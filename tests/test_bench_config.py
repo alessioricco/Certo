@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import shutil
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -264,9 +265,21 @@ def test_the_published_benchmark_files_load_against_the_shipped_catalog(
     import yaml
 
     if "models_file:" in bench_file.read_text():
-        monkeypatch.chdir(_REPO)
         monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-test")
-        assert load_bench_config(str(bench_file)).arms
+        arms = yaml.safe_load(bench_file.read_text()).get("arms") or []
+        skills_dirs = [a["skills_dir"] for a in arms if isinstance(a, dict) and "skills_dir" in a]
+        if not skills_dirs:
+            monkeypatch.chdir(_REPO)
+            assert load_bench_config(str(bench_file)).arms
+            return
+        # A skills folder is made on the machine that runs the benchmark
+        # (`certo skills assess`, as the file's comment says), never kept
+        # in the repository: load from a copy where those folders exist.
+        shutil.copytree(_REPO / "docs" / "benchmark", tmp_path / "docs" / "benchmark")
+        for folder in skills_dirs:
+            (tmp_path / folder).mkdir(parents=True, exist_ok=True)
+        monkeypatch.chdir(tmp_path)
+        assert load_bench_config(str(tmp_path / "docs" / "benchmark" / bench_file.name)).arms
         return
     list_path = _REPO / "src/certo/examples/models_list.yaml.example"
     catalog = yaml.safe_load(list_path.read_text())
