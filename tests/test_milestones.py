@@ -17,6 +17,7 @@ from certo.milestones import (
     reopen,
     save_state,
     status_lines,
+    written_in_milestones,
     summary_lines,
 )
 from types import SimpleNamespace
@@ -70,12 +71,81 @@ def test_a_heading_needs_no_title():
     assert plan.get(1).label == "Milestone 1"
 
 
+# Live 2026-11-10: a task file with "## M0 — Plan ..." to "## M9 — ..."
+# headings ran as one task, on one budget of steps.
+SHORT_FORM = """# A game
+
+Rules for every milestone.
+
+## M0 \u2014 Plan, Tech Stack Decision & Foundations
+Write PLAN.md.
+
+## M1 \u2014 Engine Core
+Build the loop.
+
+## M2 - Player & Shooting
+Add the ship.
+"""
+
+
+def test_short_headings_numbered_from_0_are_milestones():
+    plan = parse_milestones(SHORT_FORM)
+
+    assert len(plan) == 3
+    assert plan.context == "# A game\n\nRules for every milestone."
+    assert [m.number for m in plan.milestones] == [1, 2, 3]
+    assert plan.get(1).label == "M0 \u2014 Plan, Tech Stack Decision & Foundations"
+    assert plan.get(3).label == "M2 \u2014 Player & Shooting"
+    assert plan.get(2).text == "Build the loop."
+    assert written_in_milestones(SHORT_FORM) == 3
+
+
+@pytest.mark.parametrize(
+    ("heading", "label"),
+    [
+        ("## Milestone 1 - Storage", "Storage"),
+        ("## Milestone 1 \u2014 Storage", "Storage"),
+        ("## Milestone 1. Storage", "Storage"),
+        ("## milestone 1: Storage", "Storage"),
+        ("## M1: Storage", "M1 \u2014 Storage"),
+        ("## M1", "M1"),
+    ],
+)
+def test_milestone_headings_can_be_written_in_several_ways(heading, label):
+    plan = parse_milestones(f"{heading}\nDo it.\n## Milestone 2: b\nAnd this.")
+
+    assert plan.get(1).label == label
+
+
+def test_milestone_0_keeps_its_written_name():
+    plan = parse_milestones("## Milestone 0: Plan\nx\n## Milestone 1: Build\ny")
+
+    assert [m.label for m in plan.milestones] == [
+        "Milestone 0 \u2014 Plan",
+        "Milestone 1 \u2014 Build",
+    ]
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "## M16 rifle\nx\n## M17 rifle\ny",
+        "## Mode 1: a\nx\n## Mode 2: b\ny",
+        "## M2: a\nx\n## M3: b\ny",
+        "## M0: a\nx\n## M2: b\ny",
+    ],
+)
+def test_other_headings_are_not_milestones(text):
+    assert written_in_milestones(text) == 0
+
+
 @pytest.mark.parametrize(
     ("text", "message"),
     [
         ("Just a task.", "no milestone found"),
         ("## Milestone 1: a\nx\n## Milestone 3: b\ny", "numbered 1, 2, 3"),
         ("## Milestone 2: a\nx", "numbered 1, 2, 3"),
+        ("## M1: a\nx\n```acceptance\nnot json\n```", "M1 \u2014 a: the acceptance block"),
         ("```acceptance\n[]\n```\n## Milestone 1: a\nx", "inside a milestone"),
         ("## Milestone 1: a\nx\n```acceptance\n[]\n```\n```acceptance\n[]\n```", "more than one"),
         ("## Milestone 1: a\nx\n```acceptance\nnot json\n```", "valid JSON"),

@@ -138,7 +138,8 @@ your own or a trusted repository.
 ## New: milestones without the flag, and three bigger samples
 
 A task file written in milestones (two or more `## Milestone N`
-headings, numbered 1, 2, 3...) now runs milestone by milestone without
+headings, or short ones like `## M1 — title`, numbered 1, 2, 3... or
+0, 1, 2...) now runs milestone by milestone without
 `--milestones`. Before, it was sent as one task, and its acceptance
 blocks reached the agent as plain text and were never checked. Certo
 says so before it starts:

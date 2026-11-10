@@ -1804,3 +1804,14 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   Agent behaviour is unchanged, so no benchmark. A new verdict
   (`unfinished`) was not chosen: it would turn every such run into a
   failure, including the 0.1.20 case where all 116 tests passed.
+- **Milestone headings in more shapes, numbered from 0 or 1** (0.2.3,
+  2026-11-10). Live: a task file with `## M0 — Plan ...` to `## M9 —
+  ...` ran as one task, on one budget of steps, because only
+  `## Milestone N:` from 1 was read. Now `## M1`, and `-`, `—`, `–`, `.`
+  after the number, count too, and numbering may start at 0. Certo still
+  numbers the milestones 1..N inside (state, messages, resume), and the
+  title keeps the written name (`M0 — Plan`). The short form needs a
+  separator or nothing after the number ("## M16 rifle" is not one), and
+  automatic detection still needs two headings in order. A level-1
+  heading after the milestones (`# Definition of done`) still belongs to
+  the last milestone: left as it is for now.

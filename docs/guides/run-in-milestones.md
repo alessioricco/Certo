@@ -11,7 +11,11 @@ it works, but hasn't been benchmarked yet.
 ## Write the task file
 
 Start each milestone with a `## Milestone N: title` heading, numbered
-1, 2, 3 in order. The text before the first heading is the context that
+1, 2, 3 in order. The short form `## M1 — title` works too, and so do
+`-`, `—`, `–` or `.` instead of `:`. Numbering may start at 0, for a
+first planning step: Certo then counts the milestones from 1 (`Milestone
+1 of 10`) and keeps your own name in the title (`M0 — Plan`). The text
+before the first heading is the context that
 every milestone gets: what the project is, its language, its rules.
 This example is [a file in the repository](../benchmark/milestones-temperature.task.md):
 
@@ -61,7 +65,8 @@ certo --milestones task.md --project temps
 
 A task file written in milestones runs this way without the flag, too:
 `certo task.md --project temps` does the same, when the file has two or
-more `## Milestone N` headings numbered 1, 2, 3... in order. Certo says
+more milestone headings (`## Milestone N` or `## MN`) numbered 1, 2,
+3... or 0, 1, 2... in order. Certo says
 so before it starts:
 
 ```text

@@ -1,7 +1,12 @@
 """Milestone mode: a task file split into milestones, run and verified one
 at a time (`certo --milestones task.md`; see DECISIONS.md, 2026-10-29).
 
-A milestone starts at a `## Milestone N: title` heading; the text before
+A milestone starts at a `## Milestone N: title` heading, or a short one
+such as `## M1 — title` (`:`, `-`, `—`, `–` or `.` after the number).
+Numbering starts at 1, or at 0 (a plan step first); the milestones are
+then numbered by position from 1, and the title keeps the written name
+(`M0 — Plan`) so the agent and the user see the file's own words. The
+text before
 the first one is context every milestone gets. A milestone may hold one
 fenced `acceptance` block, the same JSON array as `--acceptance-checks`.
 The block is Certo's, never the agent's: it is taken out of the text the
@@ -29,7 +34,12 @@ from .escalation import workspace_listing
 from .project_state import STATE_DIR
 
 _PLAN_FILE = "milestones.json"
-_HEADING = re.compile(r"^##\s+milestone\s+(\d+)\s*(?::\s*(.*?))?\s*$", re.IGNORECASE)
+# `## Milestone 1: title`, `## Milestone 1 - title`, `## M1 — title`, `## M1`.
+# The short form needs a separator or nothing after the number, so a
+# heading like "## M16 rifle" isn't one.
+_HEADING = re.compile(
+    r"^##\s+(milestone\s+|m)(\d+)\s*(?:[:.\-\u2013\u2014]\s*(.*?))?\s*$", re.IGNORECASE
+)
 _FENCE = re.compile(r"^\s*(```+|~~~+)\s*(\S*)")
 
 
@@ -80,17 +90,38 @@ def _heading_numbers(text: str) -> list[int]:
             continue
         heading = _HEADING.match(line) if fence is None else None
         if heading:
-            numbers.append(int(heading.group(1)))
+            numbers.append(int(heading.group(2)))
     return numbers
+
+
+def _in_order(numbers: Sequence[int]) -> bool:
+    """1, 2, 3... or 0, 1, 2...: one more each time, from 0 or 1."""
+    return (
+        bool(numbers)
+        and numbers == list(range(numbers[0], numbers[0] + len(numbers)))
+        and (numbers[0] in (0, 1))
+    )
+
+
+def _title(prefix: str, number: int, rest: str, zero_based: bool) -> str:
+    """The milestone's title: the heading's own words, with its written
+    name (`M0`, `Milestone 0`) in front when Certo's number differs from it
+    or the heading uses the short form."""
+    rest = rest.strip()
+    if not zero_based and prefix.lower().startswith("milestone"):
+        return rest
+    name = f"Milestone {number}" if prefix.lower().startswith("milestone") else f"M{number}"
+    return f"{name} \u2014 {rest}" if rest else name
 
 
 def written_in_milestones(text: str) -> int:
     """How many milestones a task file is written in, for running it in
     milestones without `--milestones`: at least two `## Milestone N`
-    headings, numbered 1, 2, 3... in order. 0 for any other file, which a
+    headings (or `## M1` ones), numbered 1, 2, 3... or 0, 1, 2... in order.
+    0 for any other file, which a
     run then sends whole, as before (DECISIONS.md)."""
     numbers = _heading_numbers(text)
-    if len(numbers) >= 2 and numbers == list(range(1, len(numbers) + 1)):
+    if len(numbers) >= 2 and _in_order(numbers):
         return len(numbers)
     return 0
 
@@ -98,7 +129,7 @@ def written_in_milestones(text: str) -> int:
 def parse_milestones(text: str) -> MilestonePlan:
     """Split a task file into its milestones, or raise `MilestoneError`."""
     context: list[str] = []
-    sections: list[tuple[int, str, list[str]]] = []
+    sections: list[tuple[int, str, str, list[str]]] = []
     fence: str | None = None
     for line in text.splitlines():
         match = _FENCE.match(line)
@@ -109,9 +140,9 @@ def parse_milestones(text: str) -> MilestonePlan:
                 fence = None
         heading = _HEADING.match(line) if fence is None and not match else None
         if heading:
-            sections.append((int(heading.group(1)), (heading.group(2) or "").strip(), []))
+            sections.append((int(heading.group(2)), heading.group(1), heading.group(3) or "", []))
         elif sections:
-            sections[-1][2].append(line)
+            sections[-1][3].append(line)
         else:
             context.append(line)
     if not sections:
@@ -119,24 +150,29 @@ def parse_milestones(text: str) -> MilestonePlan:
             "no milestone found: with --milestones, each milestone starts with a "
             "heading like '## Milestone 1: title'."
         )
-    numbers = [number for number, _, _ in sections]
-    if numbers != list(range(1, len(sections) + 1)):
+    numbers = [number for number, _, _, _ in sections]
+    if not _in_order(numbers):
         found = ", ".join(str(n) for n in numbers)
-        raise MilestoneError(f"milestones must be numbered 1, 2, 3... in order; found {found}.")
+        raise MilestoneError(
+            f"milestones must be numbered 1, 2, 3... (or 0, 1, 2...) in order; found {found}."
+        )
+    zero_based = numbers[0] == 0
     context_text, context_blocks = _take_acceptance("\n".join(context))
     if context_blocks:
         raise MilestoneError(
             "an acceptance block must be inside a milestone, not before the first one."
         )
     milestones = []
-    for number, title, lines in sections:
+    for position, (written, prefix, rest, lines) in enumerate(sections, start=1):
+        title = _title(prefix, written, rest, zero_based)
+        name = title if title and title != rest.strip() else f"milestone {written}"
         body, blocks = _take_acceptance("\n".join(lines))
         if len(blocks) > 1:
-            raise MilestoneError(f"milestone {number} has more than one acceptance block.")
+            raise MilestoneError(f"{name} has more than one acceptance block.")
         if not body:
-            raise MilestoneError(f"milestone {number} has no text: say what it should do.")
-        acceptance = _parse_block(number, blocks[0]) if blocks else ()
-        milestones.append(Milestone(number, title, body, acceptance))
+            raise MilestoneError(f"{name} has no text: say what it should do.")
+        acceptance = _parse_block(name, blocks[0]) if blocks else ()
+        milestones.append(Milestone(position, title, body, acceptance))
     return MilestonePlan(context_text, tuple(milestones))
 
 
@@ -169,22 +205,20 @@ def _take_acceptance(text: str) -> tuple[str, list[str]]:
     return "\n".join(kept).strip(), blocks
 
 
-def _parse_block(number: int, raw: str) -> tuple[Mapping[str, object], ...]:
+def _parse_block(name: str, raw: str) -> tuple[Mapping[str, object], ...]:
     try:
         data = json.loads(raw)
     except ValueError as exc:
-        raise MilestoneError(
-            f"milestone {number}: the acceptance block must be valid JSON: {exc}"
-        ) from exc
+        raise MilestoneError(f"{name}: the acceptance block must be valid JSON: {exc}") from exc
     if not isinstance(data, list) or not all(isinstance(item, dict) for item in data):
         raise MilestoneError(
-            f"milestone {number}: the acceptance block must be a JSON array of check "
+            f"{name}: the acceptance block must be a JSON array of check "
             "objects, as for --acceptance-checks."
         )
     try:
         parse_acceptance_checks(data)
     except AcceptanceCheckError as exc:
-        raise MilestoneError(f"milestone {number}: {exc}") from exc
+        raise MilestoneError(f"{name}: {exc}") from exc
     return tuple(data)
 
 
