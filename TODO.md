@@ -387,9 +387,22 @@ trigger: one link alone suggested `npm`/`deno` for every Node project.
 The repo has little for building apps (`frontend-design` names only an
 ecosystem), so better sources matter as much as the matching. One live
 Haiku run (`docs/benchmark/trusted-skills-0.2.3.md`) shows a skill
-reaching a run, not that it helps. **Next: step 5**, a bench arm with
-`CERTO_TRUSTED_SKILLS_TOKENS=0` against the default, local and cloud,
-before the 0.2.3 release; also decide the default budget from it.
+reaching a run, not that it helps. **Step 5, the release check (no
+loss), 2026-11-10:** bench arm option `skills_dir` (benchmark runs had no
+third-party skills at all). On the 13 bundled tasks only the 4 Node ones
+get a trusted skill, always `npm` (~56 tokens), so the check runs those 4
+with and without (`bench-0.2.3-trusted-{cloud,local}.yaml`); it can show
+no harm, not a benefit.
+
+- **Do trusted skills help? (after 0.2.3, option B agreed 2026-11-10).**
+  The release check above can't tell: almost nothing fits the bundled
+  tasks. Measure on tasks where substantial skills fire: tasks naming a
+  framework or tool a trusted skill covers, or the milestone samples,
+  with the Author's other skill repositories added to the sources.
+  First list which skills fit which task (`certo skills suggest`), so
+  the arms really differ. Also decide the default
+  `CERTO_TRUSTED_SKILLS_TOKENS` from it. Done when a benchmark shows
+  whether they help, on a local and a cloud model.
 
 ## Smaller bugs
 

@@ -1,0 +1,18 @@
+# Trusted skill repositories, step 5 (Certo 0.2.3): the same model with
+# and without the usable skills of a trusted repository. Only the 4 Node
+# tasks get one (the trusted skill 'npm'); the other 9 get none, so they
+# are left out. The skills folder is made once, from the repository root:
+#   mkdir -p bench-results/trusted-skills-0.2.3-prep/.certo
+#   cp docs/benchmark/skill_sources-0.2.3-trusted.yaml \
+#      bench-results/trusted-skills-0.2.3-prep/.certo/skill_sources.yaml
+#   (cd bench-results/trusted-skills-0.2.3-prep && certo skills assess --project .)
+# Then:
+#   certo bench --config docs/benchmark/bench-0.2.3-trusted-local.yaml --yes  (a night slot, under caffeinate -i)
+# The Ollama server is the one on another machine on the local network.
+models_file: docs/benchmark/models-0.2.2-effort.yaml
+models_list_file: docs/benchmark/models_list-0.2.2-effort.yaml
+tasks: [room-bookings, semver-order, slugify, token-bucket]
+repeats: 3
+arms:
+  - {name: qwen-trusted, strategy: single, model: qwen-high, skills_dir: bench-results/trusted-skills-0.2.3-prep/.certo/skills}
+  - {name: qwen-plain, strategy: single, model: qwen-high}

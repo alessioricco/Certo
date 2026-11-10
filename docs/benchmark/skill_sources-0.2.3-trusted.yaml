@@ -1,0 +1,4 @@
+sources:
+  - repo: github:OpenHands/extensions
+    ref: 4f91a480f74732b2653fdd6f1357637e5575bf91
+    path: skills

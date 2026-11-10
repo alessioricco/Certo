@@ -1,0 +1,19 @@
+# Trusted skill repositories, step 5 (Certo 0.2.3): the same model with
+# and without the usable skills of a trusted repository. Only the 4 Node
+# tasks get one (the trusted skill 'npm'); the other 9 get none, so they
+# are left out. The skills folder is made once, from the repository root:
+#   mkdir -p bench-results/trusted-skills-0.2.3-prep/.certo
+#   cp docs/benchmark/skill_sources-0.2.3-trusted.yaml \
+#      bench-results/trusted-skills-0.2.3-prep/.certo/skill_sources.yaml
+#   (cd bench-results/trusted-skills-0.2.3-prep && certo skills assess --project .)
+# Then:
+#   certo bench --config docs/benchmark/bench-0.2.3-trusted-cloud.yaml --parallel 3 --max-cost 3
+# The model files name the key as ${ANTHROPIC_API_KEY}, read from the
+# environment.
+models_file: docs/benchmark/models-0.2.2-effort.yaml
+models_list_file: docs/benchmark/models_list-0.2.2-effort.yaml
+tasks: [room-bookings, semver-order, slugify, token-bucket]
+repeats: 5
+arms:
+  - {name: haiku-trusted, strategy: single, model: haiku-high, skills_dir: bench-results/trusted-skills-0.2.3-prep/.certo/skills}
+  - {name: haiku-plain, strategy: single, model: haiku-high}
