@@ -95,6 +95,18 @@ first item is the suggested next one.
     spot such a plan file in the project and offer to run it milestone
     by milestone (each with its own steps and checks), or the planner
     above could rewrite it in the milestone format.
+  - *Stop for approval:* a task file written for a person who approves
+    each milestone ("STOP and wait for my approval", latticewake
+    2026-11-10). `--interactive` doesn't pause between milestones today;
+    it could show each verified milestone's summary and ask before the
+    next. A milestone with nothing to check (a plan only) ends
+    `inconclusive` and stops the run, which works as a pause, by
+    accident: `certo --resume "approved"` continues it.
+  - *Level-1 headings after the milestones* (`# Definition of done`,
+    `# Begin`) belong to the last milestone's text; they could go to
+    every milestone, as context.
+  - *Run `star-swarm.md` once* (the sample from the latticewake task,
+    10 milestones) and add it to `milestone-samples-0.2.3.md`.
   - *Measure* (working agreement 2): the app tasks and the milestone
     samples with their milestones removed, three arms (the hand-written
     milestones, the planned ones, one go), on qwen3.8 and Haiku. On the
