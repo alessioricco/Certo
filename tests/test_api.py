@@ -40,6 +40,17 @@ def test_the_options_go_on_top_of_the_settings():
     assert cfg.verbose is True
 
 
+def test_max_steps_sets_the_step_limit_for_this_run():
+    assert resolve_config(RunOptions(), load=lambda: _cfg()).max_iterations == 10
+    cfg = resolve_config(RunOptions(max_steps=200), load=lambda: _cfg())
+    assert cfg.max_iterations == 200
+
+
+def test_max_steps_below_one_is_refused():
+    with pytest.raises(UsageError, match="--max-steps must be 1 or more"):
+        resolve_config(RunOptions(max_steps=0), load=lambda: _cfg(), spell=_flag)
+
+
 def test_a_model_given_as_an_option_is_enough_without_one_in_the_settings():
     cfg = resolve_config(
         RunOptions(model="openai/gpt-4o", api_key="k"), load=lambda: _cfg(model="", api_key=None)

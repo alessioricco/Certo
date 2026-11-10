@@ -328,6 +328,16 @@ def _build_parser() -> argparse.ArgumentParser:
         help=("Override CERTO_EXECUTION for this run. Defaults to the value in .env (or 'local')."),
     )
     parser.add_argument(
+        "--max-steps",
+        type=int,
+        default=None,
+        metavar="N",
+        help=(
+            "Override CERTO_MAX_ITERATIONS for this run: the most steps the agent "
+            "may take. In milestone mode each milestone gets N steps."
+        ),
+    )
+    parser.add_argument(
         "--model",
         default=None,
         help=(
@@ -721,6 +731,7 @@ def _run_task_command(
         independent_tests_strict=args.independent_tests_strict,
         verbose=args.verbose,
         agents_md=args.agents_md,
+        max_steps=args.max_steps,
     )
     try:
         cfg = resolve_config(options, load=lambda: load_config(), spell=_flag)

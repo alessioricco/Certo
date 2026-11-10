@@ -64,6 +64,7 @@ class RunOptions:
     independent_tests_strict: bool = False
     verbose: bool = False
     agents_md: str | None = None
+    max_steps: int | None = None
 
 
 def resolve_config(
@@ -122,6 +123,10 @@ def resolve_config(
         cfg = replace(cfg, independent_tests=True, independent_tests_strict=True)
     if options.verbose:
         cfg = replace(cfg, verbose=True)
+    if options.max_steps is not None:
+        if options.max_steps < 1:
+            raise UsageError(f"{spell('max_steps')} must be 1 or more")
+        cfg = replace(cfg, max_iterations=options.max_steps)
 
     if options.escalate is not None:
         cfg = replace(cfg, model_selection="escalate", escalation_ladder=options.escalate)

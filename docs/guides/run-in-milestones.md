@@ -93,7 +93,9 @@ For each milestone, Certo:
 
 The time, cost and step limits (`CERTO_MAX_TASK_SECONDS`,
 `CERTO_MAX_TASK_COST`, `CERTO_MAX_ITERATIONS`) apply to each milestone
-separately: a task of 3 milestones can take up to 3 times the time.
+separately: a task of 3 milestones can take up to 3 times the time and steps.
+`--max-steps N` sets the step limit for one run, so each milestone gets
+`N` steps.
 `--acceptance-checks`, if you give it, applies to the last milestone.
 
 ## Read the result

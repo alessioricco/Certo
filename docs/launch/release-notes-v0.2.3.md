@@ -319,6 +319,9 @@ Cloud models print nothing new.
 
 ## Also
 
+- **`--max-steps N`** sets the agent's step limit for one run, instead
+  of `CERTO_MAX_ITERATIONS`. In milestone mode each milestone gets `N`
+  steps.
 - **A made-up tool result gets the tool-call reminder.** A local model
   (`qwen3.8:27b`) once answered with the invented result of a command
   (`{"command": "ls -la ...", "is_error": false, "output": "..."}`)
