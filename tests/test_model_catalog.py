@@ -363,6 +363,7 @@ _BUNDLED_TASKS = Path(__file__).resolve().parent.parent / "src" / "certo"
         ("starter/tasks/sky-hopper.md", "build"),
         ("starter/tasks/iron-horizon.md", "build"),
         ("starter/tasks/team-board.md", "build"),
+        ("starter/tasks/star-swarm.md", "build"),
     ],
 )
 def test_shipped_profiles_classify_the_bundled_tasks(tmp_path, task_file, expected):

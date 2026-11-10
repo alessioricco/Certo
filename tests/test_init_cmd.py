@@ -721,6 +721,7 @@ def test_creates_the_workspace_files(tmp_path, monkeypatch, no_check):
         "mazeman.md",
         "sky-hopper.md",
         "space-rocks.md",
+        "star-swarm.md",
         "team-board.md",
         "wordle.md",
     ]
