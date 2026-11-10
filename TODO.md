@@ -281,6 +281,33 @@ the first task, Wordle, ended `verified` in 11m 49s. What got in the way
 is in the first item and in "Smaller bugs". (The quieter run, 0.1.21,
 cut that first run's output from 2,949 lines to 1,021.)
 
+- **`certo report`: a run's errors in one file, to improve Certo**
+  (the Author, 2026-11-10). Today a failing run is studied by hand:
+  `.certo/reports/`, `RUNS.md`, `STATUS.md`, `run.json`, the terminal
+  output (the latticewake run, 2026-11-10, took about ten tool calls to
+  read and found the cut-short `verified` bug). `certo report [PATH]
+  [--note TEXT]` writes one Markdown file from what `.certo/` already
+  holds, for the Author to hand to the maintainers (a Claude Code
+  session or a GitHub issue):
+  - the run: Certo version, task, model and effort, the settings that
+    matter (values, never keys);
+  - how it ended: the verdict and the limit that stopped it (steps,
+    time, cost);
+  - every warning and error: Certo's notices, SDK errors
+    (`MaxIterationsReached`), provider failures, root-guard blocks,
+    tool-call reminders, failing checks with the end of their output;
+  - what changed: files changed, test files the agent edited;
+  - the user's `--note`.
+  Never a key or a `.env` value: a known-secrets scan before writing,
+  and the file says what it holds, so the user decides what to share.
+  The loop: the Author runs it, the session finds the cause, the cause
+  becomes a fix with a test, a TODO item or a benchmark case; the
+  reports are kept privately (`private/field-reports/`) to count
+  patterns across projects. The goal is better Certo releases, not a
+  project that learns by itself: the agent's runs don't read the
+  reports. Done when `certo report` writes that file for the last run
+  (and for a milestone run), with docs in `commands.md` and a guide
+  section.
 - **A text UI for interactive mode** (the Author, 2026-11-08; for the
   version after 0.2.3, not before). Today `--interactive` prints the
   agent's stream and asks questions on plain stdin lines. Give it a
