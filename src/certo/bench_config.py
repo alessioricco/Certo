@@ -102,6 +102,7 @@ _ARM_OPTIONS = (
     "skills_off",
     "milestones",
     "root_prompt",
+    "skills_dir",
 )
 
 
@@ -214,6 +215,7 @@ def _arms(raw: Any, catalog: dict[str, ModelCatalogEntry], where: str) -> list[A
         root_prompt = item.get("root_prompt", True)
         if not isinstance(root_prompt, bool):
             raise BenchConfigError(f"{arm_where}: 'root_prompt' must be true or false.")
+        skills_dir = _skills_dir(item.get("skills_dir"), arm_where)
         rest = {k: v for k, v in item.items() if k not in _ARM_OPTIONS}
         params = STRATEGIES[strategy].parse(rest, catalog, arm_where)
         if independent:
@@ -232,6 +234,8 @@ def _arms(raw: Any, catalog: dict[str, ModelCatalogEntry], where: str) -> list[A
             params["milestones"] = True
         if not root_prompt:
             params["root_prompt"] = False
+        if skills_dir:
+            params["skills_dir"] = skills_dir
         arms.append(Arm(name=name, strategy=strategy, params=params))
     return arms
 
@@ -251,6 +255,21 @@ def _check_milestone_tasks(arms: list[Arm], tasks: list[BenchTask], where: str) 
                 f"{where}: an arm has 'milestones: true', but task {task.name!r} can't be "
                 f"run in milestones: {exc}"
             ) from exc
+
+
+def _skills_dir(raw: Any, where: str) -> str:
+    """An arm's `skills_dir`: a third-party skills folder (with what
+    `certo skills assess` saved in it) that each run of the arm gets as its
+    global skills, as an absolute path; relative paths are from the folder
+    `certo bench` runs in, like the model files."""
+    if raw is None:
+        return ""
+    if not isinstance(raw, str) or not raw.strip():
+        raise BenchConfigError(f"{where}: 'skills_dir' must be the path of a skills folder.")
+    path = Path(raw).expanduser().resolve()
+    if not path.is_dir():
+        raise BenchConfigError(f"{where}: 'skills_dir' {raw!r} is not a folder.")
+    return str(path)
 
 
 def _skills_off(raw: Any, where: str) -> list[str]:

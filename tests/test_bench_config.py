@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -768,4 +769,48 @@ def test_root_prompt_is_an_arm_option(tmp_path):
 def test_a_bad_root_prompt_is_refused(tmp_path):
     bench = "arms:\n  - {name: a, strategy: single, model: cloud, root_prompt: 'no'}\n"
     with pytest.raises(BenchConfigError, match="'root_prompt' must be true or false"):
+        load_bench_config(_write(tmp_path, bench))
+
+
+def test_skills_dir_is_an_arm_option_and_each_run_gets_a_copy(tmp_path):
+    skills = tmp_path / "trusted-skills" / ".certo" / "skills"
+    (skills / ".trusted").mkdir(parents=True)
+    (skills / ".trusted" / "index.json").write_text("[]")
+    bench = (
+        "arms:\n"
+        f"  - {{name: trusted, strategy: single, model: cloud, skills_dir: '{skills}'}}\n"
+        "  - {name: plain, strategy: single, model: cloud}\n"
+    )
+    cfg = load_bench_config(_write(tmp_path, bench))
+    trusted, plain = cfg.arms
+    assert trusted.params == {"model": "cloud", "skills_dir": str(skills.resolve())}
+    assert plain.params == {"model": "cloud"}  # left out at its default, for --resume
+    seen = []
+
+    def fake_stream(task, *, cfg, ladder=None):
+        index = os.path.join(cfg.global_skills_dir, ".trusted", "index.json")
+        seen.append(os.path.isfile(index))
+        if os.path.isfile(index):
+            with open(index, "a") as changed:  # a run changing its copy
+                changed.write(" ")
+        return SimpleNamespace(
+            verification_state="verified",
+            retries_used=0,
+            run_summary=None,
+            rungs=(),
+            final_rung=None,
+        )
+
+    for arm in cfg.arms:
+        iso = tmp_path / f"iso-{arm.name}"
+        iso.mkdir()
+        ctx = RunContext("do it", "/ws", cfg.catalog, str(iso), fake_stream, cfg.model_catalog)
+        STRATEGIES[arm.strategy].run(ctx, arm.params)
+    assert seen == [True, False]
+    assert (skills / ".trusted" / "index.json").read_text() == "[]"  # the original is untouched
+
+
+def test_a_skills_dir_that_isnt_a_folder_is_refused(tmp_path):
+    bench = "arms:\n  - {name: a, strategy: single, model: cloud, skills_dir: nowhere}\n"
+    with pytest.raises(BenchConfigError, match="'skills_dir' 'nowhere' is not a folder"):
         load_bench_config(_write(tmp_path, bench))

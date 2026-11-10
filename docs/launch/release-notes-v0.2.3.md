@@ -333,6 +333,11 @@ Cloud models print nothing new.
   [Check another AI tool's work](../guides/verify-another-tools-work.md).
 - **`certo --help` lists every subcommand** (`init`, `check`, `models`,
   `skills` and the others) in a section of its own, like the options.
+- **`certo bench`: an arm can get third-party skills** with
+  `skills_dir`, a skills folder (for example, one `certo skills assess`
+  filled from your trusted repositories). Each run gets its own copy;
+  without it, benchmark runs have none. See
+  [the bench file reference](../reference/bench-yaml.md).
 - **Troubleshooting:** `pip` from a Python older than 3.12 finds no
   Certo; the page shows how to install it with uv, which brings its own
   Python.

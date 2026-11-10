@@ -19,6 +19,7 @@ caller, so this module is testable with a fake.
 from __future__ import annotations
 
 import os
+import shutil
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, replace
 from typing import Any, Protocol
@@ -116,9 +117,13 @@ def run_config(entry: ModelCatalogEntry, workspace: str, isolation_dir: str) -> 
 def arm_config(entry: ModelCatalogEntry, ctx: RunContext, params: Mapping[str, Any]) -> Config:
     """run_config, plus the arm's own options (`independent_tests`,
     `condense`, `context_tokens`, `max_task_seconds`,
-    `tool_call_reminders`, `skills_off`, `root_prompt`;
-    bench_config._ARM_OPTIONS)."""
+    `tool_call_reminders`, `skills_off`, `root_prompt`, `skills_dir`;
+    bench_config._ARM_OPTIONS). With `skills_dir`, the run's empty global
+    skills folder becomes a copy of it, once per run, so no run changes
+    the original or sees another run's changes."""
     cfg = run_config(entry, ctx.workspace, ctx.isolation_dir)
+    if params.get("skills_dir") and not os.path.exists(cfg.global_skills_dir):
+        shutil.copytree(params["skills_dir"], cfg.global_skills_dir, symlinks=True)
     if params.get("independent_tests"):
         cfg = replace(cfg, independent_tests=True)
     if params.get("condense") is False:

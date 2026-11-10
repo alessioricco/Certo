@@ -609,6 +609,8 @@ def _print_plan(
             note += " (no condensing)"
         if arm.params.get("root_prompt") is False:
             note += " (no project-root sentence)"
+        if arm.params.get("skills_dir"):
+            note += f" (global skills from {arm.params['skills_dir']})"
         if arm.params.get("max_task_seconds"):
             note += f" (time budget {_duration(arm.params['max_task_seconds'])} per run)"
         if arm.params.get("milestones"):
