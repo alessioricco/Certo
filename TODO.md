@@ -88,6 +88,13 @@ first item is the suggested next one.
   - *The user:* with `--interactive` Certo shows the plan and asks (the
     2026-10-25 decision); the saved plan is a task file the user can
     edit and run again.
+  - *A plan the agent wrote:* live 2026-11-10 (latticewake), the agent
+    wrote a `PLAN.md` in milestones (`## 1. ...` headings, not
+    `## Milestone N:`), the user approved it with "go ahead", and the
+    whole plan ran as one task on one budget of 50 steps. Certo could
+    spot such a plan file in the project and offer to run it milestone
+    by milestone (each with its own steps and checks), or the planner
+    above could rewrite it in the milestone format.
   - *Measure* (working agreement 2): the app tasks and the milestone
     samples with their milestones removed, three arms (the hand-written
     milestones, the planned ones, one go), on qwen3.8 and Haiku. On the
