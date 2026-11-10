@@ -1,0 +1,13 @@
+# The tool-call reminder for a made-up tool result (Certo 0.2.3, TODO
+# "Bench the made-up-result reminder on qwen3.8"): the same arm, model and
+# repeats as qwen-root in bench-0.2.3-root-local.yaml, so the score
+# compares with that run's 20/26. A night slot, under caffeinate -i:
+#   caffeinate -i certo bench --config docs/benchmark/bench-0.2.3-reminder-local.yaml --yes
+# The Ollama server is the one on another machine on the local network
+# (models-0.2.2-effort.yaml).
+models_file: docs/benchmark/models-0.2.2-effort.yaml
+models_list_file: docs/benchmark/models_list-0.2.2-effort.yaml
+tasks: all
+repeats: 2
+arms:
+  - {name: qwen-reminder, strategy: single, model: qwen-high}

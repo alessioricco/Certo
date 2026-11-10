@@ -14,13 +14,6 @@ first item is the suggested next one.
 
 ## Before the next release
 
-- **Bench the made-up-result reminder on qwen3.8 (0.2.3).** The tool-call
-  reminder now also answers a tool's made-up result written as text
-  (`text_tool_calls._made_up_result`; replay: 1 new match in 2,213
-  text-only messages of 1,084 saved transcripts, the target). It changes
-  local runs, so run the bundled tasks on qwen3.8 at night (working
-  agreement 2). Done when the score is no worse than the root bench's
-  (`docs/benchmark/root-0.2.3.md`, 20/26 and 23/26).
 - **A longer time budget from `certo init` for Ollama?** The mazeman
   sample took 41 minutes on `qwen3.8:27b` (2026-10-22), past the default
   30-minute `CERTO_MAX_TASK_SECONDS`; it ended `verified` only because the

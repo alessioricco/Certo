@@ -325,6 +325,8 @@ Cloud models print nothing new.
   instead of running it, and the run ended after 31 seconds with no
   code. Certo now sends it back, like a tool call written as text
   (`CERTO_TOOL_CALL_REMINDERS`).
+  [Benchmarked](../benchmark/reminder-0.2.3.md) on qwen3.8: no worse
+  (23/26 hidden tests passed).
 - **Check another AI tool's work:** a new guide shows `certo verify`
   after Claude Code, Cursor, Aider or your own edits, and what each
   verdict says about the tool's "done" (issue #31). See
