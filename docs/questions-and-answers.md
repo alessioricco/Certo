@@ -222,6 +222,41 @@ real cases behind this are in [Why agents lie](concepts/why-agents-lie.md),
 and how the checks work in
 [How verification works](concepts/how-verification-works.md).
 
+### How does Certo decide a milestone is done, with nobody watching?
+
+Not by the model saying so. After each milestone, Certo itself, with no
+AI involved, runs:
+
+- **the project's own tests and build** (`npm test`, `pytest`,
+  `cargo test` and so on; see
+  [what is checked per language](reference/verification-by-language.md));
+- **the milestone's acceptance checks**, if the task gives them: file
+  checks written by you in the task, such as "`taskboard/auth.py`
+  contains `scrypt`" ([acceptance checks](guides/acceptance-checks.md));
+- **the acceptance checks of every earlier milestone again**, so a
+  milestone that breaks earlier work fails.
+
+A failure goes back to the agent to fix, a few times. The next milestone
+starts only when the verdict is `verified`; otherwise the run stops
+there, and says why. There is no reviewer model by default.
+
+What this can't see: most tests are written by the same agent that
+wrote the code, so they can miss what the agent misunderstood. Two
+things help. [Independent tests](guides/independent-tests.md)
+(`--independent-tests`) are written by separate conversations from the
+task alone, before the code exists. And Certo's
+[benchmark](guides/benchmark.md) grades every run with hidden tests the
+agent never sees, to count how often Certo says `verified` when the work
+is wrong ("fooled"): 0 in the 0.2.3 benchmarks.
+
+For a game, the tests cover the game's logic (movement, collisions,
+scoring), not how it looks or feels: you still need to play it. A
+less visual example: the
+[`team-board` sample](benchmark/milestone-samples-0.2.3.md), a web
+app with accounts, roles, columns, cards, comments and search, built in
+5 milestones, each `verified`, with 136 passing tests at the end, on
+Claude Haiku 5.5 for $1.11.
+
 ## How Certo is built
 
 ### Why is Certo built on the OpenHands SDK?
