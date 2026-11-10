@@ -1465,6 +1465,28 @@ def test_a_step_limit_stop_is_checked_and_can_be_verified(monkeypatch):
 
     assert outcome.verification_state == "verified"
     assert "used all its 10 steps (CERTO_MAX_ITERATIONS)" in emitted[0].content[0].text
+    # Live 2026-11-10: a plan of several milestones sent as one task ran out
+    # of steps, passed its checks and read "finished, verified", so a bare
+    # --resume did nothing. The run now says it may be unfinished.
+    assert outcome.cut_short is True
+    assert any("may be unfinished" in note for note in outcome.completion_contract.limitations)
+
+
+def test_a_run_that_finishes_after_a_step_limit_stop_isnt_cut_short(monkeypatch):
+    results = iter([_run(_check(status="failed", exit_code=1)), _run(_check(status="passed"))])
+    monkeypatch.setattr(runner, "_run_verification", lambda _dir, *_a: next(results))
+    conversation = _FakeConversation(
+        initial_status=ConversationExecutionStatus.ERROR,
+        initial_events=[_step_limit_event()],
+        statuses_after_run=[ConversationExecutionStatus.FINISHED],
+    )
+
+    outcome = runner._verify_and_report(
+        conversation, _cfg(verify_tests="always", max_verify_retries=2), lambda _m: None, "t"
+    )
+
+    assert outcome.verification_state == "verified"
+    assert outcome.cut_short is False
 
 
 def test_a_step_limit_stop_with_failing_checks_gets_a_fix_attempt(monkeypatch):

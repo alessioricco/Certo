@@ -151,3 +151,20 @@ def test_drop_other_conversations_keeps_only_the_named_one(tmp_path):
     project_state.drop_other_conversations(str(tmp_path), keep="keep")
 
     assert [p.name for p in root.iterdir()] == ["keep"]
+
+
+def test_status_says_a_run_was_stopped_at_a_limit():
+    record = RunRecord(
+        task="t",
+        conversation_id="a" * 32,
+        model="m",
+        execution="local",
+        started_at="s",
+        updated_at="u",
+        status="finished",
+        verdict="verified",
+        cut_short=True,
+    )
+    text = project_state.render_status(record)
+    assert "stopped at a limit before the agent said it was done, verdict `verified`" in text
+    assert RunRecord.from_dict(json.loads(json.dumps(record.__dict__ | {"checks": []}))).cut_short

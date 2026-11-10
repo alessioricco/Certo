@@ -68,6 +68,9 @@ class RunRecord:
     error: str | None = None
     resumes: int = 0
     reasoning_effort: str | None = None  # None: no effort set
+    # Stopped by a step, time or cost limit with passing checks: verified,
+    # but maybe unfinished (TaskOutcome.cut_short).
+    cut_short: bool = False
 
     @classmethod
     def from_dict(cls, data: dict) -> RunRecord:
@@ -162,6 +165,8 @@ def _status_line(record: RunRecord) -> str:
         return "interrupted"
     if record.status == "error":
         return f"stopped with an error: {record.error}"
+    if record.cut_short:
+        return f"stopped at a limit before the agent said it was done, verdict `{record.verdict}`"
     return f"finished, verdict `{record.verdict}`"
 
 

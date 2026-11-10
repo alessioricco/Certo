@@ -137,7 +137,10 @@ Certo checks, in this order, and stops at the first that applies:
    then Certo goes on to the checks below, as if the agent had finished.
    If they pass → `verified`; if they fail, the agent gets its fix
    attempts, each with a fresh set of steps; if nothing can be checked →
-   `stuck`
+   `stuck`. A run `verified` this way, or after the time budget or the
+   cost limit, carries a note that the task may be unfinished: the checks
+   show that what the agent left works, not that it is all there.
+   `certo --resume` with no `TASK` continues it.
 3. Does the agent's to-do list have open items? Ask the agent to finish
    them; if they stay open → `incomplete`
 4. Run the project's checks. On a failure, send it to the agent and check

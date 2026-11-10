@@ -131,6 +131,11 @@ Certo prints a note saying so. This happens:
 - `The last run here already ended with 'verified'`: there is nothing to
   fix. To keep working on the same project, give an instruction:
   `certo --resume "Now add a --hard mode"`, or start a new task.
+  A run the step limit, the time budget or the cost limit stopped before
+  the agent said it was done is the exception: its checks passed, but the
+  task may be unfinished, so `certo --resume` continues it. Its
+  `STATUS.md` says `stopped at a limit before the agent said it was done`.
+  To give it more steps: `certo --resume --max-steps 150`.
 
 - `All N milestones here are already 'verified'`: the milestones are
   done. Run a new task.

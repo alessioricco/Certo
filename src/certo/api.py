@@ -288,7 +288,7 @@ def plan_run(
                 "the last run's state in .certo/, and there is none here (or it can't "
                 "be read). Run a task first."
             )
-        if record.verdict == "verified" and task is None:
+        if record.verdict == "verified" and task is None and not record.cut_short:
             raise NothingToDo(
                 "The last run here already ended with 'verified'. To continue anyway, "
                 'say what to do next: certo --resume "..."'

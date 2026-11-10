@@ -256,6 +256,18 @@ def _step_limit_notice(cfg: Config) -> str:
     )
 
 
+def _step_limit_note(cfg: Config) -> str:
+    """The limitation a run that used all its steps carries when its checks
+    pass: they show that what the agent left works, not that it is all
+    there."""
+    return (
+        f"The agent used all its {cfg.max_iterations} steps (CERTO_MAX_ITERATIONS) "
+        "before it said it was done, so the task may be unfinished: the checks show "
+        "that what it left works, not that it is all there. certo --resume continues "
+        "it; --max-steps N gives it more steps."
+    )
+
+
 # Wall-clock durations a test/build tool prints in its own summary line
 # (pytest's "in 3.85s", etc.) — the one kind of noise expected to differ
 # between two otherwise-identical runs. Stripped only from the *comparison*
@@ -317,6 +329,11 @@ class TaskOutcome:
     # the task's words, a file the agent touched, or the agent itself
     # brought in. Empty when the run had none.
     skills_used: tuple[str, ...] = ()
+    # The agent was stopped by its step limit, the time budget or the cost
+    # limit, not by saying it was done, and the checks passed anyway: the
+    # work left is verified, but the task may be unfinished, so a bare
+    # `certo --resume` continues it (api.plan_run).
+    cut_short: bool = False
 
     @property
     def success(self) -> bool:
@@ -1118,6 +1135,7 @@ def _verify_after_budget(
         verification_state="verified",
         completion_contract=replace(contract, limitations=limitations),
         checks=tuple(run.checks),
+        cut_short=True,
     )
 
 
@@ -1299,6 +1317,9 @@ def _verify_and_report(
             retries_used=retries_used,
         )
     contract = _build_completion_contract(task, run, skipped=False, aborted=False)
+    cut_short = step_limited and run.state == "verified"
+    if cut_short:
+        contract = replace(contract, limitations=[*contract.limitations, _step_limit_note(cfg)])
     if run.state == "inconclusive" and not _is_clean_no_tests_collected(run):
         summaries = "; ".join(c.summary for c in run.checks) or "no applicable check was found"
         _emit_notice(
@@ -1312,6 +1333,7 @@ def _verify_and_report(
         completion_contract=contract,
         checks=tuple(run.checks),
         retries_used=retries_used,
+        cut_short=cut_short,
     )
 
 
@@ -2184,6 +2206,7 @@ class _ProjectStateWriter:
         if outcome.checks:
             self.record.checks = checks_from_outcomes(outcome.checks)
         self.record.limitations = list(outcome.completion_contract.limitations)
+        self.record.cut_short = outcome.cut_short
         self.save()
 
     def fail(self, exc: BaseException) -> None:

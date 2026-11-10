@@ -2002,6 +2002,17 @@ def test_resume_of_a_verified_run_needs_an_instruction(monkeypatch, tmp_path, ca
     assert "already ended with 'verified'" in capsys.readouterr().out
 
 
+def test_resume_of_a_verified_run_cut_short_continues_it(monkeypatch, tmp_path):
+    _saved_run(tmp_path, verdict="verified", cut_short=True)
+    calls: list = []
+    monkeypatch.setattr(cli, "load_config", lambda: _cfg(workspace=str(tmp_path)))
+    monkeypatch.setattr(cli, "run_task", _recording_run_task(calls))
+
+    cli.main(["--resume"])
+    assert calls[0]["resume_from"].cut_short is True
+    assert calls[0]["resume_instruction"] is None
+
+
 def test_resume_of_a_missing_project_is_an_error(monkeypatch, tmp_path, capsys):
     monkeypatch.setattr(cli, "load_config", lambda: _cfg(projects_dir=str(tmp_path)))
     monkeypatch.setattr(cli, "run_task", _fail_if_called)

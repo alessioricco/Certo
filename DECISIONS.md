@@ -1793,3 +1793,14 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   and 11% fewer input tokens; qwen3.8 never tried to leave in either
   arm, and its 3-run gap (20/26 vs 23/26, p ≈ 0.47) came from the time
   budget and tool calls as text, not the sentence. No opt-out setting.
+- **A run cut short and verified says so, and `--resume` continues it**
+  (0.2.3, 2026-11-10). Live: a plan of several milestones, sent as one
+  task ("go ahead"), used all 50 steps, passed its checks and was recorded
+  "finished, verdict `verified`", so a bare `certo --resume` did nothing.
+  The verdict stays `verified` (the 0.1.20 step-limit decision holds: the
+  checks are the judge), but a run the step limit, the time budget or the
+  cost limit stopped carries a "may be unfinished" note, `STATUS.md` says
+  it stopped at a limit, and `--resume` with no task continues it.
+  Agent behaviour is unchanged, so no benchmark. A new verdict
+  (`unfinished`) was not chosen: it would turn every such run into a
+  failure, including the 0.1.20 case where all 116 tests passed.

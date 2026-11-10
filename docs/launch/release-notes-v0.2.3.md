@@ -322,6 +322,12 @@ Cloud models print nothing new.
 - **`--max-steps N`** sets the agent's step limit for one run, instead
   of `CERTO_MAX_ITERATIONS`. In milestone mode each milestone gets `N`
   steps.
+- **A run stopped at a limit says it may be unfinished.** When the agent
+  used all its steps, or the time or cost ran out, before it said it was
+  done, a passing run is still `verified`, but the report, `STATUS.md`
+  and the terminal now say the task may be unfinished, and
+  `certo --resume` (with no task) continues it instead of saying there is
+  nothing to do.
 - **A made-up tool result gets the tool-call reminder.** A local model
   (`qwen3.8:27b`) once answered with the invented result of a command
   (`{"command": "ls -la ...", "is_error": false, "output": "..."}`)
