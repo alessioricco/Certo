@@ -64,6 +64,40 @@ first item is the suggested next one.
 
 ## 2. Complex tasks
 
+- **Certo writes the milestones when the task has none** (the Author,
+  2026-11-10; already decided 2026-10-25, DECISIONS.md "Milestone mode:
+  the Author's three decisions": "otherwise Certo plans them"). Before a
+  run, a cheap model good at reasoning rewrites a task with no
+  milestones as a milestone task (`## Milestone N: title` sections, the
+  format `certo --milestones` already runs), saved in the project's
+  `.certo/` (beside `milestones.json` and `STATUS.md`); the run then goes
+  milestone by milestone, and `--resume` continues that plan. Points to
+  settle in the design:
+  - *When:* only for tasks big enough to gain; the planner may answer
+    "one milestone" and the task runs as it is. A rule (length, number
+    of features) or the planner's own call; never for `verify`, a fix in
+    an existing project, or `--no-milestones`.
+  - *Which model:* chosen from the catalog, never named in code (golden
+    rule 3): a planning profile for `--auto-model`'s ratings, or a
+    setting such as `CERTO_PLANNER_MODEL`; default the build's model
+    when nothing better is configured.
+  - *Checks:* the plan is parsed with the milestone parser before use;
+    an unreadable plan falls back to one task. Acceptance checks written
+    by the planner can be wrong (as independent tests can): start
+    without them, or report-only, until measured.
+  - *The user:* with `--interactive` Certo shows the plan and asks (the
+    2026-10-25 decision); the saved plan is a task file the user can
+    edit and run again.
+  - *Measure* (working agreement 2): the app tasks and the milestone
+    samples with their milestones removed, three arms (the hand-written
+    milestones, the planned ones, one go), on qwen3.8 and Haiku. On the
+    spreadsheet, milestones haven't helped qwen yet
+    (`milestones-0.1.27.md`: stopped at milestone 2), so the gain isn't
+    a given. Opt-in until the benchmark shows no loss on either model.
+  Done when a task with no milestones runs on a plan Certo wrote, saved
+  in `.certo/`, and the benchmark shows no loss. Supersedes the "then
+  Certo planning the milestones itself" item below and area (5) of the
+  agent-loop study.
 - **Study and improve the agent loop** (the Author's prompt, 2026-11-07,
   "a big activity, not now"; kept as written in
   `docs/history/agent-loop-prompt.md`). Trace the run, verification,
@@ -76,9 +110,9 @@ first item is the suggested next one.
   maybe a separate writer model (see "Independent tests: the rest");
   (4) bounded smoke checks of the app (an HTTP endpoint, a page that
   renders), within the existing security decisions; (5) Certo proposes
-  milestones with acceptance criteria for the user to approve (see the
-  milestone entry above). Sky Hopper is the candidate evaluation task.
-  Benchmark on a local and a cloud model before claiming a gain; no live
+  milestones with acceptance criteria for the user to approve (now its
+  own item: "Certo writes the milestones when the task has none"). Sky
+  Hopper is the candidate evaluation task. Benchmark on a local and a cloud model before claiming a gain; no live
   calls without the Author's OK. Done item by item.
 - **The three milestone samples: the menu?** First runs done
   (`docs/benchmark/milestone-samples-0.2.3.md`): all `verified` on Haiku
@@ -105,8 +139,8 @@ first item is the suggested next one.
   a climb inside a milestone seen in a benchmark (only one live run,
   `milestones-escalate-0.1.27.md`); with the next `apps-` version, say
   in the spreadsheet task that a chain of 200 cells must work (hidden
-  `test_m2_a_long_chain` is stricter than the text); then Certo
-  planning the milestones itself.
+  `test_m2_a_long_chain` is stricter than the text). Certo planning the
+  milestones itself: its own item above.
 - **A harder app task** (`app-tasks`, next `apps-` version). Haiku and
   Sonnet both pass the spreadsheet 111/111 in one go, so it doesn't
   separate cloud models: a task that does would show the ladder climbing
