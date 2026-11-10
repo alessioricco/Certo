@@ -257,6 +257,29 @@ app with accounts, roles, columns, cards, comments and search, built in
 5 milestones, each `verified`, with 136 passing tests at the end, on
 Claude Haiku 5.5 for $1.11.
 
+### When the independent tests and the agent's own tests disagree, which one wins?
+
+By default, the agent's own checks decide the verdict, and the
+disagreement is flagged, not hidden: Certo prints the independent
+tests' result under the verdict, and the milestone goes on.
+
+```text
+Independent tests: failed, 3 of 3 sets failed (written from the task by anthropic/claude-haiku-5-5; report only).
+```
+
+They don't win by default because they can be wrong too: in 39 live
+benchmark runs they failed 1 of the 38 runs whose work was right, on a
+test that expected the wrong number of seconds. That's also why three
+sets are written and they vote: a result is `failed` only when most
+sets fail (2 of 3), and a single failing set is reported as `split`.
+
+With `--independent-tests-strict`, a vote of `failed` wins: the
+verdict becomes `independent_failed`, Certo exits with 1, and a
+milestone run stops there for you to look. It isn't sent back to the
+agent to fix: the agent never sees these tests, so they stay
+independent. A `split` vote still only flags. See
+[Independent tests](guides/independent-tests.md#make-them-change-the-verdict).
+
 ## How Certo is built
 
 ### Why is Certo built on the OpenHands SDK?
