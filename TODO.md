@@ -66,17 +66,21 @@ first item is the suggested next one.
 
 - **Certo writes the milestones when the task has none** (the Author,
   2026-11-10; already decided 2026-10-25, DECISIONS.md "Milestone mode:
-  the Author's three decisions": "otherwise Certo plans them"). Before a
-  run, a cheap model good at reasoning rewrites a task with no
-  milestones as a milestone task (`## Milestone N: title` sections, the
-  format `certo --milestones` already runs), saved in the project's
-  `.certo/` (beside `milestones.json` and `STATUS.md`); the run then goes
-  milestone by milestone, and `--resume` continues that plan. Points to
-  settle in the design:
-  - *When:* only for tasks big enough to gain; the planner may answer
-    "one milestone" and the task runs as it is. A rule (length, number
-    of features) or the planner's own call; never for `verify`, a fix in
-    an existing project, or `--no-milestones`.
+  the Author's three decisions": "otherwise Certo plans them"). Opt-in,
+  with a flag (the Author, 2026-11-10): `certo --make-milestones TASK`.
+  Before the run, a cheap model good at reasoning rewrites the task as a
+  milestone task (`## Milestone N: title` sections, the format
+  `certo --milestones` already runs), saved as an ordinary task file,
+  `.certo/milestones.md` in the project (beside `milestones.json` and
+  `STATUS.md`); the run then goes milestone by milestone, and `--resume`
+  continues that plan. The user can open the saved plan, edit it and run
+  it again with `certo --milestones .certo/milestones.md`. Without the
+  flag nothing changes. Points to settle in the design:
+  - *When:* only with `--make-milestones`; the planner may answer "one
+    milestone" and the task runs as it is. Refused with
+    `--milestones`, `--no-milestones` or a task already written in
+    milestones, and never for `verify`. A default on (no flag needed)
+    only after the benchmark below shows no loss.
   - *Which model:* chosen from the catalog, never named in code (golden
     rule 3): a planning profile for `--auto-model`'s ratings, or a
     setting such as `CERTO_PLANNER_MODEL`; default the build's model
@@ -85,9 +89,9 @@ first item is the suggested next one.
     an unreadable plan falls back to one task. Acceptance checks written
     by the planner can be wrong (as independent tests can): start
     without them, or report-only, until measured.
-  - *The user:* with `--interactive` Certo shows the plan and asks (the
-    2026-10-25 decision); the saved plan is a task file the user can
-    edit and run again.
+  - *The user:* with `--interactive` Certo shows the plan and asks
+    before the first milestone (the 2026-10-25 decision): go, edit the
+    file and go, or stop.
   - *A plan the agent wrote:* live 2026-11-10 (latticewake), the agent
     wrote a `PLAN.md` in milestones (`## 1. ...` headings, not
     `## Milestone N:`), the user approved it with "go ahead", and the
