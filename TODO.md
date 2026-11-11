@@ -235,6 +235,16 @@ first item is the suggested next one.
 
 ## 4. Models and strategies
 
+- **The example profiles favour free local models** (2026-11-11). With
+  `cost` weighted ×3 and local models rated `cost: 5`, the example
+  `default` profile ranks qwen3.8-local above gpt-6-luna, and `build`
+  puts them within 0.5 points. Fine at night on a local machine, not
+  during the day when it is off (latticewake, 2026-11-10). Now that the
+  user pins a model per profile (`certo init models --profiles`), check
+  whether the example weights should change, or local models be rated
+  for cost on another scale. Done when the example profiles are
+  re-checked against the benchmark records and the change (or the
+  decision not to) is in DECISIONS.md.
 - **Benchmark `--auto-model` for the README.** The bench `auto` arm
   exists (0.1.25); a two-task live check picked Sonnet for a `debugging`
   task and Haiku for a `default` one, both verified. Left: a full run of
