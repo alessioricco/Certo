@@ -1852,3 +1852,12 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   editing only those lines so comments stay, and can turn the local
   models off. `certo bench` is unaffected: its auto arms load their own
   catalog.
+- **Out of time with unfinished task items: the checks still run, the
+  verdict stays exhausted** (0.2.3, 2026-11-11). Live (latticewake M5):
+  the time ran out with 3 of 4 items done ("Run all gates" in progress)
+  and the task-tracker gate returned `budget_exhausted` before any check,
+  so nobody could tell a near-finish from a broken build. Checks need no
+  model and cost nothing, so they now run whenever the run didn't end in
+  an error; unfinished items keep the verdict `budget_exhausted` /
+  `cost_exhausted` (the agent itself said it wasn't done), with the
+  items named in the limitations.

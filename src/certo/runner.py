@@ -1081,7 +1081,9 @@ def _verify_after_budget(
     run once, with no fix attempt: work that passes is `verified`, anything
     else stays `budget_exhausted`, now with the check results. Found by the
     0.1.15 local benchmark: three slow runs passed the hidden tests but
-    were reported `budget_exhausted` unchecked. A run that ended in an
+    were reported `budget_exhausted` unchecked. Unfinished items on the
+    agent's own task list don't stop the checks, but keep the verdict
+    exhausted, with the checks and the items in the report. A run that ended in an
     error, or with checks turned off, stays `budget_exhausted` as before.
     The same when the cost limit stopped the agent (`state` is then
     `cost_exhausted`): checks cost nothing. With `before` (the folder's
@@ -1106,6 +1108,21 @@ def _verify_after_budget(
         on_verification(run)
     if run.state != "verified":
         return replace(exhausted, checks=tuple(run.checks))
+    snapshot = _task_tracker_snapshot(conversation)
+    pending = _pending_task_items(snapshot) if snapshot is not None else []
+    if pending:
+        items = "; ".join(f"'{item.title}' ({item.status})" for item in pending)
+        note = (
+            "The project's checks pass, but the agent's own task list still had "
+            f"unfinished item(s) when it was stopped: {items}."
+        )
+        _emit_notice(emit, f"Certo: {note} The verdict stays {state}.")
+        contract = _exhausted_contract(state, task, cfg)
+        return replace(
+            exhausted,
+            checks=tuple(run.checks),
+            completion_contract=replace(contract, limitations=[*contract.limitations, note]),
+        )
     if state == _RUN_COST_EXHAUSTED:
         budget, setting = "cost limit was reached", f"CERTO_MAX_TASK_COST={cfg.max_task_cost:g}"
     else:
@@ -1439,12 +1456,14 @@ def _enforce_task_tracker_completion(
             and not _hit_step_limit(conversation)
             and conversation not in _CUT_AT_DEADLINE
         )
-        snapshot = None if aborted else _task_tracker_snapshot(conversation)
-        if aborted or (snapshot is not None and _pending_task_items(snapshot)):
+        if aborted:
             return TaskOutcome(
                 verification_state=spent,
                 completion_contract=_exhausted_contract(spent, task, cfg),
             )
+        # Unfinished items too: the checks still run, and the verdict stays
+        # exhausted (_verify_after_budget). Live 2026-11-11: a milestone's
+        # time ran out with only "run all gates" left, and no check ran.
         return None
 
     status = conversation.state.execution_status

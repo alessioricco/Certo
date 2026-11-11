@@ -348,6 +348,13 @@ same after you choose `--auto-model` for every run.
   machine running Ollama shut down at 23:00 and the 14 runs after it
   were counted as failed hidden tests. `--pause-between SECONDS` waits
   between runs, to let that machine cool down.
+- **The checks run when the time runs out, even with work left on the
+  agent's list.** Before, a run stopped by its time (or cost) limit while
+  its own task list had an unfinished item got no check at all: on
+  2026-11-11 a milestone stopped with only "run all gates" left, and the
+  report said "Certo ran no check". Now the checks run once; the verdict
+  stays `budget_exhausted` (or `cost_exhausted`), and the report shows
+  the check results and the unfinished items.
 - **A milestones file run again goes on from where it stopped.** Before,
   `certo --milestones task.md` run a second time started over from
   milestone 1 and forgot which were verified. Now it continues from the

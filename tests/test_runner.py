@@ -961,7 +961,7 @@ def test_verify_and_report_reports_budget_exhausted_mid_retry(monkeypatch):
     assert conversation.run_calls == 0
 
 
-def test_enforce_task_tracker_completion_reports_budget_exhausted_at_entry():
+def test_enforce_task_tracker_completion_leaves_unfinished_items_after_the_deadline_to_the_checks():
     conversation = _FakeConversation(
         initial_events=[_task_list_event({"title": "B", "status": "todo"})]
     )
@@ -970,9 +970,50 @@ def test_enforce_task_tracker_completion_reports_budget_exhausted_at_entry():
         conversation, _cfg(max_verify_retries=2), lambda _m: None, "do the thing", deadline=-1.0
     )
 
+    assert outcome is None  # _verify_after_budget runs the checks
+    assert conversation.run_calls == 0
+
+
+def test_enforce_task_tracker_completion_stops_an_errored_run_after_the_deadline():
+    conversation = _FakeConversation(
+        initial_status=ConversationExecutionStatus.ERROR,
+        initial_events=[_task_list_event({"title": "B", "status": "todo"})],
+    )
+
+    outcome = runner._enforce_task_tracker_completion(
+        conversation, _cfg(max_verify_retries=2), lambda _m: None, "do the thing", deadline=-1.0
+    )
+
     assert outcome is not None
     assert outcome.verification_state == "budget_exhausted"
-    assert conversation.run_calls == 0
+
+
+def test_out_of_time_with_unfinished_items_runs_the_checks_but_stays_exhausted(monkeypatch):
+    # Live 2026-11-11: milestone M5's time ran out with only "Run all gates"
+    # left on the agent's list; the report said "Certo ran no check".
+    monkeypatch.setattr(
+        runner, "_run_verification", lambda _dir, *_a: _run(_check(status="passed"))
+    )
+    conversation = _FakeConversation(
+        initial_events=[
+            _task_list_event(
+                {"title": "Build it", "status": "done"},
+                {"title": "Run all gates", "status": "in_progress"},
+            )
+        ]
+    )
+    emitted = []
+
+    outcome = runner._verify_and_report(
+        conversation, _cfg(verify_tests="always"), emitted.append, "do", deadline=-1.0
+    )
+
+    assert outcome.verification_state == "budget_exhausted"
+    assert [c.status for c in outcome.checks] == ["passed"]
+    assert any(
+        "'Run all gates' (in_progress)" in n for n in outcome.completion_contract.limitations
+    )
+    assert any("stays budget_exhausted" in m.content[0].text for m in emitted)
 
 
 @pytest.mark.parametrize(
@@ -1131,16 +1172,20 @@ def test_a_fix_attempt_past_the_cost_limit_is_not_started(monkeypatch):
     assert conversation.run_calls == 1
 
 
-def test_open_task_items_after_the_cost_limit_are_cost_exhausted():
+def test_open_task_items_after_the_cost_limit_are_checked_and_stay_cost_exhausted(monkeypatch):
+    monkeypatch.setattr(
+        runner, "_run_verification", lambda _dir, *_a: _run(_check(status="passed"))
+    )
     conversation = _over_the_limit(
         initial_events=[_task_list_event({"title": "B", "status": "todo"})]
     )
+    cfg = _cfg(max_task_cost=1.0, verify_tests="always")
 
-    outcome = runner._enforce_task_tracker_completion(
-        conversation, _cfg(max_task_cost=1.0), lambda _m: None, "task"
-    )
+    assert runner._enforce_task_tracker_completion(conversation, cfg, lambda _m: None, "t") is None
+    outcome = runner._verify_and_report(conversation, cfg, lambda _m: None, "task")
 
-    assert outcome is not None and outcome.verification_state == "cost_exhausted"
+    assert outcome.verification_state == "cost_exhausted"
+    assert [c.status for c in outcome.checks] == ["passed"]
     assert conversation.run_calls == 0
 
 
