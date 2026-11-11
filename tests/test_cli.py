@@ -2626,6 +2626,122 @@ def test_a_new_task_forgets_the_old_milestones(monkeypatch, tmp_path):
     assert load_state(str(workspace)) is None
 
 
+def test_resume_after_a_new_plan_of_a_file_ending_in_a_newline(monkeypatch, tmp_path, capsys):
+    # Until 0.2.3 a new plan saved the fingerprint of the raw file and a
+    # resume compared the stripped one: every resume read the file as edited.
+    calls: list = []
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))
+    monkeypatch.setattr(cli, "run_task", _milestone_run_task(calls, ["verified", "stuck"]))
+    path = _milestone_file(tmp_path, _MILESTONE_TASK.strip() + "\n")
+    assert cli.main(["--milestones", path]) == 1
+
+    monkeypatch.setattr(cli, "run_task", _milestone_run_task(calls, ["verified"]))
+    assert cli.main(["--resume"]) == 0
+    assert "## Now: milestone 2 of 2" in calls[-1]["task"]
+    assert "changed since" not in capsys.readouterr().err
+
+
+def test_running_the_milestones_file_again_goes_on_from_where_it_stopped(
+    monkeypatch, tmp_path, capsys
+):
+    # Live 2026-11-10: the file run again started over from milestone 1 and
+    # wiped the verdicts of the three verified ones.
+    from certo.milestones import load_state, milestone_task
+
+    workspace, plan = _saved_milestones(tmp_path, {1: "verified", 2: "stuck"}, 2)
+    _saved_run(workspace, task=milestone_task(plan, 2), verdict="stuck")
+    calls: list = []
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))
+    monkeypatch.setattr(cli, "run_task", _milestone_run_task(calls, ["verified"]))
+
+    assert cli.main(["--milestones", str(tmp_path / "task.md")]) == 0
+
+    assert len(calls) == 1
+    assert "## Now: milestone 2 of 2" in calls[0]["task"]
+    assert calls[0]["resume_from"] is None  # a fresh conversation...
+    assert "An earlier try at this milestone didn't pass" in calls[0]["task"]  # ...told why
+    out = capsys.readouterr().out
+    assert (
+        "Milestones: 1 of 2 already verified here (.certo/milestones.json); starting at 2: "
+        "due dates. To start again: --from-milestone 1." in out
+    )
+    assert load_state(str(workspace)).verdicts == {1: "verified", 2: "verified"}
+
+
+def test_from_milestone_1_starts_again(monkeypatch, tmp_path, capsys):
+    _saved_milestones(tmp_path, {1: "verified", 2: "verified"})
+    calls: list = []
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))
+    monkeypatch.setattr(cli, "run_task", _milestone_run_task(calls, ["verified", "verified"]))
+
+    assert cli.main(["--milestones", str(tmp_path / "task.md"), "--from-milestone", "1"]) == 0
+    assert len(calls) == 2
+    assert "Milestones: starting at 1 of 2, as asked." in capsys.readouterr().out
+
+
+def test_from_milestone_skips_the_earlier_ones_and_a_resume_keeps_it(monkeypatch, tmp_path, capsys):
+    from certo.milestones import load_state, status_lines
+
+    calls: list = []
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))
+    monkeypatch.setattr(cli, "run_task", _milestone_run_task(calls, ["stuck"]))
+    path = _milestone_file(tmp_path)
+
+    assert cli.main(["--milestones", path, "--from-milestone", "2"]) == 1
+    assert "## Now: milestone 2 of 2" in calls[0]["task"]
+    workspace = str(tmp_path / "project")
+    assert load_state(workspace).start == 2
+    assert "1. storage: skipped (--from-milestone)" in status_lines(workspace)
+
+    monkeypatch.setattr(cli, "run_task", _milestone_run_task(calls, ["verified"]))
+    assert cli.main(["--resume"]) == 0
+    assert "## Now: milestone 2 of 2" in calls[-1]["task"]  # not back to 1
+
+
+def test_all_milestones_verified_runs_nothing_and_says_how_to_redo(monkeypatch, tmp_path, capsys):
+    _saved_milestones(tmp_path, {1: "verified", 2: "verified"})
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))
+    monkeypatch.setattr(cli, "run_task", _fail_if_called)
+
+    assert cli.main(["--milestones", str(tmp_path / "task.md")]) == 0
+    out = capsys.readouterr().out
+    assert "milestones of" in out and "To run them again: --from-milestone 1." in out
+
+
+def test_an_edited_milestones_file_starts_from_the_first(monkeypatch, tmp_path, capsys):
+    _saved_milestones(tmp_path, {1: "verified"})
+    (tmp_path / "task.md").write_text(_MILESTONE_TASK + "\nOne more line.\n")
+    calls: list = []
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))
+    monkeypatch.setattr(cli, "run_task", _milestone_run_task(calls, ["verified", "verified"]))
+
+    assert cli.main(["--milestones", str(tmp_path / "task.md")]) == 0
+    assert len(calls) == 2
+    assert "the task file changed since its last run here" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize(
+    ("argv", "message"),
+    [
+        (["--from-milestone", "3"], "--from-milestone must be between 1 and 2"),
+        (["--from-milestone", "0"], "--from-milestone must be between 1 and 2"),
+    ],
+)
+def test_a_bad_from_milestone_is_refused(monkeypatch, tmp_path, capsys, argv, message):
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))
+    monkeypatch.setattr(cli, "run_task", _fail_if_called)
+    assert cli.main(["--milestones", _milestone_file(tmp_path), *argv]) == 1
+    assert message in capsys.readouterr().err
+
+
+def test_from_milestone_needs_a_milestones_file(monkeypatch, tmp_path, capsys):
+    _saved_milestones(tmp_path, {1: "verified"})
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))
+    monkeypatch.setattr(cli, "run_task", _fail_if_called)
+    assert cli.main(["--resume", "--from-milestone", "2"]) == 1
+    assert "--from-milestone needs a task file in milestones" in capsys.readouterr().err
+
+
 def test_a_task_file_without_milestones_is_refused(monkeypatch, tmp_path, capsys):
     monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))
     monkeypatch.setattr(cli, "run_task", _fail_if_called)

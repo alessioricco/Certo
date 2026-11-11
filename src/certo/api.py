@@ -212,6 +212,72 @@ class RunPlan:
     resume_from: Any = None
     milestones: Any = None
     restart: Any = None
+    # What the caller shows before the run: where a milestone run starts.
+    note: str | None = None
+
+
+def _continue_milestones(
+    state: Any,
+    saved: Any,
+    text: str,
+    workspace: str,
+    from_milestone: int | None,
+    spell: Spell,
+) -> RunPlan:
+    """A new run of a milestones file: it goes on from where an earlier run
+    of the same, unedited file stopped (2026-11-10: running the file again
+    started over from milestone 1 and wiped the verdicts), or from
+    `from_milestone`. The milestone it starts at gets a fresh conversation,
+    told how its last try ended, when the last run was that milestone's."""
+    from .milestones import is_milestone_task
+    from .project_state import load_record
+
+    total = len(state.plan)
+    same = state.continue_from(saved, text)
+    if from_milestone is not None:
+        if not 1 <= from_milestone <= total:
+            raise UsageError(
+                f"{spell('from_milestone')} must be between 1 and {total}, the "
+                "milestones' numbers as Certo shows them (Milestone N of "
+                f"{total})"
+            )
+        state.verdicts = {n: v for n, v in state.verdicts.items() if n < from_milestone}
+        state.start = from_milestone
+        note = f"Milestones: starting at {from_milestone} of {total}, as asked."
+    elif same:
+        number = state.next_number()
+        if number is None:
+            raise NothingToDo(
+                f"All {total} milestones of {saved.source} are already 'verified' here. "
+                f"To run them again: {spell('from_milestone')} 1."
+            )
+        done = [n for n in range(1, number) if state.verdicts.get(n) == "verified"]
+        if not done:
+            return RunPlan(milestones=state)
+        shown = f"1 to {done[-1]}" if len(done) > 1 else str(done[0])
+        note = (
+            f"Milestones: {shown} of {total} already verified here (.certo/milestones.json); "
+            f"starting at {number}: {state.plan.get(number).label}. "
+            f"To start again: {spell('from_milestone')} 1."
+        )
+    elif saved is not None and saved.source == state.source:
+        note = (
+            "Milestones: the task file changed since its last run here, so they start "
+            f"from 1. To skip some: {spell('from_milestone')} N."
+        )
+    else:
+        return RunPlan(milestones=state)
+    number = state.next_number()
+    record = load_record(workspace)
+    restart = (
+        record
+        if number is not None
+        and record is not None
+        and record.verdict != "verified"
+        and is_milestone_task(record.task, state.plan, number)
+        else None
+    )
+    return RunPlan(milestones=state, restart=restart, note=note)
 
 
 def plan_run(
@@ -222,6 +288,8 @@ def plan_run(
     milestones_file: str | None = None,
     from_project: bool = False,
     want_milestones: bool = False,
+    from_milestone: int | None = None,
+    spell: Spell = _plain,
 ) -> RunPlan:
     """Read what a run continues from the project's `.certo/` folder (with
     `resume`) or from a milestones task file. Raises `UsageError` when
@@ -251,9 +319,17 @@ def plan_run(
         try:
             with open(milestones_file, encoding="utf-8") as f:
                 text = f.read()
-            return RunPlan(milestones=MilestoneState.from_text(text, milestones_file))
+            state = MilestoneState.from_text(text, milestones_file)
         except MilestoneError as exc:
             raise UsageError(f"{milestones_file}: {exc}") from exc
+        return _continue_milestones(
+            state, load_milestones(cfg.workspace), text, cfg.workspace, from_milestone, spell
+        )
+    if from_milestone is not None:
+        raise UsageError(
+            f"{spell('from_milestone')} needs a task file in milestones, run without "
+            f"{spell('resume')}"
+        )
     if resume and saved is None and want_milestones:
         raise UsageError(
             f"no milestones to resume in {workspace}: Certo "

@@ -1826,3 +1826,15 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   count as failures: they can be the arm's fault. `--pause-between` is
   a flag, not a bench.yaml setting: it depends on the machine, not on
   what is compared.
+- **A milestones file run again continues; `--from-milestone N` to
+  choose** (0.2.3, 2026-11-10). Live (latticewake): the file run again
+  started over from milestone 1 and wiped three `verified` verdicts. Now
+  a new run of the same, unedited file (same path, fingerprint and
+  titles) goes on from the first milestone not verified, in a fresh
+  conversation told how its last try ended (not the saved one: a new
+  command is a new start), and says so; an edited file starts from 1, as
+  before. `--from-milestone N` (Certo's numbering, 1..N) is saved as the
+  plan's start, so a later `--resume` doesn't go back. Found with it: a
+  new plan fingerprinted the raw file and a resume the stripped one, so
+  every resume of a file ending with a newline was refused; both now
+  strip, and old raw fingerprints are still accepted.

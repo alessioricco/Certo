@@ -152,6 +152,25 @@ refuses: a plan in progress doesn't change. To use an edited file, run
 When every milestone is already `verified`, `--resume` says so and does
 nothing.
 
+**Running the file again** in the same project does the same as
+`--resume`, but in a fresh conversation: if the file wasn't edited, it
+goes on from the first milestone not `verified`, and says where:
+
+```text
+Milestones: 1 to 3 of 9 already verified here (.certo/milestones.json); starting at 4: M4 — Attacks and waves. To start again: --from-milestone 1.
+```
+
+The milestone it starts at is told how its last try ended.
+
+**Choose where to start** with `--from-milestone N`, the number Certo
+shows (`Milestone N of M`): the milestones before it are skipped, and a
+later `--resume` keeps skipping them. `--from-milestone 1` runs them all
+again:
+
+```bash
+certo --milestones task.md --project temps --from-milestone 2
+```
+
 ## With a ladder of models
 
 ```bash

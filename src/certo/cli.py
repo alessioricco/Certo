@@ -313,6 +313,18 @@ def _build_parser() -> argparse.ArgumentParser:
             "1, 2, 3..., runs this way without the flag."
         ),
     )
+    parser.add_argument(
+        "--from-milestone",
+        type=int,
+        default=None,
+        metavar="N",
+        help=(
+            "With a task file in milestones: start at milestone N (as Certo numbers "
+            "them, 'Milestone N of M'), skipping those before it. Without it, a task "
+            "file run again in the same project goes on from the first milestone "
+            "not verified; --from-milestone 1 starts again from the first."
+        ),
+    )
     milestones.add_argument(
         "--no-milestones",
         action="store_true",
@@ -760,6 +772,8 @@ def _run_task_command(
             milestones_file=args.task if args.milestones and not args.resume else None,
             from_project=args.project is not None,
             want_milestones=args.milestones,
+            from_milestone=args.from_milestone,
+            spell=_flag,
         )
     except NothingToDo as exc:
         print(exc)
@@ -810,6 +824,8 @@ def _run_task_command(
     if milestone_state is not None:
         count = len(milestone_state.plan)
         print(f"Milestones: {count}, each verified before the next starts")
+        if plan.note:
+            print(plan.note)
     elif resume_from is not None:
         print(f"Resuming: {_first_line(resume_from.task)}")
     # A third-party skill replacing an official one is said before the run

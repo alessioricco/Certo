@@ -330,6 +330,14 @@ Cloud models print nothing new.
   machine running Ollama shut down at 23:00 and the 14 runs after it
   were counted as failed hidden tests. `--pause-between SECONDS` waits
   between runs, to let that machine cool down.
+- **A milestones file run again goes on from where it stopped.** Before,
+  `certo --milestones task.md` run a second time started over from
+  milestone 1 and forgot which were verified. Now it continues from the
+  first milestone not `verified` and says so; `--from-milestone N`
+  starts where you choose (`1` runs them all again).
+- **`--resume` of milestones works with a file that ends with a
+  newline.** Before, it always said the task file had changed since the
+  milestones started.
 - **`--max-steps N`** sets the agent's step limit for one run, instead
   of `CERTO_MAX_ITERATIONS`. In milestone mode each milestone gets `N`
   steps.

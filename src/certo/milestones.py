@@ -360,12 +360,25 @@ def checks_up_to(plan: MilestonePlan, number: int) -> list[AcceptanceCheck]:
 
 
 def _fingerprint(text: str) -> str:
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+    """Of the text without its leading and trailing blank space, so a new
+    plan and a resume read the file the same way."""
+    return hashlib.sha256(text.strip().encode("utf-8")).hexdigest()
 
 
-def _next_not_verified(numbers: Sequence[int], verdicts: Mapping[int, str]) -> int | None:
+def same_text(text: str, fingerprint: str) -> bool:
+    """Whether `text` is the file a saved plan was made from. Before 0.2.3 a
+    new plan stored the fingerprint of the raw text and a resume compared
+    the stripped one, so a file ending with a newline always read as
+    edited: both are accepted."""
+    raw = hashlib.sha256(text.encode("utf-8")).hexdigest()
+    return fingerprint in (_fingerprint(text), raw)
+
+
+def _next_not_verified(
+    numbers: Sequence[int], verdicts: Mapping[int, str], start: int = 1
+) -> int | None:
     for number in numbers:
-        if verdicts.get(number) != "verified":
+        if number >= start and verdicts.get(number) != "verified":
             return number
     return None
 
@@ -381,10 +394,11 @@ class SavedMilestones:
     titles: tuple[str, ...]
     verdicts: dict[int, str] = field(default_factory=dict)
     current: int | None = None  # the milestone running now, or the last one run
+    start: int = 1  # --from-milestone: the milestones before it are skipped
 
     def next_number(self) -> int | None:
-        """The first milestone not verified, or None when all are."""
-        return _next_not_verified(range(1, len(self.titles) + 1), self.verdicts)
+        """The first milestone not verified from `start`, or None when all are."""
+        return _next_not_verified(range(1, len(self.titles) + 1), self.verdicts, self.start)
 
 
 @dataclass
@@ -401,6 +415,7 @@ class MilestoneState:
     skills: dict[int, tuple[str, ...]] = field(default_factory=dict)
     # Each milestone's own time, tokens and cost (a RunSummary), same rule.
     usage: dict[int, Any] = field(default_factory=dict)
+    start: int = 1  # --from-milestone: the milestones before it are skipped
 
     @classmethod
     def from_text(cls, text: str, source: str) -> MilestoneState:
@@ -408,7 +423,9 @@ class MilestoneState:
         return cls(parse_milestones(text), os.path.abspath(source), _fingerprint(text))
 
     def next_number(self) -> int | None:
-        return _next_not_verified([m.number for m in self.plan.milestones], self.verdicts)
+        return _next_not_verified(
+            [m.number for m in self.plan.milestones], self.verdicts, self.start
+        )
 
     def saved(self) -> SavedMilestones:
         return SavedMilestones(
@@ -417,7 +434,24 @@ class MilestoneState:
             tuple(m.label for m in self.plan.milestones),
             dict(self.verdicts),
             self.current,
+            self.start,
         )
+
+    def continue_from(self, saved: SavedMilestones | None, text: str) -> bool:
+        """Take the verdicts of a saved plan of the same, unedited task file
+        (`text`), so a new run of it goes on from the first milestone not
+        verified instead of starting again. False when there is nothing
+        to take: no saved plan, another file, or the file was edited."""
+        if (
+            saved is None
+            or saved.source != self.source
+            or not same_text(text, saved.fingerprint)
+            or saved.titles != tuple(m.label for m in self.plan.milestones)
+        ):
+            return False
+        self.verdicts = dict(saved.verdicts)
+        self.start = saved.start
+        return True
 
 
 def reopen(saved: SavedMilestones) -> MilestoneState:
@@ -426,12 +460,12 @@ def reopen(saved: SavedMilestones) -> MilestoneState:
     progress doesn't change under a resume."""
     try:
         with open(saved.source, encoding="utf-8") as f:
-            text = f.read().strip()
+            text = f.read()
     except OSError as exc:
         raise MilestoneError(
             f"can't read the task file {saved.source} to resume its milestones ({exc})."
         ) from exc
-    if _fingerprint(text) != saved.fingerprint:
+    if not same_text(text, saved.fingerprint):
         raise MilestoneError(
             f"the task file {saved.source} changed since its milestones started. To use "
             "the new version, run it again with --milestones; the milestones start "
@@ -443,6 +477,7 @@ def reopen(saved: SavedMilestones) -> MilestoneState:
         saved.fingerprint,
         dict(saved.verdicts),
         saved.current,
+        start=saved.start,
     )
 
 
@@ -461,6 +496,7 @@ def save_state(workspace: str, state: MilestoneState) -> None:
             for n, title in enumerate(saved.titles, 1)
         ],
         "current": saved.current,
+        "start": saved.start,
     }
     path = plan_path(workspace)
     tmp = path + ".tmp"
@@ -482,6 +518,7 @@ def load_state(workspace: str) -> SavedMilestones | None:
             tuple(str(m["title"]) for m in milestones),
             {int(m["number"]): str(m["verdict"]) for m in milestones if m.get("verdict")},
             int(current) if current is not None else None,
+            int(data.get("start") or 1),
         )
     except (OSError, ValueError, TypeError, KeyError):
         return None
@@ -508,6 +545,8 @@ def status_lines(workspace: str) -> list[str]:
             where = f"`{verdict}`"
         elif number == saved.current:
             where = "this run"
+        elif number < saved.start:
+            where = "skipped (--from-milestone)"
         else:
             where = "not started"
         lines.append(f"{number}. {title}: {where}")
@@ -518,6 +557,8 @@ def summary_lines(state: MilestoneState) -> Sequence[str]:
     """One line per milestone for the terminal, at the end of a run."""
     lines = []
     for m in state.plan.milestones:
-        verdict = state.verdicts.get(m.number) or "not started"
+        verdict = state.verdicts.get(m.number) or (
+            "skipped" if m.number < state.start else "not started"
+        )
         lines.append(f"{m.number}. {m.label}: {verdict}")
     return lines
