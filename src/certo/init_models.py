@@ -9,7 +9,9 @@ type any other LiteLLM model id. Every chosen model is tested with the
 same small request as `certo check --models`; only the ones that pass are
 written. Then it shows what `--auto-model` and `--escalate` would do with
 them, and asks which mode to use for every run, one model being the
-default.
+default. With `--auto-model` it then asks which model goes first for each
+kind of task (profile_choice.py); `--profiles` asks only that, for the
+models already set up.
 
 Keys are written only to the user settings file; `models.yaml` names them
 as `${VAR}` (DECISIONS.md). Ratings are never invented: a model that
@@ -50,8 +52,9 @@ from .model_catalog import (
     _parse_list,
     load_model_catalog,
 )
-from .model_files import example_path, find
+from .model_files import example_path, find, resolve
 from .models_cmd import save_base
+from .profile_choice import choose_profiles
 
 # The rating axes the example list uses, asked in this order for a model
 # the list doesn't have.
@@ -102,6 +105,14 @@ def build_parser() -> argparse.ArgumentParser:
             "example models_list.yaml and task_profiles.yaml when missing) to the user "
             "settings folder, and asks which mode to use for every run. Keys go only "
             "to the user settings file. Needs a terminal."
+        ),
+    )
+    parser.add_argument(
+        "--profiles",
+        action="store_true",
+        help=(
+            "Only choose the model that goes first for each kind of task "
+            "(task_profiles.yaml), for --auto-model, from the models already set up."
         ),
     )
     parser.add_argument(
@@ -534,6 +545,30 @@ def _preview(prompter: Prompter, paths: tuple[str, str, str], env: Mapping[str, 
         )
 
 
+def _profiles_only(prompter: Prompter, folder: str, env: Mapping[str, str]) -> int:
+    """`certo init models --profiles`: the profile choice alone, on the
+    model files already there (the example profiles first, if none)."""
+    try:
+        list_path, models_path = resolve(
+            env.get("CERTO_MODELS_FILE", ""), env.get("CERTO_MODELS_LIST_FILE", "")
+        )
+        profiles_path = find(PROFILES_FILE, env.get("CERTO_TASK_PROFILES_FILE", ""))
+        if profiles_path is None:
+            profiles_path = os.path.join(folder, PROFILES_FILE)
+            os.makedirs(folder, exist_ok=True)
+            shutil.copyfile(example_path(PROFILES_FILE), profiles_path)
+            prompter.say(f"Wrote the example task profiles to {profiles_path}.")
+        choose_profiles(prompter, list_path, models_path, profiles_path, env)
+    except ModelCatalogError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+    except Cancelled:
+        prompter.say("\nCancelled. The choices made before are saved.")
+        return 130
+    prompter.say('certo check --task "..." shows which models a task would get.')
+    return 0
+
+
 def init_models_main(
     argv: list[str],
     *,
@@ -552,6 +587,8 @@ def init_models_main(
     env = dict(os.environ)
     settings_path = user_settings_path()
     folder = os.path.dirname(settings_path)
+    if args.profiles:
+        return _profiles_only(prompter, folder, env)
     list_source = find(LIST_FILE) or example_path(LIST_FILE)
     try:
         listed = _parse_list(list_source)
@@ -596,6 +633,8 @@ def init_models_main(
         index = prompter.choose("Use for every run:", [label for _mode, label in _MODES])
         mode = _MODES[index][0]
         _set_setting(settings_path, "CERTO_MODEL_SELECTION", mode)
+        if mode == "auto":
+            choose_profiles(prompter, *paths, env)
     except Cancelled:
         if paths is None:
             prompter.say("\nCancelled. Nothing was written.")

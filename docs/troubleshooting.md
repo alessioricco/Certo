@@ -597,6 +597,21 @@ check is just missing. Before 0.1.19, this made the project `failed`.
 
 ## Model files and escalation
 
+### `--auto-model needs task profiles`
+
+**You see:** `Configuration error: --auto-model needs task profiles
+(task_profiles.yaml): without them every model ranks the same, and the
+first one in models_list.yaml would go first.`
+
+**Cause:** `--auto-model` (or `CERTO_MODEL_SELECTION=auto`) found no
+`task_profiles.yaml`, in the current folder or `~/.config/certo/`, or one
+with no profile. Without profiles it can't choose by the task.
+
+**Fix:** run `certo init models --profiles`. It writes the example
+profiles and asks which model goes first for each kind of task. Or copy
+`task_profiles.yaml.example` and edit it (see
+[Pick models automatically](guides/pick-models-automatically.md)).
+
 ### No `models_list.yaml` or `models.yaml` found
 
 **You see:** `No models_list.yaml found: Certo looked in the current folder
@@ -607,7 +622,8 @@ command (the same for `models.yaml`).
 **Cause:** `--auto-model`, `--escalate`, `certo bench` and
 `certo check --models` need both model files, and Certo ships them only as
 examples, which it never reads. (`task_profiles.yaml` and
-`escalation.yaml` are optional: a missing one is never this error.)
+`escalation.yaml` are never this error; `--auto-model` without task
+profiles has its own, below.)
 
 **Fix:** run `certo init models`: it offers the models you can reach,
 tests them and writes the files. Or run the `cp` command the message

@@ -162,14 +162,24 @@ def load_run_ladder(
         )
     if cfg.model_selection == "auto":
         from .catalog_check import load_checked_catalog
+        from .model_catalog import ModelCatalogError
+        from .model_files import resolve_optional
+        from .profile_choice import NO_PROFILES
 
-        load_checked_catalog(
+        # Without task profiles every model ranks the same and the first in
+        # models_list.yaml would go first: refused (DECISIONS.md, 2026-11-11).
+        catalog = load_checked_catalog(
             cfg.models_file,
             cfg.models_list_file,
             task_profiles_file=cfg.task_profiles_file,
             escalation_file=cfg.escalation_file,
             mode="auto",
         )
+        profiles_path, _ = resolve_optional(cfg.task_profiles_file, cfg.escalation_file)
+        if profiles_path is None:
+            raise ModelCatalogError(NO_PROFILES)
+        if not catalog.task_profiles:
+            raise ModelCatalogError(f"{profiles_path} has no task profile. {NO_PROFILES}")
     return None
 
 

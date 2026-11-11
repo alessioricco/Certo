@@ -1838,3 +1838,17 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   new plan fingerprinted the raw file and a resume the stripped one, so
   every resume of a file ending with a newline was refused; both now
   strip, and old raw fingerprints are still accepted.
+- **`--auto-model` refuses to run without task profiles; the user picks
+  the model per profile** (the Author, 2026-11-11). Live: no
+  `task_profiles.yaml`, so every milestone got `weights: {}`, every model
+  scored 0, and the first in models_list.yaml (local models, in the
+  daytime) took M4, which ended `stuck`. Supersedes the silent fallback
+  to Certo's empty-weights profile when no profiles file exists (a file
+  without a `default` profile still falls back to it for unmatched
+  tasks). Not a built-in default either: the user must be able to choose
+  their models. `certo init models --profiles` (also after choosing
+  `auto` in `certo init models`) pins a model per profile (`model:`,
+  which already went first with the weights ordering the fallbacks),
+  editing only those lines so comments stay, and can turn the local
+  models off. `certo bench` is unaffected: its auto arms load their own
+  catalog.

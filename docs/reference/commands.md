@@ -54,7 +54,7 @@ current folder, the file is read instead.
 | `--independent-tests-strict` | off (`CERTO_INDEPENDENT_TESTS_STRICT`) | Like `--independent-tests`, but when most sets fail, a `verified` run ends `independent_failed` (exit 1). Other verdicts stay as they are. See [Make them change the verdict](../guides/independent-tests.md#make-them-change-the-verdict). |
 | `--interactive` | off (`CERTO_INTERACTIVE`) | Let the agent stop and ask you questions. See [Interactive and confirm mode](../guides/interactive-mode.md). |
 | `--verbose` | off (`CERTO_VERBOSE`) | Print the agent's full output: the whole system prompt, the task with the skills Certo adds, and the SDK's own logs. Without it, each of these is one line. |
-| `--auto-model` | off (`CERTO_MODEL_SELECTION`) | Pick the model from the model files (`models_list.yaml`, `models.yaml`, and the task profiles in `task_profiles.yaml`). A missing or broken model file is a configuration error (the error says which example to copy, or lists the problems): no banner, no resume hint, and no run is recorded. See [Pick models automatically](../guides/pick-models-automatically.md). |
+| `--auto-model` | off (`CERTO_MODEL_SELECTION`) | Pick the model from the model files (`models_list.yaml`, `models.yaml`, and the task profiles in `task_profiles.yaml`). Refused without task profiles (no `task_profiles.yaml`, or one with no profile): every model would rank the same, and the first in `models_list.yaml` would go first. The error names `certo init models --profiles`. A missing or broken model file is a configuration error (the error says which example to copy, or lists the problems): no banner, no resume hint, and no run is recorded. See [Pick models automatically](../guides/pick-models-automatically.md). |
 | `--json` | off | Print the run's result as one JSON object on standard output (verdict, checks, acceptance checks, cost, models, milestones), and everything else on standard error. Nothing on standard output when Certo refuses to start. See [The JSON result](json-result.md). |
 | `--require-verification` | off | Exit 1 for `inconclusive` and `unchanged` too. |
 | `--acceptance-checks JSON_OR_FILE` | none | Extra file checks for this task, as inline JSON or a JSON file. See [Acceptance checks](../guides/acceptance-checks.md). |
@@ -238,11 +238,12 @@ Set up more than one model, for `--auto-model` and `--escalate`, without
 editing a file. Needs a terminal.
 
 ```text
-certo init models [--timeout SECONDS]
+certo init models [--profiles] [--timeout SECONDS]
 ```
 
 | Flag | Default | Effect |
 |---|---|---|
+| `--profiles` | off | Only choose the model that goes first for each kind of task (`task_profiles.yaml`), for `--auto-model`, from the models already set up. Writes the example profiles first when there are none. Needs `models_list.yaml` and `models.yaml`. |
 | `--timeout SECONDS` | `120` | How long to wait for each model's test answer. A local model may need time to load. |
 
 It starts from the model `certo init` saved, and offers the models this
@@ -294,6 +295,18 @@ Written to /home/you/.config/certo:
   models_list.yaml  1 model(s) rated by you, added
   task_profiles.yaml  the example profiles
 ```
+
+**Choosing the model for each kind of task.** After `--auto-model` is
+chosen for every run, and with `--profiles` alone, it asks:
+
+- whether `--auto-model` uses your local models too, when you have both
+  local and cloud ones. "No" turns the local ones off in `models.yaml`
+  (`activated: false`; the old file is kept as `models.yaml.bak`);
+- for each task profile, which model goes first: the 3 the ratings rank
+  highest, another of your models, or "Let the ratings decide". A model
+  you pick is written as the profile's `model:` and always goes first
+  for that kind of task; the ratings order the others behind it. Only
+  those lines change: the file's comments stay.
 
 With fewer than two models chosen, or fewer than two passing the test,
 nothing is written: one model needs no model files. Exit code 0, or 1

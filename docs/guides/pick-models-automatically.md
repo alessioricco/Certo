@@ -28,9 +28,22 @@ out of date.
 - **`models.yaml`**, your personal settings: the models you use, by name,
   each with its key or server address. It holds keys: keep it out of git,
   like `.env`.
-- **`task_profiles.yaml`**, the kinds of task and what matters for each.
-  Optional: without it, every task ranks the models with no weights, so
-  the order of `models_list.yaml` decides.
+- **`task_profiles.yaml`**, the kinds of task, what matters for each,
+  and the model you want first for each. Required: without it every
+  model would rank the same, so `--auto-model` refuses to run and points
+  to `certo init models --profiles`.
+
+The easiest way to write the profiles is to let Certo ask:
+
+```bash
+certo init models --profiles
+```
+
+For each kind of task it shows the 3 models your ratings rank highest,
+and you pick the one that goes first, another of your models, or "Let the
+ratings decide". It can also leave your local models out of
+`--auto-model`, for example during the day when the machine running them
+is off.
 
 Copy the examples into your user settings folder (or into a project
 folder, which then overrides them). An `--auto-model` run without the
@@ -154,7 +167,8 @@ model to use, with the best one as the default.
 ## Always use one model for a kind of task
 
 When you already know which model you want for a profile, name it with
-`model:` instead of tuning the weights until it wins:
+`model:` instead of tuning the weights until it wins (`certo init models
+--profiles` writes this line for you):
 
 ```yaml
 # task_profiles.yaml

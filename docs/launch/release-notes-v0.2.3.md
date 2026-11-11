@@ -322,6 +322,24 @@ A few tokens a second usually means part of the model runs on the CPU;
 see [Troubleshooting](../troubleshooting.md#every-step-is-very-slow).
 Cloud models print nothing new.
 
+## Changed: `--auto-model` needs task profiles, and you choose the models
+
+`--auto-model` (and `CERTO_MODEL_SELECTION=auto`) now refuses to run
+without task profiles (`task_profiles.yaml`). Before, without them every
+model ranked the same and the first one in `models_list.yaml` went first:
+on 2026-11-10, a milestone went to a local model that way, during the
+day, and ended `stuck`. The error says what to do:
+
+```text
+Configuration error: --auto-model needs task profiles (task_profiles.yaml): without them every model ranks the same, and the first one in models_list.yaml would go first. Run "certo init models --profiles" to choose a model for each kind of task (or "certo init models" to add models too).
+```
+
+`certo init models --profiles` writes the example profiles when there are
+none, can leave your local models out of `--auto-model`, and asks, for
+each kind of task, which model goes first: one of the 3 the ratings rank
+highest, another of yours, or the ratings. `certo init models` asks the
+same after you choose `--auto-model` for every run.
+
 ## Also
 
 - **`certo bench` copes with a model server that goes away.** A run

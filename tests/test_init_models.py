@@ -249,3 +249,49 @@ def test_certo_init_models_is_the_subcommand(home, monkeypatch):
 
     assert init_cmd.init_main(["models", "--timeout", "5"], interactive=True) == 0
     assert seen == [["--timeout", "5"]]
+
+
+def test_profiles_only_writes_the_example_profiles_and_asks_each(home):
+    from model_file_helpers import write_model_files
+
+    write_model_files(
+        home,
+        """
+models:
+  - name: local
+    model: ollama/qwen
+    base_url: http://gpu-box:11434
+    ratings: {reasoning: 2, precision: 2, code: 2, cost: 5}
+  - name: luna
+    model: openai/luna
+    api_key: k
+    ratings: {reasoning: 3, precision: 4, code: 4, cost: 3}
+""",
+    )
+    script = Script(answers=["1"] + [""] * 20)
+    code = init_models_main(["--profiles"], prompter=script.prompter(), interactive=True)
+
+    assert code == 0
+    assert (home / "task_profiles.yaml").exists()
+    assert "Wrote the example task profiles to" in script.text
+    assert "Should --auto-model use your local models too?" in script.text
+    assert "build (title has:" in script.text
+    assert "  build: the ratings decide" in script.text
+
+
+def test_profiles_only_needs_the_model_files(home, capsys):
+    script = Script()
+    assert init_models_main(["--profiles"], prompter=script.prompter(), interactive=True) == 1
+    assert "No models_list.yaml found" in capsys.readouterr().err
+
+
+def test_choosing_auto_mode_then_asks_the_model_for_each_kind_of_task(home):
+    menu = _menu(home)
+    gemma = _number(menu, "gemma4-31b-qat-local ")
+
+    code, text, _seen = _run([gemma, "", "2"] + [""] * 20)  # pick, done, mode: auto
+
+    assert code == 0
+    assert "CERTO_MODEL_SELECTION=auto" in (home / ".env").read_text()
+    assert "For each kind of task, choose the model that goes first." in text
+    assert "default (when no other kind matches): which model first?" in text

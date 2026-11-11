@@ -187,7 +187,7 @@ certo tasks/wordle.md --project wordle
 - `models_list.yaml`, the catalog: every model's id and ratings.
 - `models.yaml`, your settings: the models you enabled, with their key or server address.
 - `escalation.yaml`, your ladders, for `--escalate`; optional: without it, Certo builds a ladder from the ratings.
-- `task_profiles.yaml`, the kinds of task and what matters for each, for `--auto-model`; optional.
+- `task_profiles.yaml`, the kinds of task and what matters for each, for `--auto-model`, which needs it (`certo init models --profiles` writes it and asks which model you want for each).
 
 Then add `--escalate` (with a ladder from [One task, more than one model](https://github.com/alessioricco/certo#one-task-more-than-one-model)) or `--auto-model` to a run. `certo check --models` tests every model you enabled before you rely on it.
 

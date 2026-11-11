@@ -1301,6 +1301,9 @@ models:
     model: openai/luna
     api_key: k
     ratings: {code: 5, cost: 2}
+task_profiles:
+  default:
+    weights: {code: 1}
 """
 
 
@@ -1384,6 +1387,23 @@ def test_auto_model_flag_sets_config(monkeypatch, tmp_path):
     cli.main(["do something", "--auto-model"])
 
     assert calls["cfg"].model_selection == "auto"
+
+
+def test_auto_model_without_task_profiles_is_refused(monkeypatch, tmp_path, capsys):
+    # Live 2026-11-10: with no task_profiles.yaml every model scored 0 and
+    # the first in models_list.yaml (a local model) took the milestone.
+    from model_file_helpers import model_file_config
+
+    files = model_file_config(tmp_path, _AUTO_MODEL_CATALOG.split("task_profiles:")[0])
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
+    monkeypatch.setattr(cli, "load_config", lambda: _cfg(workspace=str(tmp_path), **files))
+    monkeypatch.setattr(cli, "run_task", _fail_if_called)
+
+    assert cli.main(["do something", "--auto-model"]) == 1
+    err = capsys.readouterr().err
+    assert "--auto-model needs task profiles (task_profiles.yaml)" in err
+    assert "certo init models --profiles" in err
 
 
 def test_auto_model_only_passes_the_prompt_when_also_interactive(monkeypatch, tmp_path):
@@ -2094,6 +2114,9 @@ models:
     model: openai/luna
     api_key: k
     ratings: {code: 5, cost: 2}
+task_profiles:
+  default:
+    weights: {code: 1}
 escalation:
   ladders:
     default: [{model: local}, {model: cloud}]
