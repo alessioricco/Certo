@@ -2591,6 +2591,88 @@ def test_milestones_stop_at_the_first_that_is_not_verified(monkeypatch, tmp_path
     assert "Continue with: certo --resume" in out
 
 
+def _timing_out_run_task(calls, verdicts, tmp_path, write=True):
+    """Like _milestone_run_task, and each call writes a file (when `write`)."""
+    states = iter(verdicts)
+
+    def fake(task, **kwargs):
+        calls.append(task)
+        if write:
+            (tmp_path / "project" / f"work{len(calls)}.py").write_text("x = 1\n")
+        state = next(states)
+        notes = ["The agent's own task list still had unfinished item(s): 'gates'."]
+        return _fake_result(
+            [_FakeMessage("done")],
+            verification_state=state,
+            limitations=notes if state == "budget_exhausted" else (),
+        )
+
+    return fake
+
+
+def test_a_milestone_out_of_time_after_changing_files_goes_on_in_a_fresh_conversation(
+    monkeypatch, tmp_path, capsys
+):
+    # Live 2026-11-11 (latticewake M5): 30 minutes of real work, 3 of 4
+    # items done, and the whole sequence stopped.
+    calls: list = []
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))
+    monkeypatch.setattr(
+        cli,
+        "run_task",
+        _timing_out_run_task(calls, ["budget_exhausted", "verified", "verified"], tmp_path),
+    )
+
+    assert cli.main(["--milestones", _milestone_file(tmp_path)]) == 0
+
+    assert len(calls) == 3
+    assert "milestone 1 of 2: storage" in calls[1]
+    assert "ran out of its time (30 minutes)" in calls[1]
+    assert "- The agent's own task list still had unfinished item(s): 'gates'." in calls[1]
+    assert "ran out of its time" not in calls[2]
+    out = capsys.readouterr().out
+    assert "it goes on in a fresh conversation (1 of 1, CERTO_MILESTONE_TIME_RETRIES)" in out
+    assert "1. storage: verified\n  2. due dates: verified" in out
+
+
+@pytest.mark.parametrize(
+    ("verdicts", "write", "retries", "runs"),
+    [
+        (["budget_exhausted", "budget_exhausted"], True, 1, 2),  # one more go only
+        (["budget_exhausted"], False, 1, 1),  # no file changed: no progress
+        (["budget_exhausted"], True, 0, 1),  # turned off
+        (["cost_exhausted"], True, 1, 1),  # a cost limit is the user's to raise
+    ],
+    ids=["once", "no-change", "off", "cost"],
+)
+def test_a_milestone_out_of_time_stops_when_it_may_not_go_on(
+    monkeypatch, tmp_path, verdicts, write, retries, runs
+):
+    calls: list = []
+    monkeypatch.setattr(
+        cli, "load_config", lambda: _milestone_cfg(tmp_path, milestone_time_retries=retries)
+    )
+    monkeypatch.setattr(cli, "run_task", _timing_out_run_task(calls, verdicts, tmp_path, write))
+
+    assert cli.main(["--milestones", _milestone_file(tmp_path)]) == 1
+
+    assert len(calls) == runs
+
+
+def test_max_time_gives_each_milestone_its_minutes(monkeypatch, tmp_path):
+    calls: list = []
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))
+    monkeypatch.setattr(
+        cli,
+        "run_task",
+        _timing_out_run_task(calls, ["budget_exhausted", "verified", "verified"], tmp_path),
+    )
+
+    assert cli.main(["--milestones", _milestone_file(tmp_path), "--max-time", "90"]) == 0
+
+    assert "ran out of its time (90 minutes)" in calls[1]
+
+
 def test_resume_continues_the_first_milestone_not_verified(monkeypatch, tmp_path):
     from certo.milestones import milestone_task
 

@@ -24,7 +24,7 @@ from .config import (
     override_llm,
     resolve_project_dir,
 )
-from .escalation import ResolvedLadder, load_ladder
+from .escalation import ResolvedLadder, load_ladder, workspace_listing
 
 if TYPE_CHECKING:
     from .milestones import MilestoneState
@@ -388,6 +388,27 @@ def plan_run(
     return RunPlan()
 
 
+def _out_of_time_note(outcome: Any, cfg: Config) -> str:
+    """What a milestone that ran out of time tells its fresh conversation:
+    that the work so far is in the folder, and how the last one ended (its
+    limitations, which name unfinished task items, and its check results)."""
+    minutes = cfg.max_task_seconds / 60
+    lines = [
+        "",
+        "",
+        f"Your earlier try at this milestone ran out of its time ({minutes:g} minutes) "
+        "before you said it was done. Its work is in the folder: go on from it, don't "
+        "start again. Finish what is left, run the checks, then stop.",
+    ]
+    notes = [n for n in outcome.completion_contract.limitations if "--max-time" not in n]
+    if notes:
+        lines += ["", "How it ended, from Certo:"] + [f"- {note}" for note in notes]
+    if outcome.checks:
+        lines += ["", "The project's checks after it:"]
+        lines += [f"- `{check.status}` {check.name}" for check in outcome.checks]
+    return "\n".join(lines)
+
+
 def run_milestones(
     state: MilestoneState,
     cfg: Config,
@@ -426,6 +447,9 @@ def run_milestones(
     # What the milestone before left; a resume past milestone 1 has only
     # the folder, its conversation was in an earlier session.
     left = handover(workspace, [], number - 1) if number is not None and number > 1 else None
+    first_number = number
+    time_retries = 0  # this milestone's goes after running out of time
+    carry_on: str | None = None
     while number is not None:
         milestone = state.plan.get(number)
         state.current = number
@@ -442,6 +466,11 @@ def run_milestones(
                 "it ended is below; the files it left are in the folder.\n\n"
                 + render_status(restart)
             )
+        if carry_on is not None:
+            text += carry_on
+            carry_on = None
+            if instruction and number == first_number:
+                extra = instruction
         if extra and resume is None:
             text += f"\n\nAdditional instruction from the user:\n{extra.strip()}"
             extra = None
@@ -449,6 +478,7 @@ def run_milestones(
         if number == total and acceptance_checks:
             checks += list(acceptance_checks)
         history["task"] = f"Milestone {number} of {total}: {milestone.label}"
+        files_before = workspace_listing(workspace)
         result = run_one(text, resume, extra, checks or None)
         outcome = result.outcome
         if outcome.run_summary is not None:
@@ -475,7 +505,26 @@ def run_milestones(
 
             say(report_line(outcome.independent_tests, strict=cfg.independent_tests_strict))
         if outcome.verification_state != "verified":
+            if (
+                outcome.verification_state == "budget_exhausted"
+                and time_retries < cfg.milestone_time_retries
+                and workspace_listing(workspace) != files_before
+            ):
+                # Out of time, but working: go on in a fresh conversation, with
+                # how the last one ended (DECISIONS.md, 2026-11-11).
+                time_retries += 1
+                say(
+                    f"Milestone {number} of {total} ran out of time after changing "
+                    "files: it goes on in a fresh conversation "
+                    f"({time_retries} of {cfg.milestone_time_retries}, "
+                    "CERTO_MILESTONE_TIME_RETRIES)."
+                )
+                carry_on = _out_of_time_note(outcome, cfg)
+                left = handover(workspace, [], number - 1) if number > 1 else None
+                first = False
+                continue
             break
+        time_retries = 0
         left = handover(workspace, result, number)
         number = state.next_number()
         first = False

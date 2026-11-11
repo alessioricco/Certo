@@ -1861,3 +1861,15 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   an error; unfinished items keep the verdict `budget_exhausted` /
   `cost_exhausted` (the agent itself said it wasn't done), with the
   items named in the limitations.
+- **A milestone out of time after changing files goes on in a fresh
+  conversation** (0.2.3, 2026-11-11). Live (latticewake M5, gpt-6.1-sol):
+  30 minutes of real work and 21M input tokens in one conversation, then
+  the whole sequence stopped. `CERTO_MILESTONE_TIME_RETRIES` (default 1)
+  continues it with a note of how it ended (limitations, unfinished task
+  items, check results), its own time budget, and the folder as handover.
+  Fresh, not resumed: the old conversation's history is what made each
+  step expensive. Only `budget_exhausted` and only after a file changed
+  (no change = no progress); `cost_exhausted` stops, since the cost cap
+  is the user's spending limit. Not in `certo bench`: its milestone arms
+  keep measuring one try per milestone. The 30-minute default stays for
+  single tasks; `--max-time MINUTES` raises it per run.

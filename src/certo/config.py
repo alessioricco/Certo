@@ -44,6 +44,7 @@ BUILTIN_SKILLS_DIR = str(Path(__file__).resolve().parent / "builtin_skills")
 DEFAULT_VERIFY_TESTS = "always"
 DEFAULT_MAX_VERIFY_RETRIES = 2
 DEFAULT_MAX_TASK_SECONDS = 1800
+DEFAULT_MILESTONE_TIME_RETRIES = 1
 # The SDK's own default for one model call (`LLM.timeout`). 0 means no limit.
 DEFAULT_LLM_TIMEOUT_SECONDS = 300
 # CERTO_CONTEXT_WARN_TOKENS: the window the 0.1.25 context benchmark ran
@@ -142,6 +143,9 @@ class Config:
     # cannot on its own bound how long one task can run in total (see
     # runner.py's _run_with_confirmation and DECISIONS.md).
     max_task_seconds: int = DEFAULT_MAX_TASK_SECONDS
+    # Milestone mode: how many times a milestone that ran out of time, after
+    # changing files, goes on in a fresh conversation (api.run_milestones).
+    milestone_time_retries: int = DEFAULT_MILESTONE_TIME_RETRIES
 
     # Provider-neutral reasoning effort, consumed by llm.py and passed
     # straight through to the SDK's own `LLM.reasoning_effort` (LiteLLM
@@ -639,6 +643,11 @@ def load_config(
         "MAX_TASK_SECONDS",
         default=DEFAULT_MAX_TASK_SECONDS,
     )
+    milestone_time_retries = _parse_nonnegative_int(
+        env,
+        "MILESTONE_TIME_RETRIES",
+        default=DEFAULT_MILESTONE_TIME_RETRIES,
+    )
 
     task_store = _parse_choice(
         env,
@@ -754,6 +763,7 @@ def load_config(
         verify_tests=verify_tests,
         max_verify_retries=max_verify_retries,
         max_task_seconds=max_task_seconds,
+        milestone_time_retries=milestone_time_retries,
         reasoning_effort=reasoning_effort,
         llm_timeout_seconds=llm_timeout_seconds,
         llm_context_tokens=llm_context_tokens,

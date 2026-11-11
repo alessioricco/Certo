@@ -98,6 +98,15 @@ For each milestone, Certo:
    is a failure);
 4. starts the next milestone only when the verdict is `verified`.
 
+A milestone that runs out of time (`budget_exhausted`) after changing
+files goes on once more, in a new conversation, told that its earlier
+try ran out of time, how it ended (the unfinished items on the agent's
+list, the check results), and that the work is in the folder. If it runs
+out of time again, or changed nothing, the milestones stop there.
+`CERTO_MILESTONE_TIME_RETRIES` sets how many times (`0` stops at the
+first time-out). A cost limit (`cost_exhausted`) always stops: raise it
+yourself if you want to spend more.
+
 The time, cost and step limits (`CERTO_MAX_TASK_SECONDS`,
 `CERTO_MAX_TASK_COST`, `CERTO_MAX_ITERATIONS`) apply to each milestone
 separately: a task of 3 milestones can take up to 3 times the time and steps.

@@ -363,6 +363,11 @@ same after you choose `--auto-model` for every run.
 - **`--resume` of milestones works with a file that ends with a
   newline.** Before, it always said the task file had changed since the
   milestones started.
+- **A milestone that runs out of time goes on once.** If it changed
+  files, it continues in a new conversation, told how the last one ended
+  and that the work is in the folder, instead of stopping every milestone
+  after it. `CERTO_MILESTONE_TIME_RETRIES` (1 by default; `0` turns it
+  off) sets how many times.
 - **`--max-time MINUTES`** sets the time budget for one run, instead of
   `CERTO_MAX_TASK_SECONDS`. In milestone mode each milestone gets
   `MINUTES`. Big milestones often need more than the default 30 minutes.
