@@ -324,6 +324,12 @@ Cloud models print nothing new.
 
 ## Also
 
+- **`certo bench` copes with a model server that goes away.** A run
+  that couldn't reach the model server isn't counted, the benchmark
+  stops after 3 in a row, and `--resume` runs them again. Found when the
+  machine running Ollama shut down at 23:00 and the 14 runs after it
+  were counted as failed hidden tests. `--pause-between SECONDS` waits
+  between runs, to let that machine cool down.
 - **`--max-steps N`** sets the agent's step limit for one run, instead
   of `CERTO_MAX_ITERATIONS`. In milestone mode each milestone gets `N`
   steps.

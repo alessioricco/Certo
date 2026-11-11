@@ -1815,3 +1815,14 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   automatic detection still needs two headings in order. A level-1
   heading after the milestones (`# Definition of done`) still belongs to
   the last milestone: left as it is for now.
+- **A bench run that couldn't reach the model server isn't counted**
+  (0.2.3, 2026-11-10). The Ollama machine shut down at 23:00 and the 14
+  runs after it failed in 2.5 minutes each, counted as failed hidden
+  tests (5/12 vs 4/12 instead of 5/5 vs 4/5), and `--resume` skipped
+  them as recorded. Now such a run (connection refused, name not
+  resolved: `bench_report.unreachable`) is left out of the summary and
+  `results.md`, kept in `results.csv`, run again by `--resume`, and 3 in
+  a row stop the benchmark. Other errors (a crash, a rejected key) still
+  count as failures: they can be the arm's fault. `--pause-between` is
+  a flag, not a bench.yaml setting: it depends on the machine, not on
+  what is compared.

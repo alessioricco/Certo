@@ -187,6 +187,17 @@ means 07:00 the next morning. A run already started can go past it: a
 run's time limit is 30 minutes by default (an arm can change it with
 `max_task_seconds`), and a slow local model can end a little after that. Leave room if the machine is needed at 07:00. At the end Certo prints how many runs are left.
 
+**When the model's machine stops.** If the machine running a local
+model shuts down (it overheats, it goes to sleep), the runs that follow
+can't reach it. Certo doesn't count them, stops after 3 in a row, and
+`--resume` runs them again once the machine is back. For a machine that
+gets hot under hours of load, `--pause-between 120` waits two minutes
+between runs:
+
+```bash
+certo bench --resume --out bench-results/baseline --pause-between 120
+```
+
 ### What each run does
 
 1. A fresh temporary folder gets only the task's starter files. The task

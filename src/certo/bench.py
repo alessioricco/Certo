@@ -34,7 +34,7 @@ from typing import Any
 from . import __version__, context_window
 from .banner import _duration
 from .bench_config import DEFAULT_BENCH_FILE, Arm, BenchConfig, BenchConfigError, load_bench_config
-from .bench_report import arm_rows, cost_line, cost_summary, write_report
+from .bench_report import arm_rows, cost_line, cost_summary, counted, unreachable, write_report
 from .independent_tests import failing_tests
 from .bench_strategies import STRATEGIES, AttemptResult, RunContext, auto_catalog
 from .bench_tasks import (
@@ -770,18 +770,24 @@ def run_benchmark(
     parallel: int = 1,
     max_cost: float | None = None,
     stop_at: datetime | None = None,
+    pause_between: float = 0,
     stream: Callable[..., Any] = _default_stream,
+    sleep: Callable[[float], None] | None = None,
 ) -> tuple[list[dict[str, Any]], str | None]:
     """Run `todo`; return (new records, why it stopped early: "max-cost",
-    "stop-at" or None)."""
+    "stop-at", "unreachable" or None). `pause_between` seconds pass between
+    two runs (one at a time only), to let a local model's machine cool
+    down. After `UNREACHABLE_IN_A_ROW` runs in a row that couldn't reach
+    the model server, it stops: the rest would fail the same way."""
     lock = threading.Lock()
     spent = sum(r["cost"] for r in load_records(out_dir))
     done = total - len(todo)
     records: list[dict[str, Any]] = []
     stopped: str | None = None
+    in_a_row = 0
 
     def one(planned: PlannedRun) -> None:
-        nonlocal spent, done, stopped
+        nonlocal spent, done, stopped, in_a_row
         with lock:
             if stopped:
                 return
@@ -801,12 +807,17 @@ def run_benchmark(
                 f"r{planned.repeat}: {_describe(record)}",
                 flush=True,
             )
+            in_a_row = in_a_row + 1 if unreachable(record) else 0
+            if in_a_row >= UNREACHABLE_IN_A_ROW and not stopped:
+                stopped = "unreachable"
 
     if parallel <= 1:
-        for planned in todo:
+        for index, planned in enumerate(todo):
             one(planned)
             if stopped:
                 break
+            if pause_between > 0 and index < len(todo) - 1:
+                (sleep or time.sleep)(pause_between)
     else:
         with ThreadPoolExecutor(max_workers=parallel) as pool:
             futures = [pool.submit(one, p) for p in todo]
@@ -818,6 +829,11 @@ def run_benchmark(
                     future.cancel()
                 raise
     return records, stopped
+
+
+# Runs in a row that couldn't reach the model server before the benchmark
+# stops (`run_benchmark`).
+UNREACHABLE_IN_A_ROW = 3
 
 
 def _local_now() -> datetime:
@@ -860,7 +876,8 @@ def build_bench_parser() -> argparse.ArgumentParser:
         "--resume",
         action="store_true",
         help="Continue an interrupted benchmark in --out (default: the latest results "
-        "folder), skipping runs already recorded.",
+        "folder), skipping runs already recorded, except runs that couldn't reach the "
+        "model server: those run again.",
     )
     parser.add_argument(
         "--parallel",
@@ -882,6 +899,14 @@ def build_bench_parser() -> argparse.ArgumentParser:
         metavar="HH:MM",
         help="Stop starting new runs at this local time (24-hour; tomorrow if already past "
         "today). Runs in progress finish; continue later with --resume.",
+    )
+    parser.add_argument(
+        "--pause-between",
+        type=float,
+        default=0,
+        metavar="SECONDS",
+        help="Wait SECONDS between two runs, e.g. to let the machine running a local model "
+        "cool down (default: 0). Not with --parallel.",
     )
     parser.add_argument(
         "--yes", "-y", action="store_true", help="Start without asking to confirm the plan."
@@ -972,6 +997,10 @@ def bench_main(
         stop_at = parse_stop_at(args.stop_at, _local_now()) if args.stop_at else None
         cfg = load_bench_config(args.config)
         local = sorted({n for a in cfg.arms for n in a.models if is_local(cfg.catalog[n])})
+        if args.pause_between < 0:
+            raise BenchConfigError("--pause-between must be 0 or more seconds.")
+        if args.pause_between and args.parallel > 1:
+            raise BenchConfigError("--pause-between works one run at a time, not with --parallel.")
         if args.parallel > 1 and local:
             raise BenchConfigError(
                 f"--parallel needs cloud models only; {', '.join(local)} runs locally, and "
@@ -979,7 +1008,8 @@ def bench_main(
             )
         out_dir = _resolve_out_dir(args)
         planned = plan_runs(cfg)
-        recorded = {r["run_id"] for r in load_records(out_dir)} if args.resume else set()
+        # A run that couldn't reach the model server is run again.
+        recorded = {r["run_id"] for r in counted(load_records(out_dir))} if args.resume else set()
         todo = [p for p in planned if p.run_id not in recorded]
         _check_out_dir(cfg, out_dir, args.resume)
     except (BenchConfigError, BenchTaskError) as exc:
@@ -1013,6 +1043,7 @@ def bench_main(
             parallel=args.parallel,
             max_cost=args.max_cost,
             stop_at=stop_at,
+            pause_between=args.pause_between,
             stream=stream,
         )
     except KeyboardInterrupt:
@@ -1023,13 +1054,18 @@ def bench_main(
         print(f"Stopped: the recorded cost reached --max-cost ${args.max_cost:.2f}.")
     elif stopped == "stop-at":
         print(f"Stopped: it is past --stop-at {stop_at:%H:%M}.")
+    elif stopped == "unreachable":
+        print(
+            f"Stopped: {UNREACHABLE_IN_A_ROW} runs in a row couldn't reach the model server. "
+            "Those runs aren't counted; once the server is back, they run again with --resume."
+        )
     if interrupted:
         print(
             "Interrupted. Finished runs are kept; continue with: certo bench --resume "
             f"--out {out_dir}"
         )
         return 130
-    left = len(planned) - len(records)
+    left = len(planned) - len(counted(records))
     if left:
         print(f"{left} run(s) not done. Continue with: certo bench --resume --out {out_dir}")
     return 0
@@ -1039,7 +1075,14 @@ def finish_report(cfg: BenchConfig, out_dir: Path, records: list[dict[str, Any]]
     """Write results.md and results.csv, and print the per-arm summary."""
     meta = json.loads((out_dir / "meta.json").read_text(encoding="utf-8"))
     markdown = write_report(out_dir)
+    every = len(records)
+    records = counted(records)
     print(f"\n{len(records)}/{len(plan_runs(cfg))} runs recorded.")
+    if every > len(records):
+        print(
+            f"  Not counted: {every - len(records)} run(s) that couldn't reach the model "
+            "server; --resume runs them again."
+        )
     for row in arm_rows(meta, records):
         print(
             f"  {row['Arm']}: hidden tests passed {row['Hidden tests passed']}, verified "

@@ -329,6 +329,75 @@ def test_stop_at_stops_starting_runs_and_resume_continues(
     assert len(_records(out)) == 4
 
 
+def _unreachable_error():
+    # As the 2026-11-10 night run recorded it, when the Ollama machine shut down.
+    return RuntimeError(
+        "Conversation run failed: litellm.APIConnectionError: OllamaException - "
+        "[Errno 8] nodename nor servname provided, or not known"
+    )
+
+
+def test_runs_that_cant_reach_the_model_server_stop_the_bench_and_rerun_on_resume(
+    tmp_path, project_venv, capsys
+):
+    path = _bench_file(tmp_path, TWO_ARMS, repeats=3)
+    out = tmp_path / "out"
+    model = FakeModel(project_venv, raise_on={n: _unreachable_error() for n in (2, 3, 4)})
+    assert _run(path, out, model) == 0
+    printed = capsys.readouterr().out
+    assert len(model.calls) == 4  # the 5th and 6th never start
+    assert "Stopped: 3 runs in a row couldn't reach the model server." in printed
+    assert "Not counted: 3 run(s) that couldn't reach the model server" in printed
+    assert "5 run(s) not done. Continue with: certo bench --resume" in printed
+    report = (out / "results.md").read_text()
+    assert "runs recorded: 1 of 6 (incomplete)" in report
+    assert "- Not counted: 3 run(s) that couldn't reach the model server." in report
+    assert "| 1/1 (100%)" in report  # arm a: its one counted run, not 1/2
+    assert len((out / "results.csv").read_text().splitlines()) == 5  # every run, raw
+
+    model = FakeModel(project_venv)
+    assert _run(path, out, model, "--resume") == 0
+    assert len(model.calls) == 5  # the 3 unreachable runs again, and the 2 not started
+    assert not any(r["error"] for r in _records(out))
+
+
+def test_one_unreachable_run_doesnt_stop_the_bench(tmp_path, project_venv):
+    path = _bench_file(tmp_path, TWO_ARMS, repeats=2)
+    model = FakeModel(project_venv, raise_on={1: _unreachable_error()})
+    assert _run(path, tmp_path / "out", model) == 0
+    assert len(model.calls) == 4
+
+
+def test_another_error_is_counted_and_not_run_again(tmp_path, project_venv):
+    path = _bench_file(tmp_path, ONE_ARM)
+    out = tmp_path / "out"
+    _run(path, out, FakeModel(project_venv, raise_on={1: RuntimeError("boom")}))
+    model = FakeModel(project_venv)
+    assert _run(path, out, model, "--resume") == 0
+    assert model.calls == []
+
+
+def test_pause_between_waits_between_runs_only(tmp_path, project_venv, monkeypatch):
+    waits = []
+    monkeypatch.setattr(bench.time, "sleep", waits.append)
+    path = _bench_file(tmp_path, TWO_ARMS, repeats=2)
+    assert _run(path, tmp_path / "out", FakeModel(project_venv), "--pause-between", "90") == 0
+    assert waits == [90, 90, 90]  # 4 runs, 3 pauses, none after the last
+
+
+@pytest.mark.parametrize(
+    ("extra", "message"),
+    [
+        (["--pause-between", "-1"], "--pause-between must be 0 or more seconds"),
+        (["--pause-between", "60", "--parallel", "2"], "not with --parallel"),
+    ],
+)
+def test_a_bad_pause_between_is_refused(tmp_path, project_venv, capsys, extra, message):
+    path = _bench_file(tmp_path, ONE_ARM)
+    assert _run(path, tmp_path / "out", FakeModel(project_venv), *extra) == 1
+    assert message in capsys.readouterr().err
+
+
 @pytest.mark.parametrize(
     ("value", "wanted"),
     [("07:00", "2026-10-26 07:00"), ("23:30", "2026-10-25 23:30"), ("22:00", "2026-10-26 22:00")],

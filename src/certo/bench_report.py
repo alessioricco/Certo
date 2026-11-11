@@ -47,6 +47,31 @@ CSV_FIELDS = (
 )
 
 
+# Signs, in a run's error, that the model server couldn't be reached at all
+# (2026-11-10: the Ollama machine shut down and 14 runs failed in 2.5
+# minutes each, counted as failed hidden tests). Such a run says nothing
+# about the arm: the report leaves it out, and `--resume` runs it again.
+_UNREACHABLE = (
+    "APIConnectionError",
+    "LLMServiceUnavailableError",
+    "Connection refused",
+    "nodename nor servname",
+    "Name or service not known",
+    "No route to host",
+)
+
+
+def unreachable(record: dict[str, Any]) -> bool:
+    """Whether the run failed only because the model server couldn't be reached."""
+    error = record.get("error") or ""
+    return any(sign in error for sign in _UNREACHABLE)
+
+
+def counted(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The runs that count: all but those that couldn't reach the model server."""
+    return [r for r in records if not unreachable(r)]
+
+
 def _rate(count: int, total: int) -> str:
     return f"{count}/{total} ({count / total:.0%})" if total else "0/0"
 
@@ -347,7 +372,11 @@ def _per_milestone_lines(config: dict[str, Any], records: list[dict[str, Any]]) 
     return lines
 
 
-def render_markdown(meta: dict[str, Any], records: list[dict[str, Any]]) -> str:
+def render_markdown(
+    meta: dict[str, Any], records: list[dict[str, Any]], unreachable_runs: int = 0
+) -> str:
+    """`records` are the counted runs; `unreachable_runs` how many others
+    couldn't reach the model server (left out, run again by --resume)."""
     config = meta["config"]
     planned = len(config["tasks"]) * len(config["arms"]) * config["repeats"]
     task_set = meta["task_set"]
@@ -362,6 +391,14 @@ def render_markdown(meta: dict[str, Any], records: list[dict[str, Any]]) -> str:
         f"- Tasks: {len(config['tasks'])} · arms: {len(config['arms'])} · repeats: "
         f"{config['repeats']} · runs recorded: {len(records)} of {planned}"
         + ("" if len(records) == planned else " (incomplete)"),
+        *(
+            [
+                f"- Not counted: {unreachable_runs} run(s) that couldn't reach the model "
+                "server. `certo bench --resume` runs them again."
+            ]
+            if unreachable_runs
+            else []
+        ),
         "",
         (
             f"Small samples: {len(config['tasks']) * config['repeats']} runs per arm, so a "
@@ -492,14 +529,16 @@ def write_csv(path: Path, records: list[dict[str, Any]]) -> None:
 def write_report(out_dir: Path) -> Path:
     """Write results.md and results.csv; return the path of results.md."""
     meta = json.loads((out_dir / "meta.json").read_text(encoding="utf-8"))
-    records = [
+    every = [
         json.loads(p.read_text(encoding="utf-8")) for p in sorted((out_dir / "runs").glob("*.json"))
     ]
     order = {name: i for i, name in enumerate(a["name"] for a in meta["config"]["arms"])}
-    records.sort(key=lambda r: (r["repeat"], r["task"], order.get(r["arm"], 0)))
+    every.sort(key=lambda r: (r["repeat"], r["task"], order.get(r["arm"], 0)))
+    records = counted(every)
     markdown = out_dir / "results.md"
-    markdown.write_text(render_markdown(meta, records), encoding="utf-8")
-    write_csv(out_dir / "results.csv", records)
+    markdown.write_text(render_markdown(meta, records, len(every) - len(records)), encoding="utf-8")
+    # The CSV keeps every run, with its error: the raw data.
+    write_csv(out_dir / "results.csv", every)
     (out_dir / "cost.json").write_text(
         json.dumps(cost_summary(meta, records), indent=2) + "\n", encoding="utf-8"
     )
