@@ -675,7 +675,7 @@ def _budget_exhausted_contract(task: str, cfg: Config) -> CompletionContract:
                 "The task's shared wall-clock budget "
                 f"(CERTO_MAX_TASK_SECONDS={cfg.max_task_seconds}) ran out before "
                 "the task reached a normal finish, so its own completion claim, if "
-                "any, was not verified."
+                "any, was not verified. --max-time MINUTES gives it more time."
             )
         ],
     )

@@ -350,6 +350,16 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--max-time",
+        type=int,
+        default=None,
+        metavar="MINUTES",
+        help=(
+            "Override CERTO_MAX_TASK_SECONDS for this run, in minutes: the time "
+            "budget. In milestone mode each milestone gets MINUTES."
+        ),
+    )
+    parser.add_argument(
         "--model",
         default=None,
         help=(
@@ -744,6 +754,7 @@ def _run_task_command(
         verbose=args.verbose,
         agents_md=args.agents_md,
         max_steps=args.max_steps,
+        max_minutes=args.max_time,
     )
     try:
         cfg = resolve_config(options, load=lambda: load_config(), spell=_flag)

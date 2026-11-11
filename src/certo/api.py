@@ -65,6 +65,7 @@ class RunOptions:
     verbose: bool = False
     agents_md: str | None = None
     max_steps: int | None = None
+    max_minutes: int | None = None
 
 
 def resolve_config(
@@ -127,6 +128,10 @@ def resolve_config(
         if options.max_steps < 1:
             raise UsageError(f"{spell('max_steps')} must be 1 or more")
         cfg = replace(cfg, max_iterations=options.max_steps)
+    if options.max_minutes is not None:
+        if options.max_minutes < 1:
+            raise UsageError(f"{spell('max_time')} must be 1 or more (minutes)")
+        cfg = replace(cfg, max_task_seconds=options.max_minutes * 60)
 
     if options.escalate is not None:
         cfg = replace(cfg, model_selection="escalate", escalation_ladder=options.escalate)

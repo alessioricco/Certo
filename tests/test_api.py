@@ -46,6 +46,16 @@ def test_max_steps_sets_the_step_limit_for_this_run():
     assert cfg.max_iterations == 200
 
 
+def test_max_time_sets_the_time_budget_for_this_run_in_minutes():
+    cfg = resolve_config(RunOptions(max_minutes=90), load=lambda: _cfg())
+    assert cfg.max_task_seconds == 5400
+
+
+def test_max_time_below_one_is_refused():
+    with pytest.raises(UsageError, match="--max-time must be 1 or more"):
+        resolve_config(RunOptions(max_minutes=0), load=lambda: _cfg(), spell=_flag)
+
+
 def test_max_steps_below_one_is_refused():
     with pytest.raises(UsageError, match="--max-steps must be 1 or more"):
         resolve_config(RunOptions(max_steps=0), load=lambda: _cfg(), spell=_flag)

@@ -21,7 +21,7 @@ Run a task through the agent, then verify the result.
 certo TASK [--project NAME] [--execution {local,docker}] [--model MODEL]
            [--api-key KEY] [--base-url URL] [--reasoning-effort LEVEL]
            [--agents-md TEXT] [--independent-tests] [--independent-tests-strict]
-           [--interactive] [--verbose] [--max-steps N]
+           [--interactive] [--verbose] [--max-steps N] [--max-time MINUTES]
            [--auto-model]
            [--json] [--require-verification] [--acceptance-checks JSON_OR_FILE]
            [--escalate [LADDER]] [--milestones] [--from-milestone N]
@@ -46,6 +46,7 @@ current folder, the file is read instead.
 | `--execution {local,docker}` | `CERTO_EXECUTION` | Where the agent's tools run, for this run. `docker` is [experimental](../README.md#experimental-features). See [Run in Docker](../guides/run-in-docker.md). |
 | `--model MODEL` | `CERTO_LLM_MODEL` | Model for this run only. Enough on its own: you do not need `CERTO_LLM_MODEL` set already. |
 | `--max-steps N` | `CERTO_MAX_ITERATIONS` (50) | The most steps the agent may take in this run. In milestone mode each milestone gets `N` steps, and so does each fix attempt after a failed check. `N` is 1 or more. |
+| `--max-time MINUTES` | `CERTO_MAX_TASK_SECONDS` (30 minutes) | The time budget for this run, in minutes: the first run plus every retry. In milestone mode each milestone gets `MINUTES`. `MINUTES` is 1 or more. |
 | `--api-key KEY` | `CERTO_LLM_API_KEY` | API key for this run only. It ends up in your shell history. |
 | `--base-url URL` | `CERTO_LLM_BASE_URL` | Server address for this run only. With `--model`, enough for a local model that needs no key. |
 | `--reasoning-effort LEVEL` | `CERTO_LLM_REASONING_EFFORT` | Reasoning effort for this run only: `none`, `minimal`, `low`, `medium`, `high`, `xhigh`, `max`, or any value the provider accepts. `none` or `off` turns it off. |

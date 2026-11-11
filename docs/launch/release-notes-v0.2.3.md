@@ -363,6 +363,9 @@ same after you choose `--auto-model` for every run.
 - **`--resume` of milestones works with a file that ends with a
   newline.** Before, it always said the task file had changed since the
   milestones started.
+- **`--max-time MINUTES`** sets the time budget for one run, instead of
+  `CERTO_MAX_TASK_SECONDS`. In milestone mode each milestone gets
+  `MINUTES`. Big milestones often need more than the default 30 minutes.
 - **`--max-steps N`** sets the agent's step limit for one run, instead
   of `CERTO_MAX_ITERATIONS`. In milestone mode each milestone gets `N`
   steps.
