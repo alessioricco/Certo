@@ -358,6 +358,16 @@ the provider's retries, minutes later. The skip is recorded in
 `MODEL_DECISIONS.md`. See
 [How a model is chosen](../guides/pick-models-automatically.md#how-a-model-is-chosen).
 
+## New: `certo models secure` moves keys out of `models.yaml`
+
+`models.yaml` could always name a key as `"${NAME}"`, read from your
+settings file, but a key pasted into it went unnoticed. Now `certo check`
+and every run warn about each one, and `certo models secure` moves them
+to `~/.config/certo/.env` under the provider's usual name
+(`OPENAI_API_KEY`...) and writes `"${NAME}"` in their place, keeping the
+file's comments. No key is printed. See
+[the command](../reference/commands.md#certo-models-secure).
+
 ## Also
 
 - **`certo bench` copes with a model server that goes away.** A run

@@ -16,21 +16,27 @@ models:
     ratings: {reasoning: 2, code: 2, cost: 5}
   - name: mid
     model: openai/gpt-luna
-    api_key: sk-fake
+    api_key: "${FAKE_KEY}"
     ratings: {reasoning: 3, code: 4, cost: 4}
   - name: strong
     model: anthropic/claude-sonnet
-    api_key: sk-fake
+    api_key: "${FAKE_KEY}"
     ratings: {reasoning: 5, code: 5, cost: 2}
   - name: parked
     model: openai/gpt-old
-    api_key: sk-fake
+    api_key: "${FAKE_KEY}"
     ratings: {reasoning: 1, code: 1, cost: 1}
     activated: false
 task_profiles:
   default:
     weights: {reasoning: 1, code: 1, cost: 1}
 """
+
+
+@pytest.fixture(autouse=True)
+def _fake_key(monkeypatch):
+    # Keys are named as ${NAME}; one written out gets its own warning.
+    monkeypatch.setenv("FAKE_KEY", "sk-fake")
 
 
 def _report(tmp_path, extra: str = "", models: str = _MODELS):
@@ -259,7 +265,7 @@ def test_a_missing_rating_on_a_weighed_axis(tmp_path):
 
 def test_an_inactive_model_is_not_warned_about(tmp_path):
     models = _MODELS.replace("{reasoning: 1, code: 1, cost: 1}", "{}").replace(
-        "    model: openai/gpt-old\n    api_key: sk-fake\n", "    model: openai/gpt-old\n"
+        '    model: openai/gpt-old\n    api_key: "${FAKE_KEY}"\n', "    model: openai/gpt-old\n"
     )
     assert _report(tmp_path, models=models).warnings == []
 
@@ -268,7 +274,8 @@ def test_no_key_and_no_base_url(tmp_path):
     report = _report(
         tmp_path,
         models=_MODELS.replace(
-            "    model: openai/gpt-luna\n    api_key: sk-fake\n", "    model: openai/gpt-luna\n"
+            '    model: openai/gpt-luna\n    api_key: "${FAKE_KEY}"\n',
+            "    model: openai/gpt-luna\n",
         ),
     )
     assert report.warnings == [
@@ -325,10 +332,22 @@ def test_a_rung_on_a_model_not_in_models_yaml_is_skipped(tmp_path):
     from pathlib import Path
 
     personal = Path(models_path)
-    personal.write_text(personal.read_text().replace("- name: mid\n  api_key: sk-fake\n", ""))
+    personal.write_text(personal.read_text().replace("- name: mid\n  api_key: ${FAKE_KEY}\n", ""))
     report = check_catalog(
         load(list_path, models_path, escalation_path=files["escalation_path"], strict=False)
     )
     assert "Ladder 'x', rung 3: mid isn't in models.yaml, so this rung is skipped." in (
         report.warnings
     )
+
+
+def test_a_key_written_out_in_models_yaml_is_warned_about(tmp_path):
+    models = _MODELS.replace('    api_key: "${FAKE_KEY}"\n', "    api_key: sk-written-out\n", 1)
+
+    warnings = _report(tmp_path, models=models).warnings
+
+    assert warnings == [
+        "models.yaml: 'mid' has its API key written out in the file. Run \"certo models "
+        'secure" to move it to your settings file and name it there as ${NAME}.'
+    ]
+    assert not any("sk-written-out" in w for w in warnings)

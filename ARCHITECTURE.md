@@ -262,6 +262,13 @@ given design was chosen.
   every time (never appends). With a `probe`, `.skip_unreachable()` (also
   run by `.advance()`) moves past candidates that can't be reached, keeping
   the last one.
+- **`models_secure.py`** — `certo models secure`: plans which settings
+  variable each written-out key goes to (provider's usual name, else a
+  per-model one when the name holds another key in the file or the
+  environment), writes the settings file first, then changes only the
+  `api_key` values line by line and checks the result reads back the same
+  (else rebuilds the file from its data). Never keeps a `.bak` (it would
+  hold keys); `Move` hides its key from `repr`.
 - **`model_reachability.py`** — `unreachable_reason(entry)`: asks a local
   model's server (Ollama `/api/tags`, else a TCP connect to `base_url`)
   with a 5 s timeout, cached 30 s per server; cloud models are never asked.

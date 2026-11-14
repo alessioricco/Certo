@@ -1897,3 +1897,11 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
 - **`certo models update --online` fetches from the latest release tag,
   not `main`** (2026-11-14, the Author's decision). Only lists that went
   through the release checks reach users; newer prices wait for a release.
+- **`certo models secure` keeps no backup of `models.yaml`, and never
+  reuses a variable holding another key** (0.2.3, 2026-11-14). A `.bak`
+  would be a second file of keys; instead the settings file is written
+  first and the new `models.yaml` is checked to read back the same. The
+  environment wins over the settings file, so a variable set in the shell
+  to a different key gets the model a name of its own. A key found only
+  in the shell is still written to the file, so runs started elsewhere
+  find it. No MCP tool: an agent doesn't move keys.

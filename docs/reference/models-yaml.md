@@ -136,6 +136,11 @@ as every other setting. When the variable isn't set, the model is left
 out, and `certo check` and the run say which variable is missing; the
 text `${NAME}` is never sent as a key.
 
+A key written out in `models.yaml` still works, but `certo check` and
+every run warn about it. `certo models secure` moves each one to your
+settings file and writes `"${NAME}"` in its place (see
+[the command](commands.md#certo-models-secure)).
+
 Before version 0.1.10 everything was in `models.yaml`. An old-style file
 (with model ids, `task_profiles` or `escalation`) is an error that says
 what to move where.

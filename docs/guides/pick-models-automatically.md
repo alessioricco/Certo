@@ -100,6 +100,8 @@ models:
 - Keep each key in your settings file (`ANTHROPIC_API_KEY=sk-ant-...` in
   `~/.config/certo/.env`) and name it in `models.yaml` as
   `"${ANTHROPIC_API_KEY}"`. See [the reference](../reference/models-yaml.md#modelsyaml).
+  Keys already written out in `models.yaml`? `certo models secure` moves
+  them for you.
 - To add a model, add it to `models_list.yaml` first, then name it in
   `models.yaml`. To change a rating for yourself only, override it in
   `models.yaml` (`ratings: {code: 4}`).

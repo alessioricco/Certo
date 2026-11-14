@@ -246,7 +246,7 @@ _COMMANDS: tuple[tuple[str, str], ...] = (
     ("checkpoints [PATH]", "List the snapshots Certo took of a project during its runs."),
     ("rollback N [PATH]", "Put a project's files back as they were at checkpoint N."),
     ("skills", "See, add and remove the skills a run gets."),
-    ("models", "Manage your list of models (models_list.yaml)."),
+    ("models", "Manage your model files: update or check the list, secure the keys."),
     ("mcp", "Run Certo as an MCP server, for an editor or an agent."),
 )
 

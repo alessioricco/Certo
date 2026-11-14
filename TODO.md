@@ -244,6 +244,8 @@ request 2026-11-14). In this order:
   writes `"${NAME}"` in its place, never printing a key; `certo check`
   warns about a key written in full; `certo init models` writes `${NAME}`.
   Done when the Author's file holds no key and the check warns on one.
+  *Progress (0.2.3):* `certo models secure` and the warning are built;
+  left: the Author runs it on their own file.
 - **2. Choose a project's models, Certo proposes the strategy.** A
   guided command lists the enabled models with real prices; the author
   ticks the ones a project may use (a project file with names only, keys

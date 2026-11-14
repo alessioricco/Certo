@@ -254,7 +254,7 @@ _LABELS = {
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="certo models",
-        description="Manage your list of models (models_list.yaml).",
+        description="Manage your model files: models_list.yaml, and the keys in models.yaml.",
     )
     sub = parser.add_subparsers(dest="command", required=True)
     update = sub.add_parser(
@@ -306,7 +306,98 @@ def build_parser() -> argparse.ArgumentParser:
             "file is kept with .bak added to its name."
         ),
     )
+    secure = sub.add_parser(
+        "secure",
+        help="Move API keys written out in models.yaml into your settings file.",
+        description=(
+            "Find every api_key in models.yaml that is a key itself, not a ${NAME} "
+            "reference. Each key is written to your user settings file under the "
+            "provider's usual name (OPENAI_API_KEY, ANTHROPIC_API_KEY...), or a name of "
+            "its own when that one already holds another key, and models.yaml names it "
+            'as "${NAME}". Comments and layout of models.yaml stay. No key is printed.'
+        ),
+    )
+    secure.add_argument(
+        "--yes",
+        "-y",
+        action="store_true",
+        help="Move the keys without asking. Needed without a terminal.",
+    )
     return parser
+
+
+def secure_main(args: argparse.Namespace, *, prompter: Prompter, interactive: bool) -> int:
+    """`certo models secure`. 0 when nothing is left to move, 1 when
+    nothing was moved for another reason, 2 when there's no file."""
+    from .config import user_settings_path
+    from .init_cmd import _write_private
+    from .model_catalog import _parse_list
+    from .models_secure import (
+        plan_moves,
+        read_settings,
+        rebuild_models_yaml,
+        rewrite_models_yaml,
+        write_settings,
+    )
+
+    path = find(MODELS_FILE, os.environ.get("CERTO_MODELS_FILE", ""))
+    if path is None or not os.path.isfile(path):
+        prompter.say(
+            f"No {MODELS_FILE} found (Certo looked in the current folder and in "
+            f"{user_dir()}). Nothing to do."
+        )
+        return 2
+    try:
+        text = open(path, encoding="utf-8").read()
+        entries = [e for e in (yaml.safe_load(text) or {}).get("models", []) if isinstance(e, dict)]
+    except (OSError, yaml.YAMLError, AttributeError) as exc:
+        prompter.say(f"Error: couldn't read {path}: {type(exc).__name__}.")
+        return 1
+    list_path = find(LIST_FILE, os.environ.get("CERTO_MODELS_LIST_FILE", ""))
+    try:
+        model_ids = {e.name: e.model for e in _parse_list(list_path)} if list_path else {}
+    except Exception:  # an unreadable list only costs the provider's usual names
+        model_ids = {}
+    settings_path = user_settings_path()
+    moves = plan_moves(entries, model_ids, read_settings(settings_path), os.environ)
+    if not moves:
+        prompter.say(f"{path}: no key written out. Every api_key is a ${{NAME}} reference.")
+        return 0
+    prompter.say(f"{path}: {len(moves)} key(s) written out. They will go to {settings_path}:")
+    for move in moves:
+        note = " (already there)" if move.already_set else ""
+        prompter.say(f"  {move.model_name:<28} -> {move.variable}{note}")
+    if not args.yes:
+        if not interactive:
+            prompter.say("\nNothing was changed: run it on a terminal to confirm, or with --yes.")
+            return 1
+        try:
+            if not prompter.confirm("Move them?"):
+                prompter.say("Nothing was changed.")
+                return 1
+        except Cancelled:
+            prompter.say("\nCancelled. Nothing was changed.")
+            return 130
+    try:
+        result = rewrite_models_yaml(text, moves)
+        kept = True
+    except ValueError:
+        try:
+            result = rebuild_models_yaml(text, moves)
+            kept = False
+        except ValueError as exc:
+            prompter.say(f"Error: {exc}. Nothing was changed.")
+            return 1
+    written = write_settings(settings_path, moves)
+    _write_private(path, result)
+    if written:
+        prompter.say(f"Added to {settings_path}: {', '.join(written)}.")
+    prompter.say(
+        f"{path} now names them as ${{NAME}}"
+        + ("." if kept else "; it was rebuilt, so its comments are gone.")
+        + " Run certo check to see the models."
+    )
+    return 0
 
 
 def check_main(args: argparse.Namespace, *, prompter: Prompter, lookup=None) -> int:
@@ -494,4 +585,6 @@ def models_main(
         return update_main(args, prompter=prompter, interactive=interactive, example=example)
     if args.command == "check":
         return check_main(args, prompter=prompter)
+    if args.command == "secure":
+        return secure_main(args, prompter=prompter, interactive=interactive)
     return 2

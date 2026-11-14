@@ -316,7 +316,8 @@ is created with `certo init ./models`.
 
 ## `certo models`
 
-Manage your list of models, `models_list.yaml`. One subcommand, `update`.
+Manage your model files. Subcommands: `update` and `check` for the list,
+`models_list.yaml`; `secure` for the keys in `models.yaml`.
 
 ### `certo models update`
 
@@ -368,6 +369,33 @@ models go after the last entry of the list. The old file is kept as
 at `  - name:` with their fields indented below), nothing is written and
 the message says so. Exit code 0, or 1 when there is no list or it can't
 be edited safely.
+
+### `certo models secure`
+
+Move the API keys written out in `models.yaml` into your user settings
+file (`~/.config/certo/.env`), and name them in `models.yaml` as
+`"${NAME}"`. No key is printed.
+
+```text
+certo models secure [--yes]
+```
+
+| Flag | Effect |
+|---|---|
+| `--yes`, `-y` | Move the keys without asking. Needed without a terminal. |
+
+Each key goes under the provider's usual name (`OPENAI_API_KEY`,
+`ANTHROPIC_API_KEY`, `GEMINI_API_KEY`...). When that name already holds a
+different key, in the settings file or in your environment, the model
+gets a name of its own (`CERTO_<MODEL>_API_KEY`). The settings file is
+written first; then only the key values in `models.yaml` change, so its
+comments and layout stay. A model written on one line
+(`{name: ..., api_key: ...}`) makes Certo rebuild the file, without its
+comments. No backup of `models.yaml` is kept, since it would hold the
+keys. `certo check` warns about every key still written out.
+
+Exit code 0 when no key is left written out, 1 when nothing was moved
+(no confirmation), 2 when there is no `models.yaml`; 130 on Ctrl-C.
 
 ### `certo models check`
 

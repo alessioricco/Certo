@@ -568,6 +568,13 @@ def load_model_catalog(
     )
     personal = _parse_personal(models_path)
     for data in personal:
+        written_out = data.get("api_key")
+        if isinstance(written_out, str) and written_out.strip() and not _VAR_RE.search(written_out):
+            warnings.append(
+                f"{MODELS_FILE}: {data['name']!r} has its API key written out in the file. "
+                'Run "certo models secure" to move it to your settings file and name it '
+                "there as ${NAME}."
+            )
         for key in ("api_key", "base_url"):
             data[key], missing = _expand_vars(data[key], environ)
             if missing and data["activated"]:
