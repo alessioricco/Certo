@@ -536,6 +536,17 @@ database).
 
 ## Smaller bugs
 
+- **The agent scatters logs in the project root** (latticewake, found
+  2026-11-14). Over milestones M3-M7 the agent left 38 files such as
+  `m5-e2e.log` and `m6-profile.log` at the project's top: output it
+  redirected from its own check commands. The project's `*.log` rule kept
+  them out of git, but they clutter the folder and a project without
+  that rule would commit them. Tell the agent where scratch output goes
+  (an ignored folder such as `.certo/logs/`, created and git-ignored by
+  Certo) in the system prompt or a built-in skill, and say it again in
+  the milestone handover. It changes agent behaviour, so bench it (local
+  + cloud). Done when a milestone run leaves no new file at the project's
+  top that the task didn't ask for.
 - **`pytest-conventions` goes into non-Python runs.** Its trigger is the
   word "test" (and "tests", "unit test"), so a browser JavaScript game
   (Iron Horizon, 2026-11-08) gets it from "test" in the task. Narrow it
