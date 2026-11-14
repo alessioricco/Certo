@@ -130,7 +130,10 @@ run, with the reasons, and installs nothing:
 certo skills suggest --project my-api --task "Set up uv and add pytest tests"
 ```
 
-Experimental: no benchmark yet shows whether these skills help. See
+Experimental: [benchmarked](../benchmark/trusted-skills-bench-0.2.3.md)
+on Haiku and qwen3.8, results are no worse with them (Haiku 20/20 both
+ways, qwen3.8 11/12 against 10/12), but only the small `npm` skill
+fitted the bundled tasks, so whether they help is not measured yet. See
 [Trust a whole repository](../guides/manage-skills.md#trust-a-whole-repository).
 Getting started now says what the built-in skills are, and how to add
 your own or a trusted repository.

@@ -426,71 +426,10 @@ Vite/React, Next.js, Express, Django, FastAPI (extend
 no real network), `database-basics` (SQLite, migrations, an isolated test
 database).
 
-**Trusted skill repositories** (Author's request, 2026-11-07; merges
-the earlier "OpenHands skill catalog" and "`certo skills suggest`"
-items, agreed 2026-10-22/24). An archive of trusted skills Certo draws
-on when it builds projects, instead of adding skills one by one
-(`certo skills add` + `enable` today). One pipeline, in steps:
-1. *Sources.* `skill_sources.yaml` in `~/.config/certo/`, replaced or
-   extended by `<project>/.certo/skill_sources.yaml` (the project file
-   wins, as the skill layers do). Each entry: a git repo pinned to a
-   commit, with an optional allowlist of skill paths. First source:
-   `OpenHands/extensions` (about 70 MIT skills; a few on code quality:
-   `code-review`, `code-simplifier`, `security`, `qa-changes`,
-   `iterate`). Not the SDK's `load_public_skills` (unpinned, everything
-   at once, no license step).
-2. *Assess* (`certo skills assess`): fetch the sources and check and
-   classify every skill once. Per skill: license (as `enable` does),
-   format and size, the `` !`command` `` lines and scripts it asks the
-   agent to run, ecosystem and lifecycle step (setup, testing,
-   framework, git...), and when it fires: its triggers, or ones derived
-   from its description and paths (most OpenHands skills fire only on a
-   slash command such as `/qa-changes`, and are large, about 4,200
-   tokens). Writes an index (commit, hash, class, verdict: usable /
-   needs review / rejected); a run reads the index, never the repos. A
-   skill changed by `update` is assessed again.
-3. *Suggest* (`certo skills suggest`): match a project's files and a
-   task against the index and print what fits and why, with the
-   commands to use it; never installs by itself. A safe first use of the
-   index before any automatic loading.
-4. *Use at run time:* the index is matched against the task, the
-   milestone/step and the project's files; a matching skill is loaded
-   for that step only. Official and hand-added skills keep precedence.
-5. *Measure:* two or three code-quality skills against none, with
-   `certo bench` on a local and a cloud model, before claiming they help
-   (every skill that fires costs context a 32K local model can't spare).
-
-*Decisions (settled 2026-11-07, DECISIONS.md):* listing a repo plus a
-`usable` verdict is the opt-in; classification by rules now, maybe a
-model-assisted pass during `assess` later; the run-time choice stays
-rule-based.
-
-*Done when:* a project's sources file and one `assess` give a run skills
-from a trusted repo with no `add`/`enable`, and the benchmark shows no
-loss. Docs: `manage-skills.md`, `reference/commands.md`,
-`concepts/safety.md`.
-
-*Progress:* steps 1-4 done (0.2.3: `skill_sources.yaml`,
-`certo skills assess`, index in `<skills folder>/.trusted/`;
-`certo skills suggest` and `skill_match.py`; runs add the fits as
-always-on context within `CERTO_TRUSTED_SKILLS_TOKENS`, default 4000).
-Both decisions settled (DECISIONS.md). On `OpenHands/extensions`
-(2026-11-07): 73 skills, 52 usable, 15 to review, 6 rejected (links
-outside their folder). Matching needed two links or the skill's own
-trigger: one link alone suggested `npm`/`deno` for every Node project.
-The repo has little for building apps (`frontend-design` names only an
-ecosystem), so better sources matter as much as the matching. One live
-Haiku run (`docs/benchmark/trusted-skills-0.2.3.md`) shows a skill
-reaching a run, not that it helps. **Step 5, the release check (no
-loss), 2026-11-10:** bench arm option `skills_dir` (benchmark runs had no
-third-party skills at all). On the 13 bundled tasks only the 4 Node ones
-get a trusted skill, always `npm` (~56 tokens), so the check runs those 4
-with and without (`bench-0.2.3-trusted-{cloud,local}.yaml`); it can show
-no harm, not a benefit.
-
 - **Do trusted skills help? (after 0.2.3, option B agreed 2026-11-10).**
-  The release check above can't tell: almost nothing fits the bundled
-  tasks. Measure on tasks where substantial skills fire: tasks naming a
+  The release check (`docs/benchmark/trusted-skills-bench-0.2.3.md`,
+  no worse on Haiku or qwen3.8) can't tell: only the small `npm` skill
+  fits the bundled tasks. Measure on tasks where substantial skills fire: tasks naming a
   framework or tool a trusted skill covers, or the milestone samples,
   with the Author's other skill repositories added to the sources.
   First list which skills fit which task (`certo skills suggest`), so

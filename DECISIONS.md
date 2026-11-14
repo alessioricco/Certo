@@ -1873,3 +1873,9 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   is the user's spending limit. Not in `certo bench`: its milestone arms
   keep measuring one try per milestone. The 30-minute default stays for
   single tasks; `--max-time MINUTES` raises it per run.
+- **Trusted skills ship on, at the default 4000-token budget** (0.2.3,
+  2026-11-14). The release check (`docs/benchmark/trusted-skills-bench-0.2.3.md`)
+  found no harm: Haiku 20/20 with and without, qwen3.8 11/12 with against
+  10/12 without. It can't show benefit (only `npm`, ~56 tokens, fits the
+  bundled tasks), so the 4000 default stays a guess until the "Do trusted
+  skills help?" benchmark; this does not settle that.

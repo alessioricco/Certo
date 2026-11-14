@@ -323,8 +323,11 @@ its context; `0` turns them off. Every rule is in
 [`certo skills assess`](../reference/commands.md#certo-skills-assess) and
 [`certo skills suggest`](../reference/commands.md#certo-skills-suggest).
 
-> **Not measured yet.** No benchmark has shown yet whether these skills
-> make results better or worse. Turn them off with
+> **Checked for harm, not yet for benefit.** A
+> [benchmark](../benchmark/trusted-skills-bench-0.2.3.md) found results
+> no worse with trusted skills, on a cloud model and on a local one, but
+> only one small skill fitted its tasks. Whether they make results
+> better is not measured yet. Turn them off with
 > `CERTO_TRUSTED_SKILLS_TOKENS=0` to compare.
 
 ## The project's own skills
