@@ -273,8 +273,8 @@ def test_project_flag_creates_subfolder_and_overrides_workspace(monkeypatch, tmp
 @pytest.mark.parametrize(
     ("options", "error"),
     [
-        (["--auto-model"], "No models_list.yaml found"),
-        (["--escalate"], "No models_list.yaml found"),
+        (["--auto-model"], "No models.yaml found"),
+        (["--escalate"], "No models.yaml found"),
         (["--acceptance-checks", "not json"], "--acceptance-checks must be valid JSON"),
     ],
 )
@@ -318,7 +318,7 @@ def test_project_configuration_error_preserves_existing_folder(
 
     assert cli.main(["hi", "--project", "leap", mode]) == 1
 
-    assert "Configuration error: No models_list.yaml found" in capsys.readouterr().err
+    assert "Configuration error: No models.yaml found" in capsys.readouterr().err
     assert project_dir.is_dir()
     assert not (tmp_path / ".certo-created-projects").exists()
     if with_file:
@@ -1389,21 +1389,22 @@ def test_auto_model_flag_sets_config(monkeypatch, tmp_path):
     assert calls["cfg"].model_selection == "auto"
 
 
-def test_auto_model_without_task_profiles_is_refused(monkeypatch, tmp_path, capsys):
-    # Live 2026-11-10: with no task_profiles.yaml every model scored 0 and
-    # the first in models_list.yaml (a local model) took the milestone.
+def test_auto_model_without_task_profiles_uses_certos_own(monkeypatch, tmp_path, capsys):
+    # Before 0.2.3 this was refused (live 2026-11-10: with no profiles every
+    # model scored 0). Certo's own profiles are now the lowest layer.
     from model_file_helpers import model_file_config
 
     files = model_file_config(tmp_path, _AUTO_MODEL_CATALOG.split("task_profiles:")[0])
     monkeypatch.chdir(tmp_path)
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
     monkeypatch.setattr(cli, "load_config", lambda: _cfg(workspace=str(tmp_path), **files))
-    monkeypatch.setattr(cli, "run_task", _fail_if_called)
+    calls: list = []
+    monkeypatch.setattr(cli, "run_task", _recording_run_task(calls))
 
-    assert cli.main(["do something", "--auto-model"]) == 1
-    err = capsys.readouterr().err
-    assert "--auto-model needs task profiles (task_profiles.yaml)" in err
-    assert "certo init models --profiles" in err
+    cli.main(["do something", "--auto-model"])
+
+    assert calls, capsys.readouterr().err
+    assert calls[0]["cfg"].model_selection == "auto"
 
 
 def test_auto_model_only_passes_the_prompt_when_also_interactive(monkeypatch, tmp_path):
@@ -1447,8 +1448,8 @@ def test_auto_model_without_a_catalog_prints_only_the_error(monkeypatch, tmp_pat
     assert cli.main(["hi", "--auto-model", "--project", "leap"]) == 1
     captured = capsys.readouterr()
     assert "Configuration error" in captured.err
-    assert "No models_list.yaml found" in captured.err
-    assert "models_list.yaml.example" in captured.err
+    assert "No models.yaml found" in captured.err
+    assert "models.yaml.example" in captured.err
     assert "Continue with" not in captured.err
     assert "Certo" not in captured.out
     assert not (tmp_path / "leap" / ".certo").exists()
@@ -2201,8 +2202,8 @@ def test_escalate_without_a_catalog_says_what_to_do(monkeypatch, tmp_path, capsy
 
     assert cli.main(["do it", "--escalate"]) == 1
     err = capsys.readouterr().err
-    assert "No models_list.yaml found" in err
-    assert "models_list.yaml.example" in err
+    assert "No models.yaml found" in err
+    assert "models.yaml.example" in err
 
 
 def test_escalate_prints_progress_and_asks_only_when_interactive(monkeypatch, tmp_path):

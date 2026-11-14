@@ -14,89 +14,70 @@ It makes no extra model call.
 now?", or run `certo init models` at any time. It offers the models this
 computer can reach, tests each one, writes the files below and asks
 whether to use `--auto-model` for every run. See
-[the reference](../reference/commands.md#certo-init-models). The rest of
-this section is what it writes, for when you want to edit the files
-yourself. After a Certo upgrade, `certo models update` adds the example
-list's new models and ratings to your copy, keeping your edits, and
-`certo models check` tells you when a price or a `cost` rating in it is
-out of date.
+[the reference](../reference/commands.md#certo-init-models).
 
-`--auto-model` uses three files, and Certo ships each only as an example:
+**You need one file, `models.yaml`:** the models you use, by name, each
+with its key or server address. It holds keys: keep it out of git, like
+`.env`. Certo has its own model list (every model with its ratings) and
+its own task profiles (the kinds of task and what each needs), read from
+the package, so a new Certo release brings their updates to you.
 
-- **`models_list.yaml`**, the catalog: the models and their ratings. No
-  keys.
-- **`models.yaml`**, your personal settings: the models you use, by name,
-  each with its key or server address. It holds keys: keep it out of git,
-  like `.env`.
-- **`task_profiles.yaml`**, the kinds of task, what matters for each,
-  and the model you want first for each. Required: without it every
-  model would rank the same, so `--auto-model` refuses to run and points
-  to `certo init models --profiles`.
+Two more files are optional, for what is different for you:
 
-The easiest way to write the profiles is to let Certo ask:
+- **`models_list.yaml`:** a model Certo's list doesn't have, or a rating
+  you disagree with. Give only what changes.
+- **`task_profiles.yaml`:** a kind of task of your own, different needs,
+  or the model you want first for a kind of task. `certo init models
+  --profiles` writes that last one for you:
 
 ```bash
 certo init models --profiles
 ```
 
-For each kind of task it shows the 3 models your ratings rank highest,
-and you pick the one that goes first, another of your models, or "Let the
-ratings decide". It can also leave your local models out of
-`--auto-model`, for example during the day when the machine running them
-is off.
+For each kind of task it shows the 3 models that fit best, and you pick
+the one that goes first, another of your models, or "Let the ratings
+decide". It can also leave your local models out of `--auto-model`, for
+example during the day when the machine running them is off.
 
-Copy the examples into your user settings folder (or into a project
-folder, where it adds to or changes yours, model by model: see
-[Where Certo looks](../reference/models-yaml.md#where-certo-looks)). An `--auto-model` run without the
-files prints the exact commands for your installation (so does `certo
-check`, once one of the two required files exists):
+Files in a project folder add to or change yours, model by model: see
+[Where Certo looks](../reference/models-yaml.md#where-certo-looks).
+A full `models_list.yaml` copied before 0.2.3 hides Certo's newer values:
+`certo models update` slims it to your own changes.
 
-```bash
-cp <examples>/models_list.yaml.example ~/.config/certo/models_list.yaml
-cp <examples>/models.yaml.example ~/.config/certo/models.yaml
-cp <examples>/task_profiles.yaml.example ~/.config/certo/task_profiles.yaml
-```
-
-The list describes the models. A short one:
-
-```yaml
-# models_list.yaml
-models:
-  - name: claude-sonnet
-    model: anthropic/claude-sonnet-5-5
-    description: "Strong, well-rounded coding model."
-    ratings: {reasoning: 4, precision: 4, code: 5, cost: 2}
-
-  - name: local-coder
-    model: ollama/qwen3-coder:30b
-    description: "Free, local, weaker on hard tasks."
-    ratings: {reasoning: 1, precision: 2, code: 1, cost: 5}
-```
-
-The task profiles say what each kind of task needs:
-
-```yaml
-# task_profiles.yaml
-task_profiles:
-  debugging:
-    triggers: [fix, bug, crash, "failing test"]
-    needs: {reasoning: 4, code: 4}
-  docs:
-    triggers: [readme, documentation]
-    needs: {writing: 3}
-  default:
-    needs: {code: 3}
-```
-
-`models.yaml` picks the ones you use and adds what's personal:
+`models.yaml` names the models you use, by their names in Certo's list,
+and adds what's personal:
 
 ```yaml
 # models.yaml
 models:
-  - name: claude-sonnet
+  - name: claude-sonnet-5-5
     api_key: "${ANTHROPIC_API_KEY}"   # the key is in your settings file
-  - name: local-coder
+  - name: qwen3.8-27b-local
     base_url: "http://localhost:11434"
+```
+
+A `models_list.yaml` of your own holds only what Certo's list doesn't:
+
+```yaml
+# models_list.yaml
+models:
+  - name: my-finetune                 # a model Certo doesn't know
+    model: openrouter/me/my-finetune
+    ratings: {reasoning: 3, precision: 3, code: 4, writing: 3, speed: 4, cost: 4}
+  - name: qwen3.8-27b-local           # one rating changed; the rest stays Certo's
+    ratings: {speed: 2}
+```
+
+And a `task_profiles.yaml` of your own only what differs from Certo's
+profiles, which say what each kind of task needs:
+
+```yaml
+# task_profiles.yaml
+task_profiles:
+  build:
+    model: claude-haiku-5-5           # always first for builds
+  docs:
+    needs: {writing: 4}               # stricter than Certo's
 ```
 
 - Only the models listed in `models.yaml` are used. `activated: false`

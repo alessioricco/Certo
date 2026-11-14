@@ -72,9 +72,36 @@ def find(name: str, explicit: str = "", project_dir: str = "") -> str | None:
     return None
 
 
+# Certo's own model list and task profiles: the lowest layer, read from
+# the package (DECISIONS.md, 2026-11-14). The user's files hold only their
+# exceptions. models.yaml (which models, which keys) has none.
+BUILT_IN = (LIST_FILE, PROFILES_FILE)
+
+
+def built_in_path(name: str) -> str | None:
+    return example_path(name) if name in BUILT_IN else None
+
+
+def is_built_in(path: str) -> bool:
+    return any(os.path.abspath(path) == os.path.abspath(example_path(n)) for n in BUILT_IN)
+
+
+def with_built_in(name: str, path: str | None) -> str | None:
+    """`path` (one user file) read on top of Certo's own file for `name`,
+    as a run would; Certo's alone when `path` doesn't exist."""
+    base = built_in_path(name)
+    if path is None or not os.path.isfile(path):
+        return base or path
+    if base is None or is_built_in(path) or getattr(path, "layers", None):
+        return path
+    return LayeredPath([base, path])
+
+
 def find_layers(name: str, explicit: str = "", project_dir: str = "") -> str | None:
     """The file to read for `name`: an explicit path alone, else every
-    layer found (a `LayeredPath` when more than one), or None."""
+    layer found, lowest first, starting with Certo's own for the model
+    list and the task profiles (a `LayeredPath` when more than one), or
+    None."""
     if explicit:
         return explicit
     found = [
@@ -82,6 +109,9 @@ def find_layers(name: str, explicit: str = "", project_dir: str = "") -> str | N
         for folder in reversed(_search_folders(project_dir))
         if os.path.isfile(os.path.join(folder, name))
     ]
+    base = built_in_path(name)
+    if base is not None and os.path.isfile(base):
+        found.insert(0, base)
     if not found:
         return None
     return found[0] if len(found) == 1 else LayeredPath(found)

@@ -994,3 +994,53 @@ def test_every_cloud_models_cost_follows_its_price():
         if cost != expected:
             wrong.append(f"{model['name']}: cost {cost}, the price gives {expected}")
     assert wrong == []
+
+
+def _code_from_benchmarks(text: str) -> int | None:
+    """The `code` rubric in models_list.yaml.example, where a description
+    gives Terminal-Bench 4.0 or SWE-Bench Pro; None when it gives neither."""
+    text = " ".join(text.split())
+
+    def score(pattern: str) -> float | None:
+        found = re.search(pattern + r"[^0-9]{0,40}?(\d+(?:\.\d+)?)%", text)
+        return float(found.group(1)) if found else None
+
+    tb4 = score(r"Terminal-Bench 4\.0")
+    pro = score(r"SWE-Bench Pro")
+    tb21 = score(r"Terminal-Bench 2\.1")
+    if tb4 is None and pro is None:
+        return None
+    if (tb4 or 0) >= 55 or (pro or 0) >= 80:
+        return 5
+    if (tb4 or 0) >= 35 or (pro or 0) >= 64:
+        return 4
+    if (tb4 or 0) >= 15 or ((tb21 or 0) >= 80 and (pro or 0) >= 58):
+        return 3
+    if (pro or 0) >= 45:
+        return 2
+    return 1
+
+
+def test_every_code_rating_follows_its_benchmarks():
+    # Certo's own list is the lowest layer for every user (DECISIONS.md,
+    # 2026-11-14): its ratings follow the rubric wherever a description
+    # gives the numbers.
+    example = _BUNDLED_TASKS / "examples" / "models_list.yaml.example"
+    wrong = []
+    for model in yaml.safe_load(example.read_text())["models"]:
+        expected = _code_from_benchmarks(str(model.get("description", "")))
+        if expected is not None and model["ratings"]["code"] != expected:
+            wrong.append(
+                f"{model['name']}: code {model['ratings']['code']}, the rubric gives {expected}"
+            )
+    assert wrong == []
+
+
+def test_every_model_rates_writing_and_speed():
+    example = _BUNDLED_TASKS / "examples" / "models_list.yaml.example"
+    missing = [
+        m["name"]
+        for m in yaml.safe_load(example.read_text())["models"]
+        if not {"writing", "speed"} <= set(m["ratings"])
+    ]
+    assert missing == []

@@ -1290,12 +1290,13 @@ def test_certo_check_task_shows_the_route_and_calls_no_model(tmp_path, monkeypat
 def test_certo_check_task_reads_a_task_file_and_falls_back_to_default(
     tmp_path, monkeypatch, checks
 ):
-    # The body says "fix", but only the title counts.
-    (tmp_path / "task.md").write_text("# A Wordle game\n\nFix every bug you find.\n")
+    # The body says "fix", but only the title counts. ("game" would match
+    # Certo's own `build` profile, which is the lowest layer.)
+    (tmp_path / "task.md").write_text("# A Wordle puzzle\n\nFix every bug you find.\n")
     code, text = _split_check(tmp_path, monkeypatch, ["--task", "task.md"])
 
     assert code == 0
-    assert "Task title: A Wordle game" in text
+    assert "Task title: A Wordle puzzle" in text
     assert "Profile: default (no other profile's trigger word is in the title)" in text
     assert "  1. claude-sonnet (score 12)" in text
 
@@ -1305,7 +1306,7 @@ def test_certo_check_task_without_model_files_is_an_error(tmp_path, monkeypatch,
     out = io.StringIO()
 
     assert init_cmd.check_main(["--task", "Fix it"], out=out) == 1
-    assert "Error: No models_list.yaml found" in out.getvalue()
+    assert "Error: No models.yaml found" in out.getvalue()
 
 
 def test_certo_check_names_the_models_left_out_of_the_derived_ladder(tmp_path, monkeypatch, checks):
@@ -1405,10 +1406,11 @@ def test_certo_check_names_both_files_and_counts_unused_list_models(tmp_path, mo
 
     assert init_cmd.check_main([], out=out) == 0
     text = out.getvalue()
-    assert f"List: {tmp_path / 'models_list.yaml'}" in text
+    assert "List: built into Certo" in text
+    assert f"    + {tmp_path / 'models_list.yaml'}: adds " in text
     assert f"Personal settings: {tmp_path / 'models.yaml'}" in text
     assert "Active models: qwen-local, gpt-luna, claude-sonnet" in text
-    assert "1 other model(s) in models_list.yaml, not used (not in models.yaml)" in text
+    assert "other model(s) in models_list.yaml, not used (not in models.yaml)" in text
     assert "gemma-local isn't in models.yaml, so this rung is skipped" in text
 
 

@@ -18,40 +18,48 @@ Certo reads them for `--auto-model` and `--escalate` (or
 `CERTO_MODEL_SELECTION=auto` / `escalate`), for `certo check` and for
 `certo bench`. With the default (manual) selection, none is read.
 
-`task_profiles.yaml` and `escalation.yaml` each belong to one mode, so you
-only need the one for the mode you use. Without `task_profiles.yaml`,
-`--auto-model` ranks the enabled models with no weights, so the order of
-`models_list.yaml` decides. Without `escalation.yaml`, `--escalate` builds
-a ladder from the ratings.
+`escalation.yaml` belongs to `--escalate` only; without it, `--escalate`
+builds a ladder from the ratings.
 
-## Start from the examples
+## Certo's own list and profiles
 
-Certo ships all four files only as examples, inside the package, and never
-reads an example. Copy the ones you need and edit your copies:
+**You don't need a `models_list.yaml` or a `task_profiles.yaml`.** Certo
+has its own model list (every model, its id, description and ratings) and
+its own task profiles inside the package, and reads them as the lowest
+layer (see "Where Certo looks" below). A new Certo release brings their
+new models and ratings to you with no file to update. The only file you
+need is `models.yaml`, which names the models you use and their keys.
 
-```bash
-cp <examples>/models_list.yaml.example ~/.config/certo/models_list.yaml
-cp <examples>/models.yaml.example ~/.config/certo/models.yaml
-cp <examples>/task_profiles.yaml.example ~/.config/certo/task_profiles.yaml   # for --auto-model
-cp <examples>/escalation.yaml.example ~/.config/certo/escalation.yaml         # for --escalate
+Write a `models_list.yaml` or `task_profiles.yaml` only for what is
+different for you: a model Certo's list doesn't have, a rating you
+disagree with, the model that goes first for a kind of task. A model or
+profile you give with only some fields keeps Certo's values for the
+others:
+
+```yaml
+# ~/.config/certo/models_list.yaml: only my changes
+models:
+  - name: qwen3.8-27b-local
+    ratings: {speed: 2}          # my machine is faster than Certo assumes
+  - name: my-finetune            # a model Certo doesn't know
+    model: openrouter/me/my-finetune
+    ratings: {reasoning: 3, precision: 3, code: 4, writing: 3, speed: 4, cost: 4}
 ```
 
-The quick way is `certo init models`, which writes the files for the
-models it tested (see [Commands](commands.md#certo-init-models)). A new
-Certo release may update the example list; `certo models update` brings
-your copy up to date and keeps your changes (see
-[Commands](commands.md#certo-models-update)), and `certo models check`
-compares its prices and cost ratings with LiteLLM's price list (see
-[Commands](commands.md#certo-models-check)). A run
-that needs a missing file prints the exact `cp` command, with the
-examples folder of your installation; so does `certo check` when one of
-the two required files exists. With neither, `certo check` says to run
-`certo init models`. It also lists the two optional files it found. In the repository the examples are in
+The quick way to set up is `certo init models`: it offers the models it
+can reach, tests them and writes `models.yaml` (see
+[Commands](commands.md#certo-init-models)). A full copy of the list from
+before 0.2.3 still works, but it hides Certo's newer values:
+`certo models update` slims it to your own changes (see
+[Commands](commands.md#certo-models-update)). `certo models check`
+compares a list's prices and cost ratings with LiteLLM's (see
+[Commands](commands.md#certo-models-check)).
+
+Certo's own files are in the package, and in the repository in
 [src/certo/examples/](../../src/certo/examples/models_list.yaml.example)
-(`models_list.yaml.example`, `models.yaml.example`,
-`task_profiles.yaml.example`, `escalation.yaml.example`). A new Certo
-release can update the examples; it never touches your copies, so add
-models, change ratings and write ladders in your copies freely.
+(`models_list.yaml.example`, `task_profiles.yaml.example`), next to
+`models.yaml.example` and `escalation.yaml.example`, which are examples
+to copy.
 
 ## Where Certo looks
 
@@ -65,6 +73,8 @@ that names a file that doesn't exist is an error.
 
 **Otherwise the file is read in layers,** lowest first:
 
+0. for `models_list.yaml` and `task_profiles.yaml`, Certo's own, from
+   the package;
 1. the user settings folder, next to the user `.env`:
    `~/.config/certo/` (or `$XDG_CONFIG_HOME/certo/`);
 2. the current folder;

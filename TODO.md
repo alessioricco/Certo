@@ -277,6 +277,10 @@ file), B, C, then 5a and 5b. Steps 2 (`certo models choose`) and A
   built-in list once by the rubric, from the benchmark numbers in each
   description; estimates marked. Done when a new user sets up models
   without a `models_list.yaml` and the Author's copy is slimmed.
+  *Progress (0.2.3):* (1) and (2) built; (3) checked: every built-in
+  `code` follows the rubric (now a test), `reasoning`/`precision` without
+  benchmark numbers are marked estimates in the descriptions (Terra's
+  3/3 is one) and wait for C's data. Left: the Author slims their copy.
 - **C. `certo models refresh`.** Ratings computed, not hand-written:
   a model data file (raw benchmark scores, prices, published speed)
   attached to each release and cached in `~/.cache/certo/` (from the

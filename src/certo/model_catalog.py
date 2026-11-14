@@ -421,6 +421,25 @@ def _merge_entries(base: list, over: list) -> list:
     return merged
 
 
+def _merge_profiles(base: dict, over: dict) -> dict:
+    """Task profiles by name, field by field: a higher layer can give only
+    `model:`. Giving `weights` without `needs` drops the `needs` below (that
+    profile then ranks by weights), and giving `needs` drops the weights."""
+    merged = dict(base)
+    for name, profile in over.items():
+        old = merged.get(name)
+        if not isinstance(old, dict) or not isinstance(profile, dict):
+            merged[name] = profile
+            continue
+        new = {**old, **profile}
+        if "weights" in profile and "needs" not in profile:
+            new.pop("needs", None)
+        if "needs" in profile and "weights" not in profile:
+            new.pop("weights", None)
+        merged[name] = new
+    return merged
+
+
 def merge_layer(base: dict, over: dict) -> dict:
     """`over` (a higher layer) on top of `base`: models by name, task
     profiles and ladders by name (a profile or ladder is replaced whole),
@@ -433,7 +452,7 @@ def merge_layer(base: dict, over: dict) -> dict:
         if key == "models" and isinstance(old, list) and isinstance(value, list):
             merged[key] = _merge_entries(old, value)
         elif key == "task_profiles" and isinstance(old, dict) and isinstance(value, dict):
-            merged[key] = {**old, **value}
+            merged[key] = _merge_profiles(old, value)
         elif key == "escalation" and isinstance(old, dict) and isinstance(value, dict):
             esc = dict(old)
             for k, v in value.items():

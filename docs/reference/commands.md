@@ -322,55 +322,38 @@ the models a project may use.
 
 ### `certo models update`
 
-Bring your `models_list.yaml` up to date with the example list of the
-installed Certo, keeping your own changes.
+Slim your `models_list.yaml` down to your own changes. Certo reads its own
+model list from the package, so your file only needs what differs: a full
+copy (as Certo wrote before 0.2.3) hides Certo's newer models and
+ratings.
 
 ```text
-certo models update [--project NAME] [--yes]
+certo models update [--project NAME] [--use-certos] [--yes]
 ```
 
 | Flag | Effect |
 |---|---|
-| `--project NAME` | Update that project's own `models_list.yaml`, not the one found first. |
-| `--yes`, `-y` | Apply every change without asking, and keep your version of an entry that both you and the example changed. Needed without a terminal. |
+| `--project NAME` | Slim that project's own `models_list.yaml`, not the one found first. |
+| `--use-certos` | Where Certo can't tell an old value from your change, use Certo's without asking. |
+| `--yes`, `-y` | Rewrite without asking, keeping your value wherever Certo can't tell it from an old one. Needed without a terminal. |
 
-It compares three versions of each model entry: your file, the example it
-was copied from (saved next to your file as `.models_list.base.yaml` by
-`certo init models` and by each update), and the new example. Then:
+For each model in your file, each field and each rating is compared with
+Certo's list:
 
-- **New**: a model the new example has and you don't. Not offered again if
-  you removed it yourself.
-- **Changed**: an entry the example changed (id, ratings, description)
-  and you didn't.
-- **Removed**: a model no longer in the example, unchanged by you. Never
-  removed while `models.yaml` uses it.
-- **Both changed**: you and the example both changed it. Asked one by
-  one; `--yes` keeps yours.
-- **Kept**: your own models and your edits.
+- **the same as Certo's:** dropped (Certo's is read anyway);
+- **different, and you never changed it:** dropped, it is just an old
+  value. Certo knows from `.models_list.base.yaml`, the list your copy
+  came from (saved by `certo init models` before 0.2.3);
+- **different, and you changed it:** kept;
+- **different, with no `.models_list.base.yaml`:** Certo can't tell, so
+  it asks for each model: keep yours, use Certo's, or use Certo's for all
+  the rest.
 
-On a terminal, it asks whether to apply all the changes, one by one, or
-none. Without the base file (a list you copied by hand, or one from
-before 0.1.21), Certo can't tell who changed an entry, so every entry
-that differs is asked about, and nothing is removed. For example, a list
-copied on 17 October 2026, with one rating changed by its owner and one
-model of their own:
-
-```text
-  Kept          claude-sonnet-5-5: your changes
-  Kept          my-finetune: yours
-  New           gpt-oss-20b-local
-                ollama/gpt-oss:20b
-  Changed       gpt-6-luna
-                ratings: precision 3 -> 4
-                description changed
-```
-
-The file is edited entry by entry, so your comments and layout stay; new
-models go after the last entry of the list. The old file is kept as
-`models_list.yaml.bak`. If the file's layout isn't the example's (entries
-at `  - name:` with their fields indented below), nothing is written and
-the message says so. Exit code 0, or 1 when there is no list or it can't
-be edited safely.
+A model Certo's list doesn't have is yours and is kept whole, unless
+Certo removed it, you never changed it and `models.yaml` doesn't use it.
+When nothing is left, the file is removed. The old file is kept as
+`models_list.yaml.bak`. Exit code 0 when the file was rewritten or there
+is none, 1 when nothing was written, 130 on Ctrl-C.
 
 ### `certo models choose`
 

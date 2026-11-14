@@ -122,10 +122,11 @@ def test_choosing_a_listed_model_tests_both_and_writes_the_files(home):
     ]
     if os.name != "nt":  # Windows chmod cannot enforce Unix owner/group permissions.
         assert oct(os.stat(home / "models.yaml").st_mode & 0o777) == "0o600"
-    assert (home / "models_list.yaml").exists()
+    # Certo's own list and profiles are read from the package: nothing to copy.
+    assert not (home / "models_list.yaml").exists()
     # The copy's origin, for certo models update.
-    assert (home / ".models_list.base.yaml").read_text() == (home / "models_list.yaml").read_text()
-    assert (home / "task_profiles.yaml").exists()
+    assert not (home / ".models_list.base.yaml").exists()
+    assert not (home / "task_profiles.yaml").exists()
     assert "What --auto-model would choose:" in text
     assert "How --escalate would climb:" in text
     # One model stays the default mode.
@@ -272,8 +273,8 @@ models:
     code = init_models_main(["--profiles"], prompter=script.prompter(), interactive=True)
 
     assert code == 0
-    assert (home / "task_profiles.yaml").exists()
-    assert "Wrote the example task profiles to" in script.text
+    # Every answer was "the ratings decide": Certo's own profiles already do.
+    assert not (home / "task_profiles.yaml").exists()
     assert "Should --auto-model use your local models too?" in script.text
     assert "build (title has:" in script.text
     assert "  build: the ratings decide" in script.text
@@ -282,7 +283,7 @@ models:
 def test_profiles_only_needs_the_model_files(home, capsys):
     script = Script()
     assert init_models_main(["--profiles"], prompter=script.prompter(), interactive=True) == 1
-    assert "No models_list.yaml found" in capsys.readouterr().err
+    assert "No models.yaml found" in capsys.readouterr().err
 
 
 def test_choosing_auto_mode_then_asks_the_model_for_each_kind_of_task(home):

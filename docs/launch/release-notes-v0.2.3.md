@@ -264,8 +264,8 @@ the provider's pricing page. See
 
 With these ratings, `--auto-model` puts Opus 5.5 first for debugging and
 research, and Haiku 5.5 first for builds, with GPT-6.1 Sol and Sonnet
-5.5 next. Your own `models_list.yaml` is never changed:
-`certo models update` brings it up to date and keeps your changes.
+5.5 next. Certo reads this list itself, so you get these ratings without
+copying anything (see "Certo keeps the model list" below).
 
 ## New: estimates from your own runs
 
@@ -325,23 +325,31 @@ A few tokens a second usually means part of the model runs on the CPU;
 see [Troubleshooting](../troubleshooting.md#every-step-is-very-slow).
 Cloud models print nothing new.
 
-## Changed: `--auto-model` needs task profiles, and you choose the models
+## Changed: Certo keeps the model list, you keep only `models.yaml`
 
-`--auto-model` (and `CERTO_MODEL_SELECTION=auto`) now refuses to run
-without task profiles (`task_profiles.yaml`). Before, without them every
-model ranked the same and the first one in `models_list.yaml` went first:
-on 2026-11-10, a milestone went to a local model that way, during the
-day, and ended `stuck`. The error says what to do:
+Before, `certo init models` copied Certo's model list and task profiles
+into your settings folder, and you kept those copies: a new release's
+models and ratings reached you only through `certo models update`, and
+the copies drifted (one user's list rated a model 4 where Certo's said 3).
+Now Certo reads its own list and profiles from the package, as the lowest
+layer, and a release brings their updates to you. The only file you need
+is `models.yaml`: the models you use and their keys. A `models_list.yaml`
+or `task_profiles.yaml` of yours holds only what differs, such as a model
+Certo doesn't know, a rating you disagree with, or the model that goes
+first for a kind of task (a profile can give only `model:`).
 
-```text
-Configuration error: --auto-model needs task profiles (task_profiles.yaml): without them every model ranks the same, and the first one in models_list.yaml would go first. Run "certo init models --profiles" to choose a model for each kind of task (or "certo init models" to add models too).
-```
+`--auto-model` without a `task_profiles.yaml` of yours uses Certo's
+profiles; before, every model ranked the same and the order of the list
+decided (on 2026-11-10 that gave a milestone to a local model during the
+day). `certo init models --profiles` asks, for each kind of task, which
+model goes first, and writes only your choices.
 
-`certo init models --profiles` writes the example profiles when there are
-none, can leave your local models out of `--auto-model`, and asks, for
-each kind of task, which model goes first: one of the 3 the ratings rank
-highest, another of yours, or the ratings. `certo init models` asks the
-same after you choose `--auto-model` for every run.
+**If you have a full copy of the list** (written by Certo before 0.2.3):
+it still works, but it hides Certo's newer values. `certo models update`
+now slims it to your own changes: values the same as Certo's, or old
+values you never changed, are dropped; where Certo can't tell (no record
+of where your copy came from) it asks, or `--use-certos` takes Certo's.
+See [the command](../reference/commands.md#certo-models-update).
 
 ## New: `--auto-model` skips a local model that can't be reached
 

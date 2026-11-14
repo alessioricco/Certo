@@ -37,6 +37,7 @@ task_profiles:
 """
 
 _PROFILES_TEXT = """# My profiles.
+replace: true
 task_profiles:
   # Building things.
   build:

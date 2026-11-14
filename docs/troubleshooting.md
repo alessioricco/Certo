@@ -36,7 +36,7 @@ setting comes from and makes one small call to the model.
   [`budget_exhausted`](#budget_exhausted),
   [nothing to resume](#nothing-to-resume),
   [Rust: `cargo clippy` unavailable](#rust-cargo-clippy-is-unavailable)
-- Model files and escalation: [files not found](#no-models_listyaml-or-modelsyaml-found),
+- Model files and escalation: [files not found](#no-modelsyaml-found),
   [old format](#modelsyaml-is-in-the-old-format),
   [problems](#the-model-files-have-problems),
   [warnings](#warnings-about-the-model-files),
@@ -603,34 +603,31 @@ check is just missing. Before 0.1.19, this made the project `failed`.
 (task_profiles.yaml): without them every model ranks the same, and the
 first one in models_list.yaml would go first.`
 
-**Cause:** `--auto-model` (or `CERTO_MODEL_SELECTION=auto`) found no
-`task_profiles.yaml`, in the current folder or `~/.config/certo/`, or one
-with no profile. Without profiles it can't choose by the task.
+**Cause:** `CERTO_TASK_PROFILES_FILE` names a file with no profile. (Since
+0.2.3 Certo has its own task profiles, so without that setting this
+doesn't happen.)
 
-**Fix:** run `certo init models --profiles`. It writes the example
-profiles and asks which model goes first for each kind of task. Or copy
-`task_profiles.yaml.example` and edit it (see
+**Fix:** add profiles to that file, or remove the setting to use Certo's
+own profiles and your changes on top (see
 [Pick models automatically](guides/pick-models-automatically.md)).
 
-### No `models_list.yaml` or `models.yaml` found
+### No `models.yaml` found
 
-**You see:** `No models_list.yaml found: Certo looked in the current folder
+**You see:** `No models.yaml found: Certo looked in the current folder
 and in ~/.config/certo. Run certo init models to set up your models and
 write it. Or copy the example Certo ships and edit it:` followed by a `cp`
-command (the same for `models.yaml`).
+command.
 
 **Cause:** `--auto-model`, `--escalate`, `certo bench` and
-`certo check --models` need both model files, and Certo ships them only as
-examples, which it never reads. (`task_profiles.yaml` and
-`escalation.yaml` are never this error; `--auto-model` without task
-profiles has its own, below.)
+`certo check --models` need to know which models you use and their keys.
+That is `models.yaml`; Certo has its own model list and task profiles, so
+those are never missing.
 
 **Fix:** run `certo init models`: it offers the models you can reach,
-tests them and writes the files. Or run the `cp` command the message
-prints, then edit the copy: name the models you use in `models.yaml`,
-with their keys. Put the files in a
-project folder instead to use them for that project only. See
-[The model files](reference/models-yaml.md).
+tests them and writes `models.yaml`. Or run the `cp` command the message
+prints, then edit the copy: name the models you use, with their keys. Put
+the file in a project folder instead to use it for that project only.
+See [The model files](reference/models-yaml.md).
 
 ### `models.yaml` is in the old format
 
@@ -642,8 +639,8 @@ holds only your personal settings: ...`
 descriptions and ratings go in `models_list.yaml`, task profiles in
 `task_profiles.yaml`, and ladders in `escalation.yaml`.
 
-**Fix:** copy the shipped `models_list.yaml.example` (or move your own
-models into a `models_list.yaml`), and keep in `models.yaml` only `name`,
+**Fix:** move models Certo's list doesn't have into a `models_list.yaml`
+(Certo's own list gives the others), and keep in `models.yaml` only `name`,
 `api_key`, `base_url`, `activated` and any overrides for each model you
 use. Move `task_profiles:` and `escalation:` into their own files.
 
@@ -696,7 +693,7 @@ once.
 
 | You see | Fix |
 |---|---|
-| `No models_list.yaml found` / `No models.yaml found` | See [No `models_list.yaml` or `models.yaml` found](#no-models_listyaml-or-modelsyaml-found). |
+| `No models.yaml found` | See [No `models.yaml` found](#no-modelsyaml-found). |
 | `There is no escalation ladder named '...' in escalation.yaml. Ladders: ...` | Use one of the listed names, or leave the name out for the `default` (or derived) ladder. |
 | `--escalate can't be combined with --auto-model or --model` (or `with --model`) | The ladder decides which models run. Drop the other flag. |
 | `--model can't be used while CERTO_MODEL_SELECTION=escalate` | Drop `--model`, or set `CERTO_MODEL_SELECTION=manual` for this run. |

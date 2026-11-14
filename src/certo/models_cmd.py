@@ -1,33 +1,18 @@
-"""`certo models update`: bring your `models_list.yaml` up to date with
-the example list of the installed Certo, without losing your changes.
-`certo models check` (model_price_check.py): its prices and cost ratings
-against LiteLLM's price list.
+"""`certo models`: the model-file subcommands.
 
-It is a three-way merge, per model entry: your file, the example it was
-copied from (the "base", saved next to your file as
-`.models_list.base.yaml` when Certo copies the example), and the new
-example. Certo's changes (new models, changed ids or ratings, models
-removed from the example) are offered; your changes (a model you added,
-an entry you edited) are kept. An entry both changed is asked about.
-Without a base (a list copied by hand, or before 0.1.21), every entry
-that differs from the example is asked about, since Certo can't tell who
-changed it.
-
-The file is edited as text, one entry block at a time (an entry starts at
-`  - name:` and its fields are indented below it), so your comments and
-layout stay. Before writing, the result is parsed and compared with what
-was meant; on any mismatch nothing is written. The old file is kept as
-`models_list.yaml.bak`.
+- `update`: slim a full copy of the model list down to your own changes
+  (models_slim.py), since Certo's own list is read from the package.
+- `check`: prices and cost ratings against LiteLLM's (model_price_check.py).
+- `secure`: keys out of models.yaml (models_secure.py).
+- `choose`: a project's own models and strategy (models_choose.py).
 """
 
 from __future__ import annotations
 
 import argparse
 import os
-import re
 import shutil
 import sys
-from dataclasses import dataclass
 from typing import TextIO
 
 import yaml
@@ -38,217 +23,6 @@ from .model_catalog import LIST_FILE, MODELS_FILE, PROJECT_FILE
 from .model_files import example_path, find, user_dir
 
 BASE_FILE = ".models_list.base.yaml"
-_ENTRY_START = re.compile(r"^  - name:\s*([^\s#]+)")
-
-
-def base_path(list_path: str) -> str:
-    return os.path.join(os.path.dirname(os.path.abspath(list_path)), BASE_FILE)
-
-
-def save_base(list_path: str, example: str | None = None) -> None:
-    """Keep the example `list_path` was copied from, for the next update."""
-    shutil.copyfile(example or example_path(LIST_FILE), base_path(list_path))
-
-
-# --- reading entries -------------------------------------------------------------
-
-
-@dataclass(frozen=True)
-class _Block:
-    name: str
-    start: int  # first line index
-    end: int  # one past the last line
-    text: str
-
-
-def _blocks(text: str) -> dict[str, _Block]:
-    """Every entry block of a models list, by name. An entry is its
-    `  - name:` line and the lines indented four or more spaces right after
-    it."""
-    lines = text.splitlines(keepends=True)
-    blocks: dict[str, _Block] = {}
-    i = 0
-    while i < len(lines):
-        match = _ENTRY_START.match(lines[i])
-        if not match:
-            i += 1
-            continue
-        start = i
-        i += 1
-        while i < len(lines) and lines[i].startswith("    ") and lines[i].strip():
-            i += 1
-        name = match.group(1).strip("'\"")
-        blocks[name] = _Block(name, start, i, "".join(lines[start:i]))
-    return blocks
-
-
-def _entries(text: str) -> dict[str, dict]:
-    data = yaml.safe_load(text) or {}
-    models = data.get("models") if isinstance(data, dict) else None
-    return {m["name"]: m for m in models or [] if isinstance(m, dict) and "name" in m}
-
-
-def _differences(old: dict, new: dict) -> list[str]:
-    """Plain lines saying what changed from `old` to `new`."""
-    lines = []
-    for key in sorted(set(old) | set(new), key=lambda k: (k != "model", k != "ratings", k)):
-        if key == "name" or old.get(key) == new.get(key):
-            continue
-        if key == "ratings" and isinstance(old.get(key), dict) and isinstance(new.get(key), dict):
-            for axis in sorted(set(old[key]) | set(new[key])):
-                a, b = old[key].get(axis), new[key].get(axis)
-                if a != b:
-                    lines.append(f"ratings: {axis} {_show(a)} -> {_show(b)}")
-        elif key == "description":
-            lines.append("description changed")
-        else:
-            lines.append(f"{key}: {_show(old.get(key))} -> {_show(new.get(key))}")
-    return lines
-
-
-def _show(value) -> str:
-    if value is None:
-        return "(none)"
-    if isinstance(value, float) and value.is_integer():
-        return str(int(value))
-    return str(value)
-
-
-# --- the plan --------------------------------------------------------------------
-
-
-@dataclass
-class Change:
-    """One proposed change to the user's file. `kind` is "new", "changed",
-    "removed" or "both" (changed in the example and by the user)."""
-
-    kind: str
-    name: str
-    details: list[str]
-    yours: dict | None = None
-    theirs: dict | None = None
-
-
-def plan(
-    user_text: str, base_text: str | None, example_text: str, used: set[str]
-) -> tuple[list[Change], list[str]]:
-    """The changes to offer, and notes about what is kept as it is."""
-    user, example = _entries(user_text), _entries(example_text)
-    base = _entries(base_text) if base_text is not None else None
-    changes: list[Change] = []
-    notes: list[str] = []
-    for name, theirs in example.items():
-        yours = user.get(name)
-        before = base.get(name) if base is not None else None
-        if yours is None:
-            if base is not None and before is not None:
-                notes.append(f"{name}: removed by you, not added again")
-            else:
-                changes.append(Change("new", name, [theirs.get("model", "")], None, theirs))
-            continue
-        if yours == theirs:
-            continue
-        if base is None:
-            changes.append(
-                Change("both", name, _differences(yours, theirs), yours, theirs)
-            )  # no base: who changed it is unknown
-        elif before == theirs:
-            notes.append(f"{name}: your changes")
-        elif before == yours or before is None:
-            changes.append(Change("changed", name, _differences(yours, theirs), yours, theirs))
-        else:
-            changes.append(Change("both", name, _differences(yours, theirs), yours, theirs))
-    for name, yours in user.items():
-        if name in example:
-            continue
-        if base is not None and name in base:
-            if name in used:
-                notes.append(f"{name}: no longer in the example, but models.yaml uses it")
-            elif base[name] != yours:
-                notes.append(f"{name}: no longer in the example, but you changed it")
-            else:
-                changes.append(Change("removed", name, [yours.get("model", "")], yours, None))
-        else:
-            notes.append(f"{name}: yours")
-    return changes, notes
-
-
-# --- applying --------------------------------------------------------------------
-
-
-def apply(user_text: str, example_text: str, accepted: list[Change]) -> str:
-    """`user_text` with the accepted changes, as text. Raises ValueError
-    when the file can't be edited safely (nothing must then be written)."""
-    yours, theirs = _blocks(user_text), _blocks(example_text)
-    lines = user_text.splitlines(keepends=True)
-    replace_at: dict[int, tuple[int, str]] = {}
-    for change in accepted:
-        if change.kind == "new":
-            continue
-        block = yours.get(change.name)
-        if block is None:
-            raise ValueError(f"couldn't find the entry {change.name!r} in your file")
-        new_text = "" if change.kind == "removed" else theirs[change.name].text
-        replace_at[block.start] = (block.end, new_text)
-    new = [c for c in accepted if c.kind == "new"]
-    # New entries go right after the last entry of the models list, which
-    # isn't always the end of the file (a list from before 0.1.20 still has
-    # its task_profiles: and escalation: sections after it).
-    insert_at = max((b.end for b in yours.values()), default=len(lines))
-    addition = ""
-    if new:
-        addition = f"\n  # Added by certo models update ({__version__}).\n" + "".join(
-            theirs[c.name].text for c in new
-        )
-    out: list[str] = []
-    i = 0
-    while i <= len(lines):
-        if i >= insert_at and addition:
-            out.append(addition)
-            addition = ""
-        if i == len(lines):
-            break
-        if i in replace_at:
-            end, new_text = replace_at[i]
-            out.append(new_text)
-            i = end
-            # A removed entry's blank separator goes with it.
-            if not new_text and i < len(lines) and not lines[i].strip():
-                i += 1
-            continue
-        out.append(lines[i])
-        i += 1
-    result = "".join(out)
-    _check(user_text, result, accepted)
-    return result
-
-
-def _check(before: str, after: str, accepted: list[Change]) -> None:
-    """The edited file must hold exactly the intended entries."""
-    expected = dict(_entries(before))
-    for change in accepted:
-        if change.kind == "removed":
-            expected.pop(change.name, None)
-        else:
-            expected[change.name] = change.theirs
-    try:
-        got = _entries(after)
-    except yaml.YAMLError as exc:
-        raise ValueError(f"the result wouldn't be valid YAML ({exc})") from exc
-    if got != expected:
-        wrong = sorted(n for n in set(got) | set(expected) if got.get(n) != expected.get(n))
-        raise ValueError(f"the result wouldn't match the plan for: {', '.join(wrong)}")
-
-
-# --- the command -----------------------------------------------------------------
-
-
-_LABELS = {
-    "new": "New",
-    "changed": "Changed",
-    "removed": "Removed",
-    "both": "Both changed",
-}
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -259,13 +33,14 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
     update = sub.add_parser(
         "update",
-        help="Bring your models_list.yaml up to date with this Certo's example list.",
+        help="Slim your models_list.yaml to your own changes; Certo's list gives the rest.",
         description=(
-            "Compare your models_list.yaml with the example list of the installed "
-            "Certo and offer each change: new models, changed ids or ratings, models "
-            "removed from the example. Your own models and your edits are kept; an "
-            "entry both you and the example changed is asked about. Comments and "
-            "layout stay; the old file is kept as models_list.yaml.bak."
+            "Certo reads its own model list from the package, so your models_list.yaml "
+            "needs only what you changed. This rewrites it that way: a value the same "
+            "as Certo's, or an old value you never changed, is dropped (Certo's is "
+            "read); your own models and changes are kept. When Certo can't tell an "
+            "old value from your change (no record of where your copy came from), it "
+            "asks. The old file is kept as models_list.yaml.bak."
         ),
     )
     update.add_argument(
@@ -275,12 +50,17 @@ def build_parser() -> argparse.ArgumentParser:
         help="Update that project's own models_list.yaml instead of the one found first.",
     )
     update.add_argument(
+        "--use-certos",
+        action="store_true",
+        help=("Where Certo can't tell an old value from your change, use Certo's without asking."),
+    )
+    update.add_argument(
         "--yes",
         "-y",
         action="store_true",
         help=(
-            "Apply every change without asking, keeping your version of an entry "
-            "both changed. Needed without a terminal."
+            "Rewrite without asking, keeping your value wherever Certo can't tell "
+            "it from an old one. Needed without a terminal."
         ),
     )
     check = sub.add_parser(
@@ -670,20 +450,23 @@ def check_main(args: argparse.Namespace, *, prompter: Prompter, lookup=None) -> 
 
 
 def _used_models() -> set[str]:
+    """The model names models.yaml uses (names only, never keys)."""
     path = find(MODELS_FILE)
     if path is None:
         return set()
     try:
-        return set(_entries(open(path, encoding="utf-8").read()))
+        data = yaml.safe_load(open(path, encoding="utf-8")) or {}
     except (OSError, yaml.YAMLError):
         return set()
+    return {m.get("name") for m in data.get("models") or [] if isinstance(m, dict)}
 
 
-def _say_change(prompter: Prompter, change: Change) -> None:
-    prompter.say(f"  {_LABELS[change.kind]:<13} {change.name}")
-    for line in change.details:
-        if line:
-            prompter.say(f"                {line}")
+def _describe(key: str, value) -> str:
+    if key == "description":
+        return "description"
+    if key.startswith("ratings."):
+        return f"{key.split('.', 1)[1]} {value}"
+    return f"{key} {value}"
 
 
 def update_main(
@@ -693,6 +476,9 @@ def update_main(
     interactive: bool,
     example: str | None = None,
 ) -> int:
+    """`certo models update`: slim your models_list.yaml to your own changes."""
+    from .models_slim import plan_slim, render
+
     try:
         list_path = _layer_file(LIST_FILE, getattr(args, "project", None))
     except ValueError as exc:
@@ -700,97 +486,94 @@ def update_main(
         return 1
     if list_path is None:
         prompter.say(
-            f"No {LIST_FILE} to update (Certo looked in the current folder and in "
-            f"{user_dir()}). Run certo init models to set up your models."
+            f"No {LIST_FILE} of yours to update: Certo reads its own list from the "
+            "package, so you don't need one. Nothing to do."
         )
-        return 1
+        return 0
     example = example or example_path(LIST_FILE)
-    user_text = open(list_path, encoding="utf-8").read()
-    example_text = open(example, encoding="utf-8").read()
-    base_file = base_path(list_path)
-    base_text = open(base_file, encoding="utf-8").read() if os.path.isfile(base_file) else None
+    base_file = os.path.join(os.path.dirname(os.path.abspath(list_path)), BASE_FILE)
     try:
-        changes, notes = plan(user_text, base_text, example_text, _used_models())
-    except (yaml.YAMLError, AttributeError) as exc:
+        user = (yaml.safe_load(open(list_path, encoding="utf-8")) or {}).get("models") or []
+        builtin = (yaml.safe_load(open(example, encoding="utf-8")) or {}).get("models") or []
+        base = None
+        if os.path.isfile(base_file):
+            base = (yaml.safe_load(open(base_file, encoding="utf-8")) or {}).get("models") or []
+    except (OSError, yaml.YAMLError, AttributeError) as exc:
         prompter.say(f"Error: couldn't read {list_path}: {exc}")
         return 1
+    plans = plan_slim(user, builtin, base, _used_models())
 
-    prompter.say(f"{list_path}, against the example list of certo {__version__}:")
-    if base_text is None:
+    prompter.say(f"{list_path}, against Certo {__version__}'s own list:")
+    same = [p.name for p in plans if not p.own and not p.kept and not p.undecided]
+    if same:
+        prompter.say(f"  Same as Certo's, or only old values ({len(same)}): read from Certo now.")
+    for p in plans:
+        if p.own:
+            what = "removed by Certo, unused: dropped" if p.remove else "your own model: kept"
+            prompter.say(f"  {p.name}: {what}")
+        elif p.kept:
+            changes = ", ".join(_describe(k, v) for k, v in p.kept.items())
+            prompter.say(f"  {p.name}: your change kept ({changes})")
+    undecided = [p for p in plans if p.undecided]
+    if undecided and base is None:
         prompter.say(
-            "  (No record of the example your file came from, so every entry that "
-            "differs is asked about.)"
+            "  No record of the list your copy came from, so for these Certo can't tell "
+            "your changes from old values:"
         )
-    for note in notes:
-        prompter.say(f"  Kept          {note}")
-    if not changes:
-        prompter.say("Nothing to update.")
-        save_base(list_path, example)
-        return 0
-    for change in changes:
-        _say_change(prompter, change)
-
     try:
-        accepted = _decide(prompter, changes, interactive=interactive, yes=args.yes)
+        use_all = args.use_certos
+        for p in undecided:
+            yours = ", ".join(_describe(k, v[0]) for k, v in p.undecided.items())
+            certos = ", ".join(_describe(k, v[1]) for k, v in p.undecided.items())
+            prompter.say(f"  {p.name}: yours {yours}; Certo's {certos}")
+            if use_all:
+                choice = 1
+            elif args.yes or not interactive:
+                choice = 0
+            else:
+                choice = prompter.choose(
+                    f"  {p.name}:",
+                    ["Keep yours", "Use Certo's", "Use Certo's for all the rest"],
+                    default=1,
+                )
+                use_all = choice == 2
+            if choice == 0:
+                p.kept.update({k: v[0] for k, v in p.undecided.items()})
+            else:
+                p.dropped.extend(p.undecided)
+            p.undecided = {}
+        if not args.yes:
+            if not interactive:
+                prompter.say(
+                    "\nNothing was written: run it on a terminal, or with --yes (keeps "
+                    "every value Certo can't tell is old) or --use-certos."
+                )
+                return 1
+            if not prompter.confirm(f"Rewrite {list_path} with only your changes?"):
+                prompter.say("Nothing was written.")
+                return 1
     except Cancelled:
         prompter.say("\nCancelled. Nothing was written.")
         return 130
-    if accepted is None:
-        prompter.say(
-            "\nNothing was written: run certo models update on a terminal to choose, or "
-            "with --yes to apply every change and keep your version of entries both changed."
-        )
-        return 0
-    if not accepted:
-        prompter.say("Nothing was written.")
-        return 0
-    try:
-        result = apply(user_text, example_text, accepted)
-    except ValueError as exc:
-        prompter.say(
-            f"\nError: {exc}. Nothing was written; the file's layout is probably not "
-            "the example's. Apply the changes by hand, or start again with certo init "
-            "models."
-        )
-        return 1
+    result = render(plans)
     shutil.copyfile(list_path, list_path + ".bak")
-    with open(list_path, "w", encoding="utf-8") as f:
-        f.write(result)
-    save_base(list_path, example)
-    prompter.say(
-        f"\nUpdated {list_path}: {len(accepted)} change(s). The old file is "
-        f"{os.path.basename(list_path)}.bak. Run certo check to see the result."
-    )
+    if result is None:
+        os.remove(list_path)
+        prompter.say(
+            f"Removed {list_path}: nothing in it differs from Certo's list. The old file is "
+            f"{os.path.basename(list_path)}.bak."
+        )
+    else:
+        with open(list_path, "w", encoding="utf-8") as f:
+            f.write(result)
+        prompter.say(
+            f"Rewrote {list_path} with only your changes. The old file is "
+            f"{os.path.basename(list_path)}.bak."
+        )
+    if os.path.isfile(base_file):
+        os.remove(base_file)
+    prompter.say("Run certo check to see the models.")
     return 0
-
-
-def _decide(
-    prompter: Prompter, changes: list[Change], *, interactive: bool, yes: bool
-) -> list[Change] | None:
-    """The changes to apply. None: nothing was decided (no terminal)."""
-    plain = [c for c in changes if c.kind != "both"]
-    both = [c for c in changes if c.kind == "both"]
-    if yes:
-        return plain
-    if not interactive:
-        return None
-    accepted: list[Change] = []
-    if plain:
-        prompter.say()
-        options = [f"All {len(plain)}", "One by one", "None"]
-        index = prompter.choose(f"Apply the {len(plain)} change(s) from the example?", options)
-        if index == 0:
-            accepted = list(plain)
-        elif index == 1:
-            accepted = [c for c in plain if prompter.confirm(f"{_LABELS[c.kind]}: {c.name}?")]
-    for change in both:
-        prompter.say(f"\n{change.name} differs from the example:")
-        for line in change.details:
-            prompter.say(f"  {line}  (yours -> the example's)")
-        if not prompter.confirm("Take the example's version? (No keeps yours)"):
-            continue
-        accepted.append(change)
-    return accepted
 
 
 def models_main(

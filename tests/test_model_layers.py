@@ -65,10 +65,20 @@ def _active(catalog):
 def test_with_one_file_nothing_is_layered(folders):
     user, _, _ = folders
 
-    path = find_layers("models_list.yaml")
+    path = find_layers("models.yaml")
 
-    assert path == str(user / "models_list.yaml")
+    assert path == str(user / "models.yaml")
     assert not isinstance(path, LayeredPath)
+
+
+def test_certos_own_list_and_profiles_are_the_lowest_layer(folders):
+    user, _, _ = folders
+
+    for name in ("models_list.yaml", "task_profiles.yaml"):
+        path = find_layers(name)
+        assert path.layers[0].endswith(f"examples/{name}.example")
+        assert path.layers[-1] == str(user / name)
+    assert find_layers("escalation.yaml") is None
 
 
 def test_a_project_file_changes_one_rating_and_keeps_the_rest(folders):
@@ -92,7 +102,7 @@ def test_the_layers_go_user_then_current_folder_then_project(folders):
 
     path = find_layers("models_list.yaml", project_dir=str(project))
 
-    assert path.layers == (
+    assert path.layers[1:] == (
         str(user / "models_list.yaml"),
         str(workspace / "models_list.yaml"),
         str(project / "models_list.yaml"),
@@ -139,9 +149,11 @@ def test_profiles_merge_by_name(folders):
     catalog = load_checked_catalog(project_dir=str(project))
 
     profiles = {p.name: p for p in catalog.task_profiles}
-    assert set(profiles) == {"build", "default", "docs"}
+    assert {"build", "default", "docs"} <= set(profiles)
     assert profiles["build"].triggers == ("build", "game")
     assert profiles["build"].weights == {"code": 1.0}
+    # Weights in a higher layer drop the needs below: that profile ranks by weights.
+    assert profiles["build"].needs == {}
 
 
 def test_a_comments_only_project_file_changes_nothing(folders):
@@ -150,7 +162,8 @@ def test_a_comments_only_project_file_changes_nothing(folders):
 
     catalog = load_checked_catalog(project_dir=str(project))
 
-    assert {p.name for p in catalog.task_profiles} == {"build", "default"}
+    profiles = {p.name: p for p in catalog.task_profiles}
+    assert profiles["build"].weights == {"code": 3.0, "cost": 3.0}  # the user's
 
 
 def test_a_file_a_setting_names_is_read_alone(folders, monkeypatch, tmp_path):
@@ -191,5 +204,18 @@ def test_certo_check_shows_what_each_layer_changes(folders):
     _load_catalog(out, str(project))
 
     text = out.getvalue()
-    assert f"  List: {user / 'models_list.yaml'}" in text
+    assert "  List: built into Certo" in text
+    assert f"    + {user / 'models_list.yaml'}: adds cheap, strong" in text
     assert f"    + {project / 'models_list.yaml'}: changes cheap; adds local" in text
+
+
+def test_a_user_profile_can_give_only_its_first_model(folders):
+    user, _, _ = folders
+    (user / "task_profiles.yaml").write_text("task_profiles:\n  build:\n    model: strong\n")
+
+    catalog = load_checked_catalog()
+
+    build = {p.name: p for p in catalog.task_profiles}["build"]
+    assert build.model == "strong"
+    assert build.needs  # Certo's own needs and triggers are kept
+    assert "game" in build.triggers

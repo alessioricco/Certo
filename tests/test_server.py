@@ -1231,7 +1231,7 @@ def test_create_task_escalate_without_a_catalog_is_400(monkeypatch, tmp_path):
     response = client.post("/tasks", json={"task": "do it", "escalate": True})
 
     assert response.status_code == 400
-    assert "No models_list.yaml found" in response.json()["detail"]
+    assert "No models.yaml found" in response.json()["detail"]
 
 
 def test_websocket_with_escalate(monkeypatch, tmp_path):

@@ -27,6 +27,8 @@ import yaml
 
 from .init_cmd import Prompter, _write_private
 from .model_catalog import (
+    LIST_FILE,
+    PROFILES_FILE,
     ModelCatalog,
     ModelCatalogError,
     TaskProfile,
@@ -34,6 +36,7 @@ from .model_catalog import (
     load_model_catalog,
     rank_for_profile,
 )
+from .model_files import with_built_in
 from .model_pricing import is_local
 
 _SHOWN = 3  # the best-ranked models offered first, for each profile
@@ -52,6 +55,16 @@ def set_profile_model(path: str, profile: str, model: str | None) -> None:
     """Write `model: NAME` in `profile`'s block of task_profiles.yaml, or
     remove it (`model` None). Only that line changes: the comments and the
     rest of the file stay as they are."""
+    if not os.path.isfile(path):
+        if model is None:
+            return
+        os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(
+                "# Your changes to Certo's task profiles (read from the package):\n"
+                "# only what differs goes here.\n"
+                "task_profiles:\n"
+            )
     with open(path, encoding="utf-8") as f:
         lines = f.read().splitlines()
     header = re.compile(rf"^(\s+){re.escape(profile)}:\s*(#.*)?$")
@@ -62,7 +75,14 @@ def set_profile_model(path: str, profile: str, model: str | None) -> None:
             start, indent = i, len(match.group(1))
             break
     if start is None:
-        raise ModelCatalogError(f"{path}: no task profile named {profile!r}.")
+        if model is None:
+            return  # Certo's own profile already lets the ratings decide
+        if not any(line.rstrip() == "task_profiles:" for line in lines):
+            raise ModelCatalogError(f"{path}: no 'task_profiles:' section to add {profile!r} to.")
+        lines += [f"  {profile}:", f"    model: {model}"]
+        with open(path, "w", encoding="utf-8") as f:
+            f.write("\n".join(lines) + "\n")
+        return
     end = len(lines)
     for i in range(start + 1, len(lines)):
         text = lines[i]
@@ -137,9 +157,13 @@ def choose_profiles(
     profiles_path: str,
     env: Mapping[str, str],
 ) -> None:
-    """Ask, for each task profile, which model goes first, and write it."""
+    """Ask, for each task profile, which model goes first, and write it in
+    `profiles_path` (the user's own file, created when missing), read on
+    top of Certo's own profiles."""
+    reading = with_built_in(PROFILES_FILE, profiles_path)
+    list_reading = with_built_in(LIST_FILE, list_path)
     catalog = load_model_catalog(
-        list_path, models_path, profiles_path=profiles_path, strict=False, environ=env
+        list_reading, models_path, profiles_path=reading, strict=False, environ=env
     )
     if any(is_local(m) for m in catalog.models if m.configured and m.activated) and any(
         not is_local(m) for m in catalog.models if m.configured and m.activated
@@ -159,7 +183,7 @@ def choose_profiles(
                     f"models.yaml.bak): {', '.join(names)}"
                 )
             catalog = load_model_catalog(
-                list_path, models_path, profiles_path=profiles_path, strict=False, environ=env
+                list_reading, models_path, profiles_path=reading, strict=False, environ=env
             )
     if not any(m.activated for m in catalog.models):
         prompter.say("No model is active, so there is nothing to choose.")

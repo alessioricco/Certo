@@ -11,7 +11,10 @@ from certo.model_files import resolve_optional
 def test_the_optional_files_are_none_when_absent(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
 
-    assert resolve_optional() == (None, None)
+    # Certo's own task profiles are always there; no ladder file.
+    profiles, escalation = resolve_optional()
+    assert profiles.endswith("task_profiles.yaml.example")
+    assert escalation is None
 
 
 def test_the_optional_files_are_found_in_the_current_folder(tmp_path, monkeypatch):

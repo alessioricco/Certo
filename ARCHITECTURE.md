@@ -262,6 +262,16 @@ given design was chosen.
   every time (never appends). With a `probe`, `.skip_unreachable()` (also
   run by `.advance()`) moves past candidates that can't be reached, keeping
   the last one.
+- **Certo's own layer** (`model_files.BUILT_IN`, `built_in_path`,
+  `with_built_in`): `models_list.yaml.example` and
+  `task_profiles.yaml.example` are inserted as the lowest layer by
+  `find_layers` (never for an explicit setting path). `init models` no
+  longer copies them; profile choices go to the user's own file
+  (`set_profile_model` creates it / adds a `name: {model:}` block).
+  Profiles merge field by field (`_merge_profiles`; `weights` without
+  `needs` drops inherited `needs` and vice versa). `models_slim.py` +
+  `certo models update` reduce an old full copy to the user's edits,
+  using `.models_list.base.yaml` to tell old values from edits.
 - **Layers** (`model_files.find_layers`, `model_catalog.LayeredPath` /
   `merge_layer`): a file found in several folders (user, current,
   `project_dir`) becomes a `LayeredPath`, a `str` whose value is the top

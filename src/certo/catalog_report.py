@@ -10,6 +10,7 @@ from collections.abc import Callable
 from dataclasses import replace
 from typing import TextIO
 
+from . import __version__
 from .catalog_check import check_catalog, usable_rungs
 from .config import DEFAULT_MAX_ITERATIONS, Config, ConfigError
 from .escalation import EscalationError, derive_ladder, describe_rung
@@ -27,7 +28,14 @@ from .model_catalog import (
     rank_for_profile,
     task_title,
 )
-from .model_files import find, layers_of, missing_message, resolve, resolve_optional
+from .model_files import (
+    find,
+    is_built_in,
+    layers_of,
+    missing_message,
+    resolve,
+    resolve_optional,
+)
 from .milestones import MilestoneError, milestone_task, parse_milestones, written_in_milestones
 from .model_pricing import is_local
 from .model_selection import config_for_entry
@@ -136,6 +144,13 @@ def _catalog_lines(catalog: ModelCatalog) -> list[str]:
     return lines
 
 
+def _few(names: list[str], shown: int = 6) -> list[str]:
+    """At most `shown` names, then "and N more"."""
+    if len(names) <= shown:
+        return names
+    return [*names[:shown], f"and {len(names) - shown} more"]
+
+
 def _layer_changes(path: str) -> list[str]:
     """For a file read in layers, one line per layer above the lowest:
     which entries it changes and which it adds."""
@@ -160,8 +175,8 @@ def _layer_changes(path: str) -> list[str]:
         names |= {f"ladder {n}" for n in ladders}
         names.discard(None)
         if i > 0:
-            changed = sorted(n for n in names if n in below)
-            added = sorted(n for n in names if n not in below)
+            changed = _few(sorted(n for n in names if n in below))
+            added = _few(sorted(n for n in names if n not in below))
             what = []
             if raw.get("replace") is True:
                 what.append("replaces the layers below")
@@ -179,7 +194,8 @@ def _print_path(out: TextIO, label: str, path: str | None, missing: str) -> None
         print(f"  {label}: {missing}", file=out)
         return
     layers = layers_of(path)
-    print(f"  {label}: {layers[0]}", file=out)
+    first = f"built into Certo {__version__}" if is_built_in(layers[0]) else layers[0]
+    print(f"  {label}: {first}", file=out)
     for line in _layer_changes(path):
         print(line, file=out)
 

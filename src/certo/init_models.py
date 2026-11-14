@@ -52,8 +52,7 @@ from .model_catalog import (
     _parse_list,
     load_model_catalog,
 )
-from .model_files import example_path, find, resolve
-from .models_cmd import save_base
+from .model_files import example_path, find, resolve, with_built_in
 from .profile_choice import choose_profiles
 
 # The rating axes the example list uses, asked in this order for a model
@@ -461,13 +460,15 @@ def _unlisted_yaml(candidates: list[Candidate]) -> str:
     )
 
 
-def _append_unlisted(list_path: str, unlisted: list[Candidate]) -> None:
+def _append_unlisted(list_path: str, unlisted: list[Candidate], fresh: bool = False) -> None:
     """Append the user-rated models at the end of the list, keeping its
     comments. The end of the file must be the `models:` list (true for the
     example and since 0.1.20); when it isn't, the file is left as it was."""
     with open(list_path, encoding="utf-8") as f:
         before = f.read()
     after = before.rstrip("\n") + "\n" + _unlisted_yaml(unlisted)
+    if fresh:  # an empty `models:` line, then the entries
+        after = before + _unlisted_yaml(unlisted).lstrip("\n")
     names = {m.get("name") for m in (yaml.safe_load(after) or {}).get("models") or []}
     if not all(c.entry.name in names for c in unlisted):
         raise ModelCatalogError(
@@ -485,6 +486,8 @@ def _write(
     """Write the model files and the new keys. None when the user keeps
     an existing models.yaml."""
     models_path = os.path.join(folder, MODELS_FILE)
+    # Certo's own list and profiles are read from the package: the user's
+    # files hold only their exceptions (DECISIONS.md, 2026-11-14).
     list_path = find(LIST_FILE) or os.path.join(folder, LIST_FILE)
     profiles_path = find(PROFILES_FILE) or os.path.join(folder, PROFILES_FILE)
     if os.path.isfile(models_path):
@@ -494,17 +497,20 @@ def _write(
         shutil.copyfile(models_path, models_path + ".bak")
     os.makedirs(folder, exist_ok=True)
     written = []
-    if not os.path.isfile(list_path):
-        shutil.copyfile(example_path(LIST_FILE), list_path)
-        save_base(list_path)  # for certo models update
-        written.append(f"{LIST_FILE}  the example list")
     unlisted = [c for c in working if not c.listed]
     if unlisted:
-        _append_unlisted(list_path, unlisted)
+        if not os.path.isfile(list_path):
+            with open(list_path, "w", encoding="utf-8") as f:
+                f.write(
+                    "# Your own models, on top of Certo's list (which is read from\n"
+                    "# the package). Only what differs from Certo's goes here.\n"
+                    "models:\n"
+                )
+            list_path_new = True
+        else:
+            list_path_new = False
+        _append_unlisted(list_path, unlisted, fresh=list_path_new)
         written.append(f"{LIST_FILE}  {len(unlisted)} model(s) rated by you, added")
-    if not os.path.isfile(profiles_path):
-        shutil.copyfile(example_path(PROFILES_FILE), profiles_path)
-        written.append(f"{PROFILES_FILE}  the example profiles")
     body = yaml.safe_dump({"models": [c.personal for c in working]}, sort_keys=False)
     header = (
         "# Written by certo init models. Keys are in the settings file\n"
@@ -525,7 +531,11 @@ def _write(
 def _preview(prompter: Prompter, paths: tuple[str, str, str], env: Mapping[str, str]) -> None:
     list_path, models_path, profiles_path = paths
     catalog = load_model_catalog(
-        list_path, models_path, profiles_path=profiles_path, strict=False, environ=env
+        with_built_in(LIST_FILE, list_path),
+        models_path,
+        profiles_path=with_built_in(PROFILES_FILE, profiles_path),
+        strict=False,
+        environ=env,
     )
     prompter.say("\nWhat --auto-model would choose:")
     for line in _profile_lines(catalog)[1:]:
@@ -552,12 +562,10 @@ def _profiles_only(prompter: Prompter, folder: str, env: Mapping[str, str]) -> i
         list_path, models_path = resolve(
             env.get("CERTO_MODELS_FILE", ""), env.get("CERTO_MODELS_LIST_FILE", "")
         )
+        # Your own file, on top of Certo's profiles; created on the first choice.
         profiles_path = find(PROFILES_FILE, env.get("CERTO_TASK_PROFILES_FILE", ""))
         if profiles_path is None:
             profiles_path = os.path.join(folder, PROFILES_FILE)
-            os.makedirs(folder, exist_ok=True)
-            shutil.copyfile(example_path(PROFILES_FILE), profiles_path)
-            prompter.say(f"Wrote the example task profiles to {profiles_path}.")
         choose_profiles(prompter, list_path, models_path, profiles_path, env)
     except ModelCatalogError as exc:
         print(f"Error: {exc}", file=sys.stderr)
