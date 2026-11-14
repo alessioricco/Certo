@@ -536,6 +536,25 @@ database).
 
 ## Smaller bugs
 
+- **Slow test suites eat the milestone budget** (latticewake M7,
+  2026-11-14; the Author: Certo must take the decision, not the task
+  file). The project's Playwright suite took 9 minutes (82 tests on 2
+  workers, both a desktop and a touch project), and 15 failing tests
+  each waited out the 30 s default timeout; the agent ran the full
+  suite itself, more than once per milestone, inside a 30-minute
+  budget. Certo should steer this without the task saying so: time
+  each check and agent-run test command (the run already sees them),
+  and when one is slow against the time left, tell the agent to run
+  only the tests for what it changed while working and the full suite
+  once at the end, and that a test failing on a timeout costs the whole
+  timeout (fix or narrow it first). Candidates: a reminder like the
+  tool-call ones, a line in the milestone handover, a built-in skill on
+  test speed (short default timeouts, a fast-forward hook for real-time
+  game tests, projects run only where they matter). Changes agent
+  behaviour: bench it (local + cloud), including a milestone task with a
+  slow e2e suite. Done when a run with a slow suite spends less of its
+  budget on repeated full runs and no milestone ends `budget_exhausted`
+  for that reason in the bench.
 - **The agent scatters logs in the project root** (latticewake, found
   2026-11-14). Over milestones M3-M7 the agent left 38 files such as
   `m5-e2e.log` and `m6-profile.log` at the project's top: output it
