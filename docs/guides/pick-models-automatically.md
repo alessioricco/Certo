@@ -113,6 +113,13 @@ models:
 
 Every field is in the [reference](../reference/models-yaml.md).
 
+**For one project only:** `certo models choose --project NAME` lets you
+tick the models that project may use, shows the order `--auto-model`
+would try them and the ladder `--escalate` would climb, recommends one,
+and writes `certo-models.yaml` in the project. No YAML to write by
+hand; runs in that project then use it. See
+[the command](../reference/commands.md#certo-models-choose).
+
 ## 2. Run with `--auto-model`
 
 ```bash

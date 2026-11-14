@@ -262,6 +262,16 @@ given design was chosen.
   every time (never appends). With a `probe`, `.skip_unreachable()` (also
   run by `.advance()`) moves past candidates that can't be reached, keeping
   the last one.
+- **`project_models.py`** / **`models_choose.py`** — a project's
+  `certo-models.yaml` (names only). `api.resolve_config` applies it from
+  the `--project` folder (else the run's folder) before the
+  `CERTO_LLM_MODEL` check: as the task profiles and escalation file when
+  no setting names them, and its `strategy` as the model selection when
+  no flag or `CERTO_MODEL_SELECTION` chose. `model_catalog` allows the
+  file's extra keys (`PROJECT_KEYS`) and turns off models outside `use:`
+  (`_restrict_to`). `models_choose.propose` builds the example profiles
+  with `cost_first` weights and `derive_ladder` on the chosen models;
+  `certo models choose` reads only the user's files.
 - **`models_secure.py`** — `certo models secure`: plans which settings
   variable each written-out key goes to (provider's usual name, else a
   per-model one when the name holds another key in the file or the

@@ -1905,3 +1905,15 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   to a different key gets the model a name of its own. A key found only
   in the shell is still written to the file, so runs started elsewhere
   find it. No MCP tool: an agent doesn't move keys.
+- **A project's model choice is `certo-models.yaml` at its top, read from
+  the `--project` folder** (0.2.3, 2026-11-14, the Author's choices). One
+  visible file, names only (shareable; keys stay in the user's
+  `models.yaml`), holding `use`, `strategy` and the proposed profiles and
+  ladder. Read from the `--project` folder first, because a project run
+  from a workspace never saw files in its own folder (lookup was the
+  current folder only). Its strategy applies unless a flag or
+  `CERTO_MODEL_SELECTION` chooses. `certo models choose` proposes both
+  strategies: profiles with `cost` above the other weights together
+  (cheaper first), the derived ladder, and recommends escalation when the
+  ladder starts 2+ `cost` points cheaper than it ends. The proposal uses
+  the 1-5 ratings until step 4 brings real numbers.

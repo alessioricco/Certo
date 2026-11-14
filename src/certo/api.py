@@ -16,6 +16,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING, Any
 
+from .project_models import apply_project_models
 from .config import (
     Config,
     ConfigError,
@@ -107,6 +108,18 @@ def resolve_config(
             base_url=options.base_url,
             reasoning_effort=options.reasoning_effort,
         )
+    # The project's own model choice (certo-models.yaml in the --project
+    # folder, or the folder given, or the current one): its strategy
+    # applies when no flag or CERTO_MODEL_SELECTION chose one.
+    if options.project is not None:
+        folder = resolve_project_dir(cfg.projects_dir, options.project)
+    else:
+        folder = options.workspace or cfg.workspace
+    cfg = apply_project_models(
+        cfg,
+        folder,
+        mode_chosen=options.escalate is not None or options.auto_model or options.model is not None,
+    )
     # With a ladder or --auto-model the model files name every model and its
     # key, so CERTO_LLM_MODEL isn't needed (DECISIONS.md).
     if options.escalate is None and not options.auto_model and cfg.model_selection == "manual":

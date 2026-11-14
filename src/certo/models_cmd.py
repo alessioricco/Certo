@@ -34,7 +34,7 @@ import yaml
 
 from . import __version__
 from .init_cmd import Cancelled, Prompter
-from .model_catalog import LIST_FILE, MODELS_FILE
+from .model_catalog import LIST_FILE, MODELS_FILE, PROJECT_FILE
 from .model_files import example_path, find, user_dir
 
 BASE_FILE = ".models_list.base.yaml"
@@ -323,7 +323,196 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Move the keys without asking. Needed without a terminal.",
     )
+    choose = sub.add_parser(
+        "choose",
+        help="Choose the models a project may use; Certo proposes how to pick among them.",
+        description=(
+            "Tick the enabled models of your models.yaml that a project may use. Certo "
+            "then proposes both strategies for them, with the cost of a run of each "
+            "model: an --auto-model order per kind of task (cheaper models first) and an "
+            "--escalate ladder (cheapest first), and recommends one. The choice is "
+            f"written to {PROJECT_FILE} at the project's top: names only, never keys. "
+            "Runs in that project then use it."
+        ),
+    )
+    choose.add_argument(
+        "--project",
+        metavar="NAME",
+        default=".",
+        help=(
+            "The project, as for a run: a name in CERTO_PROJECTS_DIR, or . for the "
+            "folder a run without --project works in (the default)."
+        ),
+    )
+    choose.add_argument(
+        "--use",
+        metavar="NAMES",
+        default="",
+        help="The models, comma-separated, instead of ticking them. Needed without a terminal.",
+    )
+    choose.add_argument(
+        "--strategy",
+        choices=["auto", "escalate"],
+        default=None,
+        help="The strategy to write, instead of choosing. Default: the recommended one.",
+    )
+    choose.add_argument(
+        "--yes",
+        "-y",
+        action="store_true",
+        help="Write the file without asking. Needed without a terminal.",
+    )
     return parser
+
+
+def _project_folder(name: str) -> str:
+    from .config import defer_llm_check, load_config, resolve_project_dir
+
+    with defer_llm_check():
+        cfg = load_config()
+    if name == ".":
+        return os.path.abspath(cfg.workspace)
+    path = resolve_project_dir(cfg.projects_dir, name)
+    if not os.path.isdir(path):
+        raise ValueError(f"There is no project '{name}' in {cfg.projects_dir}.")
+    return path
+
+
+def _pick_models(prompter: Prompter, enabled: list, preset: set[str]) -> list[str]:
+    """The models ticked, in the catalog's order. A numbered list, or an
+    arrow-key checklist on a real terminal."""
+    from . import menus as _menus
+    from .models_choose import run_cost
+
+    if prompter.menus:
+        rows = [_menus.Row("item", m.name, run_cost(m), m.name in preset) for m in enabled]
+        rows.append(_menus.Row("action", "Done"))
+        try:
+            _menus.checklist("Which models may this project use?", _menus.ChecklistState(rows))
+        except (KeyboardInterrupt, EOFError) as exc:
+            raise Cancelled from exc
+        return [m.name for m, row in zip(enabled, rows, strict=False) if row.checked]
+    picked = {m.name for m in enabled if m.name in preset}
+    while True:
+        prompter.say()
+        for i, m in enumerate(enabled, 1):
+            mark = "[x]" if m.name in picked else "[ ]"
+            prompter.say(f"  {i:>2}. {mark} {m.name:<28} {run_cost(m)}")
+        answer = prompter.ask("Numbers to tick or untick, separated by spaces (Enter when done)")
+        if not answer:
+            return [m.name for m in enabled if m.name in picked]
+        numbers = answer.replace(",", " ").split()
+        if not all(n.isdigit() and 1 <= int(n) <= len(enabled) for n in numbers):
+            prompter.say(f"Please enter numbers from 1 to {len(enabled)}.")
+            continue
+        for n in {int(n) for n in numbers}:
+            picked ^= {enabled[n - 1].name}
+
+
+def _show_proposal(prompter: Prompter, proposal) -> None:
+    prompter.say("\n--auto-model: the order it tries the models, per kind of task")
+    for profile in proposal.profiles:
+        when = (
+            "when nothing else matches"
+            if profile.name == "default"
+            else "title has: "
+            + ", ".join(profile.triggers[:4])
+            + (", ..." if len(profile.triggers) > 4 else "")
+        )
+        prompter.say(f"  {profile.name} ({when})")
+        prompter.say(f"    {' -> '.join(proposal.orders[profile.name])}")
+    prompter.say("\n--escalate: the ladder, climbed when the checks fail")
+    if proposal.ladder is None:
+        prompter.say(f"  none: {proposal.ladder_problem}")
+    else:
+        prompter.say(f"  {' -> '.join(r.name for r in proposal.ladder.rungs)}")
+    recommended = "--auto-model" if proposal.recommended == "auto" else "--escalate"
+    prompter.say(f"\nRecommended: {recommended}, because {proposal.reason}.")
+
+
+def choose_main(args: argparse.Namespace, *, prompter: Prompter, interactive: bool) -> int:
+    """`certo models choose`. 0 when the file was written, 1 when not."""
+    from .catalog_check import load_checked_catalog
+    from .init_cmd import _write_private
+    from .model_catalog import ModelCatalogError, project_use
+    from .models_choose import propose, render
+
+    try:
+        folder = _project_folder(args.project)
+        # The user's own files only: the project's earlier choice is what
+        # is being replaced.
+        catalog = load_checked_catalog(
+            os.environ.get("CERTO_MODELS_FILE", ""),
+            os.environ.get("CERTO_MODELS_LIST_FILE", ""),
+            look_up_optional=False,
+        )
+    except (ValueError, ModelCatalogError) as exc:
+        prompter.say(f"Error: {exc}")
+        return 1
+    enabled = [m for m in catalog.models if m.configured and m.activated]
+    if len(enabled) < 2:
+        prompter.say(
+            "Choosing needs at least two enabled models in your models.yaml. Run certo init "
+            "models to add some."
+        )
+        return 1
+    path = os.path.join(folder, PROJECT_FILE)
+    previous = set(project_use(path) or ()) if os.path.isfile(path) else set()
+
+    if args.use:
+        chosen = [n.strip() for n in args.use.split(",") if n.strip()]
+        unknown = [n for n in chosen if n not in {m.name for m in enabled}]
+        if unknown:
+            prompter.say(
+                f"Error: not an enabled model of your models.yaml: {', '.join(unknown)}. "
+                f"Enabled: {', '.join(m.name for m in enabled)}."
+            )
+            return 1
+    elif not interactive:
+        prompter.say("Without a terminal, name the models with --use (and add --yes).")
+        return 1
+    else:
+        prompter.say(f"Project folder: {folder}")
+        try:
+            chosen = _pick_models(prompter, enabled, previous)
+        except Cancelled:
+            prompter.say("\nCancelled. Nothing was written.")
+            return 130
+    if len(chosen) < 2:
+        prompter.say("Choose at least two models: with one, no strategy is needed.")
+        return 1
+
+    proposal = propose(catalog, chosen)
+    _show_proposal(prompter, proposal)
+    strategy = args.strategy or proposal.recommended
+    if strategy == "escalate" and proposal.ladder is None:
+        prompter.say(f"Error: no ladder to climb ({proposal.ladder_problem}).")
+        return 1
+    if not args.yes:
+        if not interactive:
+            prompter.say("\nNothing was written: run it on a terminal to confirm, or add --yes.")
+            return 1
+        try:
+            if args.strategy is None:
+                options = ["--auto-model", "--escalate"]
+                strategy = ("auto", "escalate")[
+                    prompter.choose(
+                        "Which strategy?", options, 0 if proposal.recommended == "auto" else 1
+                    )
+                ]
+            if not prompter.confirm(f"Write {path}?"):
+                prompter.say("Nothing was written.")
+                return 1
+        except Cancelled:
+            prompter.say("\nCancelled. Nothing was written.")
+            return 130
+    _write_private(path, render(chosen, strategy, proposal))
+    flag = "--auto-model" if strategy == "auto" else "--escalate"
+    prompter.say(
+        f"Written {path}. Runs in this project now use {flag} with these models (a flag "
+        "or CERTO_MODEL_SELECTION still wins). Preview a task with certo check --task."
+    )
+    return 0
 
 
 def secure_main(args: argparse.Namespace, *, prompter: Prompter, interactive: bool) -> int:
@@ -587,4 +776,6 @@ def models_main(
         return check_main(args, prompter=prompter)
     if args.command == "secure":
         return secure_main(args, prompter=prompter, interactive=interactive)
+    if args.command == "choose":
+        return choose_main(args, prompter=prompter, interactive=interactive)
     return 2

@@ -358,6 +358,17 @@ the provider's retries, minutes later. The skip is recorded in
 `MODEL_DECISIONS.md`. See
 [How a model is chosen](../guides/pick-models-automatically.md#how-a-model-is-chosen).
 
+## New: `certo models choose`, a project's own models
+
+`certo models choose --project NAME` lists your enabled models with what
+one run of each costs, and you tick the ones the project may use. Certo
+then proposes both strategies for them, the `--auto-model` order per kind
+of task (cheaper models first) and the `--escalate` ladder (cheapest
+first), recommends one, and writes your choice to `certo-models.yaml` at
+the project's top. It holds names only, never keys. Runs in that project
+then use it, unless a flag or `CERTO_MODEL_SELECTION` chooses. See
+[the command](../reference/commands.md#certo-models-choose).
+
 ## New: `certo models secure` moves keys out of `models.yaml`
 
 `models.yaml` could always name a key as `"${NAME}"`, read from your

@@ -70,6 +70,11 @@ is used whole:
 So files in a project folder override the ones in your user settings
 folder. A setting that names a file that doesn't exist is an error.
 
+A project can also have its own choice, [`certo-models.yaml`](#certo-modelsyaml),
+at its top. A run reads it from the `--project` folder (or the folder
+the run works in), as its task profiles and escalation file, unless a
+setting names those files.
+
 ## `models_list.yaml`
 
 ```yaml
@@ -244,6 +249,37 @@ rung when a required acceptance check fails.
 A ladder named `default` is the one used when no ladder name is given.
 With no ladder at all, Certo builds one from the enabled models' ratings.
 A rung whose model isn't enabled in `models.yaml` is skipped.
+
+## `certo-models.yaml`
+
+A project's own choice of models, written by
+[`certo models choose`](commands.md#certo-models-choose) at the
+project's top. It holds names only, never keys: the keys stay in your
+`models.yaml`, so the file can be committed and shared.
+
+```yaml
+use: [claude-haiku-5-5, gpt-6-luna, gpt-6.1-terra]
+strategy: auto
+task_profiles:
+  build:
+    triggers: [build, implement, app, application, game, website, feature]
+    weights: {code: 3.0, cost: 5.0, reasoning: 0.5, precision: 0.5}
+  # ... the other kinds of task
+escalation:
+  ladders:
+    default:
+    - {model: claude-haiku-5-5}
+    - {model: gpt-6.1-terra}
+```
+
+| Field | Meaning |
+|---|---|
+| `use` | The models runs in this project may use, by name. Every other model is left out. A name that isn't enabled in your `models.yaml` is left out with a warning. Without `use`, every enabled model. |
+| `strategy` | `auto` (as `--auto-model`) or `escalate` (as `--escalate`). It applies to every run in the project, unless a flag (`--auto-model`, `--escalate`, `--model`) or `CERTO_MODEL_SELECTION` chooses. |
+| `task_profiles` | As in [`task_profiles.yaml`](#task_profilesyaml). `certo models choose` gives each kind of task a `cost` weight above its other weights together, so the cheaper models go first. |
+| `escalation` | As in [`escalation.yaml`](#escalationyaml). `certo models choose` writes the ladder Certo derives from the chosen models, as `default`. |
+
+`certo check`, run in the project folder, says it uses the file.
 
 ## Moving from one file (0.1.19 and earlier)
 

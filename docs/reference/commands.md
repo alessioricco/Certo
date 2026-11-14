@@ -317,7 +317,8 @@ is created with `certo init ./models`.
 ## `certo models`
 
 Manage your model files. Subcommands: `update` and `check` for the list,
-`models_list.yaml`; `secure` for the keys in `models.yaml`.
+`models_list.yaml`; `secure` for the keys in `models.yaml`; `choose` for
+the models a project may use.
 
 ### `certo models update`
 
@@ -369,6 +370,43 @@ models go after the last entry of the list. The old file is kept as
 at `  - name:` with their fields indented below), nothing is written and
 the message says so. Exit code 0, or 1 when there is no list or it can't
 be edited safely.
+
+### `certo models choose`
+
+Choose the models a project may use. Certo then proposes how to pick
+among them, with both strategies, and writes your choice to
+[`certo-models.yaml`](models-yaml.md#certo-modelsyaml) at the project's
+top. It calls no model.
+
+```text
+certo models choose [--project NAME] [--use NAMES] [--strategy {auto,escalate}] [--yes]
+```
+
+| Flag | Effect |
+|---|---|
+| `--project NAME` | The project, as for a run: a name in `CERTO_PROJECTS_DIR`, or `.` (the default) for the folder a run without `--project` works in. |
+| `--use NAMES` | The models, comma-separated (names from your `models.yaml`), instead of ticking them. Needed without a terminal. |
+| `--strategy {auto,escalate}` | The strategy to write, instead of choosing. Default: the recommended one. |
+| `--yes`, `-y` | Write the file without asking. Needed without a terminal. |
+
+On a terminal it lists your enabled models with what one run of each
+costs: free for a local model, else the median of your own last runs
+when there are enough, else a guess from the price. You tick at least
+two. Then it shows:
+
+- the order `--auto-model` would try them for each kind of task: the
+  example task profiles, with `cost` weighing more than the other
+  ratings together, so cheaper models go first;
+- the ladder `--escalate` would climb: cheapest first, leaving out a
+  model when another is at least as capable and costs no more;
+- a recommendation: `--escalate` when the ladder starts at least 2
+  `cost` points cheaper than it ends (most tasks then end on the cheap
+  model), otherwise `--auto-model`.
+
+You choose the strategy and confirm. Runs in that project then use it,
+unless a flag or `CERTO_MODEL_SELECTION` chooses. Running it again
+replaces the file, with your earlier models ticked. Exit code 0 when the
+file was written, 1 when not, 130 on Ctrl-C.
 
 ### `certo models secure`
 

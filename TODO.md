@@ -246,15 +246,6 @@ request 2026-11-14). In this order:
   Done when the Author's file holds no key and the check warns on one.
   *Progress (0.2.3):* `certo models secure` and the warning are built;
   left: the Author runs it on their own file.
-- **2. Choose a project's models, Certo proposes the strategy.** A
-  guided command lists the enabled models with real prices; the author
-  ticks the ones a project may use (a project file with names only, keys
-  stay in the user file). From them Certo proposes an auto-model order
-  per kind of task and an escalation ladder, each with its estimated
-  cost from `run_stats.csv`; the author accepts or edits. Today a project
-  `models.yaml` replaces the user one whole, so this needs a "names only"
-  project file. Done when a project gets a working multi-model setup with
-  no YAML written by hand.
 - **3. The model list from the latest release.** `certo models update
   --online` fetches the example list from the repository at the latest
   release tag (decided 2026-11-14), shows what changed and applies it

@@ -11,7 +11,7 @@ from dataclasses import replace
 from typing import TextIO
 
 from .catalog_check import check_catalog, usable_rungs
-from .config import DEFAULT_MAX_ITERATIONS, Config
+from .config import DEFAULT_MAX_ITERATIONS, Config, ConfigError
 from .escalation import EscalationError, derive_ladder, describe_rung
 from .model_catalog import (
     LIST_FILE,
@@ -146,6 +146,16 @@ def _load_catalog(out: TextIO) -> ModelCatalog | None:
         profiles_path, escalation_path = resolve_optional(
             _setting("TASK_PROFILES_FILE"), _setting("ESCALATION_FILE")
         )
+        # A project's own choice (certo models choose), in the folder a run
+        # without --project works in.
+        from .project_models import project_file, read_strategy
+
+        project = project_file(_setting("WORKSPACE") or os.getcwd())
+        if project is not None:
+            profiles_path = _setting("TASK_PROFILES_FILE") or project
+            escalation_path = _setting("ESCALATION_FILE") or project
+            strategy = read_strategy(project) or "not set"
+            print(f"  Project choice: {project} (strategy: {strategy})", file=out)
         print(f"  List: {list_path}", file=out)
         print(f"  Personal settings: {models_path}", file=out)
         print(f"  Task profiles: {profiles_path or 'none (optional, for --auto-model)'}", file=out)
@@ -157,7 +167,7 @@ def _load_catalog(out: TextIO) -> ModelCatalog | None:
             escalation_path=escalation_path,
             strict=False,
         )
-    except ModelCatalogError as exc:
+    except (ModelCatalogError, ConfigError) as exc:
         print(f"  Error: {exc}", file=out)
         print(file=out)
         return None

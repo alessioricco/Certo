@@ -87,7 +87,7 @@ so Certo doesn't use it.
 | `list_skills` | The skills a run gets, as `certo skills list` shows them: official and yours, and with `project` or `folder` that project's too. Each says how it fires, its size in tokens, and whether it is on. With `task`, which skills would go into a run of that task. |
 
 Some commands have no tool: those that ask you questions (`certo init`,
-`certo models update`), `certo bench`, which runs for hours, and the
+`certo models update`, `certo models choose`), `certo bench`, which runs for hours, and the
 commands of `certo-server` and `certo-admin`. Run them in a terminal.
 `certo models secure` never gets a tool either: it handles your API
 keys, so you run it yourself. The skills commands that download or turn on code (`certo skills add`

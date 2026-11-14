@@ -344,6 +344,13 @@ MODELS_FILE = "models.yaml"
 # models_list.yaml; read there with a warning until 0.1.25, refused since.
 PROFILES_FILE = "task_profiles.yaml"
 ESCALATION_FILE = "escalation.yaml"
+# A project's own choice (`certo models choose`): the models it may use
+# (`use:`, names only, never keys), its strategy, and the task profiles and
+# ladder proposed for those models, in one file at the project's top.
+# Read as the task profiles and escalation files (model_files.py).
+PROJECT_FILE = "certo-models.yaml"
+PROJECT_KEYS = ("use", "strategy", "task_profiles", "escalation")
+STRATEGIES = ("auto", "escalate")
 # Personal settings: they live in models.yaml, never in the shared list.
 _PERSONAL_ONLY = ("api_key", "base_url", "activated")
 _PERSONAL_KEYS = {
@@ -390,7 +397,8 @@ def _read_section_file(path: str, key: str) -> Any:
     except (OSError, yaml.YAMLError):
         pass  # _read_mapping reports it
     raw = _read_mapping(path)
-    extra = sorted(set(raw) - {key})
+    allowed = set(PROJECT_KEYS) if Path(path).name == PROJECT_FILE else {key}
+    extra = sorted(set(raw) - allowed)
     if extra:
         raise ModelCatalogError(
             f"{path} may only contain '{key}:', but it has {', '.join(extra)}. "
@@ -612,6 +620,10 @@ def load_model_catalog(
     for entry in listed:
         merged.append(_merge(entry, by_name.get(entry.name) if entry.name not in done else None))
         done.add(entry.name)
+    use = project_use(profiles_path, escalation_path)
+    if use is not None:
+        merged, use_warnings = _restrict_to(merged, use)
+        warnings.extend(use_warnings)
     return ModelCatalog(
         models=merged,
         task_profiles=profiles,
@@ -619,6 +631,44 @@ def load_model_catalog(
         load_problems=tuple(problems),
         load_warnings=tuple(warnings),
     )
+
+
+def project_use(*paths: str | None) -> tuple[str, ...] | None:
+    """The `use:` list of the project file among `paths`, or None when none
+    of them is a project file or it has no list (every enabled model)."""
+    for path in paths:
+        if not path or Path(path).name != PROJECT_FILE:
+            continue
+        raw = _read_mapping(path)
+        use = raw.get("use")
+        if use is None:
+            return None
+        if not isinstance(use, list) or not all(isinstance(n, str) and n for n in use):
+            raise ModelCatalogError(f"{path}: 'use' must be a list of model names.")
+        return tuple(use)
+    return None
+
+
+def _restrict_to(
+    models: list[ModelCatalogEntry], use: tuple[str, ...]
+) -> tuple[list[ModelCatalogEntry], list[str]]:
+    """Turn off every model the project doesn't use; warn about a name it
+    uses that isn't an enabled model."""
+    by_name = {m.name: m for m in models}
+    warnings = []
+    for name in use:
+        entry = by_name.get(name)
+        if entry is None or not entry.configured:
+            warnings.append(
+                f"{PROJECT_FILE} uses {name!r}, which isn't in your {MODELS_FILE}: it is left out."
+            )
+        elif not entry.activated:
+            warnings.append(
+                f"{PROJECT_FILE} uses {name!r}, which is turned off (activated: false) or "
+                f"missing its key in your {MODELS_FILE}: it is left out."
+            )
+    wanted = set(use)
+    return [m if m.name in wanted else replace(m, activated=False) for m in models], warnings
 
 
 def task_title(task_text: str) -> str:
