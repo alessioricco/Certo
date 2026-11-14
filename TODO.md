@@ -341,21 +341,44 @@ the first task, Wordle, ended `verified` in 11m 49s. What got in the way
 is in the first item and in "Smaller bugs". (The quieter run, 0.1.21,
 cut that first run's output from 2,949 lines to 1,021.)
 
-- **Ask Certo about Certo (to discuss, the Author's idea 2026-11-14).**
-  In interactive mode (and maybe as `certo ask "<question>"`), a question
-  about how Certo works is answered from its own README and `docs/`,
-  with links to the pages used, instead of the user reading the docs.
-  To settle before building: where the docs come from (bundled in the
-  package at the installed version, so answers match the installed
-  Certo, or fetched from the release); which model answers (the user's
-  own, ideally a cheap one; free on a local model); how pages are found
-  (search the headings and text first, send only the matching pages, so
-  a 32K local model copes); whether it may also read the user's own
-  settings to answer "why did my run pick Opus?" (never keys: the same
-  rules as `certo check`); and how it says "the docs don't say" instead
-  of guessing. Done when a question gets an answer citing the pages it
-  used, on a local and a cloud model, and a wrong-answer check on a set
-  of questions with known answers passes.
+- **Ask Certo about Certo** (the Author's idea; design agreed
+  2026-11-14). Answer questions about Certo from its own docs, citing
+  the pages used, instead of the user reading them. In order:
+  1. *Question set first:* about 30 questions with known answers
+     ("which flag sets the time budget?" → `--max-time`), including
+     paraphrases and a few the docs don't cover. It measures every step
+     below (wrong answers, missing links, "not covered" said right) and
+     shows which pages are missing.
+  2. *Docs source:* the release workflow attaches a `docs.zip` (user
+     pages only, no benchmark records) to each release; Certo fetches
+     the zip of its own version's tag on first use and caches it in
+     `~/.cache/certo/docs/<version>/` (offline afterwards). Not `main`:
+     it documents unreleased flags. Run from a checkout, Certo reads the
+     `docs/` next to it. Offline with no cached copy: say so. GitHub sees
+     only the version, never the question.
+  3. *Finding the sections:* the docs split at headings; a model gets
+     the question and the table of contents (headings with page paths,
+     ~5-6K tokens) and names 3-5 sections, with keyword scores added as
+     a backup for exact names (flags, `CERTO_*`). No vector search: it
+     needs the same embedding model at build and question time (a
+     provider key or a heavy dependency), the corpus is small (~600
+     sections) and exact identifiers suit keywords better. Revisit only
+     if the question set shows paraphrases missed.
+  4. *Answering:* a second call answers from those sections only, with a
+     link per claim; when nothing fits, "the docs don't cover this" plus
+     the closest pages. The model: a setting (e.g. `CERTO_ASK_MODEL`),
+     default the main model; fits a 32K local window.
+  5. *`certo ask "<question>"`* first; then `?` at the `--interactive`
+     and menu prompts. `--mine` (opt-in, first version) also sends what
+     `certo check` prints, `MODEL_DECISIONS.md` and the last run report,
+     never keys, for "why did my run pick Opus?".
+  Done when the question set passes on a local and a cloud model with no
+  made-up answer, and every answer links the pages it used.
+- **MCP docs tool** (separate, small; can come before `certo ask`). The
+  MCP server offers the same docs (step 2 above) and a section search,
+  so an editor's own agent answers from them with no model call by
+  Certo. Done when a client can search and read the docs of the
+  installed version.
 - **`certo report`: a run's errors in one file, to improve Certo**
   (the Author, 2026-11-10). Today a failing run is studied by hand:
   `.certo/reports/`, `RUNS.md`, `STATUS.md`, `run.json`, the terminal
