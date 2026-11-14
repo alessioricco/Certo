@@ -463,6 +463,14 @@ the flag ran on `CERTO_LLM_MODEL` instead, and wrote no
 models, and a resume, or a milestone file run again, uses the same,
 saying so. `--model NAME` or `CERTO_MODEL_SELECTION` chooses otherwise.
 
+## Fixed: the pytest skill stays out of projects in other languages
+
+`pytest-conventions` fired on the word "test", so a JavaScript game whose
+task asked for tests got Python test advice. It now fires on `pytest`,
+`python`, `unittest` or `conftest`, and is left out of a project whose
+folder is clearly another language (a `package.json` and no Python).
+`certo skills list --task` shows when it is left out and why.
+
 ## Also
 
 - **`certo bench` copes with a model server that goes away.** A run

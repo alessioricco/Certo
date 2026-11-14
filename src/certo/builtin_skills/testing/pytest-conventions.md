@@ -2,10 +2,10 @@
 name: pytest-conventions
 triggers:
   - pytest
-  - test
-  - tests
-  - unit test
-description: Conventions for writing pytest-based tests, triggered when a task mentions testing.
+  - python
+  - unittest
+  - conftest
+description: Conventions for writing pytest-based tests, triggered when a task mentions pytest or Python, and left out of projects in another language.
 ---
 
 When writing or modifying pytest tests:

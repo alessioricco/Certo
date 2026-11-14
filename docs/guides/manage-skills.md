@@ -134,13 +134,15 @@ background the agent doesn't need to act.
   shows whether a task you'd really write gets the skill:
 
   ```text
-  For the task 'Write the tests for the snake games':
+  For the task 'Write the pytest tests for the snake games':
     From its first message (about 192 tokens):
-      pytest-conventions (official): "tests" is in the task
+      pytest-conventions (official): "pytest" is in the task
       my-style (global): "snake" is in the task
   ```
 
-  `my-style` fired on "snake", not on "games".
+  `my-style` fired on "snake", not on "games". An official skill made for
+  one language is left out of a project in another, and the list says so:
+  `Left out, they don't fit a node project: pytest-conventions`.
 - **A skill guides; it doesn't check.** If something must be true, make
   it a test or a check the project runs: Certo's verdict comes from those,
   not from the skill.

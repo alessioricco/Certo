@@ -1960,3 +1960,9 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   again, reuses them unless a flag (`--model` included),
   `CERTO_MODEL_SELECTION` or a project's `certo-models.yaml` chooses.
   Shown in one line, so the choice is never silent.
+- **Official skills can be limited to one language** (0.2.3, 2026-11-14).
+  `pytest-conventions` fired on "test" and reached JavaScript projects.
+  Its triggers are now Python-only words, and `OFFICIAL_LANGUAGES` leaves
+  it out when the project folder is clearly another language (a new,
+  empty folder keeps it: triggers decide). A table in code, not a new
+  frontmatter key, so skill files stay in the SDK's format.

@@ -224,7 +224,9 @@ def test_how_a_skill_fires_and_for_which_task(home):
     official = {r.name: r.skill for r in lib.collect(_cfg(home), None).rows}
 
     pytest_skill = official["pytest-conventions"]
-    assert lib.how_it_fires(pytest_skill) == "when the task says: pytest, test, tests, unit test"
+    assert (
+        lib.how_it_fires(pytest_skill) == "when the task says: pytest, python, unittest, conftest"
+    )
     assert lib.fires_for_task(pytest_skill, "Add pytest tests") == '"pytest" is in the task'
     assert lib.fires_for_task(pytest_skill, "Write a poem") is None
     pins = official["pin-dependencies"]
@@ -262,3 +264,38 @@ def test_an_agent_with_skills_off_does_not_get_them(home):
 
     assert "security-review" not in names
     assert "testing-and-verification" in names
+
+
+def test_pytest_conventions_stays_out_of_a_javascript_game(home, tmp_path):
+    # Its old trigger, "test", put it in every task that asks for tests.
+    official = {r.name: r.skill for r in lib.collect(_cfg(home), None).rows}
+    pytest_skill = official["pytest-conventions"]
+
+    assert lib.fires_for_task(pytest_skill, "Build a browser game with tests") is None
+    assert (
+        lib.fires_for_task(pytest_skill, "Write a Python CLI with tests")
+        == '"python" is in the task'
+    )
+
+
+def test_the_language_gate_leaves_out_skills_for_another_language(tmp_path):
+    node = tmp_path / "game"
+    node.mkdir()
+    (node / "package.json").write_text("{}")
+    py = tmp_path / "tool"
+    py.mkdir()
+    (py / "pyproject.toml").write_text("[project]\nname = 'x'\n")
+
+    assert lib.off_for_language(lib.project_language(node)) == ["pytest-conventions"]
+    assert lib.off_for_language(lib.project_language(py)) == []
+    assert lib.off_for_language(lib.project_language(tmp_path / "missing")) == []
+
+
+def test_a_run_in_a_node_project_never_gets_pytest_conventions(home, tmp_path):
+    (tmp_path / "package.json").write_text("{}")
+    cfg = _cfg(home)
+    from dataclasses import replace
+
+    agent = build_agent(replace(cfg, workspace=str(tmp_path)))
+
+    assert "pytest-conventions" not in {s.name for s in agent.agent_context.skills}

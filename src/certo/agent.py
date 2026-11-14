@@ -12,7 +12,7 @@ from openhands.sdk.context.condenser import LLMSummarizingCondenser
 from .config import Config
 from .llm import build_llm
 from .project_env import ProjectEnv
-from .skill_library import collect, disabled_project_skills
+from .skill_library import collect, disabled_project_skills, off_for_language, project_language
 from .tools import build_tools
 
 # The SDK ends a conversation turn (execution_status -> FINISHED) whenever the
@@ -260,7 +260,10 @@ def build_agent(
     # Minus the official ones a benchmark arm turned off.
     # trusted_skills: the run's picks from trusted repositories
     # (skill_match.skills_for_run), after every skill already named.
-    skills = collect(cfg, cfg.workspace, own=False).without_official(cfg.skills_off)
+    # Minus the official skills that don't fit the project's language
+    # (a pytest skill in a JavaScript project).
+    off = [*cfg.skills_off, *off_for_language(project_language(cfg.workspace))]
+    skills = collect(cfg, cfg.workspace, own=False).without_official(off)
     skills += list(trusted_skills)
     agent_context = AgentContext(
         skills=skills,

@@ -255,7 +255,7 @@ def _list(cfg, args: argparse.Namespace, prompter: Prompter) -> int:
         task = args.task
         if Path(task).is_file():  # a task file, as `certo check --task` reads it
             task = Path(task).read_text(encoding="utf-8")
-        _for_task(found, task, prompter)
+        _for_task(found, task, prompter, lib.project_language(workspace or cfg.workspace))
     return 0
 
 
@@ -281,8 +281,15 @@ _LAYER_NAMES = {
 }
 
 
-def _for_task(found: lib.SkillSet, task: str, prompter: Prompter) -> None:
-    active = [r for r in found.rows if r.active and r.skill is not None]
+def _for_task(
+    found: lib.SkillSet, task: str, prompter: Prompter, language: str = "unknown"
+) -> None:
+    off = set(lib.off_for_language(language))
+    active = [
+        r
+        for r in found.rows
+        if r.active and r.skill is not None and not (r.layer == lib.OFFICIAL and r.name in off)
+    ]
     now = [(r, why) for r in active if (why := lib.fires_for_task(r.skill, task))]
     later = [(r, how) for r in active if (how := lib.later_for_task(r.skill))]
     prompter.say(f"For the task {task_title(task)!r}:")
@@ -293,6 +300,8 @@ def _for_task(found: lib.SkillSet, task: str, prompter: Prompter) -> None:
             prompter.say(f"    {row.name} ({_LAYER_NAMES[row.layer]}): {why}")
     else:
         prompter.say("  No skill goes in from its first message.")
+    if off:
+        prompter.say(f"  Left out, they don't fit a {language} project: {', '.join(sorted(off))}")
     if later:
         prompter.say("  Later, maybe:")
         for row, how in later:

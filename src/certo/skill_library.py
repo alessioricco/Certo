@@ -280,6 +280,33 @@ def size_in_tokens(skill: Skill) -> int:
     return max(1, round(len(skill.content) / 4))
 
 
+# Official skills that fit only one kind of project: left out when the
+# project folder is clearly another language (verification.detect_project).
+# A new, empty folder ("unknown") keeps them; their triggers do the rest.
+OFFICIAL_LANGUAGES: dict[str, tuple[str, ...]] = {
+    "pytest-conventions": ("python",),
+}
+
+
+def project_language(workspace: str | Path | None) -> str:
+    """The project folder's language, or "unknown" (no folder, or none found)."""
+    if workspace is None or not Path(workspace).is_dir():
+        return "unknown"
+    from .verification import detect_project
+
+    try:
+        return detect_project(str(workspace)).language
+    except OSError:
+        return "unknown"
+
+
+def off_for_language(language: str) -> list[str]:
+    """The official skills that don't fit a project of `language`."""
+    if language in ("unknown", "ambiguous"):
+        return []
+    return [name for name, fits in OFFICIAL_LANGUAGES.items() if language not in fits]
+
+
 def fires_for_task(skill: Skill, task: str) -> str | None:
     """Why `skill` goes into a run of `task` from its first message, or None.
     The same matching a run uses (`Skill.match_trigger`)."""
