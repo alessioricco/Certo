@@ -14,6 +14,51 @@ first item is the suggested next one.
 
 ## Before the next release
 
+- **Background processes the agent starts outlive the run** (found in a
+  user's milestone run, 2026-11-14). The agent started its e2e suite with
+  `&` after the wrap-up message; the test runner and two preview servers
+  ran on for 12+ minutes after the run ended, while Certo's own build
+  check rewrote the folder they served. Track the run's child processes
+  (a process group, or the pids the terminal tool started) and stop them
+  before the checks and at the end of a run; the wrap-up message should
+  also say "don't start long test runs: Certo runs the checks". Done when
+  a run that leaves a background process ends with none left.
+- **`--resume` drops the time and step budgets** (same run). The run
+  record keeps the model mode (fixed) but not `max_task_seconds` or the
+  step limit: a run with 60-minute milestones was resumed with 30. Store
+  both like `model_selection` and reuse them unless a flag sets them.
+- **A resume counts the earlier run's tokens and cost again** (same run).
+  The resumed milestone's entry and report include the previous run's
+  model spend (and label its effort wrongly), so adding up RUNS.md
+  double-counts. Record only this run's spend, or show carried-over
+  figures on their own labelled line.
+- **Milestone state keeps stale or contradictory verdicts** (same run). A
+  verified milestone shows a later retry's `budget_exhausted`; skipped
+  milestones read "not started", "skipped" or `null` in three places;
+  earlier milestones show "-" for models and cost in the report. Keep
+  each milestone's last verified verdict and stats across runs, one label
+  for skipped ones; the resumed-run label goes only on the milestone that
+  was resumed.
+- **Reports: acceptance rows can't be told apart** (same run). Every row
+  reads "CHANGELOG.md … contains the expected text"; show the text (as
+  the agent's brief does).
+- **Generated files drown the handover and "Files changed"** (same run).
+  Coverage and test-report files hid the source in the milestone handover
+  ("… and 182 more") and made "Files changed" list ~2,900 files. Leave out
+  common build/test/coverage output folders even when not git-ignored,
+  and list source files first.
+- **"Files the checks rely on" warnings: show what changed** (same run).
+  All three flagged edits were legitimate (a version bump an acceptance
+  check required, lint globals for a new file, an assertion following a
+  deliberate UI text change). Show the changed lines, and don't flag an
+  edit an acceptance check requires.
+- **Records don't explain model switches or root-guard blocks** (same
+  run). A switch to another model in a resumed run had no
+  MODEL_DECISIONS.md entry; "Blocked outside the project root: 1 action"
+  appears only in the end summary, with no path anywhere. Write both,
+  with reasons, into the report (and decisions file).
+- **A step-limit hit isn't in the report** (same run): the agent reached
+  its step limit mid-milestone and the report says nothing.
 - **A longer time budget from `certo init` for Ollama?** The mazeman
   sample took 41 minutes on `qwen3.8:27b` (2026-10-22), past the default
   30-minute `CERTO_MAX_TASK_SECONDS`; it ended `verified` only because the
