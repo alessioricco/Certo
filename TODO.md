@@ -266,6 +266,17 @@ file), B, C, then 5a and 5b. Steps 2 (`certo models choose`) and A
   fallback, `writing`/`speed` (estimated) in the example list, example
   profiles with needs, `certo models choose` proposing fit orders, done.
   Left: the benchmark against the weights rule (local + cloud).
+- **D. No ratings for the user to keep** (the Author, 2026-11-14:
+  "this is annoying"). Users keep a full copy of the model list that
+  drifts from Certo's (the Author's copy rated Terra 4/4, the example
+  3/3) and misses new axes. (1) Certo's own list and profiles become the
+  lowest layer, read from the package, never copied; the user's files
+  hold only their exceptions. (2) `certo models update` slims an old
+  copy to the user's real edits (fields changed against the base it was
+  copied from), so the built-in values take over. (3) Re-rate the
+  built-in list once by the rubric, from the benchmark numbers in each
+  description; estimates marked. Done when a new user sets up models
+  without a `models_list.yaml` and the Author's copy is slimmed.
 - **C. `certo models refresh`.** Ratings computed, not hand-written:
   a model data file (raw benchmark scores, prices, published speed)
   attached to each release and cached in `~/.cache/certo/` (from the

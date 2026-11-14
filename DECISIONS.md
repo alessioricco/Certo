@@ -1936,3 +1936,10 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   changes only what it names; `replace: true` keeps the old whole-file
   behaviour. Every command respects `--project`, and `certo check` says
   where each value came from.
+- **Certo's own model list and task profiles are the lowest layer, read
+  from the package** (2026-11-14, the Author; supersedes "Certo ships the
+  model files only as examples and never reads them"). Users' copies
+  drifted from Certo's and missed new axes, and keeping ratings is not
+  the user's job. A user or project file now holds only exceptions; a
+  file a setting names is still read alone (benchmarks stay pinned).
+  `certo models update` slims an old full copy to the user's own edits.
