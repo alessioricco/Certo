@@ -4,6 +4,7 @@ merged by name (model_files.find_layers, model_catalog.merge_layer)."""
 from __future__ import annotations
 
 import io
+from pathlib import Path
 
 import pytest
 
@@ -76,7 +77,8 @@ def test_certos_own_list_and_profiles_are_the_lowest_layer(folders):
 
     for name in ("models_list.yaml", "task_profiles.yaml"):
         path = find_layers(name)
-        assert path.layers[0].endswith(f"examples/{name}.example")
+        lowest = Path(path.layers[0])
+        assert (lowest.parent.name, lowest.name) == ("examples", f"{name}.example")
         assert path.layers[-1] == str(user / name)
     assert find_layers("escalation.yaml") is None
 
