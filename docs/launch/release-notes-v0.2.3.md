@@ -16,9 +16,10 @@ easier to start:
   `certo skills suggest` shows which.
 - **A task file written in milestones runs in milestones** without
   `--milestones`; `--no-milestones` sends it as one task.
-- **Four bigger samples, in milestones**: a platform game with
+- **Five bigger samples, in milestones**: a platform game with
   parallax, a 3D wireframe tank game, a team task board web app with
-  SQLite, and a fixed shooter built to production quality.
+  SQLite, a fixed shooter built to production quality, and a
+  first-person exploration game on a generated alien planet.
 - **`--auto-model` chooses per milestone**, by the milestone's own
   title first, and the example task profiles gain `build`, for apps,
   games and features.
@@ -138,7 +139,7 @@ fitted the bundled tasks, so whether they help is not measured yet. See
 Getting started now says what the built-in skills are, and how to add
 your own or a trusted repository.
 
-## New: milestones without the flag, and four bigger samples
+## New: milestones without the flag, and five bigger samples
 
 A task file written in milestones (two or more `## Milestone N`
 headings, or short ones like `## M1 — title`, numbered 1, 2, 3... or
@@ -156,7 +157,7 @@ milestone headings that can't be read as milestones (a broken acceptance
 block, say) is refused before any model call. Text, URLs and files with
 a single heading run as one task, as before.
 
-`certo init` puts four bigger samples in `tasks/`, written in
+`certo init` puts five bigger samples in `tasks/`, written in
 milestones. They aren't in the menu at the end of `init`. The first
 three's first runs, on Claude Haiku 5.5, verified every milestone, for $0.34 to $1.11
 each ([the record](../benchmark/milestone-samples-0.2.3.md)):
@@ -171,7 +172,12 @@ each ([the record](../benchmark/milestone-samples-0.2.3.md)):
 - `star-swarm.md`: a fixed shooter with a diving enemy formation, in the
   browser, built to production quality in 10 milestones (`## M0` to
   `## M9`); the agent chooses the tech stack itself in the first. From a
-  user's task (2026-11-10), not run on its own yet.
+  user's task (2026-11-10), not run on its own yet;
+- `far-survey.md`: first-person exploration of an alien planet, in
+  TypeScript with Three.js. The sky, terrain, plants and animals are
+  generated from the planet's physics (star class, mass, radius, orbit,
+  atmosphere), and each world is a small JSON file in `levels/` or at a
+  URL, separate from the engine, in 7 milestones. Not run yet.
 
 ```bash
 certo tasks/team-board.md --project team-board

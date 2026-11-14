@@ -45,14 +45,16 @@ Keep each milestone small enough to be one ordinary task: something you
 could check by its tests when it is done. See also
 [Write a task Certo can check](write-a-good-task.md).
 
-**Bigger examples.** `certo init` puts four in the sample folder's
+**Bigger examples.** `certo init` puts five in the sample folder's
 `tasks/`: `sky-hopper.md`, a side-scrolling platform game with parallax
 backgrounds; `iron-horizon.md`, a 3D wireframe tank game with its own 3D
 drawing; `team-board.md`, a team task board web app with accounts,
 roles, a SQLite database and drag-and-drop cards (each in 4 or 5
 milestones); and `star-swarm.md`, a fixed shooter built to production
 quality in 10 milestones, `## M0` to `## M9`, where the agent chooses the
-tech stack itself in the first. They are much bigger than the other samples, so a
+tech stack itself in the first; and `far-survey.md`, a first-person
+exploration game on a generated alien planet in TypeScript and Three.js,
+whose worlds are JSON files separate from the engine, in 7 milestones. They are much bigger than the other samples, so a
 run takes much longer and uses more model credits (not measured yet):
 
 ```bash

@@ -968,7 +968,13 @@ SAMPLES = (
 # the others, but not offered in the menu above: much bigger, so a run
 # takes much longer and costs more (not measured yet). The sample README
 # lists them.
-MILESTONE_SAMPLES = ("sky-hopper.md", "iron-horizon.md", "team-board.md", "star-swarm.md")
+MILESTONE_SAMPLES = (
+    "sky-hopper.md",
+    "iron-horizon.md",
+    "team-board.md",
+    "star-swarm.md",
+    "far-survey.md",
+)
 
 
 _MORE_MODELS = (

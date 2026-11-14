@@ -32,7 +32,7 @@ to see one, then write your own the same way. The other samples:
 
 The browser games need Node 18 or newer, for their tests.
 
-Four bigger samples are written in **milestones**: each milestone is
+Five bigger samples are written in **milestones**: each milestone is
 built and checked before the next one starts, and if one fails, Certo
 stops there and `certo --resume --project NAME` continues from it. They
 are much bigger than the samples above, so a run takes much longer and
@@ -46,7 +46,11 @@ uses more model credits:
   a SQLite database and drag-and-drop cards, in Python;
 - `tasks/star-swarm.md`: a fixed shooter with a diving enemy formation,
   in the browser, built to production quality in 10 milestones; the
-  agent chooses the tech stack itself in the first one.
+  agent chooses the tech stack itself in the first one;
+- `tasks/far-survey.md`: a first-person exploration game on a generated
+  alien planet, in TypeScript with Three.js: the sky, terrain, plants and
+  animals follow the planet's physics, and each world is a JSON file in
+  `levels/` or at a URL, separate from the engine (7 milestones).
 
 ```bash
 certo --milestones tasks/team-board.md --project team-board

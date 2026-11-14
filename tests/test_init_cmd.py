@@ -715,6 +715,7 @@ def test_creates_the_workspace_files(tmp_path, monkeypatch, no_check):
         "artifacts/",
     ]
     assert sorted(p.name for p in (folder / "tasks").iterdir()) == [
+        "far-survey.md",
         "hanoi.md",
         "invaders.md",
         "iron-horizon.md",
