@@ -149,6 +149,23 @@ request, an MCP server for editors, readable run reports.
 about ladders, profiles or the benchmark; time from install to first
 `verified` is measured and short.
 
+### 7. Model configuration you can trust
+
+Choosing models is where many users stop. Today it takes three
+hand-written files, ratings guessed on a 1-5 scale, keyword lists that
+read only titles, and keys sometimes written out in full. The goal: an
+author picks the models a project may use, and Certo proposes the
+strategy (an auto-model order or an escalation ladder) from those
+models, with real prices and the author's own past results behind it.
+Keys live only in settings files, the model list stays current from the
+project's releases, and choosing by reading the whole request (a model
+as router) is an opt-in mode, adopted only if the benchmark shows it no
+worse than the rules.
+
+*Success:* a new project gets a working multi-model setup in one guided
+command with no YAML written by hand; no key is stored in a model file;
+the proposed strategy's cost estimate is within the measured range.
+
 ## Now, next, later
 
 - **Now:** 0.2, which starts the MCP server with every Certo command
@@ -173,8 +190,9 @@ working and documented, but marked experimental: they don't set the pace.
 
 Choices made on purpose, each with its reason in `DECISIONS.md`:
 
-- **No LLM-based router** for models or skills: selection stays
-  deterministic, with no extra model call.
+- **No LLM-based router by default** for models or skills: selection
+  stays deterministic, with no extra model call, unless the user turns on
+  the opt-in router mode (theme 7, decided 2026-11-14).
 - **No command-running acceptance checks**: an unauthenticated server
   caller could run commands on the host.
 - **No auto-approval** in confirm mode, and no guessing input to drive

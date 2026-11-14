@@ -1886,3 +1886,14 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   a cloud provider would be a paid call, and a refusing provider fails at
   once anyway. The last candidate is kept even when down, so the run fails
   as before instead of with no model. Not in `--escalate` yet (TODO).
+- **An opt-in router mode may choose models by reading the request**
+  (2026-11-14, the Author's decision; supersedes "No LLM-based router" for
+  that mode only). Keyword triggers read only titles and the 1-5 ratings
+  are coarse; a cheap model reading the whole task can do better. Off by
+  default and experimental until a benchmark on a local and a cloud model
+  shows it no worse than the rules on score and cost; the rules stay the
+  default and take over when the router fails. Plan: TODO "Model
+  configuration you can trust", step 5b.
+- **`certo models update --online` fetches from the latest release tag,
+  not `main`** (2026-11-14, the Author's decision). Only lists that went
+  through the release checks reach users; newer prices wait for a release.

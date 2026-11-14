@@ -235,6 +235,49 @@ first item is the suggested next one.
 
 ## 4. Models and strategies
 
+**Model configuration you can trust** (ROADMAP theme 7, the Author's
+request 2026-11-14). In this order:
+
+- **1. Keys out of `models.yaml`.** `${NAME}` already works, but keys
+  written out in full go unnoticed (the Author's file had 8). A command
+  moves each into the user `.env` under the provider's usual name and
+  writes `"${NAME}"` in its place, never printing a key; `certo check`
+  warns about a key written in full; `certo init models` writes `${NAME}`.
+  Done when the Author's file holds no key and the check warns on one.
+- **2. Choose a project's models, Certo proposes the strategy.** A
+  guided command lists the enabled models with real prices; the author
+  ticks the ones a project may use (a project file with names only, keys
+  stay in the user file). From them Certo proposes an auto-model order
+  per kind of task and an escalation ladder, each with its estimated
+  cost from `run_stats.csv`; the author accepts or edits. Today a project
+  `models.yaml` replaces the user one whole, so this needs a "names only"
+  project file. Done when a project gets a working multi-model setup with
+  no YAML written by hand.
+- **3. The model list from the latest release.** `certo models update
+  --online` fetches the example list from the repository at the latest
+  release tag (decided 2026-11-14), shows what changed and applies it
+  with the author's OK, keeping their edits; `certo check` says when the
+  copy is older than the published one. Done when an old copy is brought
+  up to date without a Certo upgrade.
+- **4. Ratings from real numbers.** Cost from the real price (LiteLLM)
+  times the tokens the user's runs really use, not a 1-5 band; quality
+  from the user's own verified rate per model and kind of task once there
+  are enough runs, published benchmark numbers otherwise; 1-5 ratings
+  only as the fallback. Done when the ranking uses measured cost and,
+  where it exists, the user's own results, and `certo check` shows which.
+- **5a. A model drafts the profiles.** From the author's description in
+  plain words ("cheap first, Opus only for architecture") and their
+  models, a model writes the profiles once, for review; runs stay
+  deterministic. Done when the drafted file passes `certo check` and the
+  author can edit it.
+- **5b. Opt-in router mode.** A cheap model the user names reads the
+  whole task or milestone (not only titles) with the chosen models,
+  their prices and the user's policy, and returns an ordered list with a
+  reason each; the fallback walks it as today; if the router fails, the
+  rules decide. Recorded in `MODEL_DECISIONS.md`. Off by default (decided
+  2026-11-14). Done when a benchmark on a local and a cloud model shows
+  it no worse than the rules on score and cost; until then experimental.
+
 - **`--escalate` skips a local rung that can't be reached.** `--auto-model`
   asks a local model's server first (`model_reachability.py`, 0.2.3);
   escalation ladders, which often start local, don't yet: a switched-off
