@@ -341,6 +341,21 @@ the first task, Wordle, ended `verified` in 11m 49s. What got in the way
 is in the first item and in "Smaller bugs". (The quieter run, 0.1.21,
 cut that first run's output from 2,949 lines to 1,021.)
 
+- **Ask Certo about Certo (to discuss, the Author's idea 2026-11-14).**
+  In interactive mode (and maybe as `certo ask "<question>"`), a question
+  about how Certo works is answered from its own README and `docs/`,
+  with links to the pages used, instead of the user reading the docs.
+  To settle before building: where the docs come from (bundled in the
+  package at the installed version, so answers match the installed
+  Certo, or fetched from the release); which model answers (the user's
+  own, ideally a cheap one; free on a local model); how pages are found
+  (search the headings and text first, send only the matching pages, so
+  a 32K local model copes); whether it may also read the user's own
+  settings to answer "why did my run pick Opus?" (never keys: the same
+  rules as `certo check`); and how it says "the docs don't say" instead
+  of guessing. Done when a question gets an answer citing the pages it
+  used, on a local and a cloud model, and a wrong-answer check on a set
+  of questions with known answers passes.
 - **`certo report`: a run's errors in one file, to improve Certo**
   (the Author, 2026-11-10). Today a failing run is studied by hand:
   `.certo/reports/`, `RUNS.md`, `STATUS.md`, `run.json`, the terminal
