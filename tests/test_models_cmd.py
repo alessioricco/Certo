@@ -137,6 +137,7 @@ def test_with_a_base_it_slims_after_one_confirmation(files):
 
     assert code == 0, text
     assert "cloud: your change kept (code 5)" in text
+    assert "No model is gone: the other 1 (local) still come from Certo's own list" in text
     assert _models((folder / "models_list.yaml").read_text())[0] == {
         "name": "cloud",
         "ratings": {"code": 5},

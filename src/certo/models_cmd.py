@@ -556,6 +556,7 @@ def update_main(
         prompter.say("\nCancelled. Nothing was written.")
         return 130
     result = render(plans)
+    from_certo = [p.name for p in plans if not p.own and not p.kept]
     shutil.copyfile(list_path, list_path + ".bak")
     if result is None:
         os.remove(list_path)
@@ -570,9 +571,15 @@ def update_main(
             f"Rewrote {list_path} with only your changes. The old file is "
             f"{os.path.basename(list_path)}.bak."
         )
+    if from_certo:
+        prompter.say(
+            f"No model is gone: the other {len(from_certo)} ({', '.join(from_certo[:4])}"
+            + (", ..." if len(from_certo) > 4 else "")
+            + ") still come from Certo's own list, with Certo's current values."
+        )
     if os.path.isfile(base_file):
         os.remove(base_file)
-    prompter.say("Run certo check to see the models.")
+    prompter.say("certo check lists every model and which file each value comes from.")
     return 0
 
 

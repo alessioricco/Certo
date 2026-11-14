@@ -352,7 +352,10 @@ Certo's list:
 A model Certo's list doesn't have is yours and is kept whole, unless
 Certo removed it, you never changed it and `models.yaml` doesn't use it.
 When nothing is left, the file is removed. The old file is kept as
-`models_list.yaml.bak`. Exit code 0 when the file was rewritten or there
+`models_list.yaml.bak`. A slimmed file can hold a single model and still
+lose none: the others come from Certo's own list, and the command says
+how many. `certo check` lists every model and the file each value
+comes from. Exit code 0 when the file was rewritten or there
 is none, 1 when nothing was written, 130 on Ctrl-C.
 
 ### `certo models choose`
