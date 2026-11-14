@@ -130,3 +130,76 @@ def test_prepare_workspace_creates_the_project_and_remembers_it(tmp_path):
     assert os.path.isdir(cfg.workspace)
     assert was_created_by_certo(str(tmp_path), "demo")
     assert prepare_workspace(cfg, options) is False
+
+
+# --- a resume keeps how its run chose models (continue_model_selection) ------
+
+
+def _saved(selection, ladder=""):
+    from certo.project_state import RunRecord
+
+    return RunRecord(
+        task="t",
+        conversation_id="c",
+        model="m",
+        execution="local",
+        started_at="s",
+        updated_at="u",
+        model_selection=selection,
+        escalation_ladder=ladder,
+    )
+
+
+def test_a_resume_keeps_auto_model():
+    from certo.api import continue_model_selection
+
+    cfg, note = continue_model_selection(_cfg(), _saved("auto"), model_flag=False, environ={})
+
+    assert cfg.model_selection == "auto"
+    assert note.startswith("Certo: continuing with --auto-model")
+
+
+def test_a_resume_keeps_the_ladder():
+    from certo.api import continue_model_selection
+
+    cfg, note = continue_model_selection(
+        _cfg(), _saved("escalate", "cheap-first"), model_flag=False, environ={}
+    )
+
+    assert (cfg.model_selection, cfg.escalation_ladder) == ("escalate", "cheap-first")
+    assert "--escalate cheap-first" in note
+
+
+def test_a_choice_made_now_wins_over_the_saved_mode():
+    from certo.api import continue_model_selection
+
+    for kwargs in (
+        {"model_flag": True, "environ": {}},
+        {"model_flag": False, "environ": {"CERTO_MODEL_SELECTION": "manual"}},
+    ):
+        cfg, note = continue_model_selection(_cfg(), _saved("auto"), **kwargs)
+        assert cfg.model_selection == "manual" and note is None
+    # a project's certo-models.yaml already chose
+    cfg, note = continue_model_selection(
+        _cfg(model_selection="escalate"), _saved("auto"), model_flag=False, environ={}
+    )
+    assert cfg.model_selection == "escalate" and note is None
+
+
+def test_an_old_record_or_a_manual_run_changes_nothing():
+    from certo.api import continue_model_selection
+    from certo.project_state import RunRecord
+
+    old = RunRecord.from_dict(
+        {
+            "task": "t",
+            "conversation_id": "c",
+            "model": "m",
+            "execution": "local",
+            "started_at": "s",
+            "updated_at": "u",
+        }
+    )
+    for record in (old, _saved("manual"), None):
+        cfg, note = continue_model_selection(_cfg(), record, model_flag=False, environ={})
+        assert cfg.model_selection == "manual" and note is None

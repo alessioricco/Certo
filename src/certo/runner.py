@@ -2347,6 +2347,8 @@ def _open_saved_conversation(
         record.model = model
         record.reasoning_effort = effort
         record.execution = cfg.execution
+        record.model_selection = cfg.model_selection
+        record.escalation_ladder = cfg.escalation_ladder
     else:
         record = RunRecord(
             task=task,
@@ -2356,6 +2358,8 @@ def _open_saved_conversation(
             execution=cfg.execution,
             started_at=now(),
             updated_at=now(),
+            model_selection=cfg.model_selection,
+            escalation_ladder=cfg.escalation_ladder,
         )
     drop_other_conversations(workspace, keep=conversation_id)
     writer = _ProjectStateWriter(workspace, record)

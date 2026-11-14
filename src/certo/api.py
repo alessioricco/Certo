@@ -12,7 +12,7 @@ says `model`.
 from __future__ import annotations
 
 import os
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING, Any
 
@@ -161,6 +161,41 @@ def resolve_config(
     elif options.workspace is not None:
         cfg = replace(cfg, workspace=options.workspace)
     return cfg
+
+
+_MODE_FLAGS = {"auto": "--auto-model", "escalate": "--escalate"}
+
+
+def continue_model_selection(
+    cfg: Config,
+    record: Any,
+    *,
+    model_flag: bool,
+    environ: Mapping[str, str] | None = None,
+) -> tuple[Config, str | None]:
+    """A resume, or a milestone file run again, keeps how the run it
+    continues chose its models (`record.model_selection`): `--auto-model`
+    or `--escalate` (with its ladder), unless the user chose now: a flag
+    (`--model` included), `CERTO_MODEL_SELECTION`, or a project's
+    certo-models.yaml (which already set `cfg.model_selection`). Returns
+    the config and a line to show, or None when nothing changed."""
+    environ = os.environ if environ is None else environ
+    saved = getattr(record, "model_selection", "manual") or "manual"
+    if (
+        record is None
+        or saved not in _MODE_FLAGS
+        or model_flag
+        or cfg.model_selection != "manual"
+        or (environ.get("CERTO_MODEL_SELECTION") or "").strip()
+    ):
+        return cfg, None
+    ladder = getattr(record, "escalation_ladder", "") or cfg.escalation_ladder
+    cfg = replace(cfg, model_selection=saved, escalation_ladder=ladder)
+    flag = _MODE_FLAGS[saved] + (f" {ladder}" if saved == "escalate" and ladder else "")
+    return cfg, (
+        f"Certo: continuing with {flag}, as the run it continues chose its models "
+        "(--model NAME or CERTO_MODEL_SELECTION chooses otherwise)."
+    )
 
 
 def load_run_ladder(

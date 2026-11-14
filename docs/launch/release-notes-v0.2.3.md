@@ -455,6 +455,14 @@ what is open, make the checks pass, and meet the acceptance checks that
 don't hold yet, which it names. See
 [Acceptance checks](../guides/acceptance-checks.md#what-happens-to-the-verdict).
 
+## Fixed: `--resume` keeps `--auto-model` and `--escalate`
+
+A run started with `--auto-model` (or `--escalate`) and resumed without
+the flag ran on `CERTO_LLM_MODEL` instead, and wrote no
+`MODEL_DECISIONS.md`. The run record now keeps how the run chose its
+models, and a resume, or a milestone file run again, uses the same,
+saying so. `--model NAME` or `CERTO_MODEL_SELECTION` chooses otherwise.
+
 ## Also
 
 - **`certo bench` copes with a model server that goes away.** A run

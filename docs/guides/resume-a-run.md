@@ -38,6 +38,16 @@ path is quoted when it contains spaces).
 After Ctrl-C or an error it prints `Continue with: certo --resume ...`
 and exits with code 130 (Ctrl-C) or 1 (error).
 
+**The same way of choosing models.** A run started with `--auto-model`
+or `--escalate` is resumed the same way, without the flag:
+
+```text
+Certo: continuing with --auto-model, as the run it continues chose its models (--model NAME or CERTO_MODEL_SELECTION chooses otherwise).
+```
+
+Give `--model NAME` (or set `CERTO_MODEL_SELECTION`) to resume on one
+model instead.
+
 ## What the agent gets back
 
 - **Its earlier conversation**, when Certo saved it: the task, every step

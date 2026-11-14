@@ -71,6 +71,11 @@ class RunRecord:
     # Stopped by a step, time or cost limit with passing checks: verified,
     # but maybe unfinished (TaskOutcome.cut_short).
     cut_short: bool = False
+    # How the run chose its models ("manual", "auto", "escalate") and the
+    # ladder it climbed: a resume or a milestone file run again keeps them
+    # unless the user chooses another (api.continue_model_selection).
+    model_selection: str = "manual"
+    escalation_ladder: str = ""
 
     @classmethod
     def from_dict(cls, data: dict) -> RunRecord:

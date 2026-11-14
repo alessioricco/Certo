@@ -24,6 +24,7 @@ from .api import (
     NothingToDo,
     RunOptions,
     UsageError,
+    continue_model_selection,
     load_run_ladder,
     plan_run,
     prepare_workspace,
@@ -801,6 +802,21 @@ def _run_task_command(
     resume_from = plan.resume_from
     milestone_state = plan.milestones
     milestone_restart = plan.restart
+
+    # A resume, or a milestone file run again, keeps how the run it continues
+    # chose its models, unless the user chooses now.
+    continued = resume_from
+    if continued is None and milestone_state is not None:
+        from .project_state import load_record
+
+        continued = load_record(cfg.workspace)
+    cfg, mode_note = continue_model_selection(
+        cfg,
+        continued,
+        model_flag=args.model is not None or args.escalate is not None or args.auto_model,
+    )
+    if mode_note:
+        print(mode_note)
 
     # After the plan is known: a resume of milestones counts too.
 

@@ -2004,6 +2004,34 @@ def test_resume_continues_the_saved_task_with_the_optional_instruction(monkeypat
     assert calls[0]["save_state"] is True
 
 
+def test_resume_keeps_auto_model_from_the_run_it_continues(monkeypatch, tmp_path, capsys):
+    # Live 2026-11-14: a milestone run with --auto-model, resumed without the
+    # flag, ran on CERTO_LLM_MODEL instead.
+    from model_file_helpers import model_file_config
+
+    files = model_file_config(tmp_path, _AUTO_MODEL_CATALOG)
+    _saved_run(tmp_path, model_selection="auto")
+    monkeypatch.delenv("CERTO_MODEL_SELECTION", raising=False)
+    calls: list = []
+    monkeypatch.setattr(cli, "load_config", lambda: _cfg(workspace=str(tmp_path), **files))
+    monkeypatch.setattr(cli, "run_task", _recording_run_task(calls))
+
+    assert cli.main(["--resume"]) == 0
+    assert calls[0]["cfg"].model_selection == "auto"
+    assert "continuing with --auto-model" in capsys.readouterr().out
+
+
+def test_resume_with_model_runs_that_model(monkeypatch, tmp_path):
+    _saved_run(tmp_path, model_selection="auto")
+    monkeypatch.delenv("CERTO_MODEL_SELECTION", raising=False)
+    calls: list = []
+    monkeypatch.setattr(cli, "load_config", lambda: _cfg(workspace=str(tmp_path)))
+    monkeypatch.setattr(cli, "run_task", _recording_run_task(calls))
+
+    assert cli.main(["--resume", "--model", "openai/other"]) == 0
+    assert calls[0]["cfg"].model_selection == "manual"
+
+
 def test_resume_saves_state_even_when_saving_is_off(monkeypatch, tmp_path):
     _saved_run(tmp_path)
     calls: list = []

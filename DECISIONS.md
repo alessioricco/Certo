@@ -1953,3 +1953,10 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   of the budget, 2 to 10 minutes) naming the required checks not yet met.
   Independent tests stay hidden. Messages are generic templates: only the
   task's own paths and texts fill them in.
+- **A resume keeps how its run chose models** (0.2.3, 2026-11-14). Live:
+  a milestone run with `--auto-model`, resumed without the flag, ran on
+  `CERTO_LLM_MODEL` and wrote no decisions. The run record stores
+  `model_selection` and the ladder; a resume, or a milestone file run
+  again, reuses them unless a flag (`--model` included),
+  `CERTO_MODEL_SELECTION` or a project's `certo-models.yaml` chooses.
+  Shown in one line, so the choice is never silent.
