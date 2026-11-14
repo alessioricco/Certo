@@ -1910,6 +1910,7 @@ def _stream_task(
             escalation_file=cfg.escalation_file,
             task_profiles_file=cfg.task_profiles_file,
             on_warning=lambda w: _emit_notice(emit, f"Certo: models.yaml: {w}"),
+            project_dir=cfg.workspace,
         )
     if ladder is not None:
         return _stream_escalation(
@@ -1954,6 +1955,7 @@ def _stream_task(
             escalation_file=cfg.escalation_file,
             on_warning=lambda w: _emit_notice(emit, f"Certo: models.yaml: {w}"),
             mode="auto",
+            project_dir=cfg.workspace,
         )
         profile = classify_task(task, catalog)
         ranked, how = rank_for_profile(catalog, profile)

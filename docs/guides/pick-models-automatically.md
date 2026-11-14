@@ -46,7 +46,8 @@ ratings decide". It can also leave your local models out of
 is off.
 
 Copy the examples into your user settings folder (or into a project
-folder, which then overrides them). An `--auto-model` run without the
+folder, where it adds to or changes yours, model by model: see
+[Where Certo looks](../reference/models-yaml.md#where-certo-looks)). An `--auto-model` run without the
 files prints the exact commands for your installation (so does `certo
 check`, once one of the two required files exists):
 

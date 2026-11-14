@@ -221,6 +221,7 @@ def load_ladder(
     escalation_file: str = "",
     task_profiles_file: str = "",
     on_warning: Callable[[str], None] | None = None,
+    project_dir: str = "",
 ) -> ResolvedLadder:
     """Find, load and check the model files ("" looks them up, see
     model_files.py), then resolve the ladder. Raises `EscalationError` or
@@ -233,6 +234,7 @@ def load_ladder(
         escalation_file=escalation_file,
         on_warning=on_warning,
         mode="escalate",
+        project_dir=project_dir,
     )
     return resolve_ladder(catalog, name)
 

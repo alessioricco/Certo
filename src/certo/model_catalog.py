@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import os
 import re
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
@@ -366,7 +366,22 @@ _PERSONAL_KEYS = {
 }
 
 
-def _read_mapping(path: str) -> dict:
+class LayeredPath(str):
+    """A model file found in more than one folder (model_files.py): the
+    user settings folder, the current folder, the project folder. As a
+    string it is the top layer's path (the one a person edits, and the one
+    messages name); reading it merges every layer, lowest first, entries
+    by name (DECISIONS.md, 2026-11-14)."""
+
+    layers: tuple[str, ...]
+
+    def __new__(cls, layers: Sequence[str]) -> LayeredPath:
+        obj = super().__new__(cls, layers[-1])
+        obj.layers = tuple(layers)
+        return obj
+
+
+def _read_one(path: str, *, empty_ok: bool = False) -> dict:
     file_path = Path(path)
     if not file_path.is_file():
         raise ModelCatalogError(f"{path} doesn't exist.")
@@ -374,9 +389,71 @@ def _read_mapping(path: str) -> dict:
         raw = yaml.safe_load(file_path.read_text(encoding="utf-8"))
     except yaml.YAMLError as exc:
         raise ModelCatalogError(f"{path} is not valid YAML: {exc}") from exc
+    if raw is None and empty_ok:
+        return {}
     if not isinstance(raw, dict):
         raise ModelCatalogError(f"{path} must contain a mapping at the top level.")
     return raw
+
+
+def _merge_entries(base: list, over: list) -> list:
+    """Two `models:` lists, by `name`: an entry in `over` changes the
+    fields it gives (ratings axis by axis), or is added."""
+    merged = [dict(e) if isinstance(e, dict) else e for e in base]
+    index = {e.get("name"): i for i, e in enumerate(merged) if isinstance(e, dict)}
+    for entry in over:
+        name = entry.get("name") if isinstance(entry, dict) else None
+        if name is None or name not in index:
+            merged.append(entry)
+            continue
+        old = merged[index[name]]
+        new = {**old, **entry}
+        if isinstance(old.get("ratings"), dict) and isinstance(entry.get("ratings"), dict):
+            new["ratings"] = {**old["ratings"], **entry["ratings"]}
+        merged[index[name]] = new
+    return merged
+
+
+def merge_layer(base: dict, over: dict) -> dict:
+    """`over` (a higher layer) on top of `base`: models by name, task
+    profiles and ladders by name (a profile or ladder is replaced whole),
+    anything else replaced."""
+    merged = dict(base)
+    for key, value in over.items():
+        if key == "replace":
+            continue
+        old = merged.get(key)
+        if key == "models" and isinstance(old, list) and isinstance(value, list):
+            merged[key] = _merge_entries(old, value)
+        elif key == "task_profiles" and isinstance(old, dict) and isinstance(value, dict):
+            merged[key] = {**old, **value}
+        elif key == "escalation" and isinstance(old, dict) and isinstance(value, dict):
+            esc = dict(old)
+            for k, v in value.items():
+                if k == "ladders" and isinstance(esc.get(k), dict) and isinstance(v, dict):
+                    esc[k] = {**esc[k], **v}
+                else:
+                    esc[k] = v
+            merged[key] = esc
+        else:
+            merged[key] = value
+    return merged
+
+
+def _read_mapping(path: str) -> dict:
+    layers = getattr(path, "layers", None)
+    if not layers:
+        raw = _read_one(path)
+        if isinstance(raw.get("replace"), bool):
+            raw = {k: v for k, v in raw.items() if k != "replace"}
+        return raw
+    raws = [_read_one(p, empty_ok=True) for p in layers]
+    # A layer with `replace: true` hides the layers below it.
+    start = max((i for i, r in enumerate(raws) if r.get("replace") is True), default=0)
+    merged: dict = {}
+    for raw in raws[start:]:
+        merged = merge_layer(merged, raw)
+    return merged
 
 
 def _parse_profiles(raw: Any, path: str) -> list[TaskProfile]:
@@ -392,7 +469,9 @@ def _read_section_file(path: str, key: str) -> Any:
     A file with only comments is fine: it sets nothing."""
     file_path = Path(path)
     try:
-        if yaml.safe_load(file_path.read_text(encoding="utf-8")) is None:
+        if not getattr(path, "layers", None) and (
+            yaml.safe_load(file_path.read_text(encoding="utf-8")) is None
+        ):
             return None
     except (OSError, yaml.YAMLError):
         pass  # _read_mapping reports it

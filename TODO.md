@@ -237,7 +237,8 @@ first item is the suggested next one.
 
 **Model configuration you can trust** (ROADMAP theme 7, the Author's
 request 2026-11-14). In this order: 1 (done but for the Author's own
-file), A, B, C, then 5a and 5b. Step 2 (`certo models choose`) is done.
+file), B, C, then 5a and 5b. Steps 2 (`certo models choose`) and A
+(folder layers) are done.
 
 - **1. Keys out of `models.yaml`.** `${NAME}` already works, but keys
   written out in full go unnoticed (the Author's file had 8). A command
@@ -247,17 +248,6 @@ file), A, B, C, then 5a and 5b. Step 2 (`certo models choose`) is done.
   Done when the Author's file holds no key and the check warns on one.
   *Progress (0.2.3):* `certo models secure` and the warning are built;
   left: the Author runs it on their own file.
-- **A. Folder layers, merged by name.** Today each model file is used
-  whole (first found: setting, current folder, user folder), so a
-  project change means copying every model and key. Make the project
-  layer (the `--project` folder, else the current one) add to or override
-  the user layer entry by entry, for `models_list.yaml`, `models.yaml`,
-  `task_profiles.yaml` and `escalation.yaml`; `replace: true` at a
-  project file's top keeps whole-file behaviour. Every command respects
-  `--project` (runs, `certo check`, `models update/secure/choose`), and
-  `certo check` shows where each value came from (user, project,
-  computed). Done when a project file of two lines changes one model's
-  rating and everything else comes from the user files.
 - **B. Fit-based auto-model.** A profile says what a task needs
   (`needs: {code: 4}`, minimums per axis, plus `slow_ok`/speed), not
   weights: Certo keeps the models that meet the needs and starts with the

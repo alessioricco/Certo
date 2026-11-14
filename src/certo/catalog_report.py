@@ -27,7 +27,7 @@ from .model_catalog import (
     score_entry,
     task_title,
 )
-from .model_files import find, missing_message, resolve, resolve_optional
+from .model_files import find, layers_of, missing_message, resolve, resolve_optional
 from .milestones import MilestoneError, milestone_task, parse_milestones, written_in_milestones
 from .model_pricing import is_local
 from .model_selection import config_for_entry
@@ -136,30 +136,78 @@ def _catalog_lines(catalog: ModelCatalog) -> list[str]:
     return lines
 
 
-def _load_catalog(out: TextIO) -> ModelCatalog | None:
-    """Find and load the model files, printing which ones are used. None
-    after printing the error."""
+def _layer_changes(path: str) -> list[str]:
+    """For a file read in layers, one line per layer above the lowest:
+    which entries it changes and which it adds."""
+    layers = layers_of(path)
+    if len(layers) < 2:
+        return []
+    import yaml
+
+    lines = []
+    below: set[str] = set()
+    for i, layer in enumerate(layers):
+        try:
+            raw = yaml.safe_load(open(layer, encoding="utf-8")) or {}
+        except (OSError, yaml.YAMLError):
+            raw = {}
+        names = set()
+        for key in ("models",):
+            names |= {e.get("name") for e in raw.get(key) or [] if isinstance(e, dict)}
+        for key in ("task_profiles",):
+            names |= set(raw.get(key) or {})
+        ladders = (raw.get("escalation") or {}).get("ladders") or {}
+        names |= {f"ladder {n}" for n in ladders}
+        names.discard(None)
+        if i > 0:
+            changed = sorted(n for n in names if n in below)
+            added = sorted(n for n in names if n not in below)
+            what = []
+            if raw.get("replace") is True:
+                what.append("replaces the layers below")
+            if changed:
+                what.append("changes " + ", ".join(changed))
+            if added:
+                what.append("adds " + ", ".join(added))
+            lines.append(f"    + {layer}: {'; '.join(what) or 'no entries'}")
+        below |= names
+    return lines
+
+
+def _print_path(out: TextIO, label: str, path: str | None, missing: str) -> None:
+    if path is None:
+        print(f"  {label}: {missing}", file=out)
+        return
+    layers = layers_of(path)
+    print(f"  {label}: {layers[0]}", file=out)
+    for line in _layer_changes(path):
+        print(line, file=out)
+
+
+def _load_catalog(out: TextIO, project_dir: str = "") -> ModelCatalog | None:
+    """Find and load the model files for `project_dir` (else the current
+    folder), printing which ones are used and what each layer changes.
+    None after printing the error."""
     models_file, list_file = _setting("MODELS_FILE"), _setting("MODELS_LIST_FILE")
     print("Model files:", file=out)
     try:
-        list_path, models_path = resolve(models_file, list_file)
+        list_path, models_path = resolve(models_file, list_file, project_dir)
         profiles_path, escalation_path = resolve_optional(
-            _setting("TASK_PROFILES_FILE"), _setting("ESCALATION_FILE")
+            _setting("TASK_PROFILES_FILE"), _setting("ESCALATION_FILE"), project_dir
         )
-        # A project's own choice (certo models choose), in the folder a run
-        # without --project works in.
+        # A project's own choice (certo models choose).
         from .project_models import project_file, read_strategy
 
-        project = project_file(_setting("WORKSPACE") or os.getcwd())
+        project = project_file(project_dir or _setting("WORKSPACE") or os.getcwd())
         if project is not None:
             profiles_path = _setting("TASK_PROFILES_FILE") or project
             escalation_path = _setting("ESCALATION_FILE") or project
             strategy = read_strategy(project) or "not set"
             print(f"  Project choice: {project} (strategy: {strategy})", file=out)
-        print(f"  List: {list_path}", file=out)
-        print(f"  Personal settings: {models_path}", file=out)
-        print(f"  Task profiles: {profiles_path or 'none (optional, for --auto-model)'}", file=out)
-        print(f"  Escalation: {escalation_path or 'none (optional, for --escalate)'}", file=out)
+        _print_path(out, "List", list_path, "")
+        _print_path(out, "Personal settings", models_path, "")
+        _print_path(out, "Task profiles", profiles_path, "none (optional, for --auto-model)")
+        _print_path(out, "Escalation", escalation_path, "none (optional, for --escalate)")
         return load_model_catalog(
             list_path,
             models_path,
@@ -173,11 +221,11 @@ def _load_catalog(out: TextIO) -> ModelCatalog | None:
         return None
 
 
-def print_task_routing(out: TextIO, task_text: str) -> bool:
+def print_task_routing(out: TextIO, task_text: str, project_dir: str = "") -> bool:
     """`certo check --task`: the profile --auto-model would pick for this
     task, why, and every model in the order it would try them. No model is
     called. False when the model files can't be loaded."""
-    catalog = _load_catalog(out)
+    catalog = _load_catalog(out, project_dir)
     if catalog is None:
         return False
     print(file=out)
@@ -265,13 +313,17 @@ def print_catalog_report(
     timeout: int,
     check: Callable,
     explain: Callable,
+    project_dir: str = "",
 ) -> bool:
     """Print the catalog report; return False on any error or failed test.
 
     `check`/`explain` are llm_check's `check_tool_calling`/`explain`, passed
     in so tests can fake the model call."""
     models_file, list_file = _setting("MODELS_FILE"), _setting("MODELS_LIST_FILE")
-    found = (find(LIST_FILE, list_file), find(MODELS_FILE, models_file))
+    found = (
+        find(LIST_FILE, list_file, project_dir),
+        find(MODELS_FILE, models_file, project_dir),
+    )
     if found == (None, None):
         if test_models:
             print(f"--models: {missing_message(MODELS_FILE, 'CERTO_MODELS_FILE')}", file=out)
@@ -283,7 +335,7 @@ def print_catalog_report(
         )
         print(file=out)
         return True
-    catalog = _load_catalog(out)
+    catalog = _load_catalog(out, project_dir)
     if catalog is None:
         return False
     report = check_catalog(catalog)

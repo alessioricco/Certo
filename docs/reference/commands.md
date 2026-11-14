@@ -326,11 +326,12 @@ Bring your `models_list.yaml` up to date with the example list of the
 installed Certo, keeping your own changes.
 
 ```text
-certo models update [--yes]
+certo models update [--project NAME] [--yes]
 ```
 
 | Flag | Effect |
 |---|---|
+| `--project NAME` | Update that project's own `models_list.yaml`, not the one found first. |
 | `--yes`, `-y` | Apply every change without asking, and keep your version of an entry that both you and the example changed. Needed without a terminal. |
 
 It compares three versions of each model entry: your file, the example it
@@ -415,11 +416,12 @@ file (`~/.config/certo/.env`), and name them in `models.yaml` as
 `"${NAME}"`. No key is printed.
 
 ```text
-certo models secure [--yes]
+certo models secure [--project NAME] [--yes]
 ```
 
 | Flag | Effect |
 |---|---|
+| `--project NAME` | Secure that project's own `models.yaml`, not the one found first. |
 | `--yes`, `-y` | Move the keys without asking. Needed without a terminal. |
 
 Each key goes under the provider's usual name (`OPENAI_API_KEY`,
@@ -696,14 +698,15 @@ Certo: added the trusted skill 'uv' (github:OpenHands/extensions, about 591 toke
 Check that the configured model works.
 
 ```text
-certo check [--timeout SECONDS] [--models]
-certo check --task TASK
+certo check [--timeout SECONDS] [--models] [--project NAME]
+certo check --task TASK [--project NAME]
 ```
 
 | Flag | Default | Effect |
 |---|---|---|
 | `--timeout SECONDS` | `120` | How long to wait for each answer. A local model may need time to load. |
 | `--models` | off | Also send the same test request to every model enabled in `models.yaml`, one line per model. |
+| `--project NAME` | none | Check the model files as a run with `--project NAME` reads them: that project's own files on top of the current folder's and yours. Also with `--task`. |
 | `--task TASK` | none | Show only how `--auto-model` would route this task, and stop. `TASK` is text, a task file or a URL, as for a run. No model is called. See below. |
 
 It reads the settings like a run does, prints each LLM setting and where

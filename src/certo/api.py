@@ -177,6 +177,7 @@ def load_run_ladder(
             escalation_file=cfg.escalation_file,
             task_profiles_file=cfg.task_profiles_file,
             on_warning=on_warning,
+            project_dir=cfg.workspace,
         )
     if cfg.model_selection == "auto":
         from .catalog_check import load_checked_catalog
@@ -192,8 +193,11 @@ def load_run_ladder(
             task_profiles_file=cfg.task_profiles_file,
             escalation_file=cfg.escalation_file,
             mode="auto",
+            project_dir=cfg.workspace,
         )
-        profiles_path, _ = resolve_optional(cfg.task_profiles_file, cfg.escalation_file)
+        profiles_path, _ = resolve_optional(
+            cfg.task_profiles_file, cfg.escalation_file, cfg.workspace
+        )
         if profiles_path is None:
             raise ModelCatalogError(NO_PROFILES)
         if not catalog.task_profiles:

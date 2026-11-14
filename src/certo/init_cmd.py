@@ -556,12 +556,32 @@ def build_check_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--project",
+        metavar="NAME",
+        default=None,
+        help=(
+            "Check the model files as a run with --project NAME reads them: the "
+            "project's own files on top of the current folder's and yours."
+        ),
+    )
+    parser.add_argument(
         "--timeout",
         type=int,
         default=CHECK_TIMEOUT_SECONDS,
         help=f"Seconds to wait for the answer (default {CHECK_TIMEOUT_SECONDS}).",
     )
     return parser
+
+
+def _check_project(name: str | None) -> str:
+    """The folder of `--project NAME` for `certo check`, or "" without it."""
+    if not name:
+        return ""
+    from .config import defer_llm_check, load_config, resolve_project_dir
+
+    with defer_llm_check():
+        cfg = load_config()
+    return resolve_project_dir(cfg.projects_dir, name)
 
 
 def check_main(argv: list[str], *, out: TextIO | None = None) -> int:
@@ -577,7 +597,7 @@ def check_main(argv: list[str], *, out: TextIO | None = None) -> int:
         except ValueError as exc:
             print(f"Error: {exc}", file=out)
             return 1
-        return 0 if print_task_routing(out, task) else 1
+        return 0 if print_task_routing(out, task, _check_project(args.project)) else 1
     print_setting_sources(load_settings_files(), out)
     ok = run_check(None, out, timeout=args.timeout)
     print(file=out)
@@ -587,6 +607,7 @@ def check_main(argv: list[str], *, out: TextIO | None = None) -> int:
         timeout=args.timeout,
         check=lambda cfg, timeout: check_tool_calling(cfg, timeout=timeout),
         explain=lambda result, _provider: explain(result, _provider_name(result.model)),
+        project_dir=_check_project(args.project),
     )
     error = estimate_error()
     if error is not None:

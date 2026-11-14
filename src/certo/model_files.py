@@ -8,11 +8,14 @@ and `certo bench`). Certo ships all four only as examples, in
 `certo/examples/`, and never reads an example: a release can update the
 examples without touching anyone's own copies.
 
-Each file is looked up on its own: the path a setting names
+Each file is looked up on its own. A path a setting names
 (`CERTO_MODELS_LIST_FILE`, `CERTO_MODELS_FILE`, `CERTO_TASK_PROFILES_FILE`,
-`CERTO_ESCALATION_FILE`, or a benchmark file's keys), else the current
-folder, else the user settings folder (next to the user `.env`,
-`~/.config/certo/`). The first one found is used whole.
+`CERTO_ESCALATION_FILE`, or a benchmark file's keys) is used alone.
+Otherwise the file is read in layers, lowest first: the user settings
+folder (next to the user `.env`, `~/.config/certo/`), the current folder,
+and the project folder (`--project`); each layer adds to or changes the
+one below by name, and `replace: true` at a file's top hides the layers
+below it (model_catalog.LayeredPath; DECISIONS.md, 2026-11-14).
 """
 
 from __future__ import annotations
@@ -26,6 +29,7 @@ from .model_catalog import (
     LIST_FILE,
     MODELS_FILE,
     PROFILES_FILE,
+    LayeredPath,
     ModelCatalogError,
 )
 
@@ -40,20 +44,54 @@ def example_path(name: str) -> str:
     return str(EXAMPLES_DIR / f"{name}.example")
 
 
-def _search_folders() -> tuple[str, ...]:
-    return (os.getcwd(), user_dir())
+def _search_folders(project_dir: str = "") -> tuple[str, ...]:
+    """The folders to look in, highest first: the project, the current
+    folder, the user settings folder; each once."""
+    seen: list[str] = []
+    out: list[str] = []
+    for folder in (project_dir, os.getcwd(), user_dir()):
+        if not folder:
+            continue
+        real = os.path.realpath(folder)
+        if real not in seen:
+            seen.append(real)
+            out.append(folder)
+    return tuple(out)
 
 
-def find(name: str, explicit: str = "") -> str | None:
-    """The file to use for `name`, or None when there is none. An explicit
-    path is returned as is, even if missing, so the error can name it."""
+def find(name: str, explicit: str = "", project_dir: str = "") -> str | None:
+    """The top file for `name` (the one to edit), or None when there is
+    none. An explicit path is returned as is, even if missing, so the
+    error can name it."""
     if explicit:
         return explicit
-    for folder in _search_folders():
+    for folder in _search_folders(project_dir):
         path = os.path.join(folder, name)
         if os.path.isfile(path):
             return path
     return None
+
+
+def find_layers(name: str, explicit: str = "", project_dir: str = "") -> str | None:
+    """The file to read for `name`: an explicit path alone, else every
+    layer found (a `LayeredPath` when more than one), or None."""
+    if explicit:
+        return explicit
+    found = [
+        os.path.join(folder, name)
+        for folder in reversed(_search_folders(project_dir))
+        if os.path.isfile(os.path.join(folder, name))
+    ]
+    if not found:
+        return None
+    return found[0] if len(found) == 1 else LayeredPath(found)
+
+
+def layers_of(path: str | None) -> tuple[str, ...]:
+    """The files a found path reads, lowest first."""
+    if path is None:
+        return ()
+    return tuple(getattr(path, "layers", None) or (path,))
 
 
 def missing_message(name: str, setting: str) -> str:
@@ -66,7 +104,9 @@ def missing_message(name: str, setting: str) -> str:
     )
 
 
-def resolve(models_file: str = "", models_list_file: str = "") -> tuple[str, str]:
+def resolve(
+    models_file: str = "", models_list_file: str = "", project_dir: str = ""
+) -> tuple[str, str]:
     """(models_list.yaml, models.yaml) paths. Raises `ModelCatalogError`
     saying how to create a missing one, or naming an explicit path that
     doesn't exist."""
@@ -75,7 +115,7 @@ def resolve(models_file: str = "", models_list_file: str = "") -> tuple[str, str
         (LIST_FILE, models_list_file, "CERTO_MODELS_LIST_FILE"),
         (MODELS_FILE, models_file, "CERTO_MODELS_FILE"),
     ):
-        path = find(name, explicit)
+        path = find_layers(name, explicit, project_dir)
         if path is None:
             raise ModelCatalogError(missing_message(name, setting))
         if not os.path.isfile(path):
@@ -85,7 +125,7 @@ def resolve(models_file: str = "", models_list_file: str = "") -> tuple[str, str
 
 
 def resolve_optional(
-    task_profiles_file: str = "", escalation_file: str = ""
+    task_profiles_file: str = "", escalation_file: str = "", project_dir: str = ""
 ) -> tuple[str | None, str | None]:
     """(task_profiles.yaml, escalation.yaml) paths, None for one that isn't
     there: both are optional. A path a setting names must exist."""
@@ -94,7 +134,7 @@ def resolve_optional(
         (PROFILES_FILE, task_profiles_file, "CERTO_TASK_PROFILES_FILE"),
         (ESCALATION_FILE, escalation_file, "CERTO_ESCALATION_FILE"),
     ):
-        path = find(name, explicit)
+        path = find_layers(name, explicit, project_dir)
         if path is not None and not os.path.isfile(path):
             raise ModelCatalogError(f"{setting} names {path}, which doesn't exist.")
         paths.append(path)

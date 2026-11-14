@@ -262,6 +262,16 @@ given design was chosen.
   every time (never appends). With a `probe`, `.skip_unreachable()` (also
   run by `.advance()`) moves past candidates that can't be reached, keeping
   the last one.
+- **Layers** (`model_files.find_layers`, `model_catalog.LayeredPath` /
+  `merge_layer`): a file found in several folders (user, current,
+  `project_dir`) becomes a `LayeredPath`, a `str` whose value is the top
+  file (so messages, `Path(...).name` checks and editors see that one) and
+  whose `.layers` `_read_mapping` merges, lowest first: `models` by
+  name (ratings per axis), `task_profiles`/ladders by name, rest
+  replaced; `replace: true` cuts the layers below. `find()` still returns
+  the single top file, for commands that edit. `project_dir` reaches the
+  lookups through `load_checked_catalog`/`load_ladder` (runner and api
+  pass `cfg.workspace`) and `certo check --project`.
 - **`project_models.py`** / **`models_choose.py`** — a project's
   `certo-models.yaml` (names only). `api.resolve_config` applies it from
   the `--project` folder (else the run's folder) before the

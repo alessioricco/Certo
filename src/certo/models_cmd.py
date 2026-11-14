@@ -269,6 +269,12 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     update.add_argument(
+        "--project",
+        metavar="NAME",
+        default=None,
+        help="Update that project's own models_list.yaml instead of the one found first.",
+    )
+    update.add_argument(
         "--yes",
         "-y",
         action="store_true",
@@ -318,6 +324,12 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     secure.add_argument(
+        "--project",
+        metavar="NAME",
+        default=None,
+        help="Secure that project's own models.yaml instead of the one found first.",
+    )
+    secure.add_argument(
         "--yes",
         "-y",
         action="store_true",
@@ -363,6 +375,15 @@ def build_parser() -> argparse.ArgumentParser:
         help="Write the file without asking. Needed without a terminal.",
     )
     return parser
+
+
+def _layer_file(name: str, project: str | None) -> str | None:
+    """The file a command edits: with `project`, that project's own (None
+    when it has none); else the top one found."""
+    if not project:
+        return find(name)
+    path = os.path.join(_project_folder(project), name)
+    return path if os.path.isfile(path) else None
 
 
 def _project_folder(name: str) -> str:
@@ -445,6 +466,7 @@ def choose_main(args: argparse.Namespace, *, prompter: Prompter, interactive: bo
             os.environ.get("CERTO_MODELS_FILE", ""),
             os.environ.get("CERTO_MODELS_LIST_FILE", ""),
             look_up_optional=False,
+            project_dir=folder,
         )
     except (ValueError, ModelCatalogError) as exc:
         prompter.say(f"Error: {exc}")
@@ -529,7 +551,15 @@ def secure_main(args: argparse.Namespace, *, prompter: Prompter, interactive: bo
         write_settings,
     )
 
-    path = find(MODELS_FILE, os.environ.get("CERTO_MODELS_FILE", ""))
+    try:
+        path = (
+            _layer_file(MODELS_FILE, args.project)
+            if args.project
+            else find(MODELS_FILE, os.environ.get("CERTO_MODELS_FILE", ""))
+        )
+    except ValueError as exc:
+        prompter.say(f"Error: {exc}")
+        return 1
     if path is None or not os.path.isfile(path):
         prompter.say(
             f"No {MODELS_FILE} found (Certo looked in the current folder and in "
@@ -663,7 +693,11 @@ def update_main(
     interactive: bool,
     example: str | None = None,
 ) -> int:
-    list_path = find(LIST_FILE)
+    try:
+        list_path = _layer_file(LIST_FILE, getattr(args, "project", None))
+    except ValueError as exc:
+        prompter.say(f"Error: {exc}")
+        return 1
     if list_path is None:
         prompter.say(
             f"No {LIST_FILE} to update (Certo looked in the current folder and in "

@@ -358,6 +358,23 @@ the provider's retries, minutes later. The skip is recorded in
 `MODEL_DECISIONS.md`. See
 [How a model is chosen](../guides/pick-models-automatically.md#how-a-model-is-chosen).
 
+## Changed: model files are layered, a project changes only what it names
+
+Model files used to be found in one place: the current folder, else your
+user settings folder, and the first one found was used whole. A project
+`models.yaml` had to repeat every model and key. Now they are read in
+layers, your user folder, then the current folder, then the `--project`
+folder, merged by name: a project file can say only "Terra's code rating
+is 5 here" or "no Opus in this project", and everything else comes from
+your own files.
+
+**If you have a project `models.yaml` or `models_list.yaml` today:** it
+now adds to your user file instead of replacing it. Add `replace: true`
+at its top to keep the old behaviour. A file a setting names
+(`CERTO_MODELS_FILE`...) is still read alone. `certo check --project
+NAME` shows the layers and what each one changes. See
+[Where Certo looks](../reference/models-yaml.md#where-certo-looks).
+
 ## New: `certo models choose`, a project's own models
 
 `certo models choose --project NAME` lists your enabled models with what

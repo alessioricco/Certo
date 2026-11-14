@@ -55,20 +55,50 @@ models, change ratings and write ladders in your copies freely.
 
 ## Where Certo looks
 
-Each file is looked up on its own, in this order, and the first one found
-is used whole:
+Each file is looked up on its own.
 
-1. the path a setting names: `CERTO_MODELS_LIST_FILE`,
-   `CERTO_MODELS_FILE`, `CERTO_TASK_PROFILES_FILE` and
-   `CERTO_ESCALATION_FILE` (for `certo bench`: `models_list_file`,
-   `models_file` and `escalation_file` in its benchmark file);
-2. the current folder (the project folder): `./models_list.yaml`,
-   `./models.yaml`, `./task_profiles.yaml`, `./escalation.yaml`;
-3. the user settings folder, next to the user `.env`:
-   `~/.config/certo/` (or `$XDG_CONFIG_HOME/certo/`).
+**A path a setting names is used alone:** `CERTO_MODELS_LIST_FILE`,
+`CERTO_MODELS_FILE`, `CERTO_TASK_PROFILES_FILE` and
+`CERTO_ESCALATION_FILE` (for `certo bench`: `models_list_file`,
+`models_file` and `escalation_file` in its benchmark file). A setting
+that names a file that doesn't exist is an error.
 
-So files in a project folder override the ones in your user settings
-folder. A setting that names a file that doesn't exist is an error.
+**Otherwise the file is read in layers,** lowest first:
+
+1. the user settings folder, next to the user `.env`:
+   `~/.config/certo/` (or `$XDG_CONFIG_HOME/certo/`);
+2. the current folder;
+3. the project folder, with `--project NAME`.
+
+Each layer adds to the one below, or changes it, **by name**: a model in
+`models_list.yaml` or `models.yaml` changes only the fields it gives
+(`ratings` axis by axis), and a task profile or ladder with the same name
+replaces the one below. Anything new is added. So a project needs only
+what is different:
+
+```yaml
+# projects/game/models_list.yaml: Terra codes well enough for this game
+models:
+  - name: gpt-6.1-terra
+    ratings: {code: 5}
+```
+
+```yaml
+# projects/game/models.yaml: no Opus here; keys still come from your file
+models:
+  - name: claude-opus-5-5
+    activated: false
+```
+
+`replace: true` at the top of a file makes it hide the layers below it,
+as every file did before Certo 0.2.3. `certo check` (with `--project
+NAME` for a project) prints each file and what each layer above the
+lowest changes or adds:
+
+```text
+  List: /home/you/.config/certo/models_list.yaml
+    + /home/you/certo-workspace/projects/game/models_list.yaml: changes gpt-6.1-terra
+```
 
 A project can also have its own choice, [`certo-models.yaml`](#certo-modelsyaml),
 at its top. A run reads it from the `--project` folder (or the folder

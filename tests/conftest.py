@@ -124,10 +124,14 @@ def _never_read_the_real_model_files(monkeypatch):
     files write their own, or change into a temporary folder."""
     from certo import model_files
 
-    def folders():
-        cwd = os.getcwd()
-        others = (model_files.user_dir(),)
-        return others if os.path.realpath(cwd) == os.path.realpath(_REPO_ROOT) else (cwd, *others)
+    real_folders = model_files._search_folders
+
+    def folders(project_dir: str = ""):
+        return tuple(
+            f
+            for f in real_folders(project_dir)
+            if os.path.realpath(f) != os.path.realpath(_REPO_ROOT)
+        )
 
     monkeypatch.setattr(model_files, "_search_folders", folders)
 
