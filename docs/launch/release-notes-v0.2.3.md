@@ -486,6 +486,25 @@ folder is clearly another language (a `package.json` and no Python).
 - **A resumed run counts only its own cost.** It reported the earlier
   run's model spend again, so `RUNS.md` added it twice.
 
+## New: a credit for Certo in the projects it creates
+
+In a project Certo created from scratch, Certo adds, once and before the
+checks run, a closing line to `README.md`:
+
+```markdown
+Generated with [Certo](https://github.com/alessioricco/Certo).
+```
+
+and a generator tag in the `<head>` of the project's `index.html`:
+
+```html
+<meta name="generator" content="Certo (https://github.com/alessioricco/Certo)">
+```
+
+Certo adds them itself, so the agent spends nothing on them. An existing
+project you point Certo at is never touched. `CERTO_CREDITS=no` turns
+it off.
+
 ## Also
 
 - **`certo bench` copes with a model server that goes away.** A run

@@ -42,6 +42,8 @@ from openhands.tools.task_tracker import TaskTrackerTool
 
 from . import context_window
 from .acceptance import AcceptanceCheck, AcceptanceCheckResult, evaluate_acceptance_checks
+from .credits import add_credits
+from .worktree import was_created_by_certo
 from .leftovers import describe as describe_leftovers
 from .leftovers import stop_leftovers
 from .wrap_up import acceptance_brief, pause_for_wrap_up, take_due_message
@@ -1173,6 +1175,31 @@ def _verify_after_budget(
     )
 
 
+def _created_by_certo(cfg: Config) -> bool:
+    """Whether the run's folder is a project Certo created (worktree.py)."""
+    try:
+        projects = os.path.realpath(cfg.projects_dir)
+        relative = os.path.relpath(os.path.realpath(cfg.workspace), projects)
+    except ValueError:  # another drive (Windows)
+        return False
+    if relative == "." or relative.startswith(".."):
+        return False
+    return was_created_by_certo(cfg.projects_dir, relative)
+
+
+def _add_credits(cfg: Config, emit: Callable[[Message], None]) -> None:
+    """In a project Certo created, its credit in README.md and index.html,
+    before the checks (credits.py). Once: nothing when already there."""
+    if not cfg.credits or cfg.execution != "local" or not _created_by_certo(cfg):
+        return
+    changed = add_credits(cfg.workspace)
+    if changed:
+        _emit_notice(
+            emit,
+            f"Certo: added its credit to {', '.join(changed)} (CERTO_CREDITS=no turns it off).",
+        )
+
+
 def _verify_and_report(
     conversation: Conversation,
     cfg: Config,
@@ -1196,6 +1223,7 @@ def _verify_and_report(
     `cfg.max_verify_retries` so a project whose checks are simply wrong, or a
     bug the model can't fix, doesn't loop forever.
     """
+    _add_credits(cfg, emit)
     spent = _budget_spent(conversation, deadline)
     if spent:
         return _verify_after_budget(

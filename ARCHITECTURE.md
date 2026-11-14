@@ -282,6 +282,11 @@ given design was chosen.
   the single top file, for commands that edit. `project_dir` reaches the
   lookups through `load_checked_catalog`/`load_ladder` (runner and api
   pass `cfg.workspace`) and `certo check --project`.
+- **`credits.py`**: `_add_credits` at the top of `_verify_and_report`
+  (so before every check run; idempotent) adds the README line and the
+  generator meta tag, only when `cfg.credits`, local execution and the
+  workspace is a project Certo created (`worktree.was_created_by_certo`
+  on its path relative to `projects_dir`). Bench workspaces never match.
 - **`leftovers.py`**: at the end of `_stream_task` (local only, in the
   `finally`), `stop_leftovers(workspace, wall_started)` stops processes
   created during the run whose cwd or an absolute argument is inside the

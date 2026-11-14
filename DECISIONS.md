@@ -1979,3 +1979,9 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   budget and step limit; flags and settings win. The resumed
   conversation's earlier usage is subtracted from the summary, as the cost
   limit already did.
+- **Certo credits itself in the projects it creates** (0.2.3, 2026-11-14,
+  the Author). A README closing line and a `<meta name="generator">` tag
+  in index.html, with the GitHub URL. Only in projects Certo created from
+  scratch (never an existing project), on by default, `CERTO_CREDITS=no`
+  to turn off. Added by Certo before the checks, not asked of the agent:
+  always the same, no tokens, no change in agent behaviour (no bench).

@@ -221,6 +221,9 @@ class Config:
     # tests failed (most sets) ends `independent_failed` instead. Turns the
     # tests on.
     independent_tests_strict: bool = False
+    # CERTO_CREDITS: in a project Certo created, a "Generated with Certo"
+    # line in README.md and a generator meta tag in index.html (credits.py).
+    credits: bool = True
     # CERTO_CHECKPOINTS: snapshots of the project in .certo/checkpoints/
     # during a run, for `certo rollback` (checkpoints.py).
     checkpoints: bool = True
@@ -722,6 +725,7 @@ def load_config(
     )
     independent_tests_sets = _parse_positive_int(env, "INDEPENDENT_TESTS_SETS", default=3)
     checkpoints = _parse_bool(env, "CHECKPOINTS", default=True)
+    credits = _parse_bool(env, "CREDITS", default=True)
     condense = _parse_bool(env, "CONDENSE", default=True)
     context_warn_tokens = _parse_nonnegative_int(
         env, "CONTEXT_WARN_TOKENS", default=DEFAULT_CONTEXT_WARN_TOKENS
@@ -794,6 +798,7 @@ def load_config(
         independent_tests_sets=independent_tests_sets,
         independent_tests_strict=independent_tests_strict,
         checkpoints=checkpoints,
+        credits=credits,
         condense=condense,
         context_warn_tokens=context_warn_tokens,
         tool_call_reminders=tool_call_reminders,
