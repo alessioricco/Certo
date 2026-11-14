@@ -412,8 +412,9 @@ certo models secure [--project NAME] [--yes]
 
 Each key goes under the provider's usual name (`OPENAI_API_KEY`,
 `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`...). When that name already holds a
-different key, in the settings file or in your environment, the model
-gets a name of its own (`CERTO_<MODEL>_API_KEY`). The settings file is
+different key, in the settings file or in your environment, the key
+goes to the next numbered name (`OPENAI_API_KEY_2`...), shared by every
+model with that same key. The settings file is
 written first; then only the key values in `models.yaml` change, so its
 comments and layout stay. A model written on one line
 (`{name: ..., api_key: ...}`) makes Certo rebuild the file, without its

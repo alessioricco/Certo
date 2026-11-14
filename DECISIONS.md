@@ -1902,7 +1902,8 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   would be a second file of keys; instead the settings file is written
   first and the new `models.yaml` is checked to read back the same. The
   environment wins over the settings file, so a variable set in the shell
-  to a different key gets the model a name of its own. A key found only
+  to a different key sends it to a numbered name (OPENAI_API_KEY_2), shared
+  by every model with that key. A key found only
   in the shell is still written to the file, so runs started elsewhere
   find it. No MCP tool: an agent doesn't move keys.
 - **A project's model choice is `certo-models.yaml` at its top, read from
