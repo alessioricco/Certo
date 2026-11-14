@@ -1827,7 +1827,7 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   a flag, not a bench.yaml setting: it depends on the machine, not on
   what is compared.
 - **A milestones file run again continues; `--from-milestone N` to
-  choose** (0.2.3, 2026-11-10). Live (latticewake): the file run again
+  choose** (0.2.3, 2026-11-10). Live (a user's milestone project): the file run again
   started over from milestone 1 and wiped three `verified` verdicts. Now
   a new run of the same, unedited file (same path, fingerprint and
   titles) goes on from the first milestone not verified, in a fresh
@@ -1853,7 +1853,7 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   models off. `certo bench` is unaffected: its auto arms load their own
   catalog.
 - **Out of time with unfinished task items: the checks still run, the
-  verdict stays exhausted** (0.2.3, 2026-11-11). Live (latticewake M5):
+  verdict stays exhausted** (0.2.3, 2026-11-11). Live (a user's milestone project, M5):
   the time ran out with 3 of 4 items done ("Run all gates" in progress)
   and the task-tracker gate returned `budget_exhausted` before any check,
   so nobody could tell a near-finish from a broken build. Checks need no
@@ -1862,7 +1862,7 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   `cost_exhausted` (the agent itself said it wasn't done), with the
   items named in the limitations.
 - **A milestone out of time after changing files goes on in a fresh
-  conversation** (0.2.3, 2026-11-11). Live (latticewake M5, gpt-6.1-sol):
+  conversation** (0.2.3, 2026-11-11). Live (a user's milestone project, M5, gpt-6.1-sol):
   30 minutes of real work and 21M input tokens in one conversation, then
   the whole sequence stopped. `CERTO_MILESTONE_TIME_RETRIES` (default 1)
   continues it with a note of how it ended (limitations, unfinished task
@@ -1880,7 +1880,7 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   bundled tasks), so the 4000 default stays a guess until the "Do trusted
   skills help?" benchmark; this does not settle that.
 - **`--auto-model` asks a local model's server before using it, and skips
-  it when down** (0.2.3, 2026-11-14, the Author's request after latticewake).
+  it when down** (0.2.3, 2026-11-14, the Author's request after a long milestone run).
   A switched-off Ollama machine otherwise fails a run only after LiteLLM's
   retries (about 2.5 minutes each in the bench). Local models only: asking
   a cloud provider would be a paid call, and a refusing provider fails at
@@ -1944,3 +1944,12 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   the user's job. A user or project file now holds only exceptions; a
   file a setting names is still read alone (benchmarks stay pinned).
   `certo models update` slims an old full copy to the user's own edits.
+- **The agent is told the acceptance checks, and warned before the time
+  budget ends** (0.2.3, 2026-11-14, the Author). Acceptance checks are the
+  user's own requirements, not hidden tests: hiding them (they were taken
+  out of the milestone text) made closing steps easy to forget and the
+  first thing a deadline cut. They are now appended to the task in plain
+  words, and one wrap-up message goes a margin before the deadline (15%
+  of the budget, 2 to 10 minutes) naming the required checks not yet met.
+  Independent tests stay hidden. Messages are generic templates: only the
+  task's own paths and texts fill them in.

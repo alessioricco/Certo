@@ -2614,7 +2614,7 @@ def _timing_out_run_task(calls, verdicts, tmp_path, write=True):
 def test_a_milestone_out_of_time_after_changing_files_goes_on_in_a_fresh_conversation(
     monkeypatch, tmp_path, capsys
 ):
-    # Live 2026-11-11 (latticewake M5): 30 minutes of real work, 3 of 4
+    # Live 2026-11-11 (a user's milestone project, M5): 30 minutes of real work, 3 of 4
     # items done, and the whole sequence stopped.
     calls: list = []
     monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))

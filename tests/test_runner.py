@@ -2346,6 +2346,35 @@ def test_stream_task_applies_acceptance_checks_end_to_end(monkeypatch, tmp_path)
     assert outcome.acceptance_results[0].passed is True
 
 
+def test_the_agent_is_told_the_acceptance_checks_with_the_task(monkeypatch, tmp_path):
+    sent: list[str] = []
+    conversation = _RecordingConversation()
+    conversation.send_message = sent.append
+    monkeypatch.setattr(runner, "Conversation", lambda **_kwargs: conversation)
+    monkeypatch.setattr(runner, "build_agent", lambda cfg, **_kw: "fake-agent")
+    monkeypatch.setattr(runner, "build_workspace", lambda cfg: nullcontext(str(tmp_path)))
+    monkeypatch.setattr(runner, "_enforce_task_tracker_completion", lambda *a, **kw: None)
+    monkeypatch.setattr(
+        runner,
+        "_verify_and_report",
+        lambda *a, **kw: runner.TaskOutcome(
+            verification_state="verified",
+            completion_contract=runner.CompletionContract(
+                goal="", acceptance_criteria=[], verification_checks=[], limitations=[]
+            ),
+        ),
+    )
+
+    runner.stream_task(
+        "do the thing",
+        cfg=_cfg(workspace=str(tmp_path)),
+        acceptance_checks=[AcceptanceCheck(kind="file_contains", path="NOTES.md", contains="done")],
+    )
+
+    assert sent[0].startswith("do the thing")
+    assert '- NOTES.md contains the text "done"' in sent[0]
+
+
 def test_stream_task_acceptance_check_failure_downgrades_a_real_verified_run(monkeypatch, tmp_path):
     conversation = _RecordingConversation()
     monkeypatch.setattr(runner, "Conversation", lambda **_kwargs: conversation)
@@ -3579,7 +3608,7 @@ def test_new_tests_alone_are_not_reported(monkeypatch, tmp_path):
 def test_stream_task_turns_off_the_change_check_only_on_resume(monkeypatch, tmp_path):
     seen: list = []
 
-    def fake_phases(conversation, cfg, emit, task, *args, check_changes=True):
+    def fake_phases(conversation, cfg, emit, task, *args, check_changes=True, **_kwargs):
         seen.append(check_changes)
         return _verified_outcome()
 

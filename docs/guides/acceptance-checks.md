@@ -55,6 +55,18 @@ All checks run at the end of every task, whatever the verdict.
   verdict but never changes it.
 
 Failed acceptance checks are not sent back to the agent for another try.
+Instead, the agent knows them from the start: Certo adds them to the
+task, in plain words, for example:
+
+```text
+When you finish, Certo checks that each of these holds; the task isn't done until the required ones do:
+- NOTES.md contains the text "## Part 2"
+- the file dist/index.html exists
+```
+
+And when the time budget is nearly used up, Certo's wrap-up message (see
+[`CERTO_MAX_TASK_SECONDS`](../reference/configuration.md)) names the
+required checks that don't hold yet.
 
 ## Why there is no "run this command" check
 

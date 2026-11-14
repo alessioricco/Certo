@@ -42,6 +42,8 @@ from openhands.tools.task_tracker import TaskTrackerTool
 
 from . import context_window
 from .acceptance import AcceptanceCheck, AcceptanceCheckResult, evaluate_acceptance_checks
+from .wrap_up import acceptance_brief, pause_for_wrap_up, take_due_message
+from .wrap_up import register as register_wrap_up
 from .agent import build_agent, project_root
 from .artifacts import resolve_run_artifacts_dir, write_run_artifacts
 from .catalog_check import load_checked_catalog
@@ -934,12 +936,24 @@ def _run_conversation_once(
             # when cancelled: see deadline.py, cost_limit.py and cancel.py.
             with (
                 stop_at_deadline(conversation, deadline),
+                pause_for_wrap_up(conversation),
                 pause_at_cost_limit(conversation),
                 stop_when_cancelled(conversation),
                 report_progress(conversation),
             ):
                 conversation.run()
             raise_if_cancelled()
+            # Paused for the wrap-up message (wrap_up.py): send it, go on.
+            if conversation.state.execution_status == ConversationExecutionStatus.PAUSED:
+                wrap_message = take_due_message(conversation)
+                if wrap_message is not None:
+                    _emit_notice(
+                        emit,
+                        "Certo: the time budget is nearly used up, so the agent was asked "
+                        "to finish what is open.",
+                    )
+                    conversation.send_message(wrap_message)
+                    continue
             found = cost_limit(conversation)
             if found is not None and not found.announced and found.reached(conversation):
                 found.announced = True
@@ -2093,6 +2107,7 @@ def _stream_task(
                 first_message,
                 _on_verification(cfg, state_writer),
                 check_changes=resume_from is None,
+                acceptance_checks=acceptance_checks,
             )
             outcome = _apply_independent_tests(
                 outcome,
@@ -2399,6 +2414,7 @@ def _run_stream_task_phases(
     first_message: str | None = None,
     on_verification: Callable[[VerificationRun], None] | None = None,
     check_changes: bool = True,
+    acceptance_checks: Sequence[AcceptanceCheck] | None = None,
 ) -> TaskOutcome:
     """The initial run, the interactive checkpoint loop, and the two
     autonomous retry phases — split out of `stream_task` purely so the
@@ -2414,7 +2430,16 @@ def _run_stream_task_phases(
     check_files_before = snapshot_check_files(cfg.workspace)
     # `first_message` is a resume's message; `task` stays the goal that
     # verification and the completion contract are judged against.
-    conversation.send_message(first_message or task)
+    # The agent is told the acceptance checks Certo runs at the end, and
+    # warned before the time budget ends (wrap_up.py).
+    conversation.send_message((first_message or task) + acceptance_brief(acceptance_checks))
+    register_wrap_up(
+        conversation,
+        deadline=deadline,
+        budget_seconds=cfg.max_task_seconds,
+        workspace=cfg.workspace,
+        checks=acceptance_checks,
+    )
     run_result = _run_with_confirmation(conversation, cfg, emit, on_confirm, deadline, model_chain)
     outcome = _outcome_for_run_result(run_result, task, cfg)
 
@@ -2945,6 +2970,7 @@ def _stream_escalation(
                         runner,
                         first_message,
                         _on_verification(cfg, state_writer, f"rung {number} ({rung.name}), "),
+                        acceptance_checks=acceptance_checks,
                     )
                     outcome = _apply_acceptance_checks(outcome, cfg, io.emit, acceptance_checks)
                 except ConversationRunError as exc:

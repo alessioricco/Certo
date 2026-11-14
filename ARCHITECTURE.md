@@ -282,6 +282,15 @@ given design was chosen.
   the single top file, for commands that edit. `project_dir` reaches the
   lookups through `load_checked_catalog`/`load_ladder` (runner and api
   pass `cfg.workspace`) and `certo check --project`.
+- **`wrap_up.py`**: `acceptance_brief()` is appended to the first message
+  of every phase (`_run_stream_task_phases(acceptance_checks=)`, direct,
+  resume and each escalation rung), and `register()` plans one wrap-up
+  per conversation (`deadline - margin_seconds(budget)`, kept in a
+  `WeakKeyDictionary`). `pause_for_wrap_up` (next to `stop_at_deadline`
+  in `_run_conversation_once`) pauses the conversation between steps when
+  due; the loop then sends `take_due_message()` (which re-evaluates the
+  acceptance checks) once and runs again. No wrap-up when the margin is
+  not shorter than the budget.
 - **Fit ranking** (`model_catalog.rank_by_fit`, `meets`, `shortfall`,
   `fit_note`): a profile with `needs` ranks the least costly fitting model
   first (highest `cost`; tie: more capable on the needed axes, then file

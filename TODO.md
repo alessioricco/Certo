@@ -92,7 +92,7 @@ first item is the suggested next one.
   - *The user:* with `--interactive` Certo shows the plan and asks
     before the first milestone (the 2026-10-25 decision): go, edit the
     file and go, or stop.
-  - *A plan the agent wrote:* live 2026-11-10 (latticewake), the agent
+  - *A plan the agent wrote:* live 2026-11-10 (a user's milestone project), the agent
     wrote a `PLAN.md` in milestones (`## 1. ...` headings, not
     `## Milestone N:`), the user approved it with "go ahead", and the
     whole plan ran as one task on one budget of 50 steps. Certo could
@@ -100,8 +100,8 @@ first item is the suggested next one.
     by milestone (each with its own steps and checks), or the planner
     above could rewrite it in the milestone format.
   - *Stop for approval:* a task file written for a person who approves
-    each milestone ("STOP and wait for my approval", latticewake
-    2026-11-10). `--interactive` doesn't pause between milestones today;
+    each milestone ("STOP and wait for my approval", a user's
+    task, 2026-11-10). `--interactive` doesn't pause between milestones today;
     it could show each verified milestone's summary and ask before the
     next. A milestone with nothing to check (a plan only) ends
     `inconclusive` and stops the run, which works as a pause, by
@@ -109,7 +109,7 @@ first item is the suggested next one.
   - *Level-1 headings after the milestones* (`# Definition of done`,
     `# Begin`) belong to the last milestone's text; they could go to
     every milestone, as context.
-  - *Run `star-swarm.md` once* (the sample from the latticewake task,
+  - *Run `star-swarm.md` once* (the sample from a user's milestone task,
     10 milestones) and add it to `milestone-samples-0.2.3.md`.
   - *Measure* (working agreement 2): the app tasks and the milestone
     samples with their milestones removed, three arms (the hand-written
@@ -325,7 +325,7 @@ file), B, C, then 5a and 5b. Steps 2 (`certo models choose`) and A
   `cost` weighted ×3 and local models rated `cost: 5`, the example
   `default` profile ranks qwen3.8-local above gpt-6-luna, and `build`
   puts them within 0.5 points. Fine at night on a local machine, not
-  during the day when it is off (latticewake, 2026-11-10). Now that the
+  during the day when it is off (a user's milestone project, 2026-11-10). Now that the
   user pins a model per profile (`certo init models --profiles`), check
   whether the example weights should change, or local models be rated
   for cost on another scale. Done when the example profiles are
@@ -418,7 +418,7 @@ cut that first run's output from 2,949 lines to 1,021.)
 - **`certo report`: a run's errors in one file, to improve Certo**
   (the Author, 2026-11-10). Today a failing run is studied by hand:
   `.certo/reports/`, `RUNS.md`, `STATUS.md`, `run.json`, the terminal
-  output (the latticewake run, 2026-11-10, took about ten tool calls to
+  output (a user's run, 2026-11-10, took about ten tool calls to
   read and found the cut-short `verified` bug). `certo report [PATH]
   [--note TEXT]` writes one Markdown file from what `.certo/` already
   holds, for the Author to hand to the maintainers (a Claude Code
@@ -563,7 +563,15 @@ database).
 
 ## Smaller bugs
 
-- **Slow test suites eat the milestone budget** (latticewake M7,
+- **Bench the acceptance brief and the wrap-up message** (0.2.3,
+  2026-11-14). The task now lists the acceptance checks, and the agent
+  gets one wrap-up message before the time budget ends (`wrap_up.py`).
+  Both change agent behaviour: bench them on a local and a cloud model
+  before release, including milestone tasks whose acceptance checks are
+  closing steps (a notes or changelog entry) and runs that reach the
+  wrap-up margin. Done when the bench shows no loss and fewer
+  `acceptance_failed` verdicts on such tasks.
+- **Slow test suites eat the milestone budget** (a user's milestone project, M7,
   2026-11-14; the Author: Certo must take the decision, not the task
   file). The project's Playwright suite took 9 minutes (82 tests on 2
   workers, both a desktop and a touch project), and 15 failing tests
@@ -582,7 +590,7 @@ database).
   slow e2e suite. Done when a run with a slow suite spends less of its
   budget on repeated full runs and no milestone ends `budget_exhausted`
   for that reason in the bench.
-- **The agent scatters logs in the project root** (latticewake, found
+- **The agent scatters logs in the project root** (a user's milestone project, found
   2026-11-14). Over milestones M3-M7 the agent left 38 files such as
   `m5-e2e.log` and `m6-profile.log` at the project's top: output it
   redirected from its own check commands. The project's `*.log` rule kept

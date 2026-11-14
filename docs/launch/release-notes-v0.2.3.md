@@ -436,6 +436,25 @@ to `~/.config/certo/.env` under the provider's usual name
 file's comments. No key is printed. See
 [the command](../reference/commands.md#certo-models-secure).
 
+## New: the agent knows the acceptance checks, and is told when time is nearly up
+
+Acceptance checks (a file must exist, or contain a text) were taken out
+of a milestone's text and never shown to the agent, so a closing step
+such as a changelog entry was easy to forget, and it was the step a
+deadline cut. Now the task the agent receives ends with the checks, in
+plain words:
+
+```text
+When you finish, Certo checks that each of these holds; the task isn't done until the required ones do:
+- NOTES.md contains the text "## Part 2"
+```
+
+And a margin before the time budget ends (15% of it, between 2 and 10
+minutes), Certo tells the agent once to stop starting new work, finish
+what is open, make the checks pass, and meet the acceptance checks that
+don't hold yet, which it names. See
+[Acceptance checks](../guides/acceptance-checks.md#what-happens-to-the-verdict).
+
 ## Also
 
 - **`certo bench` copes with a model server that goes away.** A run
