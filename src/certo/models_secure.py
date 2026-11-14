@@ -64,7 +64,8 @@ def plan_moves(
     maps a catalog name to its LiteLLM id (for the provider's usual
     variable). A variable that already holds a different key, in the
     settings file or the environment (which wins over the file), isn't
-    reused: the model gets one of its own."""
+    reused: the key goes to the next numbered name (OPENAI_API_KEY_2...),
+    shared by every model with that same key."""
     taken: dict[str, str] = {}  # variable -> key, decided so far
     moves: list[Move] = []
     for entry in entries:
@@ -73,7 +74,11 @@ def plan_moves(
         if not is_written_out(key):
             continue
         key = key.strip()
-        options = [v for v in (_provider_variable(model_ids.get(name, "")),) if v]
+        provider = _provider_variable(model_ids.get(name, ""))
+        # The provider's name, then numbered ones (OPENAI_API_KEY_2...), so
+        # models that share a key share one variable; the model's own name
+        # only when those run out.
+        options = [provider, *(f"{provider}_{n}" for n in range(2, 10))] if provider else []
         options.append(_name_variable(name))
         for variable in options:
             current = taken.get(variable) or environ.get(variable) or settings.get(variable)

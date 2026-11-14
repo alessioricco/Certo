@@ -20,7 +20,7 @@ import yaml
 from . import __version__
 from .init_cmd import Cancelled, Prompter
 from .model_catalog import LIST_FILE, MODELS_FILE, PROJECT_FILE
-from .model_files import example_path, find, user_dir
+from .model_files import example_path, find, find_layers, user_dir
 
 BASE_FILE = ".models_list.base.yaml"
 
@@ -352,7 +352,9 @@ def secure_main(args: argparse.Namespace, *, prompter: Prompter, interactive: bo
     except (OSError, yaml.YAMLError, AttributeError) as exc:
         prompter.say(f"Error: couldn't read {path}: {type(exc).__name__}.")
         return 1
-    list_path = find(LIST_FILE, os.environ.get("CERTO_MODELS_LIST_FILE", ""))
+    # Every layer of the list, Certo's own included: a slimmed file of
+    # yours may not name the model at all.
+    list_path = find_layers(LIST_FILE, os.environ.get("CERTO_MODELS_LIST_FILE", ""))
     try:
         model_ids = {e.name: e.model for e in _parse_list(list_path)} if list_path else {}
     except Exception:  # an unreadable list only costs the provider's usual names

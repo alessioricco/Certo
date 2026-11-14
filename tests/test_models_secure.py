@@ -46,7 +46,28 @@ def test_a_variable_holding_another_key_is_not_reused():
 
     moves = plan_moves(entries, _IDS, settings={"OPENAI_API_KEY": "sk-old"}, environ={})
 
-    assert [m.variable for m in moves] == ["CERTO_LUNA_API_KEY", "CERTO_SOL_API_KEY"]
+    assert [m.variable for m in moves] == ["OPENAI_API_KEY_2", "OPENAI_API_KEY_3"]
+
+
+def test_models_that_share_a_key_share_one_variable():
+    entries = [
+        {"name": "luna", "api_key": "sk-repo"},
+        {"name": "sol", "api_key": "sk-repo"},
+        {"name": "haiku", "api_key": "sk-ant-repo"},
+    ]
+
+    moves = plan_moves(
+        entries,
+        _IDS,
+        settings={},
+        environ={"OPENAI_API_KEY": "sk-shell", "ANTHROPIC_API_KEY": "sk-ant-shell"},
+    )
+
+    assert [m.variable for m in moves] == [
+        "OPENAI_API_KEY_2",
+        "OPENAI_API_KEY_2",
+        "ANTHROPIC_API_KEY_2",
+    ]
 
 
 def test_the_environment_wins_over_the_settings_file_so_it_counts_too():
@@ -57,7 +78,7 @@ def test_the_environment_wins_over_the_settings_file_so_it_counts_too():
         environ={"OPENAI_API_KEY": "sk-shell"},
     )
 
-    assert moves[0].variable == "CERTO_LUNA_API_KEY"
+    assert moves[0].variable == "OPENAI_API_KEY_2"
 
 
 def test_the_same_key_already_in_the_settings_file_is_only_named():
@@ -215,3 +236,29 @@ def test_nothing_to_move_says_so(files):
 
     assert code == 0
     assert "no key written out" in output
+
+
+def test_a_slimmed_list_still_gives_the_provider_from_certos_own(tmp_path, monkeypatch):
+    # Live 2026-11-14: the user's list held only a model of their own, so
+    # every key got a per-model name instead of OPENAI_API_KEY.
+    for name in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "CERTO_MODELS_LIST_FILE"):
+        monkeypatch.delenv(name, raising=False)
+    config = tmp_path / "config"
+    (config / "certo").mkdir(parents=True)
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(config))
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "models_list.yaml").write_text(
+        "models:\n  - name: mine\n    model: openrouter/me/x\n    ratings: {code: 3}\n"
+    )
+    models = tmp_path / "models.yaml"
+    models.write_text("models:\n  - name: claude-haiku-5-5\n    api_key: sk-ant\n")
+    monkeypatch.setenv("CERTO_MODELS_FILE", str(models))
+
+    code, output = _run(["secure", "--yes"])
+
+    assert code == 0, output
+    assert "claude-haiku-5-5" in output and "-> ANTHROPIC_API_KEY" in output
+    assert (
+        models.read_text()
+        == 'models:\n  - name: claude-haiku-5-5\n    api_key: "${ANTHROPIC_API_KEY}"\n'
+    )
