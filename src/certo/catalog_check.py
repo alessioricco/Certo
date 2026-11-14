@@ -159,7 +159,12 @@ def check_catalog(catalog: ModelCatalog, *, mode: str | None = None) -> CatalogR
             errors.extend(problems)
 
     weighted: dict[str, list[str]] = {}
+    needed: dict[str, list[str]] = {}
     for profile in catalog.task_profiles:
+        if profile.needs:  # a profile with needs doesn't use its weights
+            for axis in profile.needs:
+                needed.setdefault(axis, []).append(profile.name)
+            continue
         for axis, weight in profile.weights.items():
             if weight:
                 weighted.setdefault(axis, []).append(profile.name)
@@ -170,6 +175,14 @@ def check_catalog(catalog: ModelCatalog, *, mode: str | None = None) -> CatalogR
             warnings.append(
                 f"Model {entry.name!r} has no rating for {', '.join(missing)}, which "
                 f"task profile(s) {', '.join(profiles)} weigh: it counts as 0."
+            )
+        unrated = [axis for axis in needed if axis not in entry.ratings]
+        if unrated:
+            profiles = sorted({p for axis in unrated for p in needed[axis]})
+            warnings.append(
+                f"Model {entry.name!r} has no rating for {', '.join(unrated)}, which "
+                f"task profile(s) {', '.join(profiles)} need: it never fits them. Rate it "
+                "in models_list.yaml (or in models.yaml for yourself only)."
             )
         if not entry.api_key and not entry.base_url:
             warnings.append(

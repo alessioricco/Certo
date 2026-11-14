@@ -272,6 +272,13 @@ given design was chosen.
   the single top file, for commands that edit. `project_dir` reaches the
   lookups through `load_checked_catalog`/`load_ladder` (runner and api
   pass `cfg.workspace`) and `certo check --project`.
+- **Fit ranking** (`model_catalog.rank_by_fit`, `meets`, `shortfall`,
+  `fit_note`): a profile with `needs` ranks the least costly fitting model
+  first (highest `cost`; tie: more capable on the needed axes, then file
+  order), then the other fits climbing in capability, then non-fits by
+  shortfall. `rank_for_profile` picks fit or weights; `ModelChain(needs=)`
+  records shortfalls (`score_label="shortfall"`). `capability()` skips
+  `NOT_CAPABILITY` (`speed`), so ladders don't climb by speed.
 - **`project_models.py`** / **`models_choose.py`** — a project's
   `certo-models.yaml` (names only). `api.resolve_config` applies it from
   the `--project` folder (else the run's folder) before the

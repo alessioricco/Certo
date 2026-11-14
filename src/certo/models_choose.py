@@ -31,7 +31,7 @@ from .model_catalog import (
     TaskProfile,
     _parse_profiles,
     _read_section_file,
-    rank_candidates,
+    rank_for_profile,
 )
 from .model_files import example_path
 from .model_pricing import is_local
@@ -77,8 +77,12 @@ class Proposal:
 
 def propose(catalog: ModelCatalog, chosen: list[str]) -> Proposal:
     narrowed = restrict(catalog, chosen)
-    profiles = [replace(p, weights=cost_first(p.weights), model=None) for p in example_profiles()]
-    orders = {p.name: [m.name for m in rank_candidates(narrowed, p.weights)] for p in profiles}
+    # Profiles with needs pick by fit; one with only weights gets cost first.
+    profiles = [
+        replace(p, model=None) if p.needs else replace(p, weights=cost_first(p.weights), model=None)
+        for p in example_profiles()
+    ]
+    orders = {p.name: [m.name for m in rank_for_profile(narrowed, p)[0]] for p in profiles}
     try:
         ladder: ResolvedLadder | None = derive_ladder(narrowed)
         problem = ""
@@ -124,7 +128,7 @@ def render(chosen: list[str], strategy: str, proposal: Proposal) -> str:
     profiles = {
         p.name: {
             **({"triggers": list(p.triggers)} if p.triggers else {}),
-            "weights": p.weights,
+            **({"needs": p.needs} if p.needs else {"weights": p.weights}),
         }
         for p in proposal.profiles
     }
@@ -140,8 +144,8 @@ def render(chosen: list[str], strategy: str, proposal: Proposal) -> str:
         "#   use        the models runs in this project may use\n"
         "#   strategy   auto (--auto-model) or escalate (--escalate); a flag or\n"
         "#              CERTO_MODEL_SELECTION still wins\n"
-        "#   task_profiles  --auto-model's kinds of task; cost weighs more than\n"
-        "#              the other axes together, so cheaper models go first\n"
+        "#   task_profiles  --auto-model's kinds of task: what each needs; the\n"
+        "#              least costly model that meets it goes first, then stronger\n"
         "#   escalation the ladder --escalate climbs, cheapest first\n"
     )
     return header + yaml.safe_dump(data, sort_keys=False, default_flow_style=None)

@@ -396,8 +396,8 @@ when there are enough, else a guess from the price. You tick at least
 two. Then it shows:
 
 - the order `--auto-model` would try them for each kind of task: the
-  example task profiles, with `cost` weighing more than the other
-  ratings together, so cheaper models go first;
+  example task profiles, where each kind of task says what it needs, and
+  the least costly model that meets it goes first, then stronger ones;
 - the ladder `--escalate` would climb: cheapest first, leaving out a
   model when another is at least as capable and costs no more;
 - a recommendation: `--escalate` when the ladder starts at least 2

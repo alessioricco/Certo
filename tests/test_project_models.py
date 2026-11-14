@@ -82,11 +82,13 @@ def test_cost_first_puts_cost_above_the_other_axes_together():
     assert cost_first({"code": 1, "cost": 6}) == {"code": 1, "cost": 6}
 
 
-def test_the_proposed_orders_put_cheaper_models_first(files):
-    proposal = propose(_catalog(files), ["cheap", "mid", "strong"])
+def test_the_proposed_orders_start_with_the_least_costly_model_that_fits(files):
+    proposal = propose(_catalog(files), ["local", "cheap", "mid", "strong"])
 
-    for order in proposal.orders.values():
-        assert order == ["cheap", "mid", "strong"]
+    # build needs code 4: local (code 2) doesn't fit, so it comes last.
+    assert proposal.orders["build"] == ["cheap", "mid", "strong", "local"]
+    # architecture needs reasoning 5: only strong fits.
+    assert proposal.orders["architecture"][0] == "strong"
 
 
 def test_escalation_is_recommended_when_the_ladder_starts_much_cheaper(files):

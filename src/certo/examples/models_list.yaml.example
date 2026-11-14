@@ -76,6 +76,15 @@
 #              factuality evals, long-context retrieval (MRCR), tool-use
 #              evals (tau2, Toolathlon), instruction following (IFBench).
 #              The least certain axis everywhere — treat +/-1 as noise.
+#   writing    Prose: docs, READMEs, messages. ESTIMATED for now as the
+#              mean of reasoning and precision, rounded half up, until
+#              benchmark data replaces it (`certo models refresh`, TODO).
+#   speed      How fast answers come, not how good they are (never counted
+#              as capability). ESTIMATED by tier for now: 5 small cloud
+#              models, 4 mid-tier cloud, 3 flagship or heavy-reasoning
+#              cloud, 2 small or 3B-active local models, 1 large dense
+#              local models. A local model's real speed depends on your
+#              machine: rate it yourself in models.yaml.
 #   cost       From the blended price p per 1M tokens at a 3:1
 #              input:output mix, standard tier, list price (no batch, no
 #              cache):  cost = 4 - log2(p) / 2, one decimal, kept between
@@ -122,7 +131,7 @@ models:
       Meta Llama 3 8B, 8K context. Ollama gives it no tool calling, so it
       can't run Certo's agent at all: kept only as an example of an entry.
       No current agentic-coding benchmark; rated by its size and age.
-    ratings: {reasoning: 1, precision: 1, code: 1, cost: 5}
+    ratings: {reasoning: 1, precision: 1, code: 1, writing: 1, speed: 2, cost: 5}
 
   - name: qwen3-local
     model: ollama/qwen3
@@ -132,7 +141,7 @@ models:
       Alibaba Qwen3, untagged pull = the 8B variant (~5GB, 40K context,
       tools, hybrid think/non-think). Small general model; no agentic-coding score found,
       rated as an estimate. Superseded locally by qwen3.6 below.
-    ratings: {reasoning: 1, precision: 1, code: 1, cost: 5}
+    ratings: {reasoning: 1, precision: 1, code: 1, writing: 1, speed: 2, cost: 5}
 
   - name: gpt-oss-20b-local
     model: ollama/gpt-oss:20b
@@ -145,7 +154,7 @@ models:
       tau-bench retail 54.8% at high effort (OpenAI model card; at medium
       effort 53.2%, 26.6% and 66.0%). Good for
       quick, small edits; below the 2026 local coders on multi-step work.
-    ratings: {reasoning: 1, precision: 2, code: 1, cost: 5}
+    ratings: {reasoning: 1, precision: 2, code: 1, writing: 2, speed: 2, cost: 5}
 
   - name: glm-4.7-flash-local
     model: ollama/glm-4.7-flash
@@ -158,7 +167,7 @@ models:
       tag, not `glm-4.7:cloud` (a 357B cloud model). SWE-bench Verified
       59.2%, tau2 79.5%, GPQA Diamond 75.2%, LiveCodeBench v6 64.0%
       (Zhipu model card).
-    ratings: {reasoning: 2, precision: 1, code: 1, cost: 5}
+    ratings: {reasoning: 2, precision: 1, code: 1, writing: 2, speed: 2, cost: 5}
 
   - name: qwen3-coder-local
     model: ollama/qwen3-coder:30b
@@ -173,7 +182,7 @@ models:
       qwen3.6-35b-local on every published coding benchmark. Measured in
       Certo's 0.1.18 local benchmark: 18/27 hidden tests, fooled Certo 3
       times; qwen3.8-27b-local did better in the same run.
-    ratings: {reasoning: 1, precision: 2, code: 1, cost: 5}
+    ratings: {reasoning: 1, precision: 2, code: 1, writing: 2, speed: 2, cost: 5}
 
   - name: gemma4-31b-local           # was `gemma3-local` (pointed at the 4B Gemma 3) — rename references in your ladders
     model: ollama/gemma4:31b
@@ -188,7 +197,7 @@ models:
       0.1.15 baseline (the QAT tag below): 26/27 hidden tests, 27/27
       verified, median 12m 40s per task — the best local result so far.
       Thinking traces eat a 32K window quickly.
-    ratings: {reasoning: 2, precision: 2, code: 2, cost: 5}
+    ratings: {reasoning: 2, precision: 2, code: 2, writing: 2, speed: 1, cost: 5}
 
   - name: gemma4-31b-qat-local
     model: ollama/gemma4:31b-it-qat
@@ -203,7 +212,7 @@ models:
       Same benchmarks and limits as gemma4-31b-local; same ratings, since
       the published scores are already full precision. Prefer it to the
       plain tag.
-    ratings: {reasoning: 2, precision: 2, code: 2, cost: 5}
+    ratings: {reasoning: 2, precision: 2, code: 2, writing: 2, speed: 1, cost: 5}
 
   - name: devstral-small-2-local
     model: ollama/devstral-small-2:24b
@@ -216,7 +225,7 @@ models:
       listed by Ollama); an independent leaderboard measured 56.4%. No
       reasoning benchmark published. The non-Qwen local option to compare
       against qwen3.6 and qwen3.8 in `certo bench`.
-    ratings: {reasoning: 1, precision: 2, code: 2, cost: 5}
+    ratings: {reasoning: 1, precision: 2, code: 2, writing: 2, speed: 1, cost: 5}
 
   - name: qwen3.6-35b-local
     model: ollama/qwen3.6:35b-a3b
@@ -232,7 +241,7 @@ models:
       official `qwen3.6:35b-a3b` tag (a `qwen3.6:35b-a3b-coding` tag now
       exists too, not measured here). In Certo's 0.1.15 baseline it wrote
       its tool calls as text and passed 0/27: measure before trusting it.
-    ratings: {reasoning: 2, precision: 2, code: 2, cost: 5}
+    ratings: {reasoning: 2, precision: 2, code: 2, writing: 2, speed: 2, cost: 5}
 
   - name: nemotron-3.5-lightning-local
     model: ollama/nemotron-3.5-lightning:30b
@@ -245,7 +254,7 @@ models:
       51.6%, Terminal-Bench 2.1 24.6%, GPQA Diamond 75.4%, IFBench 71.9%
       (NVIDIA model card). On NVIDIA's own table Qwen3.6-35B-A3B beats it on
       every coding row.
-    ratings: {reasoning: 2, precision: 2, code: 1, cost: 5}
+    ratings: {reasoning: 2, precision: 2, code: 1, writing: 2, speed: 2, cost: 5}
 
   - name: flint-40b-local
     model: ollama/flint:40b
@@ -257,7 +266,7 @@ models:
       SWE-bench Verified 74.2%, Terminal-Bench 2.1 54.9%. No independent
       result yet; tight on a 32GB machine. Measure with `certo bench`
       before trusting it.
-    ratings: {reasoning: 1, precision: 2, code: 2, cost: 5}
+    ratings: {reasoning: 1, precision: 2, code: 2, writing: 2, speed: 1, cost: 5}
 
   - name: qwen3.8-27b-local
     model: ollama/qwen3.8:27b
@@ -274,7 +283,7 @@ models:
       machine allows, and measure with `certo bench`. Measured in Certo's
       0.1.18 local benchmark, with a 131K window: 27/27 hidden tests, never
       fooled Certo, median 7m 37s per task. The `certo init` default.
-    ratings: {reasoning: 3, precision: 3, code: 2, cost: 5}
+    ratings: {reasoning: 3, precision: 3, code: 2, writing: 3, speed: 1, cost: 5}
 
   # ===========================================================================
   # OPENAI — CURRENT (GPT-6 family)
@@ -294,7 +303,7 @@ models:
       GPT-5.6 Luna at half the price — replaces it. Measured in Certo's
       0.1.15 baseline: 8/9 hidden tests, fooled Certo once; it built the
       Sky Hopper sample verified, 4/4 milestones, for $0.13 (2026-11-07).
-    ratings: {reasoning: 3, precision: 4, code: 3, cost: 4.9}
+    ratings: {reasoning: 3, precision: 4, code: 3, writing: 4, speed: 5, cost: 4.9}
 
   - name: gpt-6.1-sol
     model: openai/gpt-6.1-sol
@@ -308,7 +317,7 @@ models:
       one-fifth of Astra's price. AA Intelligence Index 55 (max). Replaces
       GPT-6 Sol (same price, Terminal-Bench 4.0 49.4%), which is left out
       of this catalog.
-    ratings: {reasoning: 4, precision: 5, code: 5, cost: 3.0}
+    ratings: {reasoning: 4, precision: 5, code: 5, writing: 5, speed: 4, cost: 3.0}
 
   - name: gpt-6.1-terra
     model: openai/gpt-6.1-terra
@@ -320,7 +329,7 @@ models:
       the leaderboard yet). No DeepSWE, SWE-Bench Pro or GPQA number found,
       so reasoning and precision are estimates. Replaces GPT-5.6 Terra
       (Terminal-Bench 4.0 21.5%) at half the price.
-    ratings: {reasoning: 3, precision: 3, code: 4, cost: 3.5}
+    ratings: {reasoning: 3, precision: 3, code: 4, writing: 3, speed: 4, cost: 3.5}
 
   - name: gpt-6-astra
     model: openai/gpt-6-astra
@@ -333,7 +342,7 @@ models:
       GPT-5.6 Sol (OpenAI launch table); 58.2% on the public Terminal-Bench
       4.0 leaderboard. GPT-6.1 Sol now codes as well at a fifth of the
       price. Use when correctness matters more than cost.
-    ratings: {reasoning: 5, precision: 5, code: 5, cost: 1.8}
+    ratings: {reasoning: 5, precision: 5, code: 5, writing: 5, speed: 3, cost: 1.8}
 
   # ===========================================================================
   # OPENAI — PREVIOUS GENERATIONS (kept for fallback / comparison)
@@ -351,7 +360,7 @@ models:
       Superseded by gpt-6-luna, which is cheaper and far stronger.
       Rated as an estimate; no current agentic benchmark found. OpenAI
       retires it on 14 Jan 2027.
-    ratings: {reasoning: 1, precision: 1, code: 1, cost: 4.3}
+    ratings: {reasoning: 1, precision: 1, code: 1, writing: 1, speed: 5, cost: 4.3}
 
   - name: gpt-4.1
     model: openai/gpt-4.1
@@ -362,7 +371,7 @@ models:
       Verified 54.6%. Good at plain instruction following, weak as an
       agent. Superseded by gpt-6-luna on capability and price. OpenAI
       retires it on 14 Jan 2027.
-    ratings: {reasoning: 1, precision: 2, code: 1, cost: 3.1}
+    ratings: {reasoning: 1, precision: 2, code: 1, writing: 2, speed: 4, cost: 3.1}
 
   - name: gpt-5.4-mini
     model: openai/gpt-5.4-mini
@@ -373,7 +382,7 @@ models:
       60.0%, GPQA Diamond 88.0% (xhigh effort); MRCR 128K-256K 33.6%, so it
       loses track in long contexts. Costs more than gpt-6-luna and
       gpt-5.6-luna while scoring lower — a poor escalation rung.
-    ratings: {reasoning: 3, precision: 2, code: 2, cost: 3.6}
+    ratings: {reasoning: 3, precision: 2, code: 2, writing: 3, speed: 5, cost: 3.6}
 
   - name: gpt-5.4
     model: openai/gpt-5.4
@@ -383,7 +392,7 @@ models:
       $2.50 in / $15 out per 1M. SWE-Bench Pro 57.7%, Terminal-Bench 2.0
       75.1%, GPQA Diamond 93.0%, MRCR 128K-256K 79.3%. Superseded by
       gpt-6.1-sol, which is cheaper.
-    ratings: {reasoning: 3, precision: 3, code: 2, cost: 2.8}
+    ratings: {reasoning: 3, precision: 3, code: 2, writing: 3, speed: 4, cost: 2.8}
 
   - name: gpt-5.6-luna
     model: openai/gpt-5.6-luna
@@ -397,7 +406,7 @@ models:
       precision holds for prompts of normal size. Codes as well as GPT-5.5
       for a fraction of the price, but gpt-6-luna now does the same at half
       its price.
-    ratings: {reasoning: 3, precision: 4, code: 3, cost: 4.6}
+    ratings: {reasoning: 3, precision: 4, code: 3, writing: 4, speed: 5, cost: 4.6}
 
   - name: gpt-5.5
     model: openai/gpt-5.5
@@ -408,7 +417,7 @@ models:
       58.6-59.4%, GPQA 93.6%, FrontierMath Tier 4 72.5%, MRCR 256K-512K
       81.5%. Better than GPT-5.6 Luna on hard maths and long context, no
       better at coding, at about 25x the price.
-    ratings: {reasoning: 4, precision: 4, code: 3, cost: 2.3}
+    ratings: {reasoning: 4, precision: 4, code: 3, writing: 4, speed: 3, cost: 2.3}
 
   - name: gpt-5.6-terra
     model: openai/gpt-5.6-terra
@@ -419,7 +428,7 @@ models:
       Terminal-Bench 2.1 87.4%, FrontierMath Tier 4 68.3%, MRCR 256K-512K
       89.6% (OpenAI table); Terminal-Bench 4.0 21.5% (public leaderboard).
       Superseded by gpt-6.1-terra at half the price.
-    ratings: {reasoning: 4, precision: 4, code: 3, cost: 2.9}
+    ratings: {reasoning: 4, precision: 4, code: 3, writing: 4, speed: 4, cost: 2.9}
 
   - name: gpt-5.6-sol
     model: openai/gpt-5.6-sol
@@ -431,7 +440,7 @@ models:
       Terminal-Bench 2.1 88.8%, Terminal-Bench 4.0 37.3%, FrontierMath
       Tier 4 83.0%. Superseded by gpt-6.1-sol, which is cheaper even at
       the promotional price, and stronger.
-    ratings: {reasoning: 4, precision: 4, code: 4, cost: 2.3}
+    ratings: {reasoning: 4, precision: 4, code: 4, writing: 4, speed: 3, cost: 2.3}
 
   # ===========================================================================
   # ANTHROPIC — CURRENT (Claude 5.5 family + Fable 5.1)
@@ -451,7 +460,7 @@ models:
       with a database) built verified with no help from a bigger model
       (2026-11-07). Weaker at hard reasoning. Watch the long-prompt price
       step if Certo sends big contexts.
-    ratings: {reasoning: 3, precision: 3, code: 4, cost: 4.9}
+    ratings: {reasoning: 3, precision: 3, code: 4, writing: 3, speed: 5, cost: 4.9}
 
   - name: claude-sonnet-5-5
     model: anthropic/claude-sonnet-5-5
@@ -462,7 +471,7 @@ models:
       Analysis' own run — above Opus 5.5 in both), SWE-Bench Pro 81.3%,
       AA Intelligence Index 55. Frontier-level coder at mid-tier price;
       Opus 5.5 still leads on hard reasoning and most other evals.
-    ratings: {reasoning: 4, precision: 4, code: 5, cost: 3.0}
+    ratings: {reasoning: 4, precision: 4, code: 5, writing: 4, speed: 4, cost: 3.0}
 
   - name: claude-opus-5-5
     model: anthropic/claude-opus-5-5
@@ -475,7 +484,7 @@ models:
       run), SWE-Bench Pro 89.9%. Anthropic's recommended default ("start
       with Claude Opus 5.5 for most workloads"); cheaper than Opus 5 and
       better on every shared benchmark.
-    ratings: {reasoning: 5, precision: 5, code: 5, cost: 2.5}
+    ratings: {reasoning: 5, precision: 5, code: 5, writing: 5, speed: 3, cost: 2.5}
 
   - name: claude-fable-5-1
     model: anthropic/claude-fable-5-1
@@ -489,7 +498,7 @@ models:
       Opus 5.5 posts higher numbers on the benchmarks both report, at less
       than half the price — so it is rated below Opus 5.5 on reasoning and
       precision. Try it when Opus 5.5 falls short.
-    ratings: {reasoning: 4, precision: 4, code: 5, cost: 1.8}
+    ratings: {reasoning: 4, precision: 4, code: 5, writing: 4, speed: 3, cost: 1.8}
 
   # ===========================================================================
   # ANTHROPIC — PREVIOUS GENERATIONS (legacy, still available)
@@ -503,7 +512,7 @@ models:
       $1 in / $5 out per 1M. SWE-bench Verified 73.3%, but 0.0% on
       Terminal-Bench 4.0. Superseded by claude-haiku-5-5, which is 10x
       cheaper and far stronger.
-    ratings: {reasoning: 2, precision: 3, code: 2, cost: 3.5}
+    ratings: {reasoning: 2, precision: 3, code: 2, writing: 3, speed: 5, cost: 3.5}
 
   - name: claude-sonnet-5
     model: anthropic/claude-sonnet-5
@@ -513,7 +522,7 @@ models:
       $2 in / $10 out per 1M (the introductory price became permanent).
       SWE-Bench Pro 63.2%, Terminal-Bench 2.1 80.4%, but Terminal-Bench 4.0
       only 10.3%. Superseded by claude-sonnet-5-5 at the same price.
-    ratings: {reasoning: 3, precision: 3, code: 3, cost: 3.0}
+    ratings: {reasoning: 3, precision: 3, code: 3, writing: 3, speed: 4, cost: 3.0}
 
   - name: claude-opus-4-8
     model: anthropic/claude-opus-4-8
@@ -524,7 +533,7 @@ models:
       78.9%, AA Intelligence Index 55.7 on the old scale, FrontierMath
       Tier 4 56.1% (OpenAI comparison table). Superseded by
       claude-opus-5-5, which is cheaper.
-    ratings: {reasoning: 4, precision: 4, code: 4, cost: 2.3}
+    ratings: {reasoning: 4, precision: 4, code: 4, writing: 4, speed: 3, cost: 2.3}
 
   - name: claude-opus-5
     model: anthropic/claude-opus-5
@@ -535,7 +544,7 @@ models:
       79.2%, DeepSWE v1.1 73.7%, HLE with tools 63.6%, FrontierMath Tier 4
       73.2%. Superseded by claude-opus-5-5, which is cheaper and better on
       every shared row.
-    ratings: {reasoning: 5, precision: 4, code: 4, cost: 2.3}
+    ratings: {reasoning: 5, precision: 4, code: 4, writing: 5, speed: 3, cost: 2.3}
 
   # ===========================================================================
   # GOOGLE — GEMINI (cloud only; Gemma above is the open-weight family)
@@ -552,7 +561,7 @@ models:
       (OpenAI comparison table; not re-checked 2026-11-07). Superseded by gemini-4-argon at a similar price. Replaces the
       old `gemini-3-pro-preview` entry, which is no longer on Google's
       pricing page.
-    ratings: {reasoning: 3, precision: 3, code: 2, cost: 2.9}
+    ratings: {reasoning: 3, precision: 3, code: 2, writing: 3, speed: 4, cost: 2.9}
 
   - name: gemini-3.8-flash
     model: gemini/gemini-3.8-flash
@@ -565,7 +574,7 @@ models:
       AA Intelligence Index 31 (high) on the current scale. Strong
       reasoner on paper, middling terminal agent. `gemini-3.7-flash` now
       routes here.
-    ratings: {reasoning: 4, precision: 3, code: 3, cost: 3.7}
+    ratings: {reasoning: 4, precision: 3, code: 3, writing: 4, speed: 5, cost: 3.7}
 
   - name: gemini-4-argon
     model: gemini/gemini-4-argon
@@ -579,7 +588,7 @@ models:
       normal chat path and maps reasoning_effort to its thinking_level.
       Output is capped at 32,768 tokens a request (65,536 streaming).
       Thinks heavily at high effort.
-    ratings: {reasoning: 5, precision: 4, code: 5, cost: 2.5}
+    ratings: {reasoning: 5, precision: 4, code: 5, writing: 5, speed: 3, cost: 2.5}
 
   # ===========================================================================
   # DEEPSEEK (cloud; open weights but far too large to run locally)
@@ -598,7 +607,7 @@ models:
       / $1.20 out per 1M at peak, half off-peak. Vendor-reported:
       Terminal-Bench 4.0 42.3%, DeepSWE v1.1 77.0% (model card); AA
       Intelligence Index 33 (max). No independent coding result yet.
-    ratings: {reasoning: 3, precision: 3, code: 4, cost: 4.5}
+    ratings: {reasoning: 3, precision: 3, code: 4, writing: 3, speed: 5, cost: 4.5}
 
   - name: deepseek-v4-pro
     model: deepseek/deepseek-v4-pro
@@ -609,7 +618,7 @@ models:
       Pro 52-55% (vendor); an independent CAISI run measured SWE-bench
       Verified at 74.0% against the vendor's 80.6%. DeepSeek says V4.1-Flash
       beats it, at a lower price. AA Intelligence Index 23 (max).
-    ratings: {reasoning: 3, precision: 3, code: 2, cost: 3.5}
+    ratings: {reasoning: 3, precision: 3, code: 2, writing: 3, speed: 4, cost: 3.5}
 
   # ===========================================================================
   # MOONSHOT AI — KIMI (cloud; open weights, ~1-2.8T params, not local)
@@ -625,7 +634,7 @@ models:
       67.2%), AA Intelligence Index 46. No DeepSWE, GPQA or SWE-Bench Pro
       number from an official source yet. Replaces Kimi K2.7 Code, which
       is closed to new users and retires by the end of 2026.
-    ratings: {reasoning: 4, precision: 3, code: 5, cost: 3.0}
+    ratings: {reasoning: 4, precision: 3, code: 5, writing: 4, speed: 4, cost: 3.0}
 
   - name: kimi-k3
     model: moonshot/kimi-k3
@@ -637,4 +646,4 @@ models:
       (Moonshot). Always thinks; reasoning_effort takes low, high or max,
       max by default, so it is slow and token-hungry. Kimi K3.1 Pro is
       cheaper and stronger.
-    ratings: {reasoning: 4, precision: 3, code: 3, cost: 2.7}
+    ratings: {reasoning: 4, precision: 3, code: 3, writing: 4, speed: 3, cost: 2.7}

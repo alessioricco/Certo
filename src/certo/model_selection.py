@@ -15,14 +15,14 @@ from __future__ import annotations
 import os
 import re
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
 from openhands.sdk import LLM
 
 from .config import Config, override_llm
 from .llm import build_llm
-from .model_catalog import ModelCatalogEntry, current_milestone, score_entry
+from .model_catalog import ModelCatalogEntry, current_milestone, score_entry, shortfall
 from .run_summary import effort_label
 
 
@@ -49,6 +49,8 @@ class ModelDecisionRecord:
     # The chosen model's plain catalog name (`chosen` is its label, with
     # the effort), for code that looks the model up (the benchmark).
     chosen_name: str = ""
+    # The profile's needs, when it ranks by fit (then `weights` is unused).
+    needs: dict[str, float] = field(default_factory=dict)
 
 
 # Given the ranked candidates, the recommended index (usually 0, or the
@@ -81,6 +83,7 @@ class ModelChain:
         start_index: int = 0,
         probe: Callable[[ModelCatalogEntry], str | None] | None = None,
         on_skip: Callable[[ModelCatalogEntry, ModelCatalogEntry, str], None] | None = None,
+        needs: dict[str, float] | None = None,
     ) -> None:
         if not ranked:
             raise ValueError("ModelChain requires at least one candidate.")
@@ -93,6 +96,9 @@ class ModelChain:
         # model_reachability.py.
         self._probe = probe
         self._on_skip = on_skip
+        # A profile with needs ranks by fit: each candidate is listed with
+        # how far it is below them (0: it fits), not a weighted score.
+        self._needs = dict(needs or {})
         self.decisions: list[ModelDecisionRecord] = []
 
     @property
@@ -108,6 +114,8 @@ class ModelChain:
         return self._index >= len(self._ranked) - 1
 
     def _scored_ranking(self) -> tuple[tuple[str, float], ...]:
+        if self._needs:
+            return tuple((_label(e), shortfall(e, self._needs)) for e in self._ranked)
         return tuple((_label(e), score_entry(e, self._weights)) for e in self._ranked)
 
     def _record(self, kind: str, reason: str) -> None:
@@ -121,6 +129,8 @@ class ModelChain:
                 chosen=_label(self.current),
                 reason=reason,
                 chosen_name=self.current.name,
+                score_label="shortfall" if self._needs else "score",
+                needs=dict(self._needs),
             )
         )
 
@@ -221,7 +231,8 @@ def write_model_decisions(
     for d in decisions:
         lines = [f"{level} {d.kind} — {d.timestamp}", "", f"Reason: {d.reason}", ""]
         if d.task_profile:  # escalation ladders don't use task profiles
-            lines += [f"Task profile: `{d.task_profile}` (weights: {d.weights})", ""]
+            rule = f"needs: {d.needs}" if d.needs else f"weights: {d.weights}"
+            lines += [f"Task profile: `{d.task_profile}` ({rule})", ""]
         lines.append(f"{d.list_title}:")
         for name, score in d.ranked:
             label = f"**{name}**" if name == d.chosen else name

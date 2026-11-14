@@ -358,6 +358,38 @@ the provider's retries, minutes later. The skip is recorded in
 `MODEL_DECISIONS.md`. See
 [How a model is chosen](../guides/pick-models-automatically.md#how-a-model-is-chosen).
 
+## Changed: `--auto-model` picks the least costly model that fits the task
+
+A task profile now says what its kind of task **needs**, as a minimum
+rating per axis, instead of weights:
+
+```yaml
+  build:
+    triggers: [build, implement, app, game, website, feature]
+    needs: {code: 4}
+  docs:
+    triggers: [readme, documentation]
+    needs: {writing: 3}       # no speed: a slow local model is fine
+```
+
+Certo keeps the models that meet the needs and starts with the least
+costly of them; if its work fails the checks, the next one is a stronger
+model that also fits. With weights, one axis always won: weight `cost`
+and a local model got every task, weight reasoning and the frontier model
+did. Now a cheap or local model goes first where it is good enough, and
+Opus or Fable only where nothing cheaper fits. The example list has two
+new axes, `writing` and `speed` (estimates for now; `speed` never counts
+as capability), and the example profiles a `docs` and a `quick` kind of
+task. Profiles with `weights:` work as before. `certo check --task` shows
+for each model whether it fits, or which need it misses:
+
+```text
+  1. claude-sonnet (fits, cost 3)
+  2. claude-haiku (below: reasoning 3 < 4, cost 4.9)
+```
+
+See [How a model is chosen](../guides/pick-models-automatically.md#how-a-model-is-chosen).
+
 ## Changed: model files are layered, a project changes only what it names
 
 Model files used to be found in one place: the current folder, else your

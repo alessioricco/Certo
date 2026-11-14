@@ -5,8 +5,8 @@ best one for each task, with fallback to the next model when one fails. It
 is for people who use several models and want cheap models on simple tasks
 and strong models on hard ones.
 
-The choice uses simple keyword rules and scores you write. It makes no
-extra model call.
+The choice uses simple keyword rules and what each kind of task needs.
+It makes no extra model call.
 
 ## 1. Create the model files
 
@@ -73,16 +73,19 @@ models:
     ratings: {reasoning: 1, precision: 2, code: 1, cost: 5}
 ```
 
-The task profiles say which ratings matter for which kind of task:
+The task profiles say what each kind of task needs:
 
 ```yaml
 # task_profiles.yaml
 task_profiles:
   debugging:
     triggers: [fix, bug, crash, "failing test"]
-    weights: {reasoning: 3, precision: 2, code: 2, cost: 0.5}
+    needs: {reasoning: 4, code: 4}
+  docs:
+    triggers: [readme, documentation]
+    needs: {writing: 3}
   default:
-    weights: {reasoning: 1, cost: 1, precision: 1, code: 1}
+    needs: {code: 3}
 ```
 
 `models.yaml` picks the ones you use and adds what's personal:
@@ -151,12 +154,17 @@ project folder or registry entry. An existing project folder is kept.
    the milestone's has no trigger word. Only titles are read, never the
    text under them: a spec that says "raise an error" isn't a debugging
    task.
-2. **Score every active model.** The score is the sum of
-   `rating × weight` over the profile's weights.
-3. **Run the best one.** Models are ranked by score, once, at the start.
-   Ties keep the order of the file. A profile can name a model instead
-   (`model:`, see below): that model runs first, and the others follow by
-   score.
+2. **Find the models that fit.** A profile says what its kind of task
+   needs, as a minimum rating per axis (`needs: {code: 4}`). A model
+   fits when it is rated at least that on every axis listed.
+3. **Run the least costly of them.** Among the models that fit, the one
+   with the highest `cost` rating (the cheapest) goes first. A profile can
+   name a model instead (`model:`, see below): that model runs first.
+   If its work fails, the next model is a more capable one that also
+   fits. So a local model wins where it is good enough (leave `speed`
+   out of `needs` where slow is fine), and Opus or Fable only where
+   nothing cheaper fits. Profiles written before 0.2.3 with `weights:`
+   still rank by a weighted score, as before.
 4. **Skip a local model that can't be reached.** Before a local model
    (Ollama, or another server on this machine or network) gets work, at
    the start and at every fallback, Certo asks its server, in a few
@@ -190,7 +198,7 @@ model to use, with the best one as the default.
 ## Always use one model for a kind of task
 
 When you already know which model you want for a profile, name it with
-`model:` instead of tuning the weights until it wins (`certo init models
+`model:` instead of changing the needs until it wins (`certo init models
 --profiles` writes this line for you):
 
 ```yaml
@@ -199,15 +207,15 @@ task_profiles:
   debugging:
     triggers: [fix, bug, crash, "failing test"]
     model: claude-sonnet-5-5        # always first for debugging tasks
-    weights: {reasoning: 3, precision: 2, code: 2, cost: 0.5}
+    needs: {reasoning: 4, code: 4}
 ```
 
 - The name is a model in `models_list.yaml`, as in a ladder.
 - It runs first only when it is enabled in `models.yaml`. If it isn't
-  (no key for it, or `activated: false`), the weights pick the model as
+  (no key for it, or `activated: false`), the needs pick the model as
   before, and `MODEL_DECISIONS.md` says why the named model wasn't used.
 - If it fails (the provider refuses it, or its work fails the checks),
-  Certo moves on to the model the weights rank first, and so on.
+  Certo moves on to the model the needs put first, and so on.
 - `certo check` reports a name that isn't in `models_list.yaml` as an
   error, and a model that isn't enabled as a warning.
 
@@ -218,30 +226,36 @@ lists every task profile with the first three models it would try:
 
 ```text
   Task profiles (--auto-model), checked in this order:
-    debugging, title has: fix, bug
-      gpt-luna (named by the profile, score 13), claude-sonnet (score 20), qwen-local (score 9)
-    scaffolding, title has: scaffold
-      qwen-local (score 10), gpt-luna (score 8), claude-sonnet (score 4)
+    debugging, title has: fix, bug, crash, failing test
+      claude-sonnet (fits, cost 3), claude-haiku (below: reasoning 3 < 4, cost 4.9), gpt-luna (below: reasoning 3 < 4, code 3 < 4, cost 4.9), +1 more
+    docs, title has: readme, documentation
+      qwen-local (fits, cost 5), claude-haiku (fits, cost 4.9), gpt-luna (fits, cost 4.9), +1 more
     default, when no other profile matches
-      claude-sonnet (score 12), gpt-luna (score 11), qwen-local (score 10)
+      claude-haiku (fits, cost 4.9), gpt-luna (fits, cost 4.9), claude-sonnet (fits, cost 3), +1 more
 ```
+
+Here the local model goes first only for docs: it is good enough at
+writing, and the profile doesn't need speed. For a bug, only Sonnet
+meets "reasoning 4"; for anything else, Haiku is the least costly model
+that codes well enough.
 
 For one task, `certo check --task` shows the profile it matches and the
 whole order. Give it the task the way you would give it to a run (text
 or a task file):
 
 ```bash
-certo check --task "Write a Wordle game in Python"
+certo check --task "Fix the failing test in payments.py"
 certo check --task tasks/wordle.md
 ```
 
 ```text
-Task title: Write a Wordle game in Python
-Profile: default (no other profile's trigger word is in the title)
-Models, in the order --auto-model tries them (ranked by the profile's weights):
-  1. claude-sonnet (score 12)
-  2. gpt-luna (score 11)
-  3. qwen-local (score 10)
+Task title: Fix the failing test in payments.py
+Profile: debugging ("fix" is in the title)
+Models, in the order --auto-model tries them (the least costly of the models that meet the needs (reasoning 4+, code 4+); fallbacks climb):
+  1. claude-sonnet (fits, cost 3)
+  2. claude-haiku (below: reasoning 3 < 4, cost 4.9)
+  3. gpt-luna (below: reasoning 3 < 4, code 3 < 4, cost 4.9)
+  4. qwen-local (below: reasoning 3 < 4, code 2 < 4, cost 5)
 The first model runs the task. The next one takes over if its provider fails, or makes the fix attempt when the current model's work fails Certo's checks.
 ```
 
@@ -262,11 +276,13 @@ them again as often as you like:
 
 - **The wrong profile?** Add a trigger word to the profile you want, or
   reword the task's title. Remember that the first matching profile wins.
-- **The wrong first model?** Raise the weight of the axis that model is
-  rated well on, or name it with `model:`.
-- **The wrong fallback?** The second line is the model that takes over
-  when the first one fails. If you want a stronger model there, raise its
-  axis in the weights: `model:` only fixes the first one.
+- **A model too strong (or too weak) goes first?** Lower (or raise) the
+  profile's needs: the first model is the least costly one that meets
+  them. Or name it with `model:`.
+- **A local model where you need answers fast?** Add `speed: 4` to the
+  profile's needs.
+- **A model rated wrong for your use?** Change its rating for yourself in
+  `models.yaml` (`ratings: {code: 4}`).
 
 ## See what was chosen and why
 
@@ -282,18 +298,23 @@ when the task failed. For the task and file above:
 ```markdown
 # Model Decisions
 
-## initial — 2026-10-19T20:29:17.140969+00:00
+## initial — 2026-11-14T19:30:05.485989+00:00
 
-Reason: Task classified as 'debugging': "fix" in 'Fix the failing test in payments.py' (weights: {'reasoning': 3.0, 'precision': 2.0, 'code': 2.0, 'cost': 0.5}). Model order: ranked by the profile's weights.
+Reason: Task classified as 'debugging': "fix" in 'Fix the failing test in payments.py' (needs: {'reasoning': 4.0, 'code': 4.0}). Model order: the least costly of the models that meet the needs (reasoning 4+, code 4+); fallbacks climb.
 
-Task profile: `debugging` (weights: {'reasoning': 3.0, 'precision': 2.0, 'code': 2.0, 'cost': 0.5})
+Task profile: `debugging` (needs: {'reasoning': 4.0, 'code': 4.0})
 
 Ranked candidates:
-- **claude-sonnet (effort default)** (score 31.00)
-- local-coder (effort default) (score 11.50)
+- **claude-sonnet (effort default)** (shortfall 0.00)
+- claude-haiku (effort default) (shortfall 1.00)
+- gpt-luna (effort default) (shortfall 2.00)
+- qwen-local (effort default) (shortfall 3.00)
 
 Chosen: **claude-sonnet (effort default)**
 ```
+
+The shortfall says how far each model is below the needs, added up over
+the axes: 0 means it fits.
 
 Each fallback adds a section of its own, with the reason for the switch.
 
@@ -305,10 +326,13 @@ removes those of the milestones after it.
 
 ## Limits
 
-- The ranking is computed once per task. Falling back moves to the next
-  best fit for this kind of task, which is not always a stronger model.
-  To move to a stronger model when the work fails, use
+- The ranking is computed once per task. With `needs`, falling back
+  climbs to a stronger model that fits; with a profile that has only
+  `weights`, it moves to the next best score, which is not always a
+  stronger model. To climb a fixed list of models, use
   [escalation](escalate-between-models.md).
+- The classification reads only titles (task and milestone), so "rename
+  a variable" and "rewrite the physics engine" can get the same profile.
 - Under `--execution docker`, the first choice works, but Certo can't
   switch models in the middle of a task, and doesn't check whether a
   local model can be reached.

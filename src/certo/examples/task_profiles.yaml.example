@@ -26,61 +26,79 @@
 # title first ("## Milestone 2: Fix the flaky tests" is `debugging`), and
 # by the task's title when its own has no trigger word.
 #
+# HOW A MODEL IS CHOSEN: by fit. Each profile says what a task of its kind
+# NEEDS, as a minimum rating per axis (`needs: {code: 4}`). Certo keeps the
+# enabled models that meet every minimum and starts with the least costly
+# of them (the highest `cost` rating); if its work fails the checks, the
+# next one is a more capable model among those that fit. A model that is
+# below a minimum isn't tried first. So a cheap or local model wins where
+# it is good enough, and a frontier model only where nothing cheaper is.
+#
+# `speed` is a need like the others: leave it out where a slow (local)
+# model is fine, set `speed: 4` where answers must come quickly.
+#
 # A profile can also name a model with `model:` (a name from
 # models_list.yaml): that model runs first when it is enabled in
-# models.yaml, and the weights order the fallbacks after it.
+# models.yaml, and the fit orders the fallbacks after it.
 #
-# Add your own axes/profiles freely — scoring just sums whatever keys a
-# profile's `weights` declares against whatever `ratings` each model
-# provides (see the ratings/weights note at the top of models_list.yaml for
-# how `cost` in particular is scored).
+# Profiles from before 0.2.3 use `weights:` instead (a weighted sum of the
+# ratings): those still work as before. A profile with `needs:` ignores
+# its weights.
 
 task_profiles:
-  # High correctness + deep reasoning + coding.
+  # Hard thinking about why something breaks, then a code change.
   debugging:
     triggers: [fix, bug, crash, "failing test", "race condition", debug, debugging, error, exception, regression]
-    # Optional: always run this model first for the profile, whatever the
-    # weights say (used only when it is enabled in models.yaml).
+    # Optional: always run this model first for the profile (used only
+    # when it is enabled in models.yaml).
     # model: claude-sonnet-5-5
-    weights: {reasoning: 3, precision: 2, code: 2, cost: 0.5}
+    needs: {reasoning: 4, code: 4}
 
-  # Cheap generation/scaffolding. Don't waste frontier inference here.
+  # Prose, not code: a slow local model is fine here.
+  docs:
+    triggers: [document, documentation, docs, readme, changelog, "write-up", tutorial, guide]
+    needs: {writing: 3}
+
+  # Generation from a known pattern: don't spend frontier inference here.
   scaffolding:
     triggers: [scaffold, "create a new", "set up", setup, boilerplate, initialize, initialization, "starter project", template, prototype]
-    weights: {cost: 2, code: 1, reasoning: 0.5, precision: 0.5}
+    needs: {code: 3}
 
-  # Code quality matters more than raw generation speed.
+  # Changing working code without breaking it: careful coding.
   refactor:
     triggers: [refactor, "clean up", simplify, restructure, redesign, optimize, modernization]
-    weights: {code: 2, precision: 2, reasoning: 1, cost: 0.5}
+    needs: {code: 4, precision: 3}
 
-  # Architecture needs stronger reasoning and precision.
+  # The strongest reasoning and precision.
   architecture:
     triggers: [architecture, "system design", "design system", "technical design", "architecture decision", ADR, "distributed system", scalability, "data architecture"]
-    weights: {reasoning: 3, precision: 3, code: 1, cost: 0.5}
+    needs: {reasoning: 5, precision: 4}
 
-  # Research / analysis favors reasoning and precision.
+  # Reading, comparing and judging: reasoning and precision, little code.
   research:
     triggers: [research, analyze, analysis, investigate, compare, evaluate, "deep dive", "trade-off", "tradeoff"]
-    weights: {reasoning: 3, precision: 3, code: 0.5, cost: 0.5}
+    needs: {reasoning: 4, precision: 4}
 
-  # High-volume mechanical work should bias heavily toward cheap models.
+  # Exact output from messy input: precision first.
   extraction:
     triggers: [extract, extraction, classify, classification, categorize, normalize, transform, parse, summarize]
-    weights: {cost: 3, precision: 2, reasoning: 0.5, code: 0}
+    needs: {precision: 4}
 
-  # Agentic tasks need reasoning + code, with cost still relevant.
+  # Long, multi-step work with tools.
   agent:
     triggers: [agent, agentic, "multi-step", "long-running", "tool use", tools, automate, automation, workflow]
-    weights: {reasoning: 3, code: 2, precision: 2, cost: 1}
+    needs: {reasoning: 4, code: 4}
 
-  # Building an app, a game or a feature: code matters most, cost as much,
-  # since a build is long. Late in the list, so a "fix" or "refactor" in
-  # the same title wins.
+  # Something small, needed now: no slow model.
+  quick:
+    triggers: [hotfix, urgent, quick, typo]
+    needs: {code: 3, speed: 4}
+
+  # Apps, games and features: solid coding.
   build:
     triggers: [build, implement, app, application, game, website, feature]
-    weights: {code: 3, cost: 3, reasoning: 0.5, precision: 0.5}
+    needs: {code: 4}
 
-  # Default balanced profile — used when nothing above matches.
+  # Anything else.
   default:
-    weights: {reasoning: 1, cost: 3, precision: 1, code: 1}
+    needs: {code: 3}

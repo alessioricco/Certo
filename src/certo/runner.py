@@ -1968,8 +1968,13 @@ def _stream_task(
             + " or ".join(repr(t) for t in classification_titles(task))
         )
         reason = (
-            f"Task classified as '{profile.name}': {matched} (weights: {profile.weights}). "
-            f"Model order: {how}."
+            f"Task classified as '{profile.name}': {matched} "
+            + (
+                f"(needs: {profile.needs}). "
+                if profile.needs
+                else f"(weights: {profile.weights}). "
+            )
+            + f"Model order: {how}."
         )
         if cfg.interactive and on_model_choice is not None:
             chosen_index = on_model_choice(ranked, 0, reason)
@@ -1978,6 +1983,7 @@ def _stream_task(
             task_profile=profile.name,
             weights=profile.weights,
             start_index=chosen_index,
+            needs=profile.needs,
             # Only where Certo's own process calls the model: a container
             # sees another network (see model_reachability.py).
             probe=unreachable_reason if cfg.execution == "local" else None,

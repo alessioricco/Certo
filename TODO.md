@@ -262,6 +262,10 @@ file), B, C, then 5a and 5b. Steps 2 (`certo models choose`) and A
   each of the Author's models wins where it fits (Haiku for builds, Luna
   for precise work, Terra for hard bugs, Opus for architecture, qwen for
   patient writing) in `certo check --task`, and the benchmark is no worse.
+  *Progress (0.2.3, 2026-11-14):* `needs:`, fit ranking with a climbing
+  fallback, `writing`/`speed` (estimated) in the example list, example
+  profiles with needs, `certo models choose` proposing fit orders, done.
+  Left: the benchmark against the weights rule (local + cloud).
 - **C. `certo models refresh`.** Ratings computed, not hand-written:
   a model data file (raw benchmark scores, prices, published speed)
   attached to each release and cached in `~/.cache/certo/` (from the

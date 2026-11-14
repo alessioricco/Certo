@@ -183,7 +183,12 @@ what to move where.
 ## Ratings: higher is always better
 
 The axis names are yours. The example list uses `reasoning`, `precision`,
-`code` and `cost`, but you can add any name, such as `latency`.
+`code`, `writing`, `speed` and `cost`, but you can add any name, such as
+`latency`. Its `writing` and `speed` ratings are estimates for now (the
+comments at its top say how they were set); rate your own local models'
+`speed` for your machine in `models.yaml`. `speed` says how fast answers
+come, not how good they are, so it never counts as capability (for
+example in an escalation ladder).
 
 On every axis, a higher number must mean "more of what I want". For `cost`
 this means **cost-effectiveness**: `cost: 5` is a cheap (or free, local)
@@ -192,31 +197,57 @@ behind its numbers in its comments.
 
 ## `task_profiles.yaml`
 
-A profile says which axes matter for a kind of task, for `--auto-model`.
-The file has one top-level key, `task_profiles`:
+A profile says what a kind of task needs, for `--auto-model`. The file
+has one top-level key, `task_profiles`:
 
 ```yaml
 task_profiles:
   debugging:
     triggers: [fix, bug, crash]
     model: claude-sonnet-5-5         # optional
-    weights: {reasoning: 3, precision: 2, code: 2, cost: 0.5}
+    needs: {reasoning: 4, code: 4}
+  docs:
+    triggers: [readme, documentation]
+    needs: {writing: 3}              # no speed: a slow local model is fine
   default:
-    weights: {reasoning: 1, cost: 3, precision: 1, code: 1}
+    needs: {code: 3}
 ```
 
 | Field | Meaning |
 |---|---|
 | `triggers` | A list of words or phrases. A profile matches when one of them appears in the task's first line with text (a task file's title, or the whole task when it is one line), as a whole word or with a plural `s`/`es`, in any case. |
-| `weights` | A map of axis name to number. |
-| `model` | Optional. The name of a model in `models_list.yaml` to run first for this profile, whatever the weights say. Used only when that model is enabled in `models.yaml`; otherwise the weights decide, and `MODEL_DECISIONS.md` says why. The weights still order the fallbacks after it. A name that isn't in `models_list.yaml` is an error in `certo check`; a model that isn't enabled is a warning. |
+| `needs` | A map of axis name to the minimum rating a model must have for this kind of task. See "Choosing by fit" below. |
+| `weights` | A map of axis name to number, for a profile without `needs` (the rule before 0.2.3, see "Scoring"). A profile with `needs` ignores it. |
+| `model` | Optional. The name of a model in `models_list.yaml` to run first for this profile. Used only when that model is enabled in `models.yaml`; otherwise the needs (or weights) decide, and `MODEL_DECISIONS.md` says why. The needs (or weights) still order the fallbacks after it. A name that isn't in `models_list.yaml` is an error in `certo check`; a model that isn't enabled is a warning. |
 
 **Choosing the profile.** The profiles are tried in the order of the file,
 skipping the one named `default`. The first that matches wins. If none
 matches, the `default` profile is used. Put specific profiles before broad
 ones.
 
-**Scoring.** For each active model:
+**Choosing by fit** (a profile with `needs`). A model **fits** when its
+rating on every axis in `needs` is at least the minimum; an axis it
+doesn't rate counts as 0, so it doesn't fit (`certo check` warns about
+it). Then:
+
+1. The first model is **the least costly of the models that fit**: the
+   highest `cost` rating. On a tie, the one rated higher on the needed
+   axes goes first, then the order of the list.
+2. The next models are the other models that fit, **climbing in
+   capability** (the needed axes first, then the sum of every rating but
+   `cost` and `speed`): if the first model's work fails the checks, a
+   stronger one takes over.
+3. Last come the models that don't fit, the closest first. A provider
+   failure can still reach them.
+
+If no model fits, the closest one goes first (the smallest total
+shortfall below the needs), and `MODEL_DECISIONS.md` says so. Neither
+cost nor capability wins everything: a cheap local model goes first where
+it is good enough and slowness is acceptable (no `speed` in `needs`), and
+a frontier model only where nothing cheaper fits. `MODEL_DECISIONS.md`
+lists each model with its `shortfall` (0: it fits).
+
+**Scoring** (a profile with only `weights`). For each active model:
 
 ```text
 score = sum of rating[axis] × weight[axis], over the profile's weights
@@ -293,7 +324,7 @@ strategy: auto
 task_profiles:
   build:
     triggers: [build, implement, app, application, game, website, feature]
-    weights: {code: 3.0, cost: 5.0, reasoning: 0.5, precision: 0.5}
+    needs: {code: 4.0}
   # ... the other kinds of task
 escalation:
   ladders:
@@ -306,7 +337,7 @@ escalation:
 |---|---|
 | `use` | The models runs in this project may use, by name. Every other model is left out. A name that isn't enabled in your `models.yaml` is left out with a warning. Without `use`, every enabled model. |
 | `strategy` | `auto` (as `--auto-model`) or `escalate` (as `--escalate`). It applies to every run in the project, unless a flag (`--auto-model`, `--escalate`, `--model`) or `CERTO_MODEL_SELECTION` chooses. |
-| `task_profiles` | As in [`task_profiles.yaml`](#task_profilesyaml). `certo models choose` gives each kind of task a `cost` weight above its other weights together, so the cheaper models go first. |
+| `task_profiles` | As in [`task_profiles.yaml`](#task_profilesyaml). `certo models choose` writes the example profiles, each with what its kind of task needs. |
 | `escalation` | As in [`escalation.yaml`](#escalationyaml). `certo models choose` writes the ladder Certo derives from the chosen models, as `default`. |
 
 `certo check`, run in the project folder, says it uses the file.

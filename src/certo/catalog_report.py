@@ -23,8 +23,8 @@ from .model_catalog import (
     classify_task,
     find_trigger_in,
     load_model_catalog,
+    fit_note,
     rank_for_profile,
-    score_entry,
     task_title,
 )
 from .model_files import find, layers_of, missing_message, resolve, resolve_optional
@@ -73,7 +73,7 @@ def _ranked(catalog: ModelCatalog, profile: TaskProfile) -> list[tuple[str, str]
         return []
     rows = []
     for entry in ranked:
-        note = f"score {score_entry(entry, profile.weights):g}"
+        note = fit_note(entry, profile)
         if entry.name == profile.model:
             note = f"named by the profile, {note}"
         rows.append((entry.name, note))

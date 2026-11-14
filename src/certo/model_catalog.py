@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import os
 import re
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
@@ -85,6 +85,11 @@ class TaskProfile:
     # weights say. Used only when that model is enabled in models.yaml;
     # the weights still order the fallbacks.
     model: str | None = None
+    # What a task of this kind needs: a minimum rating per axis. With
+    # needs, the models that meet them are tried first, the least costly
+    # one first, then climbing in capability (rank_by_fit); weights are
+    # then not used (DECISIONS.md, 2026-11-14).
+    needs: dict[str, float] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -221,17 +226,18 @@ def _parse_model_entry(data: Any) -> ModelCatalogEntry:
     )
 
 
-def _parse_weights(data: dict, *, context: str) -> dict[str, float]:
-    raw = data.get("weights", {}) or {}
+def _parse_weights(data: dict, *, context: str, key: str = "weights") -> dict[str, float]:
+    raw = data.get(key, {}) or {}
     if not isinstance(raw, dict):
-        raise ModelCatalogError(f"{context}: 'weights' must be a mapping of axis -> number.")
+        raise ModelCatalogError(f"{context}: '{key}' must be a mapping of axis -> number.")
     weights: dict[str, float] = {}
     for axis, value in raw.items():
         try:
             weights[str(axis)] = float(value)
         except (TypeError, ValueError):
+            what = "weight" if key == "weights" else "need"
             raise ModelCatalogError(
-                f"{context}: weight {axis!r} must be a number, got {value!r}."
+                f"{context}: {what} {axis!r} must be a number, got {value!r}."
             ) from None
     return weights
 
@@ -252,6 +258,7 @@ def _parse_task_profile(name: str, data: Any) -> TaskProfile:
         triggers=tuple(triggers_raw),
         weights=_parse_weights(data, context=f"Task profile {name!r}"),
         model=model.strip() if model else None,
+        needs=_parse_weights(data, context=f"Task profile {name!r}", key="needs"),
     )
 
 
@@ -841,12 +848,21 @@ def score_entry(entry: ModelCatalogEntry, weights: dict[str, float]) -> float:
     return sum(entry.ratings.get(axis, 0.0) * weight for axis, weight in weights.items())
 
 
+# Axes that say how a model runs, not how well it works: never capability.
+NOT_CAPABILITY = ("speed",)
+
+
 def capability(entry: ModelCatalogEntry, cost_axis: str) -> float:
     """How capable a model is, for escalation: the plain sum of its ratings
-    on every axis except the cost axis. With the usual axes that is
-    reasoning + precision + code. Task profiles don't change it: a ladder
-    climbs by general capability, the same for every task."""
-    return sum(value for axis, value in entry.ratings.items() if axis != cost_axis)
+    on every axis except the cost axis and `speed`. With the usual axes
+    that is reasoning + precision + code (+ writing). Task profiles don't
+    change it: a ladder climbs by general capability, the same for every
+    task."""
+    return sum(
+        value
+        for axis, value in entry.ratings.items()
+        if axis != cost_axis and axis not in NOT_CAPABILITY
+    )
 
 
 def rank_candidates(catalog: ModelCatalog, weights: dict[str, float]) -> list[ModelCatalogEntry]:
@@ -875,20 +891,108 @@ def rank_candidates(catalog: ModelCatalog, weights: dict[str, float]) -> list[Mo
     return sorted(active, key=lambda entry: score_entry(entry, weights), reverse=True)
 
 
+COST_AXIS = "cost"
+
+
+def meets(entry: ModelCatalogEntry, needs: dict[str, float]) -> bool:
+    """Whether `entry` is rated at least each minimum. An axis it doesn't
+    rate counts as 0, so it doesn't meet a need on that axis."""
+    return all(entry.ratings.get(axis, 0.0) >= need for axis, need in needs.items())
+
+
+def shortfall(entry: ModelCatalogEntry, needs: dict[str, float]) -> float:
+    """How far `entry` is below the needs, added up over the axes (0: it
+    meets them)."""
+    return sum(max(0.0, need - entry.ratings.get(axis, 0.0)) for axis, need in needs.items())
+
+
+def _rated(entry: ModelCatalogEntry, axes: Iterable[str] | None = None) -> float:
+    """The sum of `entry`'s ratings on `axes`, or its capability when None."""
+    if axes is None:
+        return capability(entry, COST_AXIS)
+    return sum(entry.ratings.get(a, 0.0) for a in axes)
+
+
+def rank_by_fit(catalog: ModelCatalog, needs: dict[str, float]) -> list[ModelCatalogEntry]:
+    """The active models for a task with these needs, in the order to try
+    them: the least costly of the models that meet the needs (the higher
+    `cost` rating; a tie goes to the more capable on the needed axes,
+    then the file's order); then the other models that meet them, climbing
+    in capability, so a fallback is a stronger model; then the models that
+    don't meet them, the closest first (provider failures can still reach
+    them). When none meets the needs, the closest goes first."""
+    active = [entry for entry in catalog.models if entry.activated]
+    if not active:
+        raise ModelCatalogError(
+            "Every model in the catalog has 'activated: false' — set at "
+            "least one to 'true' before using CERTO_MODEL_SELECTION=auto."
+        )
+    order = {id(e): i for i, e in enumerate(active)}
+    needed = [a for a in needs if a != COST_AXIS]
+    fits = [e for e in active if meets(e, needs)]
+    rest = [e for e in active if not meets(e, needs)]
+    rest.sort(key=lambda e: (shortfall(e, needs), -e.ratings.get(COST_AXIS, 0.0), order[id(e)]))
+    if not fits:
+        return rest
+    first = min(
+        fits,
+        key=lambda e: (-e.ratings.get(COST_AXIS, 0.0), -_rated(e, needed), order[id(e)]),
+    )
+    climb = sorted(
+        (e for e in fits if e is not first),
+        key=lambda e: (
+            _rated(e, needed),
+            _rated(e),
+            -e.ratings.get(COST_AXIS, 0.0),
+            order[id(e)],
+        ),
+    )
+    return [first, *climb, *rest]
+
+
 def rank_for_profile(
     catalog: ModelCatalog, profile: TaskProfile
 ) -> tuple[list[ModelCatalogEntry], str]:
     """The models to try for a task of this profile, in order, and one line
-    saying how the first was chosen. A profile's `model`, when it is
-    enabled, goes first and the rest follow by the weights; otherwise the
-    weights decide, and the line says why the pinned model wasn't used."""
-    ranked = rank_candidates(catalog, profile.weights)
+    saying how the first was chosen. With `needs`, by fit (rank_by_fit);
+    else by the weights. A profile's `model`, when it is enabled, goes
+    first and the rest follow; otherwise the line says why it wasn't used."""
+    if profile.needs:
+        ranked = rank_by_fit(catalog, profile.needs)
+        wanted = ", ".join(f"{a} {v:g}+" for a, v in profile.needs.items())
+        if ranked and meets(ranked[0], profile.needs):
+            rule = f"the least costly of the models that meet the needs ({wanted}); fallbacks climb"
+        else:
+            rule = f"no model meets the needs ({wanted}), so the closest goes first"
+    else:
+        ranked = rank_candidates(catalog, profile.weights)
+        rule = "ranked by the profile's weights"
     if profile.model is None:
-        return ranked, "ranked by the profile's weights"
+        return ranked, rule
     pinned = next((m for m in ranked if m.name == profile.model), None)
     if pinned is not None:
         rest = [m for m in ranked if m is not pinned]
-        return [pinned, *rest], f"the profile names {pinned.name}; fallbacks ranked by weights"
+        then = "fallbacks by fit" if profile.needs else "fallbacks ranked by weights"
+        return [pinned, *rest], f"the profile names {pinned.name}; {then}"
     known = any(m.name == profile.model for m in catalog.models)
     why = "isn't enabled in models.yaml" if known else "isn't in models_list.yaml"
-    return ranked, f"the profile names {profile.model}, which {why}; ranked by weights"
+    then = rule if profile.needs else "ranked by weights"
+    return ranked, f"the profile names {profile.model}, which {why}; {then}"
+
+
+def fit_note(entry: ModelCatalogEntry, profile: TaskProfile) -> str:
+    """How `entry` stands for `profile`, for `certo check` and
+    MODEL_DECISIONS.md: whether it meets the needs (and its cost), or its
+    score by the weights."""
+    if not profile.needs:
+        return f"score {score_entry(entry, profile.weights):g}"
+    cost = entry.ratings.get(COST_AXIS)
+    priced = f", cost {cost:g}" if cost is not None else ""
+    if meets(entry, profile.needs):
+        return f"fits{priced}"
+    below = ", ".join(
+        f"{a} {entry.ratings.get(a, 0.0):g} < {v:g}"
+        for a, v in profile.needs.items()
+        if entry.ratings.get(a, 0.0) < v
+    )
+    return f"below: {below}{priced}"

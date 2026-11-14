@@ -21,6 +21,7 @@ import os
 import re
 import shutil
 from collections.abc import Mapping
+from dataclasses import replace
 
 import yaml
 
@@ -29,9 +30,9 @@ from .model_catalog import (
     ModelCatalog,
     ModelCatalogError,
     TaskProfile,
+    fit_note,
     load_model_catalog,
-    rank_candidates,
-    score_entry,
+    rank_for_profile,
 )
 from .model_pricing import is_local
 
@@ -108,9 +109,9 @@ def _when(profile: TaskProfile) -> str:
 
 def _choose_one(prompter: Prompter, catalog: ModelCatalog, profile: TaskProfile) -> str | None:
     """The model the user wants first for `profile`, or None for the ratings."""
-    ranked = rank_candidates(catalog, profile.weights)
+    ranked, _how = rank_for_profile(catalog, replace(profile, model=None))
     best = ranked[:_SHOWN]
-    options = [f"{m.name}  (score {score_entry(m, profile.weights):g})" for m in best]
+    options = [f"{m.name}  ({fit_note(m, profile)})" for m in best]
     options.append(_RATINGS)
     rest = ranked[_SHOWN:]
     if rest:
