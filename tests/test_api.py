@@ -203,3 +203,50 @@ def test_an_old_record_or_a_manual_run_changes_nothing():
     for record in (old, _saved("manual"), None):
         cfg, note = continue_model_selection(_cfg(), record, model_flag=False, environ={})
         assert cfg.model_selection == "manual" and note is None
+
+
+def _budgeted(seconds, steps):
+    record = _saved("manual")
+    record.max_task_seconds = seconds
+    record.max_iterations = steps
+    return record
+
+
+def test_a_resume_keeps_the_time_budget_and_step_limit():
+    from certo.api import continue_budgets
+
+    cfg, note = continue_budgets(
+        _cfg(max_task_seconds=1800),
+        _budgeted(3600, 150),
+        time_flag=False,
+        steps_flag=False,
+        environ={},
+    )
+
+    assert (cfg.max_task_seconds, cfg.max_iterations) == (3600, 150)
+    assert note == (
+        "Certo: keeping the budget of the run it continues: 60 minutes and 150 steps "
+        "(--max-time or --max-steps sets another)."
+    )
+
+
+def test_flags_and_settings_set_the_budget_now():
+    from certo.api import continue_budgets
+
+    cfg, note = continue_budgets(
+        _cfg(max_task_seconds=600),
+        _budgeted(3600, 150),
+        time_flag=True,
+        steps_flag=False,
+        environ={"CERTO_MAX_ITERATIONS": "40"},
+    )
+    assert (cfg.max_task_seconds, cfg.max_iterations) == (600, 10) and note is None
+
+
+def test_an_old_record_keeps_todays_budget():
+    from certo.api import continue_budgets
+
+    cfg, note = continue_budgets(
+        _cfg(), _budgeted(0, 0), time_flag=False, steps_flag=False, environ={}
+    )
+    assert note is None and cfg == _cfg()

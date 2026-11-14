@@ -42,6 +42,8 @@ from openhands.tools.task_tracker import TaskTrackerTool
 
 from . import context_window
 from .acceptance import AcceptanceCheck, AcceptanceCheckResult, evaluate_acceptance_checks
+from .leftovers import describe as describe_leftovers
+from .leftovers import stop_leftovers
 from .wrap_up import acceptance_brief, pause_for_wrap_up, take_due_message
 from .wrap_up import register as register_wrap_up
 from .agent import build_agent, project_root
@@ -1887,6 +1889,7 @@ def _stream_task(
     # Total running time covers the whole task, model selection and
     # verification included (and any interactive waits — it is wall clock).
     run_started = time.monotonic()
+    wall_started = time.time()  # for the processes the run starts (leftovers.py)
     started_at = datetime.now(UTC).isoformat()
     if cfg is None:
         cfg = load_config()
@@ -2063,6 +2066,9 @@ def _stream_task(
             )
         else:
             conversation = new_conversation()
+        # A resumed conversation brings its earlier usage: this run reports
+        # only what it adds (see _usage_since).
+        metrics_before = _per_model_metrics(conversation) if resume_from is not None else {}
         if guard is not None:
             guard.conversation = conversation
         if cfg.confirm_mode == "always":
@@ -2135,8 +2141,14 @@ def _stream_task(
             # the live repro this fixed in DECISIONS.md.
             if model_chain is not None:
                 write_model_decisions(cfg.workspace, model_chain.decisions, task_text=task)
-            per_model_metrics = _per_model_metrics(conversation)
+            per_model_metrics = _usage_since(_per_model_metrics(conversation), metrics_before)
             efforts = _usage_efforts(cfg, agent_cfg, model_chain)
+            # Processes the agent left running (a background test run, a
+            # server): stopped, now that the run is over (leftovers.py).
+            if cfg.execution == "local":
+                stopped = stop_leftovers(cfg.workspace, wall_started)
+                if stopped:
+                    _emit_notice(emit, describe_leftovers(stopped))
             if written is not None:
                 per_model_metrics.update(written.metrics)
                 efforts.update(dict.fromkeys(written.usage_ids, agent_cfg.reasoning_effort))
@@ -2349,6 +2361,8 @@ def _open_saved_conversation(
         record.execution = cfg.execution
         record.model_selection = cfg.model_selection
         record.escalation_ladder = cfg.escalation_ladder
+        record.max_task_seconds = cfg.max_task_seconds
+        record.max_iterations = cfg.max_iterations
     else:
         record = RunRecord(
             task=task,
@@ -2360,6 +2374,8 @@ def _open_saved_conversation(
             updated_at=now(),
             model_selection=cfg.model_selection,
             escalation_ladder=cfg.escalation_ladder,
+            max_task_seconds=cfg.max_task_seconds,
+            max_iterations=cfg.max_iterations,
         )
     drop_other_conversations(workspace, keep=conversation_id)
     writer = _ProjectStateWriter(workspace, record)
@@ -2386,6 +2402,45 @@ def _metrics_cost(written: Any) -> float:
         return 0.0
     costs = (m.get("accumulated_cost") for m in written.metrics.values())
     return sum(float(c) for c in costs if isinstance(c, int | float))
+
+
+_TOKEN_FIELDS = (
+    "prompt_tokens",
+    "completion_tokens",
+    "cache_read_tokens",
+    "cache_write_tokens",
+    "reasoning_tokens",
+)
+
+
+def _usage_since(now: dict[str, dict], before: dict[str, dict]) -> dict[str, dict]:
+    """Per-model metrics minus what a resumed conversation already had:
+    costs and token counts subtracted, the earlier calls' records dropped,
+    models with nothing new left out."""
+    if not before:
+        return now
+    result: dict[str, dict] = {}
+    for usage_id, metrics in now.items():
+        old = before.get(usage_id)
+        if not old:
+            result[usage_id] = metrics
+            continue
+        new = dict(metrics)
+        new["accumulated_cost"] = max(
+            0.0,
+            float(metrics.get("accumulated_cost") or 0) - float(old.get("accumulated_cost") or 0),
+        )
+        usage = dict(metrics.get("accumulated_token_usage") or {})
+        old_usage = old.get("accumulated_token_usage") or {}
+        for name in _TOKEN_FIELDS:
+            usage[name] = max(0, int(usage.get(name) or 0) - int(old_usage.get(name) or 0))
+        new["accumulated_token_usage"] = usage
+        for key in ("costs", "token_usages", "response_latencies"):
+            items = list(metrics.get(key) or [])
+            new[key] = items[len(old.get(key) or []) :]
+        if new["accumulated_cost"] or any(usage[n] for n in _TOKEN_FIELDS) or new["token_usages"]:
+            result[usage_id] = new
+    return result
 
 
 def _per_model_metrics(conversation: Conversation) -> dict[str, dict]:

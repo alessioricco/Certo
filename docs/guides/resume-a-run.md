@@ -46,7 +46,10 @@ Certo: continuing with --auto-model, as the run it continues chose its models (-
 ```
 
 Give `--model NAME` (or set `CERTO_MODEL_SELECTION`) to resume on one
-model instead.
+model instead. The time budget and the step limit are kept too, unless
+you give `--max-time` or `--max-steps`. The resumed run's summary and its
+line in `RUNS.md` count only its own tokens and cost, not the earlier
+run's.
 
 ## What the agent gets back
 

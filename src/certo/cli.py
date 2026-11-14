@@ -24,6 +24,7 @@ from .api import (
     NothingToDo,
     RunOptions,
     UsageError,
+    continue_budgets,
     continue_model_selection,
     load_run_ladder,
     plan_run,
@@ -817,6 +818,14 @@ def _run_task_command(
     )
     if mode_note:
         print(mode_note)
+    cfg, budget_note = continue_budgets(
+        cfg,
+        continued,
+        time_flag=args.max_time is not None,
+        steps_flag=args.max_steps is not None,
+    )
+    if budget_note:
+        print(budget_note)
 
     # After the plan is known: a resume of milestones counts too.
 

@@ -471,6 +471,21 @@ task asked for tests got Python test advice. It now fires on `pytest`,
 folder is clearly another language (a `package.json` and no Python).
 `certo skills list --task` shows when it is left out and why.
 
+## Fixed: what a run leaves behind, and what a resume forgets
+
+- **Processes the agent left running are stopped.** A test run or server
+  the agent started in the background (`npm run test:e2e &`) kept running
+  after the run ended, for minutes. Now, at the end of every local run,
+  Certo stops the processes that started during the run and work inside
+  the project, and says so: `Certo: stopped 6 process(es) the agent left
+  running in the project (esbuild, node, npm).` The wrap-up message also
+  asks the agent not to start long test runs or servers near the end.
+- **`--resume` keeps the time budget and step limit** of the run it
+  continues (a run with 60-minute milestones was resumed with 30),
+  unless `--max-time` or `--max-steps` sets them.
+- **A resumed run counts only its own cost.** It reported the earlier
+  run's model spend again, so `RUNS.md` added it twice.
+
 ## Also
 
 - **`certo bench` copes with a model server that goes away.** A run

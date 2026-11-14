@@ -282,6 +282,16 @@ given design was chosen.
   the single top file, for commands that edit. `project_dir` reaches the
   lookups through `load_checked_catalog`/`load_ladder` (runner and api
   pass `cfg.workspace`) and `certo check --project`.
+- **`leftovers.py`**: at the end of `_stream_task` (local only, in the
+  `finally`), `stop_leftovers(workspace, wall_started)` stops processes
+  created during the run whose cwd or an absolute argument is inside the
+  project. Never Certo or its ancestors, never a tmux server, never a
+  terminal shell itself (a direct child of Certo or of tmux): the SDK
+  owns those, killing one makes its pty reader raise. psutil.
+- **Resume accounting**: `_usage_since(now, metrics_before)` subtracts a
+  resumed conversation's earlier usage (cost, token fields, per-call
+  lists) from the run summary; `api.continue_budgets` reuses the record's
+  `max_task_seconds` / `max_iterations` like `continue_model_selection`.
 - **`wrap_up.py`**: `acceptance_brief()` is appended to the first message
   of every phase (`_run_stream_task_phases(acceptance_checks=)`, direct,
   resume and each escalation rung), and `register()` plans one wrap-up

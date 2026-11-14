@@ -14,24 +14,6 @@ first item is the suggested next one.
 
 ## Before the next release
 
-- **Background processes the agent starts outlive the run** (found in a
-  user's milestone run, 2026-11-14). The agent started its e2e suite with
-  `&` after the wrap-up message; the test runner and two preview servers
-  ran on for 12+ minutes after the run ended, while Certo's own build
-  check rewrote the folder they served. Track the run's child processes
-  (a process group, or the pids the terminal tool started) and stop them
-  before the checks and at the end of a run; the wrap-up message should
-  also say "don't start long test runs: Certo runs the checks". Done when
-  a run that leaves a background process ends with none left.
-- **`--resume` drops the time and step budgets** (same run). The run
-  record keeps the model mode (fixed) but not `max_task_seconds` or the
-  step limit: a run with 60-minute milestones was resumed with 30. Store
-  both like `model_selection` and reuse them unless a flag sets them.
-- **A resume counts the earlier run's tokens and cost again** (same run).
-  The resumed milestone's entry and report include the previous run's
-  model spend (and label its effort wrongly), so adding up RUNS.md
-  double-counts. Record only this run's spend, or show carried-over
-  figures on their own labelled line.
 - **Milestone state keeps stale or contradictory verdicts** (same run). A
   verified milestone shows a later retry's `budget_exhausted`; skipped
   milestones read "not started", "skipped" or `null` in three places;

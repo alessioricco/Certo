@@ -594,6 +594,7 @@ dependencies = [
     { name = "openhands-sdk" },
     { name = "openhands-tools" },
     { name = "prompt-toolkit" },
+    { name = "psutil" },
     { name = "python-dotenv" },
     { name = "pyyaml" },
 ]
@@ -638,6 +639,7 @@ requires-dist = [
     { name = "openhands-tools", specifier = "==1.47.0" },
     { name = "openhands-workspace", marker = "extra == 'sandbox'" },
     { name = "prompt-toolkit", specifier = ">=3.0.53" },
+    { name = "psutil", specifier = ">=5.9" },
     { name = "psycopg2-binary", marker = "extra == 'store-postgres'", specifier = ">=2.9" },
     { name = "pymysql", marker = "extra == 'store-mysql'", specifier = ">=1.1" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },

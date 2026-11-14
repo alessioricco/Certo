@@ -198,6 +198,51 @@ def continue_model_selection(
     )
 
 
+def continue_budgets(
+    cfg: Config,
+    record: Any,
+    *,
+    time_flag: bool,
+    steps_flag: bool,
+    environ: Mapping[str, str] | None = None,
+) -> tuple[Config, str | None]:
+    """A resume, or a milestone file run again, keeps the time budget and
+    step limit of the run it continues, unless `--max-time`/`--max-steps`
+    or CERTO_MAX_TASK_SECONDS/CERTO_MAX_ITERATIONS set them now. Returns
+    the config and a line to show, or None when nothing changed."""
+    environ = os.environ if environ is None else environ
+    if record is None:
+        return cfg, None
+    changes: dict[str, int] = {}
+    seconds = int(getattr(record, "max_task_seconds", 0) or 0)
+    steps = int(getattr(record, "max_iterations", 0) or 0)
+    if (
+        seconds
+        and seconds != cfg.max_task_seconds
+        and not time_flag
+        and not (environ.get("CERTO_MAX_TASK_SECONDS") or "").strip()
+    ):
+        changes["max_task_seconds"] = seconds
+    if (
+        steps
+        and steps != cfg.max_iterations
+        and not steps_flag
+        and not (environ.get("CERTO_MAX_ITERATIONS") or "").strip()
+    ):
+        changes["max_iterations"] = steps
+    if not changes:
+        return cfg, None
+    parts = []
+    if "max_task_seconds" in changes:
+        parts.append(f"{changes['max_task_seconds'] // 60} minutes")
+    if "max_iterations" in changes:
+        parts.append(f"{changes['max_iterations']} steps")
+    return replace(cfg, **changes), (
+        f"Certo: keeping the budget of the run it continues: {' and '.join(parts)} "
+        "(--max-time or --max-steps sets another)."
+    )
+
+
 def load_run_ladder(
     cfg: Config, on_warning: Callable[[str], None] | None = None
 ) -> ResolvedLadder | None:

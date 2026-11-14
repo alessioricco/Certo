@@ -39,6 +39,8 @@ dependencies = [
     "openhands-sdk==1.47.0",
     "openhands-tools==1.47.0",
     "python-dotenv>=1.0",
+    # Comes with openhands-tools; listed because leftovers.py uses it directly.
+    "psutil>=5.9",
     # Already ships transitively via openhands-sdk — listed explicitly here
     # since model_catalog.py imports it directly, not ad hoc. (runner.py's
     # provider/API-failure detection for auto model selection uses the

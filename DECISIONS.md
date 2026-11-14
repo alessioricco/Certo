@@ -1966,3 +1966,16 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   it out when the project folder is clearly another language (a new,
   empty folder keeps it: triggers decide). A table in code, not a new
   frontmatter key, so skill files stay in the SDK's format.
+- **Certo stops the processes a run left running, at its end** (0.2.3,
+  2026-11-14). An agent's background test run and preview servers
+  outlived a run by minutes. At the end of each local run Certo stops
+  processes started during it that work inside the project (cwd or a path
+  argument), and names them. Not mid-run (the agent's terminal would be
+  one), never a tmux server (shared with the user's sessions) or the
+  terminal shell itself. A user process started inside the project folder
+  during a run would be stopped too: rare, and the notice names it.
+- **A resume keeps its run's budgets and reports only its own usage**
+  (0.2.3, 2026-11-14). Like the model mode: the record stores the time
+  budget and step limit; flags and settings win. The resumed
+  conversation's earlier usage is subtracted from the summary, as the cost
+  limit already did.

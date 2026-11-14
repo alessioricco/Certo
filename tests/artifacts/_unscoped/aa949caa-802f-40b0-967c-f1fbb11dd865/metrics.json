@@ -1,0 +1,238 @@
+{
+  "summary": {
+    "duration_seconds": 11.694,
+    "condensations": 0,
+    "blocked_outside_root": 0,
+    "models": [
+      {
+        "model": "anthropic/claude-sonnet-5-5",
+        "reasoning_effort": null,
+        "prompt_tokens": 71299,
+        "completion_tokens": 899,
+        "cache_read_tokens": 52635,
+        "reasoning_tokens": 19,
+        "total_tokens": 72198,
+        "cost": 0.060908500000000004,
+        "cost_known": true
+      }
+    ],
+    "total_tokens": 72198,
+    "prompt_tokens": 71299,
+    "completion_tokens": 899,
+    "cache_read_tokens": 52635,
+    "total_cost": 0.060908500000000004,
+    "cost_complete": true
+  },
+  "combined": {
+    "accumulated_cost": 0.060908500000000004,
+    "max_budget_per_task": null,
+    "accumulated_token_usage": {
+      "model": "default",
+      "prompt_tokens": 71299,
+      "completion_tokens": 899,
+      "cache_read_tokens": 52635,
+      "cache_write_tokens": 18654,
+      "reasoning_tokens": 19,
+      "context_window": 1000000,
+      "per_turn_token": 18807,
+      "response_id": ""
+    },
+    "costs": [
+      {
+        "model": "anthropic/claude-sonnet-5-5",
+        "cost": 0.044063000000000005,
+        "timestamp": 1794696684.180598
+      },
+      {
+        "model": "anthropic/claude-sonnet-5-5",
+        "cost": 0.0077905000000000005,
+        "timestamp": 1794696688.154824
+      },
+      {
+        "model": "anthropic/claude-sonnet-5-5",
+        "cost": 0.0049124,
+        "timestamp": 1794696689.884829
+      },
+      {
+        "model": "anthropic/claude-sonnet-5-5",
+        "cost": 0.0041426,
+        "timestamp": 1794696692.3109481
+      }
+    ],
+    "response_latencies": [
+      {
+        "model": "anthropic/claude-sonnet-5-5",
+        "latency": 2.2126998901367188,
+        "response_id": "chatcmpl-6b9ad933-525d-439c-8fe9-a4b13b823d7f"
+      },
+      {
+        "model": "anthropic/claude-sonnet-5-5",
+        "latency": 3.342249870300293,
+        "response_id": "chatcmpl-9a94239b-1d4d-4236-8204-8dc4a3c713a9"
+      },
+      {
+        "model": "anthropic/claude-sonnet-5-5",
+        "latency": 1.1331398487091064,
+        "response_id": "chatcmpl-4cbae6a6-339b-458e-89c5-ffe30737a302"
+      },
+      {
+        "model": "anthropic/claude-sonnet-5-5",
+        "latency": 1.8567240238189697,
+        "response_id": "chatcmpl-f3ba826a-c0c3-4453-a450-b8bfbdc68bbf"
+      }
+    ],
+    "token_usages": [
+      {
+        "model": "anthropic/claude-sonnet-5-5",
+        "prompt_tokens": 16894,
+        "completion_tokens": 183,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 16890,
+        "reasoning_tokens": 0,
+        "context_window": 1000000,
+        "per_turn_token": 17077,
+        "response_id": "chatcmpl-6b9ad933-525d-439c-8fe9-a4b13b823d7f"
+      },
+      {
+        "model": "anthropic/claude-sonnet-5-5",
+        "prompt_tokens": 17411,
+        "completion_tokens": 480,
+        "cache_read_tokens": 16890,
+        "cache_write_tokens": 519,
+        "reasoning_tokens": 19,
+        "context_window": 1000000,
+        "per_turn_token": 17891,
+        "response_id": "chatcmpl-9a94239b-1d4d-4236-8204-8dc4a3c713a9"
+      },
+      {
+        "model": "anthropic/claude-sonnet-5-5",
+        "prompt_tokens": 18338,
+        "completion_tokens": 85,
+        "cache_read_tokens": 17409,
+        "cache_write_tokens": 927,
+        "reasoning_tokens": 0,
+        "context_window": 1000000,
+        "per_turn_token": 18423,
+        "response_id": "chatcmpl-4cbae6a6-339b-458e-89c5-ffe30737a302"
+      },
+      {
+        "model": "anthropic/claude-sonnet-5-5",
+        "prompt_tokens": 18656,
+        "completion_tokens": 151,
+        "cache_read_tokens": 18336,
+        "cache_write_tokens": 318,
+        "reasoning_tokens": 0,
+        "context_window": 1000000,
+        "per_turn_token": 18807,
+        "response_id": "chatcmpl-f3ba826a-c0c3-4453-a450-b8bfbdc68bbf"
+      }
+    ]
+  },
+  "per_model": {
+    "certo": {
+      "accumulated_cost": 0.060908500000000004,
+      "max_budget_per_task": null,
+      "accumulated_token_usage": {
+        "model": "anthropic/claude-sonnet-5-5",
+        "prompt_tokens": 71299,
+        "completion_tokens": 899,
+        "cache_read_tokens": 52635,
+        "cache_write_tokens": 18654,
+        "reasoning_tokens": 19,
+        "context_window": 1000000,
+        "per_turn_token": 18807,
+        "response_id": ""
+      },
+      "costs": [
+        {
+          "model": "anthropic/claude-sonnet-5-5",
+          "cost": 0.044063000000000005,
+          "timestamp": 1794696684.180598
+        },
+        {
+          "model": "anthropic/claude-sonnet-5-5",
+          "cost": 0.0077905000000000005,
+          "timestamp": 1794696688.154824
+        },
+        {
+          "model": "anthropic/claude-sonnet-5-5",
+          "cost": 0.0049124,
+          "timestamp": 1794696689.884829
+        },
+        {
+          "model": "anthropic/claude-sonnet-5-5",
+          "cost": 0.0041426,
+          "timestamp": 1794696692.3109481
+        }
+      ],
+      "response_latencies": [
+        {
+          "model": "anthropic/claude-sonnet-5-5",
+          "latency": 2.2126998901367188,
+          "response_id": "chatcmpl-6b9ad933-525d-439c-8fe9-a4b13b823d7f"
+        },
+        {
+          "model": "anthropic/claude-sonnet-5-5",
+          "latency": 3.342249870300293,
+          "response_id": "chatcmpl-9a94239b-1d4d-4236-8204-8dc4a3c713a9"
+        },
+        {
+          "model": "anthropic/claude-sonnet-5-5",
+          "latency": 1.1331398487091064,
+          "response_id": "chatcmpl-4cbae6a6-339b-458e-89c5-ffe30737a302"
+        },
+        {
+          "model": "anthropic/claude-sonnet-5-5",
+          "latency": 1.8567240238189697,
+          "response_id": "chatcmpl-f3ba826a-c0c3-4453-a450-b8bfbdc68bbf"
+        }
+      ],
+      "token_usages": [
+        {
+          "model": "anthropic/claude-sonnet-5-5",
+          "prompt_tokens": 16894,
+          "completion_tokens": 183,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 16890,
+          "reasoning_tokens": 0,
+          "context_window": 1000000,
+          "per_turn_token": 17077,
+          "response_id": "chatcmpl-6b9ad933-525d-439c-8fe9-a4b13b823d7f"
+        },
+        {
+          "model": "anthropic/claude-sonnet-5-5",
+          "prompt_tokens": 17411,
+          "completion_tokens": 480,
+          "cache_read_tokens": 16890,
+          "cache_write_tokens": 519,
+          "reasoning_tokens": 19,
+          "context_window": 1000000,
+          "per_turn_token": 17891,
+          "response_id": "chatcmpl-9a94239b-1d4d-4236-8204-8dc4a3c713a9"
+        },
+        {
+          "model": "anthropic/claude-sonnet-5-5",
+          "prompt_tokens": 18338,
+          "completion_tokens": 85,
+          "cache_read_tokens": 17409,
+          "cache_write_tokens": 927,
+          "reasoning_tokens": 0,
+          "context_window": 1000000,
+          "per_turn_token": 18423,
+          "response_id": "chatcmpl-4cbae6a6-339b-458e-89c5-ffe30737a302"
+        },
+        {
+          "model": "anthropic/claude-sonnet-5-5",
+          "prompt_tokens": 18656,
+          "completion_tokens": 151,
+          "cache_read_tokens": 18336,
+          "cache_write_tokens": 318,
+          "reasoning_tokens": 0,
+          "context_window": 1000000,
+          "per_turn_token": 18807,
+          "response_id": "chatcmpl-f3ba826a-c0c3-4453-a450-b8bfbdc68bbf"
+        }
+      ]
+    }
+  }
+}

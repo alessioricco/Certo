@@ -82,7 +82,9 @@ class WrapUp:
         text = (
             f"Certo: about {minutes} minute(s) of the time budget are left. Don't start "
             "new work now: finish what is open, make sure the project's checks pass, "
-            "and record what you did where the task asks for it."
+            "and record what you did where the task asks for it. Don't start long test "
+            "runs or servers now (Certo runs the project's checks itself at the end), "
+            "and stop any you started in the background."
         )
         failing = [
             r.check

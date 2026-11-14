@@ -76,6 +76,10 @@ class RunRecord:
     # unless the user chooses another (api.continue_model_selection).
     model_selection: str = "manual"
     escalation_ladder: str = ""
+    # The run's time budget (seconds) and step limit: a resume keeps them
+    # too (api.continue_budgets). 0: not recorded (a record from before).
+    max_task_seconds: int = 0
+    max_iterations: int = 0
 
     @classmethod
     def from_dict(cls, data: dict) -> RunRecord:

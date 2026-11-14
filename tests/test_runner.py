@@ -4153,3 +4153,30 @@ def test_skills_used_lists_always_on_then_activated_skills_once_each():
         "progressive",
     )
     assert _skills_used(SimpleNamespace()) == ()
+
+
+def test_a_resumed_conversation_reports_only_its_own_usage():
+    # Live 2026-11-14: a resumed milestone reported the earlier run's model
+    # spend again, so RUNS.md double-counted it.
+    def m(cost, prompt, calls):
+        return {
+            "accumulated_cost": cost,
+            "accumulated_token_usage": {"prompt_tokens": prompt, "completion_tokens": prompt // 10},
+            "costs": [{"cost": 0.1}] * calls,
+            "token_usages": [{"prompt_tokens": 1}] * calls,
+            "response_latencies": [],
+        }
+
+    before = {"certo:old": m(1.73, 22_000_000, 100)}
+    now = {"certo:old": m(1.73, 22_000_000, 100), "certo:new": m(0.12, 900_000, 9)}
+
+    result = runner._usage_since(now, before)
+
+    assert list(result) == ["certo:new"]  # the old model did nothing new
+    assert result["certo:new"]["accumulated_cost"] == 0.12
+
+    grown = {"certo:old": m(2.0, 23_000_000, 110)}
+    usage = runner._usage_since(grown, before)["certo:old"]
+    assert round(usage["accumulated_cost"], 2) == 0.27
+    assert usage["accumulated_token_usage"]["prompt_tokens"] == 1_000_000
+    assert len(usage["token_usages"]) == 10
