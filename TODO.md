@@ -236,7 +236,8 @@ first item is the suggested next one.
 ## 4. Models and strategies
 
 **Model configuration you can trust** (ROADMAP theme 7, the Author's
-request 2026-11-14). In this order:
+request 2026-11-14). In this order: 1 (done but for the Author's own
+file), A, B, C, then 5a and 5b. Step 2 (`certo models choose`) is done.
 
 - **1. Keys out of `models.yaml`.** `${NAME}` already works, but keys
   written out in full go unnoticed (the Author's file had 8). A command
@@ -246,18 +247,45 @@ request 2026-11-14). In this order:
   Done when the Author's file holds no key and the check warns on one.
   *Progress (0.2.3):* `certo models secure` and the warning are built;
   left: the Author runs it on their own file.
-- **3. The model list from the latest release.** `certo models update
-  --online` fetches the example list from the repository at the latest
-  release tag (decided 2026-11-14), shows what changed and applies it
-  with the author's OK, keeping their edits; `certo check` says when the
-  copy is older than the published one. Done when an old copy is brought
-  up to date without a Certo upgrade.
-- **4. Ratings from real numbers.** Cost from the real price (LiteLLM)
-  times the tokens the user's runs really use, not a 1-5 band; quality
-  from the user's own verified rate per model and kind of task once there
-  are enough runs, published benchmark numbers otherwise; 1-5 ratings
-  only as the fallback. Done when the ranking uses measured cost and,
-  where it exists, the user's own results, and `certo check` shows which.
+- **A. Folder layers, merged by name.** Today each model file is used
+  whole (first found: setting, current folder, user folder), so a
+  project change means copying every model and key. Make the project
+  layer (the `--project` folder, else the current one) add to or override
+  the user layer entry by entry, for `models_list.yaml`, `models.yaml`,
+  `task_profiles.yaml` and `escalation.yaml`; `replace: true` at a
+  project file's top keeps whole-file behaviour. Every command respects
+  `--project` (runs, `certo check`, `models update/secure/choose`), and
+  `certo check` shows where each value came from (user, project,
+  computed). Done when a project file of two lines changes one model's
+  rating and everything else comes from the user files.
+- **B. Fit-based auto-model.** A profile says what a task needs
+  (`needs: {code: 4}`, minimums per axis, plus `slow_ok`/speed), not
+  weights: Certo keeps the models that meet the needs and starts with the
+  least costly of them (real price where known, else the `cost` rating;
+  tie: the higher on the task's main need); a local model counts as
+  cheapest only where slowness is acceptable. The fallback climbs: next
+  more capable among those that fit, then above. No model fits: the
+  closest, said in `MODEL_DECISIONS.md`. New axes `writing` and `speed`
+  in the example list (estimates marked). Profiles with only `weights:`
+  keep the old rule. `certo models choose` proposes fit orders. Benchmark
+  against the current rule (local + cloud) before release. Done when
+  each of the Author's models wins where it fits (Haiku for builds, Luna
+  for precise work, Terra for hard bugs, Opus for architecture, qwen for
+  patient writing) in `certo check --task`, and the benchmark is no worse.
+- **C. `certo models refresh`.** Ratings computed, not hand-written:
+  a model data file (raw benchmark scores, prices, published speed)
+  attached to each release and cached in `~/.cache/certo/` (from the
+  latest release tag, decided 2026-11-14), LiteLLM prices, the local
+  models' speed measured on the user's machine, and the user's own
+  results from `run_stats.csv`; fixed formulas give absolute 1-5 ratings,
+  own results adjust them, `ratings:` overrides in a user or project file
+  always win. Prints, for the folder (or `--project`), the models rated
+  and which fit each kind of task, and what changed since last time.
+  Called by `certo models choose` and `certo init models`; `certo check`
+  says when the data is old. A maintainer script (reviewed by a person)
+  keeps the data file current. Supersedes steps 3 and 4 of the earlier
+  plan. Done when a user's table is recomputed from current data for
+  their own models with no hand-written rating.
 - **5a. A model drafts the profiles.** From the author's description in
   plain words ("cheap first, Opus only for architecture") and their
   models, a model writes the profiles once, for review; runs stay

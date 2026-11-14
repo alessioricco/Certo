@@ -155,8 +155,13 @@ Choosing models is where many users stop. Today it takes three
 hand-written files, ratings guessed on a 1-5 scale, keyword lists that
 read only titles, and keys sometimes written out in full. The goal: an
 author picks the models a project may use, and Certo proposes the
-strategy (an auto-model order or an escalation ladder) from those
-models, with real prices and the author's own past results behind it.
+strategy from those models: for each task, the least costly of the
+models that fit what the task needs (coding or writing, precision,
+reasoning, speed), climbing to a stronger one when the work fails.
+Ratings are computed from published benchmark data, real prices, the
+user's own measured speed and past results, never hand-guessed, and
+recomputed for each user's own models. Configuration is layered: a
+project overrides only what it changes.
 Keys live only in settings files, the model list stays current from the
 project's releases, and choosing by reading the whole request (a model
 as router) is an opt-in mode, adopted only if the benchmark shows it no

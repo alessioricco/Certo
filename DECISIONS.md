@@ -1917,3 +1917,22 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   (cheaper first), the derived ladder, and recommends escalation when the
   ladder starts 2+ `cost` points cheaper than it ends. The proposal uses
   the 1-5 ratings until step 4 brings real numbers.
+- **Auto-model picks by fit: the least costly of the models that meet the
+  task's needs** (2026-11-14, the Author; supersedes cost-first weights
+  for profiles that use `needs:`). A weighted sum always crowns one axis:
+  with `cost` heavy a local model wins everything, with reasoning heavy
+  the frontier model does. A profile instead states minimums
+  (`needs:`) and whether slowness is acceptable; cost decides only
+  among models that fit; the fallback climbs in capability. `weights:`
+  profiles keep the old rule. Benchmarked before release.
+- **Ratings are computed, not hand-written** (2026-11-14, the Author;
+  supersedes TODO steps 3 and 4 of the configuration plan). Raw data
+  (benchmarks, prices, speed) in a release-attached file, the user's
+  measured local speed and own results, fixed formulas to an absolute
+  1-5 scale; recomputed per user and folder by `certo models refresh`.
+  User and project `ratings:` overrides always win.
+- **Model files are layered by name, project over user** (2026-11-14,
+  the Author; supersedes "the first one found is used whole"). A project
+  changes only what it names; `replace: true` keeps the old whole-file
+  behaviour. Every command respects `--project`, and `certo check` says
+  where each value came from.
