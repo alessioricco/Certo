@@ -173,7 +173,7 @@ each ([the record](../benchmark/milestone-samples-0.2.3.md)):
   browser, built to production quality in 10 milestones (`## M0` to
   `## M9`); the agent chooses the tech stack itself in the first. From a
   user's task (2026-11-10), not run on its own yet;
-- `far-survey.md`: first-person exploration of an alien planet, in
+- `alien-trekking.md`: first-person exploration of an alien planet, in
   TypeScript with Three.js. The sky, terrain, plants and animals are
   generated from the planet's physics (star class, mass, radius, orbit,
   atmosphere), and each world is a small JSON file in `levels/` or at a

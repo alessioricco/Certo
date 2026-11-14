@@ -187,7 +187,7 @@ five bigger samples written in milestones, for
 `tasks/iron-horizon.md` (a 3D wireframe tank game, browser),
 `tasks/team-board.md` (a task board web app with SQLite, Python) and
 `tasks/star-swarm.md` (a fixed shooter at production quality, the stack
-chosen by the agent, browser), `tasks/far-survey.md` (first-person
+chosen by the agent, browser), `tasks/alien-trekking.md` (first-person
 exploration of a generated alien planet, TypeScript and Three.js,
 browser), and a
 `README.md` with next steps. The bigger samples aren't in the menu at the

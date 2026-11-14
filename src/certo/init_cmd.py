@@ -973,7 +973,7 @@ MILESTONE_SAMPLES = (
     "iron-horizon.md",
     "team-board.md",
     "star-swarm.md",
-    "far-survey.md",
+    "alien-trekking.md",
 )
 
 

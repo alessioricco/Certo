@@ -1,9 +1,9 @@
-# Far Survey: an exploration game on an alien world, in the browser
+# Alien Trekking: an exploration game on an alien world, in the browser
 
 Needs Node 18 or newer. A big sample, in milestones: run it with
 
 ```bash
-certo --milestones tasks/far-survey.md --project far-survey
+certo --milestones tasks/alien-trekking.md --project alien-trekking
 ```
 
 Build an original first-person exploration game for the browser, in

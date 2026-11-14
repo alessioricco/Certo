@@ -47,7 +47,7 @@ uses more model credits:
 - `tasks/star-swarm.md`: a fixed shooter with a diving enemy formation,
   in the browser, built to production quality in 10 milestones; the
   agent chooses the tech stack itself in the first one;
-- `tasks/far-survey.md`: a first-person exploration game on a generated
+- `tasks/alien-trekking.md`: a first-person exploration game on a generated
   alien planet, in TypeScript with Three.js: the sky, terrain, plants and
   animals follow the planet's physics, and each world is a JSON file in
   `levels/` or at a URL, separate from the engine (7 milestones).
