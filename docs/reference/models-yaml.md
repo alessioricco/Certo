@@ -63,6 +63,9 @@ to copy.
 
 ## Where Certo looks
 
+Why the files are layered, and how to see what Certo used:
+[Where model settings come from](../concepts/where-model-settings-come-from.md).
+
 Each file is looked up on its own.
 
 **A path a setting names is used alone:** `CERTO_MODELS_LIST_FILE`,

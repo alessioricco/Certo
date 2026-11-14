@@ -1,9 +1,10 @@
 # Auto-model or escalation: two ways to choose models
 
-Certo can choose the model for a task in two ways. Both use your models
-(`models_list.yaml` and `models.yaml`), and each has its own file for your
-choices: `task_profiles.yaml` for `--auto-model`, `escalation.yaml` for
-`--escalate`. They answer different questions:
+Certo can choose the model for a task in two ways. Both use the models
+you name in `models.yaml`, rated in Certo's model list (see
+[Where model settings come from](where-model-settings-come-from.md)), and
+each can take your own choices: `task_profiles.yaml` for `--auto-model`,
+`escalation.yaml` for `--escalate`. They answer different questions:
 
 - **`--auto-model`** asks: *which model fits this task?* It decides once,
   before the run, from the words in the task.
@@ -23,11 +24,11 @@ turn each on. The step-by-step setup is in two guides:
 |---|---|---|
 | **The question** | Which model fits this task? | Which model on my list can finish this task? |
 | **When it decides** | Once, before the run, from the task text | Step by step, after each run, from Certo's verdict |
-| **What it uses** | Task profiles (`task_profiles.yaml`): trigger words and weights | A ladder (`escalation.yaml`): one you write, or one derived from capability and cost |
-| **First model** | The best fit for the task's profile, often an expensive one | The first rung of the ladder: usually the cheapest |
+| **What it uses** | Task profiles (Certo's own, plus `task_profiles.yaml` of yours): trigger words and what each kind of task needs | A ladder (`escalation.yaml`): one you write, or one derived from capability and cost |
+| **First model** | The least costly model that meets the task's needs | The first rung of the ladder: usually the cheapest |
 | **Changes model when** | The provider fails (rate limit, outage, bad key), or its work fails Certo's checks (the next model makes the fix attempt), or the model uses all its steps with the checks failing | The model's whole run fails (checks still fail after all its fix attempts, a check timed out, the agent is stuck, or it changed no file), or its provider fails (outage, rate limit, rejected key). Not when the task's own time budget or cost cap runs out: that stops the climb |
 | **How it changes** | Inside the same conversation: the next model carries on from where the last one was | A new conversation in the same folder, with a note on what the previous model did |
-| **Next model** | The next best fit, not necessarily a stronger one | The next rung: usually a stronger model, or one from another provider |
+| **Next model** | A stronger model that also meets the needs | The next rung: usually a stronger model, or one from another provider |
 | **Cost** | Set by the choice | Low when the cheap model succeeds; more when it climbs |
 | **Turn it on** | `--auto-model`, or `CERTO_MODEL_SELECTION=auto` | `--escalate [LADDER]`, or `CERTO_MODEL_SELECTION=escalate` |
 
@@ -37,21 +38,22 @@ The two modes can't be combined: `--escalate` with `--auto-model` or
 
 ## How `--auto-model` decides
 
-1. **It picks a task profile.** Each profile in `task_profiles.yaml` has
-   trigger words. Certo looks for them in the task's first line (a task
+1. **It picks a task profile.** Each task profile (Certo's own, and any
+   in your `task_profiles.yaml`) has trigger words. Certo looks for them in the task's first line (a task
    file's title, or the whole task when it is one line), as whole words,
    profile by profile in the order of the file; the first profile with a
    match wins. With no match, the profile named `default` is used.
-2. **It scores every active model.** A model's score is each rating times
-   the profile's weight for it, added up.
-3. **It runs the model with the highest score**, or the model the profile
-   names with `model:`, when that one is enabled. If the provider fails,
-   or the model's work fails Certo's checks, Certo moves to the next
-   model in the same order, which carries on in the same conversation
-   and makes the fix attempt. The
-   order is computed once, so the next model is the next best fit for the
-   task, not necessarily a stronger one. (Under `--execution docker`,
-   only the first choice works: Certo can't switch models during a run.)
+2. **It finds the models that fit.** The profile says what its kind of
+   task needs, as a minimum rating per axis (`needs: {code: 4}`); a model
+   fits when it meets every one.
+3. **It runs the least costly of them**, or the model the profile names
+   with `model:`, when that one is enabled. If the provider fails, or the
+   model's work fails Certo's checks, Certo moves to the next model, a
+   stronger one that also fits, which carries on in the same conversation
+   and makes the fix attempt. (A profile written with `weights:` instead
+   ranks by a weighted score, as before 0.2.3. Under `--execution
+   docker`, only the first choice works: Certo can't switch models during
+   a run.)
 
 An example with three models:
 
@@ -61,16 +63,17 @@ An example with three models:
 | claude-haiku | 3 | 3 | 4 | 4 |
 | claude-sonnet | 4 | 4 | 5 | 2 |
 
-and three profiles: `debugging` (triggers `fix`, `bug`, `crash`; weights
-reasoning 3, precision 2, code 2, cost 0.5), `scaffolding` (triggers
-`scaffold`, `set up`, `boilerplate`; weights cost 2, code 1, reasoning
-0.5, precision 0.5) and `default` (every weight 1):
+and three profiles: `debugging` (triggers `fix`, `bug`, `crash`; needs
+reasoning 4, code 4), `scaffolding` (triggers `scaffold`, `set up`,
+`boilerplate`; needs code 3) and `default` (needs code 3):
 
-| Task | Profile | Scores | Runs on |
+| Task | Profile | Models that fit | Runs on |
 |---|---|---|---|
-| "Fix the crash when the input file is empty" | `debugging` | sonnet 31, haiku 25, local-coder 11.5 | claude-sonnet |
-| "Scaffold a FastAPI project" | `scaffolding` | haiku 15, sonnet 13, local-coder 12.5 | claude-haiku |
-| "Write a Wordle game in Python" | `default` | sonnet 15, haiku 14, local-coder 9 | claude-sonnet |
+| "Fix the crash when the input file is empty" | `debugging` | sonnet (haiku: reasoning 3 < 4) | claude-sonnet |
+| "Scaffold a FastAPI project" | `scaffolding` | haiku, sonnet | claude-haiku, the least costly |
+| "Write a Wordle puzzle in Python" | `default` | haiku, sonnet | claude-haiku, the least costly |
+
+The local model fits none of them (its code is 1), so it goes last.
 
 Two things follow from how it works:
 
@@ -80,10 +83,9 @@ Two things follow from how it works:
   "bugs"), but never part of another word ("fix" doesn't match "prefix").
   Give each task a title that says what kind of work it is, and remember
   that the first matching profile wins.
-- **The `default` profile decides most tasks.** Many tasks match no
-  trigger. With equal weights, cost is one axis out of four, so the
-  strongest model usually wins. Give `cost` a higher weight in `default`
-  if you want cheap models for everyday tasks.
+- **The `default` profile decides many tasks.** Many tasks match no
+  trigger. Its needs set the bar for everyday work: raise them if cheap
+  models do too little, lower them to let a cheaper or local model start.
 
 ## How `--escalate` decides
 

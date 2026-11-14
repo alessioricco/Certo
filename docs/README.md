@@ -84,6 +84,7 @@ takes you from install to your first verified project.
 | Let Certo choose the model for each task | [Pick models automatically](guides/pick-models-automatically.md) |
 | Hand a task to the next model when one can't finish, or its provider fails | [Escalate between models](guides/escalate-between-models.md) |
 | Decide between automatic model choice and escalation | [Auto-model or escalation](concepts/auto-model-or-escalation.md) |
+| Understand which model settings Certo uses, and from which file | [Where model settings come from](concepts/where-model-settings-come-from.md) |
 | Set up my project so Certo can check it | [Make your project checkable](guides/make-a-project-checkable.md) |
 | Check projects in CI | [Verify in CI](guides/verify-in-ci.md) |
 | Check my work before each commit | [Verify before every commit](guides/verify-before-commit.md) |
@@ -129,6 +130,7 @@ takes you from install to your first verified project.
 
 - [How verification works](concepts/how-verification-works.md)
 - [Auto-model or escalation](concepts/auto-model-or-escalation.md)
+- [Where model settings come from](concepts/where-model-settings-come-from.md)
 - [Why agents lie](concepts/why-agents-lie.md)
 - [Safety](concepts/safety.md)
 
