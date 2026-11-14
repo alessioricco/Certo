@@ -235,6 +235,11 @@ first item is the suggested next one.
 
 ## 4. Models and strategies
 
+- **`--escalate` skips a local rung that can't be reached.** `--auto-model`
+  asks a local model's server first (`model_reachability.py`, 0.2.3);
+  escalation ladders, which often start local, don't yet: a switched-off
+  Ollama rung fails only after the provider's retries. Done when a down
+  local rung is skipped with a notice and recorded, like auto-model.
 - **The example profiles favour free local models** (2026-11-11). With
   `cost` weighted ×3 and local models rated `cost: 5`, the example
   `default` profile ranks qwen3.8-local above gpt-6-luna, and `build`

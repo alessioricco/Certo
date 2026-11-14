@@ -147,7 +147,20 @@ project folder or registry entry. An existing project folder is kept.
    Ties keep the order of the file. A profile can name a model instead
    (`model:`, see below): that model runs first, and the others follow by
    score.
-4. **Fall back when needed.** Certo moves to the next model in the ranking
+4. **Skip a local model that can't be reached.** Before a local model
+   (Ollama, or another server on this machine or network) gets work, at
+   the start and at every fallback, Certo asks its server, in a few
+   seconds, whether it is up and has the model. If not, it moves to the
+   next model and says why:
+
+   ```text
+   Certo: skipping qwen3.8-27b-local: the Ollama server at turing.local:11434 didn't answer. Using claude-haiku-5-5.
+   ```
+
+   Cloud models aren't asked (that would be a paid call); a cloud
+   provider that refuses fails at once and is handled in the next step.
+   The last model in the order is kept even when it can't be reached.
+5. **Fall back when needed.** Certo moves to the next model in the ranking
    when the current one:
    - fails at the provider (bad key, rate limit, outage, context too long),
      or
@@ -287,7 +300,10 @@ removes those of the milestones after it.
   To move to a stronger model when the work fails, use
   [escalation](escalate-between-models.md).
 - Under `--execution docker`, the first choice works, but Certo can't
-  switch models in the middle of a task.
+  switch models in the middle of a task, and doesn't check whether a
+  local model can be reached.
+- Only `--auto-model` checks whether a local model can be reached;
+  `--escalate` doesn't yet.
 
 ## Automatic choice or escalation?
 

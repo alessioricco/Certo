@@ -54,6 +54,9 @@ def no_ollama_server(monkeypatch):
     monkeypatch.setattr(context_window, "ollama_model_digest", lambda *a, **k: None)
     monkeypatch.setattr(context_window, "ollama_capabilities", lambda *a, **k: None)
     monkeypatch.setattr("certo.llm.ollama_context_tokens", lambda *a, **k: None)
+    # --auto-model's reachability check (model_reachability.py): every model
+    # is up, unless a test says otherwise.
+    monkeypatch.setattr("certo.runner.unreachable_reason", lambda *a, **k: None)
 
 
 def make_project_venv(project_dir) -> str:

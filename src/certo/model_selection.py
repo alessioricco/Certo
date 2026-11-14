@@ -32,8 +32,8 @@ class ModelDecisionRecord:
     names/scores/reasons), so it's always safe to write to
     `MODEL_DECISIONS.md` or attach to `TaskOutcome`."""
 
-    # "initial" | "escalation_api_failure" | "escalation_quality_failure"
-    # (--auto-model), or "ladder" | "climb_quality_failure" |
+    # "initial" | "escalation_api_failure" | "escalation_quality_failure" |
+    # "skipped_unreachable" (--auto-model), or "ladder" | "climb_quality_failure" |
     # "climb_provider_failure" | "escalation_stop" (--escalate)
     kind: str
     timestamp: str  # ISO-8601 UTC
@@ -79,6 +79,8 @@ class ModelChain:
         task_profile: str,
         weights: dict[str, float],
         start_index: int = 0,
+        probe: Callable[[ModelCatalogEntry], str | None] | None = None,
+        on_skip: Callable[[ModelCatalogEntry, ModelCatalogEntry, str], None] | None = None,
     ) -> None:
         if not ranked:
             raise ValueError("ModelChain requires at least one candidate.")
@@ -86,6 +88,11 @@ class ModelChain:
         self._task_profile = task_profile
         self._weights = weights
         self._index = start_index
+        # `probe(entry)` says why a candidate can't be used now (None: it
+        # can); `on_skip(skipped, next, why)` tells the user. See
+        # model_reachability.py.
+        self._probe = probe
+        self._on_skip = on_skip
         self.decisions: list[ModelDecisionRecord] = []
 
     @property
@@ -130,7 +137,25 @@ class ModelChain:
             return None
         self._index += 1
         self._record(kind, reason)
+        self.skip_unreachable()
         return self.current
+
+    def skip_unreachable(self) -> None:
+        """While the current candidate can't be reached and another one is
+        left, move on and log why. The last candidate is kept even when
+        unreachable: the run then fails as it would have without the check.
+        A no-op without a `probe`."""
+        if self._probe is None:
+            return
+        while not self.exhausted:
+            why = self._probe(self.current)
+            if why is None:
+                return
+            skipped = self.current
+            self._index += 1
+            self._record("skipped_unreachable", f"{skipped.name} skipped before use: {why}.")
+            if self._on_skip is not None:
+                self._on_skip(skipped, self.current, why)
 
 
 def _label(entry: ModelCatalogEntry) -> str:

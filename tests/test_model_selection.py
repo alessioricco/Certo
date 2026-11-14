@@ -282,3 +282,65 @@ def test_write_model_decisions_without_milestones_replaces_the_file(tmp_path):
     content = (tmp_path / "MODEL_DECISIONS.md").read_text()
     assert "Milestone" not in content
     assert "## initial" in content
+
+
+# --- ModelChain: skipping candidates that can't be reached --------------
+
+
+def _probe(down: set[str]):
+    return lambda entry: "the server didn't answer" if entry.name in down else None
+
+
+def test_skip_unreachable_moves_past_down_models_and_logs_why():
+    skipped: list[tuple[str, str, str]] = []
+    chain = ModelChain(
+        [_entry("local"), _entry("cloud")],
+        task_profile="build",
+        weights={},
+        probe=_probe({"local"}),
+        on_skip=lambda s, n, why: skipped.append((s.name, n.name, why)),
+    )
+    chain.record_initial("start")
+
+    chain.skip_unreachable()
+
+    assert chain.current.name == "cloud"
+    assert [d.kind for d in chain.decisions] == ["initial", "skipped_unreachable"]
+    assert chain.decisions[-1].reason == "local skipped before use: the server didn't answer."
+    assert skipped == [("local", "cloud", "the server didn't answer")]
+
+
+def test_skip_unreachable_keeps_the_last_candidate_even_when_down():
+    chain = ModelChain(
+        [_entry("a"), _entry("b")], task_profile="build", weights={}, probe=_probe({"a", "b"})
+    )
+
+    chain.skip_unreachable()
+
+    assert chain.current.name == "b"
+    assert chain.exhausted
+
+
+def test_advance_also_skips_down_models():
+    chain = ModelChain(
+        [_entry("a"), _entry("local"), _entry("c")],
+        task_profile="build",
+        weights={},
+        probe=_probe({"local"}),
+    )
+
+    nxt = chain.advance(kind="escalation_quality_failure", reason="checks failed")
+
+    assert nxt is not None and nxt.name == "c"
+    assert [d.kind for d in chain.decisions] == [
+        "escalation_quality_failure",
+        "skipped_unreachable",
+    ]
+
+
+def test_without_a_probe_nothing_is_skipped():
+    chain = ModelChain([_entry("a"), _entry("b")], task_profile="build", weights={})
+
+    chain.skip_unreachable()
+
+    assert chain.current.name == "a"

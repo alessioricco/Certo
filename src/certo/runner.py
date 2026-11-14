@@ -102,6 +102,7 @@ from .model_catalog import (
     rank_for_profile,
 )
 from .model_pricing import estimate_run_cost, is_local
+from .model_reachability import unreachable_reason
 from .model_selection import (
     ModelChain,
     ModelDecisionRecord,
@@ -1971,9 +1972,19 @@ def _stream_task(
         if cfg.interactive and on_model_choice is not None:
             chosen_index = on_model_choice(ranked, 0, reason)
         model_chain = ModelChain(
-            ranked, task_profile=profile.name, weights=profile.weights, start_index=chosen_index
+            ranked,
+            task_profile=profile.name,
+            weights=profile.weights,
+            start_index=chosen_index,
+            # Only where Certo's own process calls the model: a container
+            # sees another network (see model_reachability.py).
+            probe=unreachable_reason if cfg.execution == "local" else None,
+            on_skip=lambda skipped, nxt, why: _emit_notice(
+                emit, f"Certo: skipping {skipped.name}: {why}. Using {nxt.name}."
+            ),
         )
         model_chain.record_initial(reason)
+        model_chain.skip_unreachable()
         entry = model_chain.current
         agent_cfg = config_for_entry(cfg, entry)
         agent_usage_id = f"certo:{entry.name}"

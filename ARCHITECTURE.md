@@ -259,7 +259,14 @@ given design was chosen.
   carries secrets). `config_for_entry()` passes `""` (not `None`) for an
   unset field so a keyless local model can't inherit a stale API key.
   `write_model_decisions()` rewrites `MODEL_DECISIONS.md` from the full list
-  every time (never appends).
+  every time (never appends). With a `probe`, `.skip_unreachable()` (also
+  run by `.advance()`) moves past candidates that can't be reached, keeping
+  the last one.
+- **`model_reachability.py`** — `unreachable_reason(entry)`: asks a local
+  model's server (Ollama `/api/tags`, else a TCP connect to `base_url`)
+  with a 5 s timeout, cached 30 s per server; cloud models are never asked.
+  The runner passes it to `ModelChain` in local execution only; tests turn
+  it off in `conftest.py`.
 - **`artifacts.py`** — pure file-writing for `CERTO_ARTIFACTS_DIR`:
   `<artifacts_dir>/<project-or-"_unscoped">/<run_id>/`, own path-containment
   check. No SDK dependency. A sibling top-level directory (mirrors

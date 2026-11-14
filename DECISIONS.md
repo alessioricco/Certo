@@ -1879,3 +1879,10 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   10/12 without. It can't show benefit (only `npm`, ~56 tokens, fits the
   bundled tasks), so the 4000 default stays a guess until the "Do trusted
   skills help?" benchmark; this does not settle that.
+- **`--auto-model` asks a local model's server before using it, and skips
+  it when down** (0.2.3, 2026-11-14, the Author's request after latticewake).
+  A switched-off Ollama machine otherwise fails a run only after LiteLLM's
+  retries (about 2.5 minutes each in the bench). Local models only: asking
+  a cloud provider would be a paid call, and a refusing provider fails at
+  once anyway. The last candidate is kept even when down, so the run fails
+  as before instead of with no model. Not in `--escalate` yet (TODO).

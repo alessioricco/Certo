@@ -343,6 +343,21 @@ each kind of task, which model goes first: one of the 3 the ratings rank
 highest, another of yours, or the ratings. `certo init models` asks the
 same after you choose `--auto-model` for every run.
 
+## New: `--auto-model` skips a local model that can't be reached
+
+Before a local model gets work, at the start of a run or milestone and at
+every fallback, `--auto-model` asks its server whether it is up and has
+the model, and skips it if not:
+
+```text
+Certo: skipping qwen3.8-27b-local: the Ollama server at turing.local:11434 didn't answer. Using claude-haiku-5-5.
+```
+
+Before, a run handed to a switched-off Ollama machine failed only after
+the provider's retries, minutes later. The skip is recorded in
+`MODEL_DECISIONS.md`. See
+[How a model is chosen](../guides/pick-models-automatically.md#how-a-model-is-chosen).
+
 ## Also
 
 - **`certo bench` copes with a model server that goes away.** A run

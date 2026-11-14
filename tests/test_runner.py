@@ -2631,6 +2631,38 @@ def test_api_failure_triggers_a_switch_to_the_next_candidate(monkeypatch, tmp_pa
     assert outcome.verification_state == "verified"
 
 
+def test_auto_mode_skips_a_model_that_cannot_be_reached(monkeypatch, tmp_path):
+    conversation = _SwitchableConversation([])
+    _stub_stream_task_dependencies(monkeypatch, conversation, tmp_path)
+    monkeypatch.setattr(
+        runner,
+        "unreachable_reason",
+        lambda entry: (
+            "the Ollama server at box:11434 didn't answer" if entry.name == "cheap" else None
+        ),
+    )
+    messages: list = []
+
+    outcome = runner.stream_task(
+        "do the thing",
+        cfg=_cfg(
+            workspace=str(tmp_path),
+            model_selection="auto",
+            **_catalog_files(tmp_path),
+            execution="local",
+        ),
+        on_message=messages.append,
+    )
+
+    assert [d.kind for d in outcome.model_decisions] == ["initial", "skipped_unreachable"]
+    assert outcome.model_decisions[-1].chosen == "balanced (effort default)"
+    assert conversation.switched_llms == []  # skipped before the conversation started
+    assert any(
+        "skipping cheap: the Ollama server at box:11434 didn't answer. Using balanced." in t
+        for t in _notice_texts(messages)
+    )
+
+
 def _pinned_catalog_files(tmp_path) -> dict[str, str]:
     """The test catalog, with `default` pinned to `strong` (which the
     weights rank last)."""
