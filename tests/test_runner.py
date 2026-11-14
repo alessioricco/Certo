@@ -2375,6 +2375,34 @@ def test_the_agent_is_told_the_acceptance_checks_with_the_task(monkeypatch, tmp_
     assert '- NOTES.md contains the text "done"' in sent[0]
 
 
+def test_wrap_up_off_tells_the_agent_nothing_extra(monkeypatch, tmp_path):
+    sent: list[str] = []
+    conversation = _RecordingConversation()
+    conversation.send_message = sent.append
+    monkeypatch.setattr(runner, "Conversation", lambda **_kwargs: conversation)
+    monkeypatch.setattr(runner, "build_agent", lambda cfg, **_kw: "fake-agent")
+    monkeypatch.setattr(runner, "build_workspace", lambda cfg: nullcontext(str(tmp_path)))
+    monkeypatch.setattr(runner, "_enforce_task_tracker_completion", lambda *a, **kw: None)
+    monkeypatch.setattr(
+        runner,
+        "_verify_and_report",
+        lambda *a, **kw: runner.TaskOutcome(
+            verification_state="verified",
+            completion_contract=runner.CompletionContract(
+                goal="", acceptance_criteria=[], verification_checks=[], limitations=[]
+            ),
+        ),
+    )
+
+    runner.stream_task(
+        "do the thing",
+        cfg=_cfg(workspace=str(tmp_path), wrap_up=False),
+        acceptance_checks=[AcceptanceCheck(kind="file_exists", path="NOTES.md")],
+    )
+
+    assert sent[0] == "do the thing"
+
+
 def test_stream_task_acceptance_check_failure_downgrades_a_real_verified_run(monkeypatch, tmp_path):
     conversation = _RecordingConversation()
     monkeypatch.setattr(runner, "Conversation", lambda **_kwargs: conversation)

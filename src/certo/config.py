@@ -121,6 +121,10 @@ class Config:
     # (agent.py). Only a `certo bench` arm sets it (`root_prompt: false`),
     # to measure what the sentence changes; the root guard stays on.
     root_prompt: bool = True
+    # False: the agent isn't told the acceptance checks and gets no wrap-up
+    # message before the time budget ends (wrap_up.py). Only a `certo
+    # bench` arm sets it (`wrap_up: false`), to measure what they change.
+    wrap_up: bool = True
     skills_off: tuple[str, ...] = ()
 
     # Only consulted when execution == "docker" (see workspace.py).

@@ -1,0 +1,16 @@
+# The narrower pytest-conventions skill (Certo 0.2.3): it fired on the word
+# "test" in every task; now only on pytest/python/unittest/conftest, and
+# never in a project of another language. On the 7 Python tasks it still
+# fires, so only the 6 tasks in other languages can differ: those run here.
+# The "old" arm gets the skill as it was in 0.2.2, as a global skill that
+# replaces the official one (skills_dir).
+#   certo bench --config docs/benchmark/bench-0.2.3-pytest-cloud.yaml --parallel 3 --max-cost 3
+# The model files name the key as ${ANTHROPIC_API_KEY}, read from the
+# environment.
+models_file: docs/benchmark/models-0.2.2-effort.yaml
+models_list_file: docs/benchmark/models_list-0.2.2-effort.yaml
+tasks: [library-loans, room-bookings, semver-order, slugify, todo-deps, token-bucket]
+repeats: 3
+arms:
+  - {name: haiku-narrow, strategy: single, model: haiku-high}
+  - {name: haiku-old, strategy: single, model: haiku-high, skills_dir: docs/benchmark/skills-0.2.3-pytest-old}

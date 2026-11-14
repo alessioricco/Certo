@@ -1,0 +1,13 @@
+# The local half of bench-0.2.3-wrapup-cloud.yaml: the expenses milestone
+# task (qwen3.8 took ~29 min for it in 0.1.27) with 600 s per milestone, so
+# the wrap-up (at 480 s) is reached on the longer milestones. A night slot,
+# under caffeinate -i:
+#   certo bench --config docs/benchmark/bench-0.2.3-wrapup-local.yaml --yes
+models_file: docs/benchmark/models-0.2.2-effort.yaml
+models_list_file: docs/benchmark/models_list-0.2.2-effort.yaml
+tasks_dir: app-tasks
+tasks: [expenses]
+repeats: 3
+arms:
+  - {name: qwen-wrap, strategy: single, model: qwen-high, milestones: true, max_task_seconds: 600}
+  - {name: qwen-no-wrap, strategy: single, model: qwen-high, milestones: true, max_task_seconds: 600, wrap_up: false}

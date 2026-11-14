@@ -103,6 +103,7 @@ _ARM_OPTIONS = (
     "milestones",
     "root_prompt",
     "skills_dir",
+    "wrap_up",
 )
 
 
@@ -216,6 +217,9 @@ def _arms(raw: Any, catalog: dict[str, ModelCatalogEntry], where: str) -> list[A
         if not isinstance(root_prompt, bool):
             raise BenchConfigError(f"{arm_where}: 'root_prompt' must be true or false.")
         skills_dir = _skills_dir(item.get("skills_dir"), arm_where)
+        wrap_up = item.get("wrap_up", True)
+        if not isinstance(wrap_up, bool):
+            raise BenchConfigError(f"{arm_where}: 'wrap_up' must be true or false.")
         rest = {k: v for k, v in item.items() if k not in _ARM_OPTIONS}
         params = STRATEGIES[strategy].parse(rest, catalog, arm_where)
         if independent:
@@ -236,6 +240,8 @@ def _arms(raw: Any, catalog: dict[str, ModelCatalogEntry], where: str) -> list[A
             params["root_prompt"] = False
         if skills_dir:
             params["skills_dir"] = skills_dir
+        if not wrap_up:
+            params["wrap_up"] = False
         arms.append(Arm(name=name, strategy=strategy, params=params))
     return arms
 

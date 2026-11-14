@@ -2436,14 +2436,16 @@ def _run_stream_task_phases(
     # verification and the completion contract are judged against.
     # The agent is told the acceptance checks Certo runs at the end, and
     # warned before the time budget ends (wrap_up.py).
-    conversation.send_message((first_message or task) + acceptance_brief(acceptance_checks))
-    register_wrap_up(
-        conversation,
-        deadline=deadline,
-        budget_seconds=cfg.max_task_seconds,
-        workspace=cfg.workspace,
-        checks=acceptance_checks,
-    )
+    brief = acceptance_brief(acceptance_checks) if cfg.wrap_up else ""
+    conversation.send_message((first_message or task) + brief)
+    if cfg.wrap_up:
+        register_wrap_up(
+            conversation,
+            deadline=deadline,
+            budget_seconds=cfg.max_task_seconds,
+            workspace=cfg.workspace,
+            checks=acceptance_checks,
+        )
     run_result = _run_with_confirmation(conversation, cfg, emit, on_confirm, deadline, model_chain)
     outcome = _outcome_for_run_result(run_result, task, cfg)
 

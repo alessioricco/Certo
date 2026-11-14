@@ -1,0 +1,16 @@
+# The acceptance brief and the wrap-up message (Certo 0.2.3): the agent is
+# told each milestone's acceptance checks, and gets one message a margin
+# before the time budget ends naming the checks that don't hold yet. The
+# "no-wrap" arm turns both off (wrap_up: false). Milestone tasks with
+# acceptance checks, from app-tasks/, run milestone by milestone with a
+# tight budget per milestone (300 s: the wrap-up comes at 180 s), so the
+# margin is really reached.
+#   certo bench --config docs/benchmark/bench-0.2.3-wrapup-cloud.yaml --parallel 3 --max-cost 5
+models_file: docs/benchmark/models-0.2.2-effort.yaml
+models_list_file: docs/benchmark/models_list-0.2.2-effort.yaml
+tasks_dir: app-tasks
+tasks: [expenses, spreadsheet]
+repeats: 3
+arms:
+  - {name: haiku-wrap, strategy: single, model: haiku-high, milestones: true, max_task_seconds: 300}
+  - {name: haiku-no-wrap, strategy: single, model: haiku-high, milestones: true, max_task_seconds: 300, wrap_up: false}

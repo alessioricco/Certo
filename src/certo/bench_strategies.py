@@ -138,6 +138,8 @@ def arm_config(entry: ModelCatalogEntry, ctx: RunContext, params: Mapping[str, A
         cfg = replace(cfg, skills_off=tuple(params["skills_off"]))
     if params.get("root_prompt") is False:
         cfg = replace(cfg, root_prompt=False)
+    if params.get("wrap_up") is False:
+        cfg = replace(cfg, wrap_up=False)
     return cfg
 
 

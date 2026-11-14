@@ -1,0 +1,12 @@
+# The local half of bench-0.2.3-pytest-cloud.yaml: the same 6 tasks in
+# languages other than Python, the skill as it is now against the skill as
+# it was in 0.2.2. A night slot, under caffeinate -i:
+#   certo bench --config docs/benchmark/bench-0.2.3-pytest-local.yaml --yes
+# The Ollama server is the one on another machine on the local network.
+models_file: docs/benchmark/models-0.2.2-effort.yaml
+models_list_file: docs/benchmark/models_list-0.2.2-effort.yaml
+tasks: [library-loans, room-bookings, semver-order, slugify, todo-deps, token-bucket]
+repeats: 1
+arms:
+  - {name: qwen-narrow, strategy: single, model: qwen-high}
+  - {name: qwen-old, strategy: single, model: qwen-high, skills_dir: docs/benchmark/skills-0.2.3-pytest-old}
