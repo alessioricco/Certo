@@ -68,12 +68,11 @@ def test_a_process_outside_the_project_or_older_than_the_run_is_left_alone(tmp_p
             psutil.Process(pid).kill()
 
 
-def test_certos_own_process_is_never_a_leftover(tmp_path):
-    os.chdir(tmp_path)
-    try:
-        found = leftovers.find_leftovers(str(tmp_path), 0.0)
-    finally:
-        os.chdir(os.path.dirname(__file__))
+def test_certos_own_process_is_never_a_leftover(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)  # restored after the test
+
+    found = leftovers.find_leftovers(str(tmp_path), 0.0)
+
     assert os.getpid() not in [p.pid for p in found]
 
 
