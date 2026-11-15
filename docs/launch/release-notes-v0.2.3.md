@@ -468,6 +468,19 @@ tests passed with them and without, no milestone ran out of time with
 them (one did without), at about three quarters of the cost. The local
 half is still to run. [The record](../benchmark/wrap-up-0.2.3.md).
 
+## Changed: an open to-do item no longer climbs the model ladder
+
+When the agent finished with an item of its own to-do list still open,
+Certo asked it to finish, and moved to the next model at the same time;
+if the item stayed open, the verdict was `incomplete` and the project's
+checks never ran. In a milestone of the alien-trekking sample, every
+check passed and one item stayed "in progress": the run climbed from
+Haiku through Terra and Sonnet to Sol and stopped at its $2 cost limit.
+Now the follow-up stays on the same model, and the checks decide. A
+`verified` run with items still open says they are open and that the
+task may be unfinished, and `certo --resume` continues it. `incomplete`
+is no longer given. See [Verdicts](../reference/verdicts.md).
+
 ## Fixed: `--resume` keeps `--auto-model` and `--escalate`
 
 A run started with `--auto-model` (or `--escalate`) and resumed without

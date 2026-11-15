@@ -1995,3 +1995,10 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   replay over 7,541 bench commands went from 134 false blocks (words
   only) to 3, all real problems. Not a sandbox: scripts and `xargs` still
   get through; Docker is the sandbox.
+- **An open task_tracker item no longer escalates or ends `incomplete`**
+  (0.2.3, 2026-11-15; supersedes the earlier "incomplete short-circuits
+  verification" choice). A milestone whose every check passed climbed
+  three models to its cost limit over one item left `in_progress`. The
+  follow-ups stay on the same model; the checks decide; a pass with
+  items open is `verified` with a "may be unfinished" note and
+  `cut_short` (bare --resume continues). Only failing checks escalate.

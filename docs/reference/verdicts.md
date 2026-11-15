@@ -27,7 +27,7 @@ works this way is in
 | `retry_exhausted` | A check kept failing after `CERTO_MAX_VERIFY_RETRIES` fix attempts (2 by default), and the failure changed between attempts. | 1 |
 | `no_progress` | A fix attempt changed nothing: the same check failed again with the same exit code and the same output (only timings may differ). Certo stops early instead of using up the retries. | 1 |
 | `timed_out` | A check ran longer than 300 seconds and was stopped, and it still did after the fix attempts. Usually a program that hangs or waits for input. | 1 |
-| `incomplete` | The agent's own to-do list still had open items after Certo asked it to finish them. Certo doesn't run the project's checks in this case. | 1 |
+| `incomplete` | Not given since 0.2.3. Before, the agent's own to-do list still had open items after Certo asked it to finish them, and Certo didn't run the project's checks. Now the checks decide (step 3 below). | 1 |
 | `confirmation_required` | Confirm mode (`CERTO_CONFIRM_MODE=always`) needed an approval and nobody could give it (server mode). The action was rejected and the task stopped. | 1 |
 | `budget_exhausted` | The task's time budget (`CERTO_MAX_TASK_SECONDS`, 30 minutes by default) ran out before the work could be shown to pass. If it ran out during the agent's last step, the checks still ran once, with no fix attempt; work that passed them is `verified` instead, unless the agent changed no file in the project folder or its own task list still had unfinished items (the report then shows the checks and the items). | 1 |
 | `cost_exhausted` | The task's cost limit (`CERTO_MAX_TASK_COST`) was reached before the work could be shown to pass. As with the time budget, the checks still ran once, with no fix attempt; work that passed them is `verified` instead, unless the agent changed no file in the project folder or its own task list still had unfinished items. | 1 |
@@ -142,7 +142,10 @@ Certo checks, in this order, and stops at the first that applies:
    show that what the agent left works, not that it is all there.
    `certo --resume` with no `TASK` continues it.
 3. Does the agent's to-do list have open items? Ask the agent to finish
-   them; if they stay open → `incomplete`
+   them, on the same model (an open item never moves to the next model).
+   If they stay open, the checks below still decide; a `verified` run
+   then carries a note naming the open items and saying the task may be
+   unfinished, and `certo --resume` with no `TASK` continues it
 4. Run the project's checks. On a failure, send it to the agent and check
    again → `verified`, `inconclusive`, `retry_exhausted`, `no_progress` or
    `timed_out`

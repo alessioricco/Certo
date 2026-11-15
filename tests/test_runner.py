@@ -1655,7 +1655,7 @@ def test_task_tracker_pending_item_triggers_followup_then_recovers():
     assert outcome is None  # complete now — stream_task proceeds to _verify_and_report
 
 
-def test_task_tracker_exhausts_retries_and_emits_giveup_notice():
+def test_task_tracker_still_open_after_followups_leaves_the_verdict_to_the_checks():
     conversation = _FakeConversation(
         initial_events=[_task_list_event({"title": "B", "status": "todo"})],
         events_after_run=[
@@ -1669,15 +1669,45 @@ def test_task_tracker_exhausts_retries_and_emits_giveup_notice():
     )
 
     assert conversation.run_calls == 2
-    assert outcome is not None
-    assert outcome.verification_state == "incomplete"
-    assert outcome.retries_used == 2
-    assert outcome.success is False
+    assert outcome is None  # the project's checks decide
     assert len(emitted) == 1
-    assert "task_tracker" in emitted[0].content[0].text
-    assert "B" in emitted[0].content[0].text
-    assert any("B" in note for note in outcome.completion_contract.limitations)
-    assert outcome.completion_contract.verification_checks == []
+    assert "The project's checks decide" in emitted[0].content[0].text
+    assert [item.title for item in runner._OPEN_ITEMS[conversation]] == ["B"]
+
+
+def test_task_tracker_followups_never_climb_the_ladder():
+    # A user's milestone: every check passed, one item stayed in_progress,
+    # and the run climbed three models to its cost limit.
+    conversation = _FakeConversation(
+        initial_events=[_task_list_event({"title": "B", "status": "in_progress"})],
+        events_after_run=[_task_list_event({"title": "B", "status": "in_progress"})],
+    )
+    chain = SimpleNamespace(
+        current=SimpleNamespace(name="cheap"),
+        advance=lambda **_kw: pytest.fail("the ladder must not climb on an open item"),
+    )
+    runner._enforce_task_tracker_completion(
+        conversation,
+        _cfg(max_verify_retries=1),
+        lambda _m: None,
+        "do the thing",
+        model_chain=chain,
+    )
+    assert conversation.run_calls == 1
+
+
+def test_a_verified_run_with_open_items_says_it_may_be_unfinished():
+    conversation = _FakeConversation()
+    runner._OPEN_ITEMS[conversation] = [SimpleNamespace(title="B", status="in_progress")]
+    verified = runner.TaskOutcome(
+        verification_state="verified",
+        completion_contract=runner.CompletionContract(
+            goal="g", acceptance_criteria=[], verification_checks=[], limitations=[]
+        ),
+    )
+    noted = runner._note_open_items(conversation, verified)
+    assert noted.cut_short is True
+    assert any("'B' (in_progress)" in n for n in noted.completion_contract.limitations)
 
 
 def test_task_tracker_stuck_before_check_is_reported_as_stuck():
@@ -1712,11 +1742,10 @@ def test_task_tracker_gets_stuck_mid_retry():
     assert outcome.retries_used == 1
 
 
-def test_task_tracker_short_circuits_project_verification_when_still_incomplete(monkeypatch):
-    # Integration check for the full stream_task wiring, not just the unit
-    # function in isolation: an incomplete task_tracker list must prevent
-    # project verification from ever running under a false premise of
-    # completeness.
+def test_task_tracker_still_open_goes_on_to_the_projects_checks(monkeypatch):
+    # Integration check for the full stream_task wiring: an item left open
+    # after the follow-ups no longer ends the run `incomplete` unchecked;
+    # the checks decide, and a pass says the task may be unfinished.
     class _Conversation:
         def __init__(self, **kwargs: object) -> None:
             self.kwargs = kwargs
@@ -1749,8 +1778,9 @@ def test_task_tracker_short_circuits_project_verification_when_still_incomplete(
         "do the thing", cfg=_cfg(verify_tests="always", max_verify_retries=1)
     )
 
-    assert outcome.verification_state == "incomplete"
-    assert verification_calls["count"] == 0  # project verification never reached
+    assert outcome.verification_state == "verified"
+    assert verification_calls["count"] >= 1
+    assert outcome.cut_short is True
 
 
 # --- completion contract -----------------------------------------------------

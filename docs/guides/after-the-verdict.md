@@ -122,13 +122,10 @@ input, or loops forever.
 
 ## `incomplete`
 
-The agent's own to-do list still had open items after Certo asked it to
-finish them. Certo didn't run the checks: passing tests for part of the
-work prove nothing.
-
-This usually means the task was too big for the model. Resume to let it
-continue (`certo --resume`), or split the rest into smaller tasks. A
-stronger `--model` also helps.
+Not given since 0.2.3. Before, it meant the agent's own to-do list still
+had open items after Certo asked it to finish them. Now the project's
+checks decide; a `verified` run with items still open says so in its
+report ("the task may be unfinished"), and `certo --resume` continues it.
 
 ## `acceptance_failed`
 

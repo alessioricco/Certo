@@ -45,8 +45,7 @@ couldn't finish, or when its provider fails:
   the failure keeps changing but never passes, the result is
   `retry_exhausted` after the fix attempts. Both hand the task on.
 - **The run got stuck.** The agent's run ended in a stuck or error state
-  (`stuck`), its to-do list still had open items (`incomplete`), or a
-  check hung (`timed_out`).
+  (`stuck`), or a check hung (`timed_out`).
 - **The provider failed.** A rejected key, a refused request (no credit,
   or rate limited), a provider that can't be reached, or no answer in
   time. This is recorded as a provider failure, not a quality failure.
@@ -203,8 +202,8 @@ The difference is in the verdict, which you can read in three places:
 - the result of the [server API](reference/server-api.md).
 
 For example, `retry_exhausted` means the tests still fail after the fix
-attempts; `no_progress` that a fix attempt changed nothing; `stuck` or
-`incomplete` that the agent didn't finish; `budget_exhausted` that it ran
+attempts; `no_progress` that a fix attempt changed nothing; `stuck` that
+the agent didn't finish; `budget_exhausted` that it ran
 out of time.
 
 `inconclusive` (nothing could be checked) and `unchanged` exit 0 by

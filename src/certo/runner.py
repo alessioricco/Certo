@@ -254,6 +254,10 @@ def _hit_step_limit(conversation: Conversation) -> bool:
 # the deadline (`_run_conversation_once`). Their ERROR status is the
 # budget's doing, so `_verify_after_budget` checks their work.
 _CUT_AT_DEADLINE: weakref.WeakSet[Any] = weakref.WeakSet()
+# Conversations whose agent left items of its own task_tracker list open
+# after Certo's follow-ups: the project's checks decide the verdict, and a
+# pass says the task may be unfinished (_note_open_items).
+_OPEN_ITEMS: weakref.WeakKeyDictionary[Any, list[Any]] = weakref.WeakKeyDictionary()
 
 
 def _step_limit_notice(cfg: Config) -> str:
@@ -1443,23 +1447,25 @@ def _task_tracker_followup(pending: list) -> str:
     )
 
 
-def _task_tracker_completion_contract(task: str, pending: list) -> CompletionContract:
-    pending_desc = "; ".join(f"'{item.title}' ({item.status})" for item in pending)
-    return CompletionContract(
-        goal=task,
-        acceptance_criteria=[
-            "The task described in the original request is implemented.",
-            ("The agent's own task_tracker list has no items left as 'todo' or 'in_progress'."),
-        ],
-        verification_checks=[],
-        limitations=[
-            (
-                "The agent's own task_tracker list still shows unfinished "
-                f"item(s) after automated follow-up ({pending_desc}); project "
-                "verification checks were not run, since completion was never "
-                "established."
-            )
-        ],
+def _open_items_note(pending: list) -> str:
+    items = "; ".join(f"'{item.title}' ({item.status})" for item in pending)
+    return (
+        "The agent's own task_tracker list still shows unfinished item(s) after "
+        f"Certo's follow-up ({items}): the checks show that what it left works, "
+        "not that the task is all there. `certo --resume` continues it."
+    )
+
+
+def _note_open_items(conversation: Any, outcome: TaskOutcome) -> TaskOutcome:
+    """A `verified` run whose agent left task_tracker items open says so,
+    and counts as maybe unfinished (a bare --resume continues it)."""
+    pending = _OPEN_ITEMS.get(conversation)
+    if not pending or outcome.verification_state != "verified":
+        return outcome
+    contract = outcome.completion_contract
+    limitations = [*contract.limitations, _open_items_note(pending)]
+    return replace(
+        outcome, cut_short=True, completion_contract=replace(contract, limitations=limitations)
     )
 
 
@@ -1478,12 +1484,15 @@ def _enforce_task_tracker_completion(
     the same "verify, don't trust the self-report" principle
     `_verify_and_report` already applies to test results (see DECISIONS.md).
 
-    Returns `None` when there's nothing to enforce (the tool was never
-    used, or its last known state already has no pending items) so
-    `stream_task` proceeds to `_verify_and_report`; returns a terminal
-    `TaskOutcome` only if the agent gets stuck/errors mid-retry, the shared
-    task-level budget (`deadline`) runs out, or the retry budget is
-    exhausted with items still pending. Reuses `cfg.max_verify_retries` as
+    Returns `None` when the project's checks should decide: nothing to
+    enforce (the tool was never used, or no item is pending), or items
+    still open after the follow-ups (kept in `_OPEN_ITEMS`; a pass then
+    says the task may be unfinished). Returns a terminal `TaskOutcome` only
+    if the agent gets stuck/errors mid-retry or the shared task-level
+    budget (`deadline`) runs out. The follow-ups stay on the same model:
+    an open item is no reason to climb the ladder, only failing checks are
+    (a user's milestone, 2026-11-15: every check passed, one item stayed
+    `in_progress`, and the run climbed three models to its cost limit). Reuses `cfg.max_verify_retries` as
     the retry budget — the same "how many automatic fix-then-recheck
     cycles are we willing to spend" question `_verify_and_report` already
     answers for test failures, not a second, near-duplicate config knob
@@ -1535,40 +1544,19 @@ def _enforce_task_tracker_completion(
     retries_used = 0
     while pending:
         if attempts_left <= 0:
-            contract = _task_tracker_completion_contract(task, pending)
             summary = "; ".join(f"'{item.title}' ({item.status})" for item in pending)
             _emit_notice(
                 emit,
                 "Certo check: the agent's own task_tracker list still "
                 f"shows unfinished item(s) after {cfg.max_verify_retries} "
-                f"automated follow-up(s) ({summary}). Giving up — this "
-                "task needs manual attention.",
+                f"automated follow-up(s) ({summary}). The project's checks "
+                "decide; a pass will say the task may be unfinished.",
             )
-            return TaskOutcome(
-                verification_state="incomplete",
-                completion_contract=contract,
-                retries_used=retries_used,
-            )
+            _OPEN_ITEMS[conversation] = pending
+            return None
         attempts_left -= 1
         retries_used += 1
         fix_attempt(conversation, retries_used, cfg.max_verify_retries)
-        if model_chain is not None and cfg.execution == "local":
-            failed_name = model_chain.current.name
-            next_entry = model_chain.advance(
-                kind="escalation_quality_failure",
-                reason=(
-                    f"{failed_name} left its own task_tracker list incomplete after a follow-up."
-                ),
-            )
-            if next_entry is not None:
-                _emit_notice(
-                    emit,
-                    f"Certo: escalating from {failed_name} to {next_entry.name} "
-                    "after an incomplete task_tracker follow-up.",
-                )
-                conversation.switch_llm(
-                    llm_for_entry(cfg, next_entry, usage_id=f"certo:{next_entry.name}")
-                )
         conversation.send_message(_task_tracker_followup(pending))
         run_result = _run_with_confirmation(
             conversation, cfg, emit, on_confirm, deadline, model_chain
@@ -2594,6 +2582,7 @@ def _run_stream_task_phases(
         )
     if outcome.verification_state == "verified":
         outcome = _note_check_file_changes(cfg.workspace, check_files_before, outcome)
+    outcome = _note_open_items(conversation, outcome)
     return outcome
 
 

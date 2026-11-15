@@ -33,11 +33,14 @@ the backend, mobile layout, tests) as "next steps for you".
   required work into suggestions.
 - *Hard check:* after the agent stops, Certo reads the agent's to-do list
   itself. If items are still open, it sends them back and asks the agent
-  to finish. If they stay open, the verdict is `incomplete`, and Certo
-  doesn't even run the tests: passing tests for one part out of six prove
-  nothing. We tested this by asking an agent to create two tasks, finish
-  one and leave the other open. It did, and said "done". Certo caught it,
-  and the agent then finished the second task.
+  to finish. We tested this by asking an agent to create two tasks,
+  finish one and leave the other open. It did, and said "done". Certo
+  caught it, and the agent then finished the second task. If items stay
+  open anyway, the project's checks decide, and a pass is reported as
+  maybe unfinished: passing tests for one part out of six don't prove the
+  other five. (Until 0.2.3 the verdict was `incomplete`, without running
+  the checks; a run whose every check passed then moved to costlier
+  models over one item left marked "in progress".)
 - If you want the agent to ask you things, use
   [interactive mode](../guides/interactive-mode.md).
 
