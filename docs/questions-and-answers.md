@@ -29,6 +29,52 @@ yourself as a ladder in `escalation.yaml`. See
 [Pick models automatically](guides/pick-models-automatically.md) and
 [Escalate between models](guides/escalate-between-models.md).
 
+### Can I use OpenRouter, or my own provider keys through it (BYOK)?
+
+Yes. Certo sends every model call through
+[LiteLLM](https://docs.litellm.ai/docs/providers/openrouter), which knows
+OpenRouter: give the model as `openrouter/<vendor>/<model>`, with your
+OpenRouter key. BYOK is set up on OpenRouter's side, so Certo needs
+nothing more: it only sees the OpenRouter key.
+
+For one model, in `.env`:
+
+```
+CERTO_LLM_MODEL=openrouter/anthropic/claude-haiku-5-5
+CERTO_LLM_API_KEY=<your OpenRouter key>
+```
+
+For several models (`--auto-model`, `--escalate`), add each one to your
+`models_list.yaml` with its ratings (Certo's list names the direct
+providers' ids, not OpenRouter's), and enable it in `models.yaml`:
+
+```yaml
+# ~/.config/certo/models_list.yaml
+models:
+  - name: haiku-via-openrouter
+    model: openrouter/anthropic/claude-haiku-5-5
+    ratings: {reasoning: 3, precision: 3, code: 4, writing: 3, speed: 5, cost: 4.9}
+
+# ~/.config/certo/models.yaml
+models:
+  - name: haiku-via-openrouter
+    api_key: "${OPENROUTER_API_KEY}"
+```
+
+`certo init models` has no OpenRouter entry in its menu, but its
+"Another model (type any LiteLLM model id)" choice takes one, such as
+`openrouter/z-ai/glm-5`.
+
+Two things may look different from a direct provider. A run's cost can
+show as unknown, because LiteLLM's price list doesn't price every
+OpenRouter id; so `CERTO_MAX_TASK_COST` can't stop such a run. And
+LiteLLM may give a smaller context window than the model has, so older
+steps are summarized earlier than they need to be. Neither stops a run.
+A run through OpenRouter isn't in Certo's own records yet; if you make
+one, an [issue](https://github.com/alessioricco/certo/issues) saying how
+it went helps. See [models.yaml](reference/models-yaml.md) and
+[Configuration](reference/configuration.md).
+
 ## Handing a task to another model
 
 ### How does Certo decide a model can't finish?
