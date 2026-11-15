@@ -575,6 +575,10 @@ See [Safety](../concepts/safety.md).
   path; before, only the end summary counted them. A `--resume` that
   starts on another model than the session it continues says so, and
   why (`--auto-model` chose again, or the model set for the run).
+- **Changed check files: the report shows the lines.** The run report
+  shows each changed test or check setting as a short diff, and an edit
+  an acceptance check asks for (a version bump a `file_contains` check
+  requires) is no longer listed as a change to the checks.
 - **Acceptance rows in the report show their text.** Every row on the
   same file read "CHANGELOG.md contains the expected text"; now each says
   which: `CHANGELOG.md contains "## Milestone 3: An alien sky"`.

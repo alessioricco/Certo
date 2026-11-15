@@ -76,7 +76,12 @@ def _why(result: dict[str, Any]) -> list[str]:
         reasons.append(f"Independent tests {independent['status']}: {independent['summary']}")
     for change in result.get("check_file_changes") or []:
         how = "deleted" if change.get("deleted") else "changed"
-        reasons.append(f"The agent {how} `{change['path']}`, a file the checks rely on")
+        reason = f"The agent {how} `{change['path']}`, a file the checks rely on"
+        lines = change.get("lines") or []
+        if lines:
+            # Indented under its bullet: the lines that changed, as a diff.
+            reason += ":\n\n  ```diff\n" + "".join(f"  {line}\n" for line in lines) + "  ```"
+        reasons.append(reason)
     if result.get("retries_used"):
         reasons.append(
             f"Certo sent the agent back to fix failing checks {result['retries_used']} time(s)"

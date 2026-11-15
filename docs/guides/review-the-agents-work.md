@@ -54,8 +54,9 @@ So read the work before you keep it.
      - The agent changed 1 file the checks rely on: tests/test_calc.py (1 line changed). The checks passed on the changed files; read the changes before you trust them.
    ```
 
-   The change may be right, if the task asked for it. Removed lines are
-   the ones to read first. See
+   The change may be right, if the task asked for it. The run report
+   (`.certo/reports/`) shows the changed lines; removed lines are the
+   ones to read first. See
    [Verdicts](../reference/verdicts.md#changed-check-files).
 4. **Read the tests the agent wrote.** Do they test what the task asked,
    with the right expected results? The agent's tests can share its

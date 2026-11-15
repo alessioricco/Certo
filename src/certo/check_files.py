@@ -5,8 +5,11 @@ can make them pass by weakening them: editing a test, deleting one, or
 switching a lint rule off. Certo copies the check files before the run
 (test files, and the settings files that steer tests, build and lint)
 and, after a `verified` run, reports each one the agent changed or
-deleted, with the lines changed, removed and added. New files aren't reported:
-adding tests is normal. Report only; the task may have asked for it.
+deleted, with the lines changed, removed and added, and the changed
+lines themselves for the report. New files aren't reported: adding tests
+is normal. An edit an acceptance check asks for (a version bump a
+`file_contains` check requires) isn't reported either. Report only; the
+task may have asked for it.
 """
 
 from __future__ import annotations
@@ -14,7 +17,8 @@ from __future__ import annotations
 import difflib
 import os
 import re
-from dataclasses import dataclass
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass, field
 
 from .escalation import workspace_listing
 
@@ -54,6 +58,9 @@ _SETTINGS_PREFIXES = (
 # Larger files are left out of the copy (a check file is rarely this big).
 _MAX_FILE_BYTES = 1_000_000
 _LISTED_LIMIT = 5
+# Changed lines kept per file for the report, and characters per line.
+_SHOWN_LINES = 12
+_SHOWN_WIDTH = 160
 
 
 def is_check_file(path: str) -> bool:
@@ -90,6 +97,8 @@ class CheckFileChange:
     removed: int  # lines gone
     added: int  # new lines
     changed: int = 0  # lines rewritten in place (an extended import, say)
+    # The changed lines, "- old" and "+ new", at most _SHOWN_LINES.
+    lines: tuple[str, ...] = field(default=())
 
     @property
     def described(self) -> str:
@@ -111,8 +120,18 @@ def _lines(count: int) -> str:
     return f"{count} line" if count == 1 else f"{count} lines"
 
 
-def check_file_changes(root: str, before: dict[str, bytes]) -> tuple[CheckFileChange, ...]:
-    """Each check file in `before` that is now different or gone."""
+def check_file_changes(
+    root: str,
+    before: dict[str, bytes],
+    required: Mapping[str, Sequence[str]] | None = None,
+) -> tuple[CheckFileChange, ...]:
+    """Each check file in `before` that is now different or gone.
+    `required`: by path, the texts the task's acceptance checks require in
+    that file; a change whose every new or rewritten line holds one of
+    them, and that removes nothing else, is what the task asked for and is
+    left out (a user's run, 2026-11-14: a version bump an acceptance check
+    required was flagged as a change to the checks)."""
+    required = required or {}
     changes = []
     for path, old in sorted(before.items()):
         try:
@@ -126,15 +145,53 @@ def check_file_changes(root: str, before: dict[str, bytes]) -> tuple[CheckFileCh
         if new == old:
             continue
         changed = removed = added = 0
-        matcher = difflib.SequenceMatcher(None, old.splitlines(), new.splitlines(), autojunk=False)
+        old_lines = old.decode("utf-8", "replace").splitlines()
+        new_lines = new.decode("utf-8", "replace").splitlines()
+        matcher = difflib.SequenceMatcher(None, old_lines, new_lines, autojunk=False)
+        shown: list[str] = []
+        asked = True  # every edit is one an acceptance check requires
+        texts = required.get(path.replace(os.sep, "/"), ())
         for tag, i1, i2, j1, j2 in matcher.get_opcodes():
-            if tag != "equal":
-                rewritten = min(i2 - i1, j2 - j1)
-                changed += rewritten
-                removed += i2 - i1 - rewritten
-                added += j2 - j1 - rewritten
-        changes.append(CheckFileChange(path, False, removed, added, changed))
+            if tag == "equal":
+                continue
+            rewritten = min(i2 - i1, j2 - j1)
+            changed += rewritten
+            removed += i2 - i1 - rewritten
+            added += j2 - j1 - rewritten
+            asked = asked and _asked_for(old_lines[i1:i2], new_lines[j1:j2], texts)
+            shown += [_shown(f"- {line}") for line in old_lines[i1:i2]]
+            shown += [_shown(f"+ {line}") for line in new_lines[j1:j2]]
+        if asked and texts:
+            continue
+        if len(shown) > _SHOWN_LINES:
+            shown = [*shown[:_SHOWN_LINES], f"... and {len(shown) - _SHOWN_LINES} more lines"]
+        changes.append(CheckFileChange(path, False, removed, added, changed, tuple(shown)))
     return tuple(changes)
+
+
+def _asked_for(gone: list[str], came: list[str], texts: Sequence[str]) -> bool:
+    """Whether one edit only puts in lines an acceptance check requires:
+    every new line holds a required text, and no more lines go than come."""
+    return (
+        bool(came)
+        and len(gone) <= len(came)
+        and all(any(text in line for text in texts) for line in came)
+    )
+
+
+def _shown(line: str) -> str:
+    return line if len(line) <= _SHOWN_WIDTH else line[: _SHOWN_WIDTH - 3] + "..."
+
+
+def required_texts(checks: Sequence[object] | None) -> dict[str, list[str]]:
+    """By path, the texts the acceptance checks require (`file_contains`)."""
+    texts: dict[str, list[str]] = {}
+    for check in checks or ():
+        contains = getattr(check, "contains", None)
+        if getattr(check, "kind", None) == "file_contains" and contains:
+            path = str(check.path).replace(os.sep, "/").removeprefix("./")
+            texts.setdefault(path, []).append(contains)
+    return texts
 
 
 def changes_note(changes: tuple[CheckFileChange, ...]) -> str:

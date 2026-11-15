@@ -30,11 +30,6 @@ first item is the suggested next one.
   was only for trying things out, delete it." Changes what the agent is
   told: bench it (local + cloud). Done when a run that leaves a scratch
   file failing a check removes it on the first fix attempt.
-- **"Files the checks rely on" warnings: show what changed** (same run).
-  All three flagged edits were legitimate (a version bump an acceptance
-  check required, lint globals for a new file, an assertion following a
-  deliberate UI text change). Show the changed lines, and don't flag an
-  edit an acceptance check requires.
 - **A longer time budget from `certo init` for Ollama?** The mazeman
   sample took 41 minutes on `qwen3.8:27b` (2026-10-22), past the default
   30-minute `CERTO_MAX_TASK_SECONDS`; it ended `verified` only because the

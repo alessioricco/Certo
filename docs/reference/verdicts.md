@@ -111,7 +111,12 @@ steer tests, build and lint (`pyproject.toml`, `setup.cfg`,
 `pytest.ini`, `tox.ini`, `ruff.toml`, `mypy.ini`, `.flake8`,
 `package.json`, `tsconfig*`, `jest.config*`, `vitest.config*`, ESLint
 settings, `Cargo.toml`, `go.mod`, `pom.xml`, Gradle build files,
-`Makefile`). New files aren't listed: adding tests is normal.
+`Makefile`). New files aren't listed: adding tests is normal. Nor is
+an edit an acceptance check asks for: when every new or rewritten line
+holds the text a `file_contains` check requires in that file (a version
+bump in `package.json`, say), and nothing else goes, it isn't listed.
+The run report (`.certo/reports/`) shows the changed lines of each file
+listed, as a diff (up to 12 lines a file).
 
 A line rewritten in place (an import that now imports one more name, a
 corrected expected value) counts as changed, not removed. Removed lines

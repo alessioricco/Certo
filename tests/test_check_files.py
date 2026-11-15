@@ -1,4 +1,5 @@
 import os
+from types import SimpleNamespace
 
 import pytest
 
@@ -7,6 +8,7 @@ from certo.check_files import (
     changes_note,
     check_file_changes,
     is_check_file,
+    required_texts,
     snapshot_check_files,
 )
 
@@ -67,7 +69,14 @@ def test_changed_and_deleted_check_files_are_found(tmp_path):
     changes = check_file_changes(str(tmp_path), before)
 
     assert changes == (
-        CheckFileChange(os.path.join("tests", "test_a.py"), False, 1, 0, 1),
+        CheckFileChange(
+            os.path.join("tests", "test_a.py"),
+            False,
+            1,
+            0,
+            1,
+            ("-     assert f() == 1", "-     assert g()", "+     pass"),
+        ),
         CheckFileChange(os.path.join("tests", "test_b.py"), True, 2, 0),
     )
 
@@ -109,3 +118,33 @@ def test_line_endings_only(tmp_path):
     (tmp_path / "pytest.ini").write_bytes(b"[pytest]\r\n")
     (change,) = check_file_changes(str(tmp_path), before)
     assert change.described == "pytest.ini (line endings only)"
+
+
+def test_an_edit_an_acceptance_check_requires_is_left_out(tmp_path):
+    # A user's run, 2026-11-14: a version bump an acceptance check asked
+    # for was flagged as a change to the checks.
+    _write(tmp_path, "package.json", '{\n  "name": "game",\n  "version": "0.6.0"\n}\n')
+    before = snapshot_check_files(str(tmp_path))
+    _write(tmp_path, "package.json", '{\n  "name": "game",\n  "version": "0.7.0"\n}\n')
+    check = SimpleNamespace(
+        kind="file_contains", path="package.json", contains='"version": "0.7.0"'
+    )
+    required = required_texts([check])
+    assert check_file_changes(str(tmp_path), before, required) == ()
+    # Anything more than what the check asks for is still reported.
+    _write(tmp_path, "package.json", '{\n  "version": "0.7.0"\n}\n')
+    (change,) = check_file_changes(str(tmp_path), before, required)
+    assert change.lines == (
+        '-   "name": "game",',
+        '-   "version": "0.6.0"',
+        '+   "version": "0.7.0"',
+    )
+
+
+def test_long_diffs_are_cut(tmp_path):
+    _write(tmp_path, "pytest.ini", "[pytest]\n")
+    before = snapshot_check_files(str(tmp_path))
+    _write(tmp_path, "pytest.ini", "[pytest]\n" + "".join(f"x{i} = 1\n" for i in range(20)))
+    (change,) = check_file_changes(str(tmp_path), before)
+    assert len(change.lines) == 13
+    assert change.lines[-1] == "... and 8 more lines"

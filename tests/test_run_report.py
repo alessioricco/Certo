@@ -209,3 +209,16 @@ def test_a_milestone_runs_report_has_a_row_per_milestone_with_models_skills_and_
     ) in text
     assert "| 2. Play | not started | - | - | - | - |" in text
     assert "## Skills\n\nEach milestone's are in the Milestones table above.\n" in text
+
+
+def test_a_changed_check_file_shows_its_changed_lines():
+    from dataclasses import replace
+
+    from certo.check_files import CheckFileChange
+
+    change = CheckFileChange("tests/test_a.py", False, 0, 0, 1, ("-     assert x", "+     pass"))
+    text = _report(replace(_outcome(), check_file_changes=(change,)))
+    assert (
+        "- The agent changed `tests/test_a.py`, a file the checks rely on:\n\n"
+        "  ```diff\n  -     assert x\n  +     pass\n  ```"
+    ) in text

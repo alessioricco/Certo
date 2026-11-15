@@ -55,6 +55,7 @@ from .check_files import (
     CheckFileChange,
     changes_note,
     check_file_changes,
+    required_texts,
     snapshot_check_files,
 )
 from .config import Config, load_config, override_llm
@@ -2667,18 +2668,24 @@ def _run_stream_task_phases(
             outcome,
         )
     if outcome.verification_state == "verified":
-        outcome = _note_check_file_changes(cfg.workspace, check_files_before, outcome)
+        outcome = _note_check_file_changes(
+            cfg.workspace, check_files_before, outcome, acceptance_checks
+        )
     outcome = _note_open_items(conversation, outcome)
     return _note_step_limit(conversation, cfg, outcome)
 
 
 def _note_check_file_changes(
-    workspace: str, before: dict[str, bytes], outcome: TaskOutcome
+    workspace: str,
+    before: dict[str, bytes],
+    outcome: TaskOutcome,
+    acceptance_checks: Sequence[AcceptanceCheck] | None = None,
 ) -> TaskOutcome:
     """A `verified` run that changed the files its checks rely on says so,
     with the lines changed, removed and added (check_files.py). The verdict stays:
-    the task may have asked for the change."""
-    changes = check_file_changes(workspace, before)
+    the task may have asked for the change. An edit an acceptance check
+    requires isn't one."""
+    changes = check_file_changes(workspace, before, required_texts(acceptance_checks))
     if not changes:
         return outcome
     contract = outcome.completion_contract
