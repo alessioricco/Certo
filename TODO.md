@@ -279,7 +279,10 @@ file), B, C, then 5a and 5b. Steps 2 (`certo models choose`) and A
   *Progress (0.2.3, 2026-11-14):* `needs:`, fit ranking with a climbing
   fallback, `writing`/`speed` (estimated) in the example list, example
   profiles with needs, `certo models choose` proposing fit orders, done.
-  Left: the benchmark against the weights rule (local + cloud).
+  The static comparison is in docs/benchmark/fit-vs-weights-0.2.3.md
+  (4 of the 5 goals hold; debugging starts on Sol, not Terra, because
+  Terra's reasoning 3 is an estimate). Left: the live benchmark against
+  the weights rule (local + cloud).
 - **D. No ratings for the user to keep** (the Author, 2026-11-14:
   "this is annoying"). Users keep a full copy of the model list that
   drifts from Certo's (the Author's copy rated Terra 4/4, the example

@@ -405,6 +405,10 @@ for each model whether it fits, or which need it misses:
 ```
 
 See [How a model is chosen](../guides/pick-models-automatically.md#how-a-model-is-chosen).
+[Which models each rule puts first](../benchmark/fit-vs-weights-0.2.3.md),
+for each kind of task and each bundled sample: Opus now goes first only
+for architecture, builds start on Haiku. Not yet benchmarked with live
+runs.
 
 ## Changed: model files are layered, a project changes only what it names
 
