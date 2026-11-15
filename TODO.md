@@ -14,6 +14,30 @@ first item is the suggested next one.
 
 ## Before the next release
 
+- **An open task_tracker item climbs the model ladder even when every
+  check passes** (alien-trekking sample, milestone 6, `--auto-model`,
+  2026-11-15). Haiku finished the milestone with build, tests,
+  typecheck, lint and every acceptance check passing, but one item of its
+  own task list stayed `in_progress` after Certo's follow-up, and the
+  run escalated (`escalation_quality_failure`: "left its own task_tracker
+  list incomplete after a follow-up") to Terra, then Sonnet, then Sol:
+  $2.08 and the `cost_exhausted` verdict for work that was done. Fix: an
+  open item never escalates when the checks and acceptance checks pass;
+  the verdict follows the checks, and the report names the open item.
+  Only failing checks (or a provider failure) climb. Changes a Certo
+  decision: replay or bench an `--auto-model` and an `--escalate`
+  milestone run. Done when a run whose checks pass ends `verified` on
+  its first model, whatever its task list says.
+- **Tell the agent which failing files it created in this run**
+  (same run). A model that took over wrote a scratch script
+  (`.milestone6-smoke.mjs`) in the project root; the project's lint
+  failed on it, and the next model edited it twice instead of deleting
+  it. Lint passed without it. When a failing check's output names a file
+  created during this run (Certo already lists them in "Files changed"),
+  the failing-checks message says so: "created during this run; if it
+  was only for trying things out, delete it." Changes what the agent is
+  told: bench it (local + cloud). Done when a run that leaves a scratch
+  file failing a check removes it on the first fix attempt.
 - **Milestone state keeps stale or contradictory verdicts** (same run). A
   verified milestone shows a later retry's `budget_exhausted`; skipped
   milestones read "not started", "skipped" or `null` in three places;
@@ -629,7 +653,11 @@ database).
   Certo) in the system prompt or a built-in skill, and say it again in
   the milestone handover. It changes agent behaviour, so bench it (local
   + cloud). Done when a milestone run leaves no new file at the project's
-  top that the task didn't ask for.
+  top that the task didn't ask for. A second reason (alien-trekking
+  sample, 2026-11-15): a scratch script left at the top broke the
+  project's own lint (ESLint lints dot files and any folder not ignored,
+  so a scratch folder must be one the project's checks skip, or Certo
+  must say so).
 - **Bench the narrower `pytest-conventions`** (0.2.3, 2026-11-14). It now
   fires on pytest/python/unittest/conftest and is left out of projects
   in another language (`skill_library.OFFICIAL_LANGUAGES`). Changes what
