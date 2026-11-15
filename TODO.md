@@ -598,6 +598,8 @@ database).
   closing steps (a notes or changelog entry) and runs that reach the
   wrap-up margin. Done when the bench shows no loss and fewer
   `acceptance_failed` verdicts on such tasks.
+  Cloud half done 2026-11-15 (docs/benchmark/wrap-up-0.2.3.md, no
+  loss); left: the local half (bench-0.2.3-wrapup-local.yaml, a night).
 - **Slow test suites eat the milestone budget** (a user's milestone project, M7,
   2026-11-14; the Author: Certo must take the decision, not the task
   file). The project's Playwright suite took 9 minutes (82 tests on 2
@@ -633,6 +635,9 @@ database).
   in another language (`skill_library.OFFICIAL_LANGUAGES`). Changes what
   runs get: bench with `skills_off` on a Python and a Node task (local +
   cloud) before release. Done when no loss on Python tasks.
+  Cloud done, local 11 of 12 (docs/benchmark/pytest-conventions-0.2.3.md);
+  left: re-run qwen-narrow token-bucket (its package.json was deleted by
+  macOS's temp cleanup), then update the page.
 - **`certo skills`: turn an official skill off**, globally or for one
   project (later, agreed 2026-10-22). Today a third-party skill can only
   replace one.

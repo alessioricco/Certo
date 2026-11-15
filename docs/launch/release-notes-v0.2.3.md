@@ -463,6 +463,11 @@ what is open, make the checks pass, and meet the acceptance checks that
 don't hold yet, which it names. See
 [Acceptance checks](../guides/acceptance-checks.md#what-happens-to-the-verdict).
 
+Benchmarked on Haiku with milestone tasks and a tight budget: 5/6 hidden
+tests passed with them and without, no milestone ran out of time with
+them (one did without), at about three quarters of the cost. The local
+half is still to run. [The record](../benchmark/wrap-up-0.2.3.md).
+
 ## Fixed: `--resume` keeps `--auto-model` and `--escalate`
 
 A run started with `--auto-model` (or `--escalate`) and resumed without
@@ -478,6 +483,9 @@ task asked for tests got Python test advice. It now fires on `pytest`,
 `python`, `unittest` or `conftest`, and is left out of a project whose
 folder is clearly another language (a `package.json` and no Python).
 `certo skills list --task` shows when it is left out and why.
+Benchmarked on the 6 tasks in other languages: Haiku 18/18 hidden tests
+passed with the narrow skill and with the old one, at the same cost;
+qwen3.8 4/5 against 4/6. [The record](../benchmark/pytest-conventions-0.2.3.md).
 
 ## Fixed: what a run leaves behind, and what a resume forgets
 
