@@ -519,6 +519,10 @@ it off.
   machine running Ollama shut down at 23:00 and the 14 runs after it
   were counted as failed hidden tests. `--pause-between SECONDS` waits
   between runs, to let that machine cool down.
+- **`certo bench --resume --out DIR` starts a folder that has no
+  results yet**, instead of refusing it, so a restart script can always
+  pass `--resume`. Found when a night script ran two benchmarks with
+  `--resume`: the second, not started before, was refused.
 - **The checks run when the time runs out, even with work left on the
   agent's list.** Before, a run stopped by its time (or cost) limit while
   its own task list had an unfinished item got no check at all: on

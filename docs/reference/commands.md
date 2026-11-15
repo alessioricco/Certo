@@ -818,7 +818,7 @@ certo bench [--config FILE] [--out DIR] [--resume] [--parallel N]
 |---|---|---|
 | `--config FILE` | `bench.yaml` | The benchmark file. See [bench.yaml](bench-yaml.md). |
 | `--out DIR` | `./bench-results/<date-time>` | The results folder. A folder that already has results is refused unless `--resume` is given. |
-| `--resume` | off | Continue an interrupted benchmark in `--out` (default: the latest folder in `./bench-results`), skipping runs already recorded, except runs that couldn't reach the model server: those run again. Refused if the tasks, arms, repeats, models or task set changed. |
+| `--resume` | off | Continue an interrupted benchmark in `--out` (default: the latest folder in `./bench-results`), skipping runs already recorded, except runs that couldn't reach the model server: those run again. A `--out` folder with no results yet is started, so a restart script can always pass `--resume`. Refused if the tasks, arms, repeats, models or task set changed. |
 | `--parallel N` | `1` | Run N at a time. Refused when any arm uses a local model (Ollama, or a server on this machine or network). |
 | `--max-cost USD` | none | Stop starting new runs once the recorded cost (all runs in the folder) reaches USD. Runs already started finish; results are kept. Models with no known price count as 0. |
 | `--stop-at HH:MM` | none | Stop starting new runs at this local time (24-hour: `07:00`, `23:30`). Today if that time is still ahead, else tomorrow. Runs already started finish, so the benchmark can end a little later; results are kept. Continue with `--resume`. |

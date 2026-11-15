@@ -1133,3 +1133,12 @@ def test_the_real_stream_passes_acceptance_checks_on(monkeypatch):
     monkeypatch.setattr(runner, "stream_task", lambda task, **kwargs: seen.update(kwargs))
     bench._default_stream("t", cfg=None, acceptance_checks=["check"])
     assert seen["acceptance_checks"] == ["check"]
+
+
+def test_resume_on_a_folder_with_no_results_starts_it(tmp_path, project_venv, capsys):
+    # A restart script passes --resume every time, also before the first run.
+    model = FakeModel(project_venv)
+    out = tmp_path / "out"
+    assert _run(_bench_file(tmp_path, ONE_ARM), out, model, "--resume") == 0
+    assert "has no earlier results yet; starting it." in capsys.readouterr().out
+    assert len(_records(out)) == len(model.calls) > 0

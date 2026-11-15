@@ -708,12 +708,16 @@ def _meta(cfg: BenchConfig) -> dict[str, Any]:
     }
 
 
-def _check_out_dir(cfg: BenchConfig, out_dir: Path, resume: bool) -> None:
-    """Refuse a results folder that doesn't fit, before anything is asked."""
+def _check_out_dir(cfg: BenchConfig, out_dir: Path, resume: bool) -> str:
+    """Refuse a results folder that doesn't fit, before anything is asked.
+    Returns a note to print, or "".
+
+    `--resume` on a folder with no results yet starts it: a restart script
+    can always pass `--resume`, before and after the first run."""
     meta_path = out_dir / "meta.json"
     if resume:
         if not meta_path.is_file():
-            raise BenchConfigError(f"--resume: {out_dir} has no earlier benchmark results.")
+            return f"--resume: {out_dir} has no earlier results yet; starting it."
         meta = json.loads(meta_path.read_text(encoding="utf-8"))
         if meta.get("config") != cfg.fingerprint() or meta.get("task_set", {}).get(
             "hash"
@@ -727,6 +731,7 @@ def _check_out_dir(cfg: BenchConfig, out_dir: Path, resume: bool) -> None:
             f"{out_dir} already has benchmark results. Add --resume to continue them, "
             "or choose another --out folder."
         )
+    return ""
 
 
 def _init_out_dir(cfg: BenchConfig, out_dir: Path, estimate: dict[str, Any]) -> None:
@@ -1011,7 +1016,7 @@ def bench_main(
         # A run that couldn't reach the model server is run again.
         recorded = {r["run_id"] for r in counted(load_records(out_dir))} if args.resume else set()
         todo = [p for p in planned if p.run_id not in recorded]
-        _check_out_dir(cfg, out_dir, args.resume)
+        out_note = _check_out_dir(cfg, out_dir, args.resume)
     except (BenchConfigError, BenchTaskError) as exc:
         print(f"Configuration error: {exc}", file=sys.stderr)
         return 1
@@ -1023,6 +1028,8 @@ def bench_main(
         print(f"Error: {refusal(found)}", file=sys.stderr)
         return 1
 
+    if out_note:
+        print(out_note)
     estimate = _print_plan(cfg, todo, len(planned), out_dir)
     if not todo:
         print("Every run is already recorded.")
