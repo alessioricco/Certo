@@ -534,7 +534,7 @@ folder is clearly another language (a `package.json` and no Python).
 `certo skills list --task` shows when it is left out and why.
 Benchmarked on the 6 tasks in other languages: Haiku 18/18 hidden tests
 passed with the narrow skill and with the old one, at the same cost;
-qwen3.8 4/5 against 4/6. [The record](../benchmark/pytest-conventions-0.2.3.md).
+qwen3.8 4/6 with both. [The record](../benchmark/pytest-conventions-0.2.3.md).
 
 ## Fixed: what a run leaves behind, and what a resume forgets
 

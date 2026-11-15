@@ -624,14 +624,6 @@ database).
   project's own lint (ESLint lints dot files and any folder not ignored,
   so a scratch folder must be one the project's checks skip, or Certo
   must say so).
-- **Bench the narrower `pytest-conventions`** (0.2.3, 2026-11-14). It now
-  fires on pytest/python/unittest/conftest and is left out of projects
-  in another language (`skill_library.OFFICIAL_LANGUAGES`). Changes what
-  runs get: bench with `skills_off` on a Python and a Node task (local +
-  cloud) before release. Done when no loss on Python tasks.
-  Cloud done, local 11 of 12 (docs/benchmark/pytest-conventions-0.2.3.md);
-  left: re-run qwen-narrow token-bucket (its package.json was deleted by
-  macOS's temp cleanup), then update the page.
 - **`certo skills`: turn an official skill off**, globally or for one
   project (later, agreed 2026-10-22). Today a third-party skill can only
   replace one.

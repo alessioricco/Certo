@@ -29,7 +29,9 @@ skill still fires, as before, so they are left out.
 - **Local:** `ollama/qwen3.8:27b`, thinking on, on Ollama 0.40.15 on
   another machine, a 65,536-token window, model digest `aaee06c39dcf`,
   1 repeat, 12 runs, 3-minute pauses between runs, on the night of
-  2026-11-14 (23:31 to 04:24), commit `3c939c1`. **File:**
+  2026-11-14 (23:31 to 04:24), commit `3c939c1`; the narrow
+  `token-bucket` run again on 2026-11-15 at 21:00, commit `bd62af9`
+  (see below). **File:**
   [bench-0.2.3-pytest-local.yaml](bench-0.2.3-pytest-local.yaml), with
   [models_list-0.2.2-effort.yaml](models_list-0.2.2-effort.yaml) and
   [models-0.2.2-effort.yaml](models-0.2.2-effort.yaml).
@@ -42,11 +44,11 @@ skill still fires, as before, so they are left out.
 |---|---|---|---|---|---|---|---|
 | Haiku, narrow | 18/18 (100%) | 18/18 (100%) | 0 | 0 | 1m 50s | 13,087,089 / 549,517 | $0.5183 |
 | Haiku, old | 18/18 (100%) | 18/18 (100%) | 0 | 0 | 2m 05s | 11,735,876 / 545,270 | $0.5028 |
-| qwen3.8, narrow | 4/5 (80%) | 3/5 (60%) | 0 | 0 | 29m 06s | 1,472,392 / 143,502 | $0 |
+| qwen3.8, narrow | 4/6 (67%) | 4/6 (67%) | 0 | 0 | 19m 06s | 1,699,013 / 152,624 | $0 |
 | qwen3.8, old | 4/6 (67%) | 4/6 (67%) | 0 | 0 | 27m 52s | 1,944,272 / 149,733 | $0 |
 
 Hidden tests passed, per task, on qwen3.8 (Haiku passed every task in
-every run). The narrow arm counts 5 runs (see below):
+every run):
 
 | Task | Narrow | Old |
 |---|---|---|
@@ -55,19 +57,20 @@ every run). The narrow arm counts 5 runs (see below):
 | semver-order | 1/1 | 1/1 |
 | slugify | 1/1 | 1/1 |
 | todo-deps | 0/1 | 1/1 |
-| token-bucket | not counted | 1/1 |
+| token-bucket | 1/1 | 1/1 |
 
 - **No worse.** Haiku is the same in both arms, at the same cost. On
   qwen3.8 each arm failed two tasks, by running out of its 30 minutes
   (`budget_exhausted`); with one run per task, which tasks fail is
   chance.
-- **One local run doesn't count.** In the narrow `token-bucket` run,
-  the starter `package.json` disappeared mid-run, though the agent never
-  touched it, and Certo had nothing to check (`inconclusive`; its hidden
-  tests passed). The run went from 03:27 to 03:53; at 03:35 macOS
+- **One local run was run again.** In the first narrow `token-bucket`
+  run, the starter `package.json` disappeared mid-run, though the agent
+  never touched it, and Certo had nothing to check (`inconclusive`; its
+  hidden tests passed). The run went from 03:27 to 03:53; at 03:35 macOS
   deletes files in the temporary folder that look older than 3 days, and
   the benchmark copied task files with their own old dates. Fixed in
-  `0369279`: the copies get the time of the copy. That run is run again
-  on the next night.
-- **The local runs are slow on these tasks:** about 22 minutes a run,
-  5 of 12 at the 30-minute limit.
+  `0369279`: the copies get the time of the copy. Run again the next
+  night, it was `verified` in 5m 52s, hidden tests passed; the table
+  counts that run.
+- **The local runs are slow on these tasks:** about 20 minutes a run,
+  4 of 12 at the 30-minute limit.
