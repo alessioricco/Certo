@@ -360,6 +360,10 @@ how many. `certo check` lists every model and the file each value
 comes from. Exit code 0 when the file was rewritten or there
 is none, 1 when nothing was written, 130 on Ctrl-C.
 
+A slimmed file needs Certo 0.2.3 or newer: an older Certo doesn't read
+Certo's own list and sees only the models left in your file. To go back
+to an older version, put `models_list.yaml.bak` back first.
+
 ### `certo models choose`
 
 Choose the models a project may use. Certo then proposes how to pick

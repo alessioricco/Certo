@@ -356,6 +356,8 @@ now slims it to your own changes: values the same as Certo's, or old
 values you never changed, are dropped; where Certo can't tell (no record
 of where your copy came from) it asks, or `--use-certos` takes Certo's.
 See [the command](../reference/commands.md#certo-models-update).
+A slimmed file needs 0.2.3 or newer: an older Certo sees only the
+models left in it. To go back, put `models_list.yaml.bak` back first.
 
 ## New: `--auto-model` skips a local model that can't be reached
 
