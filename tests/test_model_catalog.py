@@ -372,7 +372,7 @@ def test_shipped_profiles_classify_the_bundled_tasks(tmp_path, task_file, expect
     # `debugging` ("raise ValueError", "fix all failures" in the spec).
     examples = _BUNDLED_TASKS / "examples"
     example = examples / "models_list.yaml.example"
-    names = [m["name"] for m in yaml.safe_load(example.read_text())["models"]]
+    names = [m["name"] for m in yaml.safe_load(example.read_text(encoding="utf-8"))["models"]]
     models = tmp_path / "models.yaml"
     models.write_text(yaml.safe_dump({"models": [{"name": n} for n in names]}))
     catalog = load_model_catalog(
@@ -382,7 +382,7 @@ def test_shipped_profiles_classify_the_bundled_tasks(tmp_path, task_file, expect
         strict=False,
     )
 
-    task = (_BUNDLED_TASKS / task_file).read_text()
+    task = (_BUNDLED_TASKS / task_file).read_text(encoding="utf-8")
 
     assert classify_task(task, catalog).name == expected
 
@@ -985,7 +985,7 @@ def _cost_from_price(text: str) -> float:
 def test_every_cloud_models_cost_follows_its_price():
     example = _BUNDLED_TASKS / "examples" / "models_list.yaml.example"
     wrong = []
-    for model in yaml.safe_load(example.read_text())["models"]:
+    for model in yaml.safe_load(example.read_text(encoding="utf-8"))["models"]:
         cost = model["ratings"]["cost"]
         if model["model"].startswith("ollama/"):
             if cost != 5:
@@ -1028,7 +1028,7 @@ def test_every_code_rating_follows_its_benchmarks():
     # gives the numbers.
     example = _BUNDLED_TASKS / "examples" / "models_list.yaml.example"
     wrong = []
-    for model in yaml.safe_load(example.read_text())["models"]:
+    for model in yaml.safe_load(example.read_text(encoding="utf-8"))["models"]:
         expected = _code_from_benchmarks(str(model.get("description", "")))
         if expected is not None and model["ratings"]["code"] != expected:
             wrong.append(
@@ -1041,7 +1041,7 @@ def test_every_model_rates_writing_and_speed():
     example = _BUNDLED_TASKS / "examples" / "models_list.yaml.example"
     missing = [
         m["name"]
-        for m in yaml.safe_load(example.read_text())["models"]
+        for m in yaml.safe_load(example.read_text(encoding="utf-8"))["models"]
         if not {"writing", "speed"} <= set(m["ratings"])
     ]
     assert missing == []

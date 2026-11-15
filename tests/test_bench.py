@@ -382,7 +382,8 @@ def test_pause_between_waits_between_runs_only(tmp_path, project_venv, monkeypat
     monkeypatch.setattr(bench.time, "sleep", waits.append)
     path = _bench_file(tmp_path, TWO_ARMS, repeats=2)
     assert _run(path, tmp_path / "out", FakeModel(project_venv), "--pause-between", "90") == 0
-    assert waits == [90, 90, 90]  # 4 runs, 3 pauses, none after the last
+    # time.sleep is shared: other short waits (process cleanup) are not pauses.
+    assert [w for w in waits if w >= 1] == [90, 90, 90]  # 4 runs, 3 pauses, none after the last
 
 
 @pytest.mark.parametrize(
