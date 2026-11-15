@@ -37,9 +37,6 @@ first item is the suggested next one.
   each milestone's last verified verdict and stats across runs, one label
   for skipped ones; the resumed-run label goes only on the milestone that
   was resumed.
-- **Reports: acceptance rows can't be told apart** (same run). Every row
-  reads "CHANGELOG.md … contains the expected text"; show the text (as
-  the agent's brief does).
 - **Generated files drown the handover and "Files changed"** (same run).
   Coverage and test-report files hid the source in the milestone handover
   ("… and 182 more") and made "Files changed" list ~2,900 files. Leave out

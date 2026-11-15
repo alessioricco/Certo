@@ -179,12 +179,20 @@ def evaluate_acceptance_check(workspace: str, check: AcceptanceCheck) -> Accepta
         )
     note = " (checked only the first 1MB)" if truncated else ""
     found = check.contains in content
+    # The text itself, so rows on the same file can be told apart.
+    text = _shown(check.contains)
     detail = (
-        f"{check.path} contains the expected text{note}"
+        f'{check.path} contains "{text}"{note}'
         if found
-        else f"{check.path} does not contain the expected text{note}"
+        else f'{check.path} does not contain "{text}"{note}'
     )
     return AcceptanceCheckResult(check=check, passed=found, detail=detail)
+
+
+def _shown(text: str, limit: int = 80) -> str:
+    """`text` on one line, cut to `limit` characters."""
+    one_line = " ".join(text.split())
+    return one_line if len(one_line) <= limit else one_line[: limit - 3] + "..."
 
 
 def evaluate_acceptance_checks(

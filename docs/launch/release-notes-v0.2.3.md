@@ -553,6 +553,9 @@ See [Safety](../concepts/safety.md).
 
 ## Also
 
+- **Acceptance rows in the report show their text.** Every row on the
+  same file read "CHANGELOG.md contains the expected text"; now each says
+  which: `CHANGELOG.md contains "## Milestone 3: An alien sky"`.
 - **`certo bench` copes with a model server that goes away.** A run
   that couldn't reach the model server isn't counted, the benchmark
   stops after 3 in a row, and `--resume` runs them again. Found when the

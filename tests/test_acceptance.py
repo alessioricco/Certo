@@ -131,6 +131,18 @@ def test_file_contains_passes_when_text_present(tmp_path):
     result = evaluate_acceptance_check(str(tmp_path), check)
 
     assert result.passed is True
+    assert result.detail == 'README.md contains "Usage"'
+
+
+def test_rows_on_the_same_file_show_their_own_text(tmp_path):
+    # A report listed six rows of "CHANGELOG.md contains the expected text".
+    (tmp_path / "CHANGELOG.md").write_text("## Milestone 1: Worlds\n" + "x" * 50)
+    long = "## Milestone 1: Worlds\n" + "x" * 100
+    short = AcceptanceCheck(kind="file_contains", path="CHANGELOG.md", contains="## Milestone 2")
+    cut = AcceptanceCheck(kind="file_contains", path="CHANGELOG.md", contains=long)
+    assert "## Milestone 2" in evaluate_acceptance_check(str(tmp_path), short).detail
+    detail = evaluate_acceptance_check(str(tmp_path), cut).detail
+    assert "\n" not in detail and detail.endswith('..."')
 
 
 def test_file_contains_fails_when_text_absent(tmp_path):
