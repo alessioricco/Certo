@@ -147,9 +147,20 @@ def task_set_hash(tasks_dir: Path | str = BUILTIN_TASKS_DIR) -> str:
     return digest.hexdigest()[:12]
 
 
+def copy_fresh(source: Path | str, target: Path | str, **kwargs) -> None:
+    """`shutil.copytree`, but each copied file gets the time of the copy.
+
+    Benchmark folders live in the system's temporary folder, and macOS
+    deletes files there that look older than 3 days (`dirhelper`, every
+    night at 03:35). A copy that kept the task file's own date was deleted
+    mid-run: a starter `package.json` the agent never edited vanished, and
+    the run was left with nothing Certo could check."""
+    shutil.copytree(source, target, copy_function=shutil.copy, **kwargs)
+
+
 def _copy_into(source: Path, target: Path) -> None:
     if source.is_dir():
-        shutil.copytree(source, target, dirs_exist_ok=True)
+        copy_fresh(source, target, dirs_exist_ok=True)
 
 
 def prepare_workspace(task: BenchTask, workspace: Path | str, *, solved: bool = False) -> None:
@@ -186,7 +197,7 @@ def _copy_hidden_tests(tests_dir: Path, language: str, workspace: Path) -> list[
     hidden = workspace / HIDDEN_DIR_NAME
     if hidden.exists():
         shutil.rmtree(hidden)
-    shutil.copytree(tests_dir, hidden)
+    copy_fresh(tests_dir, hidden)
     suffix = _TEST_SUFFIXES[language]
     return sorted(str(p) for p in hidden.iterdir() if p.is_file() and p.name.endswith(suffix))
 

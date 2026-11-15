@@ -523,6 +523,12 @@ it off.
   results yet**, instead of refusing it, so a restart script can always
   pass `--resume`. Found when a night script ran two benchmarks with
   `--resume`: the second, not started before, was refused.
+- **A night benchmark on a Mac no longer loses task files mid-run.**
+  macOS deletes files in the temporary folder that look older than 3
+  days, every night at 03:35. The benchmark copied the task files with
+  their own (old) dates, so a run in progress at 03:35 lost a starter
+  `package.json` it never edited, and Certo had nothing to check. The
+  copies now get the time of the copy.
 - **The checks run when the time runs out, even with work left on the
   agent's list.** Before, a run stopped by its time (or cost) limit while
   its own task list had an unfinished item got no check at all: on

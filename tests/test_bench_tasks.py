@@ -317,3 +317,21 @@ def test_a_bundled_task_has_no_count_per_milestone(tmp_path, project_venv):
     task = next(t for t in TASKS if t.name == "slugify")
     result = grade(task, _workspace(tmp_path, task, project_venv, solved=True))
     assert result.by_milestone is None
+
+
+def test_workspace_files_get_the_time_of_the_copy(tmp_path):
+    # macOS deletes temporary files that look older than 3 days; a copy that
+    # kept the task file's own date could vanish in the middle of a run.
+    import os
+    import time
+
+    from certo.bench_tasks import copy_fresh
+
+    source = tmp_path / "src"
+    source.mkdir()
+    old = source / "package.json"
+    old.write_text("{}")
+    long_ago = time.time() - 30 * 86400
+    os.utime(old, (long_ago, long_ago))
+    copy_fresh(source, tmp_path / "dst")
+    assert (tmp_path / "dst" / "package.json").stat().st_mtime > time.time() - 60

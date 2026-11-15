@@ -780,6 +780,13 @@ given design was chosen.
 
 Internal and architectural; the user-facing ones are in `docs/`.
 
+- **macOS cleans the temporary folder at 03:35** (`dirhelper`, files
+  older than 3 days). Anything Certo copies into a `tempfile` folder
+  that a long run relies on must get fresh times
+  (`bench_tasks.copy_fresh`, not a plain `shutil.copytree`, which keeps
+  the source's dates). Found 2026-11-15: a night bench run lost its
+  starter `package.json`.
+
 **SDK/tooling gotchas** (re-verify on any SDK upgrade — see CLAUDE.md golden
 rule 2):
 - **MCP (`mcp` 2.2.0, from the OpenHands SDK via `fastmcp`): roots,

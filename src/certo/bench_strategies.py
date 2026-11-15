@@ -19,11 +19,11 @@ caller, so this module is testable with a fake.
 from __future__ import annotations
 
 import os
-import shutil
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, replace
 from typing import Any, Protocol
 
+from .bench_tasks import copy_fresh
 from .config import DEFAULT_MAX_ITERATIONS, ESCALATION_HANDOFFS, Config, override_llm
 from .escalation import derive_ladder, ladder_from_models
 from .model_catalog import ModelCatalog, ModelCatalogEntry
@@ -123,7 +123,7 @@ def arm_config(entry: ModelCatalogEntry, ctx: RunContext, params: Mapping[str, A
     the original or sees another run's changes."""
     cfg = run_config(entry, ctx.workspace, ctx.isolation_dir)
     if params.get("skills_dir") and not os.path.exists(cfg.global_skills_dir):
-        shutil.copytree(params["skills_dir"], cfg.global_skills_dir, symlinks=True)
+        copy_fresh(params["skills_dir"], cfg.global_skills_dir, symlinks=True)
     if params.get("independent_tests"):
         cfg = replace(cfg, independent_tests=True)
     if params.get("condense") is False:
