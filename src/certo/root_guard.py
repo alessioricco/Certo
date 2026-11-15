@@ -15,8 +15,19 @@ What counts as outside:
   absolute path, `~`, `$HOME`, or a relative path with `..` resolved from
   the terminal's current folder; and `cd` alone (the home folder).
 
+Deletes get two more rules, wherever the target is: a delete (`rm`,
+`rmdir`, `unlink`, `find ... -delete` or `-exec rm`) whose target is only
+known when it runs (`$(...)`, backticks, a variable) is blocked, and so is
+deleting a folder that holds more than the project: the root itself or a
+folder above it, the home folder, a system or tool folder itself, or the
+system's temporary folder. Deleting inside them (`rm -rf /tmp/x`) is
+allowed. Found in the 0.2.3 wrap-up benchmark: an agent cleaning up a demo
+file ran `rm -rf "$(python -c '...print(tempfile.gettempdir())')"` and
+deleted the user's whole temporary folder, with every benchmark project in
+it.
+
 A guard rail, not a sandbox: a command can still reach elsewhere in ways
-no word shows (a script, a variable built at run time). Docker is the
+no word shows (a script, a path piped to `xargs`). Docker is the
 sandbox. Words with spaces (code passed with `-c`/`-e`) are not read as
 paths, and an absolute word whose first folder doesn't exist (`/api/v1`,
 a regex) isn't a path either.
@@ -27,6 +38,7 @@ from __future__ import annotations
 import os
 import re
 import shlex
+import tempfile
 from collections.abc import Callable
 from typing import Any
 
@@ -74,6 +86,11 @@ _HOME_TOOL_DIRS = (
     "Library/pnpm",
 )
 _SEPARATORS = {";", "&&", "||", "|", "&"}
+# Commands that delete their arguments, and words that may come before a
+# command without being it.
+_DELETERS = {"rm", "rmdir", "unlink"}
+_PREFIXES = {"sudo", "command", "env", "nice", "nohup", "time", "exec", "builtin"}
+_ASSIGNMENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
 _REDIRECT = re.compile(r"^\d*[<>]+&?")
 
 
@@ -98,6 +115,45 @@ def without_heredoc_bodies(command: str) -> str:
     return "\n".join(kept)
 
 
+_DELETE_REASON = "a delete"
+_FRESH = object()
+_DIRNAME = re.compile(r"\$\(dirname\s+(\S+)\)")
+_VARIABLE = re.compile(r"\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?")
+_ASSIGNMENTS = re.compile(
+    r"(?:^|[\s;&|(])(?:export\s+|local\s+|declare\s+|readonly\s+)?"
+    r"([A-Za-z_][A-Za-z0-9_]*)="
+    r"(\"(?:[^\"\\]|\\.)*\"|'[^']*'|\$\([^)]*\)|`[^`]*`|[^\s;&|)]*)"
+)
+
+
+def _commands(words: list[str]):
+    """(command name, its words) for each simple command in `words`."""
+    start = True
+    name = ""
+    args: list[str] = []
+    for word in words + [";"]:
+        if word in _SEPARATORS or word.strip("\n;") == "" or word in (")", "{", "}"):
+            if name:
+                yield name, args
+            start, name, args = True, "", []
+            continue
+        if start:
+            if word == "(" or _ASSIGNMENT.match(word) or word in _PREFIXES:
+                continue
+            name, start = os.path.basename(word), False
+            continue
+        args.append(word)
+
+
+def _find_deletes(args: list[str]) -> bool:
+    if "-delete" in args:
+        return True
+    for i, arg in enumerate(args[:-1]):
+        if arg in ("-exec", "-execdir", "-ok") and os.path.basename(args[i + 1]) in _DELETERS:
+            return True
+    return False
+
+
 def _inside(path: str, folder: str) -> bool:
     try:
         return os.path.commonpath([path, folder]) == folder
@@ -115,6 +171,9 @@ class RootGuard:
         self.conversation: Any = None
         self.emit = emit
         self.blocked: list[str] = []
+        # Variables the agent's terminal has set: name -> its value, _FRESH
+        # (a `mktemp` folder), or None (only known when it runs).
+        self.variables: dict[str, str | object | None] = {}
 
     # --- the callback ----------------------------------------------------
 
@@ -132,7 +191,12 @@ class RootGuard:
         self.conversation.state.block_action(event.id, reason)
         self.blocked.append(reason)
         if self.emit is not None:
-            self.emit(f"Certo blocked an action outside the project root: {reason}")
+            what = (
+                "a delete"
+                if reason.startswith(_DELETE_REASON)
+                else "an action outside the project root"
+            )
+            self.emit(f"Certo blocked {what}: {reason}")
 
     # --- the rules -------------------------------------------------------
 
@@ -155,6 +219,9 @@ class RootGuard:
 
     def check_command(self, command: str) -> str | None:
         command = without_heredoc_bodies(command)
+        problem = self._delete_problem(command)
+        if problem:
+            return problem
         # punctuation_chars: `;`, `&&`, `|` and redirections are words of
         # their own, so `cd;` is `cd` then `;`.
         lexer = shlex.shlex(command, posix=True, punctuation_chars=True)
@@ -193,6 +260,140 @@ class RootGuard:
                 if outside:
                     return self._reason(outside)
         return None
+
+    # --- deletes -----------------------------------------------------------
+
+    def _delete_problem(self, command: str) -> str | None:
+        """Why a delete in `command` must not run, or None. Command by
+        command: the words after `rm` (or `find`'s starting
+        folders when it deletes) up to the next `;`, `&&`, `|`..."""
+        self._learn_variables(command)
+        # One lexer for the whole command: a quoted argument can span lines
+        # (`python -c "..."`); a newline outside quotes ends a command.
+        lexer = shlex.shlex(command, posix=True, punctuation_chars="();<>|&\n")
+        lexer.whitespace = " \t\r"
+        lexer.whitespace_split = True
+        try:
+            words = list(lexer)
+        except ValueError:  # unbalanced quotes
+            words = command.replace("\n", " ; ").split()
+        for name, args in _commands(words):
+            if name in _DELETERS:
+                targets = [a for a in args if not a.startswith("-") or a == "-"]
+                unknown = any(w in ("$", "(", "`") for w in args)
+                whole = True
+            elif name == "find" and _find_deletes(args):
+                targets = []
+                for arg in args:
+                    if arg.startswith(("-", "(", "!")):
+                        break
+                    targets.append(arg)
+                unknown = False
+                # find deletes what matches inside its folders, not the
+                # folder itself: the project root may be one.
+                whole = False
+            else:
+                continue
+            if unknown:
+                return self._delete_reason_unknown(" ".join(args))
+            for target in targets:
+                expanded = self._expand(target)
+                if expanded is _FRESH:
+                    continue  # a folder `mktemp` made for this terminal
+                if expanded is None:
+                    return self._delete_reason_unknown(target)
+                path = self._resolve(expanded, self.cwd)
+                if path is not None and self._holds_more(path, whole=whole):
+                    return self._delete_reason_holds(path)
+        return None
+
+    def _learn_variables(self, command: str) -> None:
+        """Remember the variables `command` sets (the terminal keeps them):
+        a value written out, a fresh `mktemp` folder, or unknown."""
+        for match in _ASSIGNMENTS.finditer(command):
+            name, value = match.group(1), match.group(2)
+            if value[:1] in "\"'" and value[-1:] == value[:1] and len(value) > 1:
+                value = value[1:-1]
+            if re.match(r"^(\$\(|`)\s*mktemp\b", value):
+                self.variables[name] = _FRESH
+            elif "$(" in value or "`" in value:
+                self.variables[name] = None
+            else:
+                known = self._expand(value)
+                self.variables[name] = None if known is _FRESH else known
+
+    def _expand(self, word: str) -> str | object | None:
+        """`word` with its variables replaced: a string, `_FRESH` when it is
+        (inside) a fresh `mktemp` folder, None when a variable is unknown.
+        A variable the terminal never set is read from the environment it
+        inherits (`$TMPDIR`); `$$` (the shell's number) stays a name."""
+        word = word.strip("\"'").replace("$$", "0")
+        dirname = _DIRNAME.fullmatch(word.split("/", 1)[0]) if word.startswith("$(") else None
+        if dirname:
+            inner = self._expand(dirname.group(1))
+            if inner is _FRESH or inner is None:
+                return inner
+            rest = word.split("/", 1)[1] if "/" in word else ""
+            word = (
+                os.path.join(os.path.dirname(str(inner)), rest)
+                if rest
+                else os.path.dirname(str(inner))
+            )
+        if "`" in word or "$(" in word:
+            return None
+        first = _VARIABLE.match(word)
+        if first and self.variables.get(first.group(1)) is _FRESH:
+            return _FRESH
+        unknown = False
+
+        def value(match: re.Match[str]) -> str:
+            nonlocal unknown
+            name = match.group(1)
+            if name == "HOME":
+                return self.home
+            if name == "PWD":
+                return self.cwd
+            if name in self.variables:
+                known = self.variables[name]
+                if isinstance(known, str):
+                    return known
+            elif name in os.environ:
+                return os.environ[name]
+            unknown = True
+            return ""
+
+        result = _VARIABLE.sub(value, word)
+        return None if unknown or "$" in result else result
+
+    def _holds_more(self, path: str, *, whole: bool = True) -> bool:
+        """Deleting `path` would delete more than the project's own files.
+        `whole=False` (find): the project root itself is fine."""
+        if path in ("/", self.home):
+            return True
+        if _inside(self.root, path) and (whole or path != self.root):
+            return True  # the root itself, or a folder above it
+        temp = os.path.realpath(tempfile.gettempdir())
+        protected = [
+            *(os.path.realpath(d) for d in _SYSTEM_DIRS if os.path.exists(d)),
+            *(os.path.join(self.home, d) for d in _HOME_TOOL_DIRS),
+            temp,
+        ]
+        return any(_inside(d, path) for d in protected)
+
+    def _delete_reason_unknown(self, target: str) -> str:
+        return (
+            f"{_DELETE_REASON} whose target is only known when the command runs "
+            f"({target}). Write out the path of what you created, inside the project "
+            f"root {self.root}."
+        )
+
+    def _delete_reason_holds(self, path: str) -> str:
+        return (
+            f"{_DELETE_REASON} of {path}, which holds more than this project's files "
+            "(the project root or a folder above it, the home folder, a system or tool "
+            "folder, or the system's temporary folder). Delete only what you created, by "
+            "its own path."
+        )
 
     def _resolve(self, value: str, base: str | None) -> str | None:
         """Where `cd value` goes from `base`, or None when a word can't say

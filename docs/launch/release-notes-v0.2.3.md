@@ -513,6 +513,23 @@ Certo adds them itself, so the agent spends nothing on them. An existing
 project you point Certo at is never touched. `CERTO_CREDITS=no` turns
 it off.
 
+## Safety: Certo blocks deletes that reach beyond the project
+
+In the 0.2.3 benchmark, an agent cleaning up a demo file ran
+`rm -rf "$(python -c '...print(tempfile.gettempdir())')"` and deleted the
+whole temporary folder of the user running Certo, with every benchmark
+project in it. The root guard read only the words of a command, so a path
+built at run time got through. Now a delete is blocked when its target is
+only known when it runs (`$(...)`, backticks, a variable the terminal
+never set), and when it would delete a folder that holds more than the
+project: the project root or a folder above it, the home folder, a system
+or tool folder itself, or the system's temporary folder. Deleting inside
+them stays allowed, and so do a variable set to a written-out path and a
+`mktemp` folder. Replayed over 7,541 terminal commands from earlier
+benchmarks, it blocks 3: this one, an `rm -rf "$d"` where `$d` was never
+set, and `rm -rf "$(cat file)"`.
+See [Safety](../concepts/safety.md).
+
 ## Also
 
 - **`certo bench` copes with a model server that goes away.** A run

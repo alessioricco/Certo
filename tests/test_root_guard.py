@@ -240,3 +240,81 @@ def test_cd_inside_a_command_is_followed(layout, command):
 )
 def test_cd_outside_is_still_blocked(layout, command):
     assert "is outside the project root" in _guard(layout).check(_run(command))
+
+
+# --- deletes ---------------------------------------------------------------
+
+
+@posix_only
+@pytest.mark.parametrize(
+    "command",
+    [
+        # The 0.2.3 wrap-up benchmark: the user's whole temporary folder.
+        "rm -rf \"$(python -c 'import tempfile;print(tempfile.gettempdir())')\" 2>/dev/null; true",
+        "rm -rf $(mktemp -d)",
+        "rm -rf `pwd`/out",
+        "ls\nrm -rf $TMPDIR",
+        # The same, as the agent wrote it: after a `python -c` over lines.
+        'cd /tmp && .venv/bin/python -c "\nimport tempfile\nprint(1)\n"; '
+        "rm -rf \"$(python -c 'import tempfile;print(tempfile.gettempdir())')\" 2>/dev/null; true",
+        "T=/tmp; rm -rf $T",
+        'X="$(python -c "print(1)")"; rm -rf "$X"',
+        "rm -rf /tmp",
+        "rm -rf ~",
+        "rm -rf $HOME/.cache",
+        "sudo rm -rf /usr",
+        "find /tmp -delete",
+        "find .. -name '*.js' -delete",
+        "rm -rf .",
+    ],
+)
+def test_a_delete_of_more_than_the_project_is_blocked(layout, command):
+    reason = _guard(layout).check_command(command)
+    assert reason is not None and reason.startswith("a delete")
+
+
+@posix_only
+def test_a_delete_of_the_temporary_folder_itself_is_blocked(layout):
+    import tempfile
+
+    temp = os.path.realpath(tempfile.gettempdir())
+    assert _guard(layout).check_command(f"rm -rf {temp}").startswith("a delete")
+
+
+@posix_only
+@pytest.mark.parametrize(
+    "command",
+    [
+        "rm -rf build node_modules dist",
+        "rm -f *.pyc",
+        "npm test && rm -rf coverage",
+        "rm -rf /tmp/demo-123",
+        "rm -rf ~/.npm/_cacache",
+        "find . -name __pycache__ -prune -exec rm -rf {} +",
+        "find . -name '*.log' -delete",
+        "find src -type f -delete",
+        "git rm -r --cached src",
+        'D=$(mktemp -d); echo hi; rm -rf "$D"',
+        "export F=/tmp/todo-check.txt && rm -f $F",
+        "rm -rf $PWD/build",
+    ],
+)
+def test_a_delete_of_the_projects_own_files_may_run(layout, command):
+    assert _guard(layout).check_command(command) is None
+
+
+def test_a_blocked_delete_is_said_as_a_delete(layout):
+    said = []
+    guard = RootGuard(str(layout), emit=said.append)
+    guard.conversation = _Conversation()
+    guard(_event(_run('rm -rf "$D"')))
+    assert said[0].startswith("Certo blocked a delete: a delete whose target is only known")
+
+
+@posix_only
+def test_the_terminal_keeps_its_variables_between_commands(layout):
+    guard = _guard(layout)
+    assert guard.check_command("D=$(mktemp -d)") is None
+    assert guard.check_command('rm -rf "$D/out"') is None
+    assert guard.check_command("D=$(python -c 'print(1)')") is None
+    assert guard.check_command('rm -rf "$D"').startswith("a delete")

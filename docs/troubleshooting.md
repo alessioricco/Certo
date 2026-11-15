@@ -1032,6 +1032,25 @@ on.
 (a shared library in `../shared`, say), run Certo from the folder that
 holds everything the task needs, so that folder is the project root.
 
+### Certo blocked a delete
+
+**You see:**
+
+```text
+Certo blocked a delete: a delete whose target is only known when the command runs ("$(python -c 'import tempfile;print(tempfile.gettempdir())')"). Write out the path of what you created, inside the project root /home/me/certo-workspace/projects/app.
+```
+
+or `a delete of /tmp, which holds more than this project's files ...`.
+
+**Cause:** the agent tried to delete something whose path the command
+doesn't show (a `$(...)` or a variable), or a folder that holds more than
+the project: the project root, a folder above it, your home folder, a
+system folder, or the system's temporary folder. Certo stopped that one
+command and told the agent why; the run goes on.
+
+**Fix:** nothing. The agent can delete what it created by writing out its
+path. See [Safety](concepts/safety.md).
+
 ### Warning: uncommitted changes
 
 **You see**, before the task starts:

@@ -418,6 +418,11 @@ given design was chosen.
   plain callback blocks without the SDK's shell-command hook machinery.
   Terminal words are read with `shlex(punctuation_chars=True)`; the
   current folder follows `TerminalObservation.metadata.working_dir`.
+  Deletes (`_delete_problem`) use one lexer over the whole command with
+  `\n` as punctuation, so a quoted `python -c "..."` over lines stays one
+  word; `self.variables` follows assignments across commands (the
+  terminal keeps them): a written-out value, `_FRESH` for `mktemp`, None
+  for anything else; unset names fall back to `os.environ`.
   Heuristic by design (DECISIONS.md); Docker is the sandbox.
 - **`skill_sources.py`** + **`skill_assess.py`** — trusted skill
   repositories. `skill_sources.yaml` sits next to a scope's third-party

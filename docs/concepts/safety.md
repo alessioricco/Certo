@@ -21,6 +21,20 @@ System and tool folders stay allowed for commands (`/usr`, `/tmp`,
 `/Applications` on macOS, the npm and pip caches in your home folder), but never the root's parent,
 the folders beside the root, or your home folder itself.
 
+Deletes get two more rules, wherever they point:
+
+- a delete whose target is only known when the command runs is blocked:
+  `rm -rf "$(...)"`, a path in backticks, or a variable the terminal
+  never set. A variable set to a path written out (`F=/tmp/x.txt`) is
+  read like that path, and a folder made with `mktemp` may be deleted;
+- deleting a folder that holds more than the project is blocked: the
+  project root itself or a folder above it, your home folder, a system or
+  tool folder itself, or the system's temporary folder. Deleting inside
+  them (`rm -rf /tmp/demo`) is allowed.
+
+This was found when an agent cleaning up a demo file deleted the whole
+temporary folder of the user running it.
+
 A project in the workspace's `projects/` folder is also its own world
 for `git`: when the project isn't a git repository but the workspace is,
 the agent's `git status` says "not a git repository" instead of listing
@@ -31,8 +45,8 @@ The run summary counts the blocked actions
 result (`blocked_outside_root`).
 
 This is a guard rail, not a sandbox: a command can still reach other
-files in ways its words don't show, such as a script or a path built at
-run time. Treat a task like running a script you haven't read.
+files in ways its words don't show, such as a script, or paths piped to
+`xargs`. Treat a task like running a script you haven't read.
 
 To reduce the risk:
 

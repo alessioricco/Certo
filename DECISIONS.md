@@ -1985,3 +1985,13 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   scratch (never an existing project), on by default, `CERTO_CREDITS=no`
   to turn off. Added by Certo before the checks, not asked of the agent:
   always the same, no tokens, no change in agent behaviour (no bench).
+- **The root guard blocks deletes it can't see the end of** (0.2.3,
+  2026-11-15). After an agent deleted the user's temporary folder with
+  `rm -rf "$(...)"`: a delete whose target is a run-time value, or a
+  folder holding more than the project (root, a parent, home, a system or
+  tool folder, the temp folder), is blocked. The guard follows the
+  terminal's variables (written-out values, `mktemp` folders, the
+  inherited environment) so the common `F=/tmp/x; rm -f $F` still runs:
+  replay over 7,541 bench commands went from 134 false blocks (words
+  only) to 3, all real problems. Not a sandbox: scripts and `xargs` still
+  get through; Docker is the sandbox.
