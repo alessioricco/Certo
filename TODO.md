@@ -580,16 +580,6 @@ database).
 
 ## Smaller bugs
 
-- **Bench the acceptance brief and the wrap-up message** (0.2.3,
-  2026-11-14). The task now lists the acceptance checks, and the agent
-  gets one wrap-up message before the time budget ends (`wrap_up.py`).
-  Both change agent behaviour: bench them on a local and a cloud model
-  before release, including milestone tasks whose acceptance checks are
-  closing steps (a notes or changelog entry) and runs that reach the
-  wrap-up margin. Done when the bench shows no loss and fewer
-  `acceptance_failed` verdicts on such tasks.
-  Cloud half done 2026-11-15 (docs/benchmark/wrap-up-0.2.3.md, no
-  loss); left: the local half (bench-0.2.3-wrapup-local.yaml, a night).
 - **Slow test suites eat the milestone budget** (a user's milestone project, M7,
   2026-11-14; the Author: Certo must take the decision, not the task
   file). The project's Playwright suite took 9 minutes (82 tests on 2

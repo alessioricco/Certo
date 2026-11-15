@@ -23,11 +23,14 @@ worse than without.
   message is due after 3 minutes and long milestones really reach it. On
   2026-11-15 from 11:37 UTC, commit `0369279`. **File:**
   [bench-0.2.3-wrapup-cloud.yaml](bench-0.2.3-wrapup-cloud.yaml).
-- **Local:** `ollama/qwen3.8:27b`, a 10-minute budget per milestone,
-  **not run yet**. **File:**
+- **Local:** `ollama/qwen3.8:27b`, thinking on, on Ollama 0.40.15 on
+  another machine, a 65,536-token window, model digest `aaee06c39dcf`;
+  `expenses` only, a 10-minute budget per milestone (the message is due
+  after 8 minutes), 3 repeats, 6 runs, one at a time with 3-minute
+  pauses, on 2026-11-15 from 21:06 UTC, commit `bd62af9`. **File:**
   [bench-0.2.3-wrapup-local.yaml](bench-0.2.3-wrapup-local.yaml).
-- **Results folder:** `bench-results/wrapup-0.2.3-cloud`, on the machine
-  that ran it.
+- **Results folders:** `bench-results/wrapup-0.2.3-cloud` and
+  `bench-results/wrapup-0.2.3-local`, on the machine that ran them.
 
 ## Results (cloud)
 
@@ -65,3 +68,35 @@ Hidden tests passed per milestone, the arm's runs added up:
   fixed (`6ab5604`: the root guard blocks such deletes; `c3f9eb6`: the
   benchmark records such a run and goes on), and that run was run again
   at commit `c3f9eb6` (verified, every hidden test passed, $0.15).
+
+## Results (local)
+
+| Arm | Hidden tests passed | Verified | Fooled | Caught | Median time | Tokens in / out | Cost |
+|---|---|---|---|---|---|---|---|
+| qwen3.8, brief and wrap-up | 3/3 (100%) | 2/3 (67%) | 0 | 0 | 23m 27s | 2,744,184 / 108,586 | $0 |
+| qwen3.8, neither | 1/3 (33%) | 2/3 (67%) | 1 | 0 | 23m 15s | 2,449,636 / 90,249 | $0 |
+
+Hidden tests passed per milestone of `expenses`, the arm's runs added up:
+
+| Arm | M1 | M2 | M3 | M4 |
+|---|---|---|---|---|
+| brief and wrap-up | 105/105 | 69/69 | 18/18 | 48/48 |
+| neither | 70/70 | 46/46 | 12/12 | 33/48 |
+
+- **No worse; better on this sample.** With the brief and the message
+  every run's work passed the hidden tests; without them one did. With
+  3 runs an arm, this can be chance.
+- **The message reached the agent** 3 times: once in round 2 and twice
+  in round 3 of the first arm. Round 3 then ran out of time on
+  milestone 4 (`budget_exhausted`; Certo had sent the agent back 11
+  times for a tool call written as text or a turn that ended on plans),
+  but its work passed every hidden test.
+- **Without them**, round 1 ran out of time on milestone 1 and never
+  reached the others.
+- **The fooled run** (`expenses`, round 3, neither) passed 79 of 80
+  hidden tests. The task says a `FILE` with no command is an error with
+  exit code 1; the program printed its usage and exited with 2, the code
+  for no arguments at all. The agent tried that very case, accepted the
+  2, and its own tests don't cover it; neither do the task's acceptance
+  checks. It ran without the brief and the message, so they didn't
+  cause it.

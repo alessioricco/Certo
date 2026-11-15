@@ -236,8 +236,9 @@ don't hold yet, which it names. See
 
 Benchmarked on Haiku with milestone tasks and a tight budget: 5/6 hidden
 tests passed with them and without, no milestone ran out of time with
-them (one did without), at about three quarters of the cost. The local
-half is still to run. [The record](../benchmark/wrap-up-0.2.3.md).
+them (one did without), at about three quarters of the cost. On qwen3.8
+(local), 3/3 hidden tests passed with them against 1/3 without.
+[The record](../benchmark/wrap-up-0.2.3.md).
 
 ## Changed: an open to-do item no longer climbs the model ladder
 
