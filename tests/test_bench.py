@@ -1143,3 +1143,24 @@ def test_resume_on_a_folder_with_no_results_starts_it(tmp_path, project_venv, ca
     assert _run(_bench_file(tmp_path, ONE_ARM), out, model, "--resume") == 0
     assert "has no earlier results yet; starting it." in capsys.readouterr().out
     assert len(_records(out)) == len(model.calls) > 0
+
+
+def test_a_run_whose_folder_was_deleted_is_not_counted_and_runs_again(tmp_path, project_venv):
+    # An agent once deleted the whole temporary folder, with the projects
+    # of the runs going on beside it; the benchmark crashed.
+    class Deleting(FakeModel):
+        def __call__(self, task_text, *, cfg, on_message=None):
+            result = super().__call__(task_text, cfg=cfg, on_message=on_message)
+            if len(self.calls) == 1:
+                shutil.rmtree(cfg.workspace)
+            return result
+
+    path = _bench_file(tmp_path, ONE_ARM, repeats=2)
+    out = tmp_path / "out"
+    assert _run(path, out, Deleting(project_venv)) == 0
+    records = _records(out)
+    assert len(records) == 2
+    assert sum("project folder was deleted" in (r["error"] or "") for r in records) == 1
+    model = FakeModel(project_venv)
+    assert _run(path, out, model, "--resume") == 0
+    assert len(model.calls) == 1

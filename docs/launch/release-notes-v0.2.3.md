@@ -548,6 +548,9 @@ See [Safety](../concepts/safety.md).
   their own (old) dates, so a run in progress at 03:35 lost a starter
   `package.json` it never edited, and Certo had nothing to check. The
   copies now get the time of the copy.
+- **A benchmark run whose project folder disappears no longer stops the
+  benchmark.** The run is recorded with the error, isn't counted, and
+  `--resume` runs it again; the other runs go on.
 - **The checks run when the time runs out, even with work left on the
   agent's list.** Before, a run stopped by its time (or cost) limit while
   its own task list had an unfinished item got no check at all: on

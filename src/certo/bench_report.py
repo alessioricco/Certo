@@ -67,9 +67,18 @@ def unreachable(record: dict[str, Any]) -> bool:
     return any(sign in error for sign in _UNREACHABLE)
 
 
+LOST_WORKSPACE = "the run's project folder was deleted during the run"
+
+
+def lost(record: dict[str, Any]) -> bool:
+    """Whether something deleted the run's project folder during the run."""
+    return LOST_WORKSPACE in (record.get("error") or "")
+
+
 def counted(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """The runs that count: all but those that couldn't reach the model server."""
-    return [r for r in records if not unreachable(r)]
+    """The runs that count: all but those that couldn't reach the model
+    server, or whose project folder was deleted during the run."""
+    return [r for r in records if not unreachable(r) and not lost(r)]
 
 
 def _rate(count: int, total: int) -> str:

@@ -34,7 +34,15 @@ from typing import Any
 from . import __version__, context_window
 from .banner import _duration
 from .bench_config import DEFAULT_BENCH_FILE, Arm, BenchConfig, BenchConfigError, load_bench_config
-from .bench_report import arm_rows, cost_line, cost_summary, counted, unreachable, write_report
+from .bench_report import (
+    LOST_WORKSPACE,
+    arm_rows,
+    cost_line,
+    cost_summary,
+    counted,
+    unreachable,
+    write_report,
+)
 from .independent_tests import failing_tests
 from .bench_strategies import STRATEGIES, AttemptResult, RunContext, auto_catalog
 from .bench_tasks import (
@@ -320,7 +328,13 @@ def execute_run(
         snapshot = out_dir / "workspaces" / planned.run_id
         if snapshot.exists():
             shutil.rmtree(snapshot)
-        shutil.copytree(workspace, snapshot, ignore=_snapshot_ignore, symlinks=True)
+        if os.path.isdir(workspace):
+            shutil.copytree(workspace, snapshot, ignore=_snapshot_ignore, symlinks=True)
+        else:
+            # Something deleted it during the run (an agent once deleted the
+            # whole temporary folder): not counted, run again by --resume,
+            # and the other runs go on.
+            error = f"{LOST_WORKSPACE}: {workspace}"
     finally:
         shutil.rmtree(workspace, ignore_errors=True)
         shutil.rmtree(isolation, ignore_errors=True)
