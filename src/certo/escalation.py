@@ -282,6 +282,21 @@ _LISTING_SKIP_DIRS = {
     # Rust, Maven and Gradle build output, which verification itself writes.
     "target",
     ".gradle",
+    # Coverage and test-report output: a JavaScript run's `coverage/` and
+    # `playwright-report/` once listed ~2,900 files and hid the source.
+    "coverage",
+    "htmlcov",
+    ".nyc_output",
+    "test-results",
+    "playwright-report",
+    "blob-report",
+    # Framework build caches.
+    ".next",
+    ".nuxt",
+    ".svelte-kit",
+    ".parcel-cache",
+    ".turbo",
+    ".vite",
 }
 _MAX_LISTED_FILES = 30
 

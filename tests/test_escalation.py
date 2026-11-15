@@ -361,3 +361,20 @@ def test_a_restart_after_no_work_reads_like_a_continue():
     message = handoff_message("Build it", [_rung("inconclusive")], "", restarted=True)
 
     assert "undone" not in message
+
+
+def test_workspace_listing_leaves_out_generated_output(tmp_path):
+    from certo.escalation import workspace_listing
+
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src" / "game.ts").write_text("x")
+    for folder in ("coverage", "playwright-report/data", "test-results", ".next"):
+        (tmp_path / folder).mkdir(parents=True)
+        (tmp_path / folder / "out.html").write_text("x")
+    assert list(workspace_listing(str(tmp_path))) == [os_path("src/game.ts")]
+
+
+def os_path(path: str) -> str:
+    import os
+
+    return path.replace("/", os.sep)

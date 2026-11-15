@@ -561,6 +561,12 @@ See [Safety](../concepts/safety.md).
   skipped with `--from-milestone` reads `skipped (--from-milestone)`
   everywhere, and in `.certo/RUNS.md` only the milestone that was resumed
   says "(resumed)".
+- **Generated files no longer fill the report.** Coverage, test-report
+  and framework build folders (`coverage`, `playwright-report`,
+  `test-results`, `.next` and the like) are left out of "Files changed"
+  and of the files one milestone hands to the next. In a JavaScript game
+  they made "Files changed" list about 2,900 files and hid the source in
+  the handover ("... and 182 more").
 - **Acceptance rows in the report show their text.** Every row on the
   same file read "CHANGELOG.md contains the expected text"; now each says
   which: `CHANGELOG.md contains "## Milestone 3: An alien sky"`.

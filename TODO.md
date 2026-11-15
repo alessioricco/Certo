@@ -30,11 +30,6 @@ first item is the suggested next one.
   was only for trying things out, delete it." Changes what the agent is
   told: bench it (local + cloud). Done when a run that leaves a scratch
   file failing a check removes it on the first fix attempt.
-- **Generated files drown the handover and "Files changed"** (same run).
-  Coverage and test-report files hid the source in the milestone handover
-  ("… and 182 more") and made "Files changed" list ~2,900 files. Leave out
-  common build/test/coverage output folders even when not git-ignored,
-  and list source files first.
 - **"Files the checks rely on" warnings: show what changed** (same run).
   All three flagged edits were legitimate (a version bump an acceptance
   check required, lint globals for a new file, an assertion following a

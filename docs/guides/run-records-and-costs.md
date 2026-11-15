@@ -239,6 +239,11 @@ Time 22.3s · tokens 131,548 in / 3,121 out · cost $0.0053
   independent tests, a test file the agent changed, and how many times
   Certo sent the agent back to fix failing checks.
 - A check that didn't pass shows the last 40 lines of its output.
+- **Files changed** leaves out tool caches, environments and generated
+  output folders (`node_modules`, `.venv`, `dist`, `build`, `target`,
+  `coverage`, `htmlcov`, `test-results`, `playwright-report`, `.next`
+  and the like), as does the list of files one milestone hands to the
+  next.
 - Since 0.2.3, a **Skills** section, before "Files changed", names the
   skills the run had: the always-on ones, then those the task's words, a
   file the agent touched, or the agent itself brought in. For the same
