@@ -580,10 +580,7 @@ def run_milestones(
         outcome = result.outcome
         if outcome.run_summary is not None:
             summaries.append(outcome.run_summary)
-        state.verdicts[number] = outcome.verification_state
-        state.skills[number] = outcome.skills_used
-        if outcome.run_summary is not None:
-            state.usage[number] = outcome.run_summary
+        state.record(number, outcome.verification_state, outcome.skills_used, outcome.run_summary)
         save_milestones(workspace, state)
         record = load_record(workspace)
         if record is not None:  # STATUS.md shows the new verdict in its list

@@ -2721,6 +2721,23 @@ def test_resume_continues_the_first_milestone_not_verified(monkeypatch, tmp_path
     assert calls[0]["resume_instruction"] == "use sqlite"
 
 
+def test_only_the_resumed_milestone_is_marked_resumed_in_runs_md(
+    monkeypatch, tmp_path, recorded_runs
+):
+    from certo.milestones import milestone_task
+
+    workspace, plan = _saved_milestones(tmp_path, {1: "retry_exhausted"}, 1)
+    _saved_run(workspace, task=milestone_task(plan, 1))
+    (workspace / "todo.py").write_text("items = []\n")
+    calls: list = []
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))
+    monkeypatch.setattr(cli, "run_task", _milestone_run_task(calls, ["verified", "verified"]))
+
+    assert cli.main(["--resume"]) == 0
+
+    assert [entry.resumed for entry in recorded_runs] == [True, False]
+
+
 def test_resume_starts_a_milestone_afresh_when_the_saved_run_was_another(monkeypatch, tmp_path):
     from certo.milestones import milestone_task
 

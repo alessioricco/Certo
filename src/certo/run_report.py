@@ -85,13 +85,13 @@ def _why(result: dict[str, Any]) -> list[str]:
 
 
 def _milestone_row(m: dict[str, Any]) -> tuple[str, ...]:
-    """One milestone: its verdict, and what its own run used and cost
-    (empty cells for a milestone that didn't run in this session)."""
+    """One milestone: its verdict, and what the run that gave it used and
+    cost (kept across sessions; empty for a milestone that never ran)."""
     usage = m.get("usage")
     skills = m.get("skills")
     return (
         f"{m['number']}. {m['title']}",
-        m["verdict"] or "not started",
+        m.get("label") or m["verdict"] or "not started",
         ", ".join(f"`{x['model']}`" for x in usage["models"]) if usage else "",
         (", ".join(skills) or "none") if skills is not None else "",
         f"{usage['prompt_tokens']:,} / {usage['completion_tokens']:,}" if usage else "",

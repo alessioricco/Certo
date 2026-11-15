@@ -395,6 +395,13 @@ class SavedMilestones:
     verdicts: dict[int, str] = field(default_factory=dict)
     current: int | None = None  # the milestone running now, or the last one run
     start: int = 1  # --from-milestone: the milestones before it are skipped
+    # Each milestone's skills and usage (result.usage_dict) from the run
+    # that gave its verdict, so a later report still shows them.
+    skills: dict[int, tuple[str, ...]] = field(default_factory=dict)
+    usage: dict[int, dict[str, Any]] = field(default_factory=dict)
+    # A verified milestone run again that didn't pass: the verdict stays
+    # `verified`, and this keeps how the later try ended.
+    later: dict[int, str] = field(default_factory=dict)
 
     def next_number(self) -> int | None:
         """The first milestone not verified from `start`, or None when all are."""
@@ -416,6 +423,12 @@ class MilestoneState:
     # Each milestone's own time, tokens and cost (a RunSummary), same rule.
     usage: dict[int, Any] = field(default_factory=dict)
     start: int = 1  # --from-milestone: the milestones before it are skipped
+    # From the saved plan: the skills and usage of milestones run in an
+    # earlier session (usage as result.usage_dict), and later tries that
+    # didn't pass on a verified milestone.
+    saved_skills: dict[int, tuple[str, ...]] = field(default_factory=dict)
+    saved_usage: dict[int, dict[str, Any]] = field(default_factory=dict)
+    later: dict[int, str] = field(default_factory=dict)
 
     @classmethod
     def from_text(cls, text: str, source: str) -> MilestoneState:
@@ -427,6 +440,59 @@ class MilestoneState:
             [m.number for m in self.plan.milestones], self.verdicts, self.start
         )
 
+    def record(self, number: int, verdict: str, skills: tuple[str, ...], usage: Any) -> None:
+        """A milestone's run ended. A milestone already verified keeps its
+        verdict, skills and usage when a later try doesn't pass (a
+        verified milestone run again on another model ran out of time,
+        and its `verified` was lost); the later try is kept beside it."""
+        if self.verdicts.get(number) == "verified" and verdict != "verified":
+            self.later[number] = verdict
+            return
+        self.later.pop(number, None)
+        self.verdicts[number] = verdict
+        self.skills[number] = skills
+        self.saved_skills.pop(number, None)
+        self.saved_usage.pop(number, None)
+        if usage is not None:
+            self.usage[number] = usage
+        else:
+            self.usage.pop(number, None)
+
+    def skills_of(self, number: int) -> tuple[str, ...] | None:
+        if number in self.skills:
+            return self.skills[number]
+        return self.saved_skills.get(number)
+
+    def usage_of(self, number: int) -> dict[str, Any] | None:
+        from .result import usage_dict
+
+        if number in self.usage:
+            return usage_dict(self.usage[number])
+        return self.saved_usage.get(number)
+
+    def label(self, number: int) -> str:
+        """The milestone's verdict in words, the same everywhere."""
+        verdict = self.verdicts.get(number)
+        return verdict_label(verdict, number < self.start, self.later.get(number))
+
+    def rows(self) -> list[dict[str, Any]]:
+        """Each milestone for the JSON result and the report."""
+        return [
+            {
+                "number": m.number,
+                "title": m.title,
+                "verdict": self.verdicts.get(m.number),
+                "label": self.label(m.number),
+                "skipped": m.number < self.start and m.number not in self.verdicts,
+                "later_try": self.later.get(m.number),
+                "skills": list(skills)
+                if (skills := self.skills_of(m.number)) is not None
+                else None,
+                "usage": self.usage_of(m.number),
+            }
+            for m in self.plan.milestones
+        ]
+
     def saved(self) -> SavedMilestones:
         return SavedMilestones(
             self.source,
@@ -435,7 +501,17 @@ class MilestoneState:
             dict(self.verdicts),
             self.current,
             self.start,
+            skills={n: s for m in self.plan.milestones if (s := self.skills_of(n := m.number))},
+            usage={n: u for m in self.plan.milestones if (u := self.usage_of(n := m.number))},
+            later=dict(self.later),
         )
+
+    def _take(self, saved: SavedMilestones) -> None:
+        self.verdicts = dict(saved.verdicts)
+        self.start = saved.start
+        self.saved_skills = dict(saved.skills)
+        self.saved_usage = dict(saved.usage)
+        self.later = dict(saved.later)
 
     def continue_from(self, saved: SavedMilestones | None, text: str) -> bool:
         """Take the verdicts of a saved plan of the same, unedited task file
@@ -449,8 +525,7 @@ class MilestoneState:
             or saved.titles != tuple(m.label for m in self.plan.milestones)
         ):
             return False
-        self.verdicts = dict(saved.verdicts)
-        self.start = saved.start
+        self._take(saved)
         return True
 
 
@@ -471,14 +546,10 @@ def reopen(saved: SavedMilestones) -> MilestoneState:
             "the new version, run it again with --milestones; the milestones start "
             "from the first."
         )
-    return MilestoneState(
-        parse_milestones(text),
-        saved.source,
-        saved.fingerprint,
-        dict(saved.verdicts),
-        saved.current,
-        start=saved.start,
-    )
+    state = MilestoneState(parse_milestones(text), saved.source, saved.fingerprint)
+    state._take(saved)
+    state.current = saved.current
+    return state
 
 
 def plan_path(workspace: str) -> str:
@@ -492,7 +563,14 @@ def save_state(workspace: str, state: MilestoneState) -> None:
         "source": saved.source,
         "fingerprint": saved.fingerprint,
         "milestones": [
-            {"number": n, "title": title, "verdict": saved.verdicts.get(n)}
+            {
+                "number": n,
+                "title": title,
+                "verdict": saved.verdicts.get(n),
+                **({"later_try": saved.later[n]} if n in saved.later else {}),
+                **({"skills": list(saved.skills[n])} if n in saved.skills else {}),
+                **({"usage": saved.usage[n]} if n in saved.usage else {}),
+            }
             for n, title in enumerate(saved.titles, 1)
         ],
         "current": saved.current,
@@ -519,6 +597,15 @@ def load_state(workspace: str) -> SavedMilestones | None:
             {int(m["number"]): str(m["verdict"]) for m in milestones if m.get("verdict")},
             int(current) if current is not None else None,
             int(data.get("start") or 1),
+            skills={
+                int(m["number"]): tuple(str(x) for x in m["skills"])
+                for m in milestones
+                if isinstance(m.get("skills"), list)
+            },
+            usage={
+                int(m["number"]): m["usage"] for m in milestones if isinstance(m.get("usage"), dict)
+            },
+            later={int(m["number"]): str(m["later_try"]) for m in milestones if m.get("later_try")},
         )
     except (OSError, ValueError, TypeError, KeyError):
         return None
@@ -541,24 +628,29 @@ def status_lines(workspace: str) -> list[str]:
     lines = ["## Milestones", ""]
     for number, title in enumerate(saved.titles, 1):
         verdict = saved.verdicts.get(number)
+        later = saved.later.get(number)
         if verdict:
-            where = f"`{verdict}`"
+            where = f"`{verdict}`" + (f" (a later try: `{later}`)" if later else "")
         elif number == saved.current:
             where = "this run"
-        elif number < saved.start:
-            where = "skipped (--from-milestone)"
         else:
-            where = "not started"
+            where = verdict_label(None, number < saved.start)
         lines.append(f"{number}. {title}: {where}")
     return lines + [""]
 
 
 def summary_lines(state: MilestoneState) -> Sequence[str]:
     """One line per milestone for the terminal, at the end of a run."""
-    lines = []
-    for m in state.plan.milestones:
-        verdict = state.verdicts.get(m.number) or (
-            "skipped" if m.number < state.start else "not started"
-        )
-        lines.append(f"{m.number}. {m.label}: {verdict}")
-    return lines
+    return [f"{m.number}. {m.label}: {state.label(m.number)}" for m in state.plan.milestones]
+
+
+SKIPPED = "skipped (--from-milestone)"
+NOT_STARTED = "not started"
+
+
+def verdict_label(verdict: str | None, before_start: bool, later: str | None = None) -> str:
+    """One milestone's verdict in words: the same in the terminal,
+    STATUS.md and the report."""
+    if verdict:
+        return f"{verdict} (a later try: {later})" if later else verdict
+    return SKIPPED if before_start else NOT_STARTED

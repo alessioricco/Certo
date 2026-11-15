@@ -553,6 +553,14 @@ See [Safety](../concepts/safety.md).
 
 ## Also
 
+- **Milestones keep what they earned.** A milestone verified once stays
+  `verified` when a later try of it doesn't pass (shown as `verified (a
+  later try: budget_exhausted)`); before, the later try replaced it. Each
+  milestone's models, skills, tokens and cost are kept across sessions, so
+  the report no longer shows "-" for milestones run earlier. A milestone
+  skipped with `--from-milestone` reads `skipped (--from-milestone)`
+  everywhere, and in `.certo/RUNS.md` only the milestone that was resumed
+  says "(resumed)".
 - **Acceptance rows in the report show their text.** Every row on the
   same file read "CHANGELOG.md contains the expected text"; now each says
   which: `CHANGELOG.md contains "## Milestone 3: An alien sky"`.

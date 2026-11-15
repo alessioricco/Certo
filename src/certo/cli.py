@@ -48,7 +48,7 @@ from .milestones import (
 from .project_state import (
     status_path,
 )
-from .result import run_result, usage_dict
+from .result import run_result
 from .run_history import append_run, note_models_in_readme, run_entry
 from .run_progress import RunProgress
 from .run_report import report_relpath, write_report
@@ -890,11 +890,17 @@ def _run_task_command(
     history = {"task": resume_from.task if resume_from is not None else (task or "")}
     report: dict[str, str] = {}
 
+    recorded = {"runs": 0}
+
     def record_run(ended: str, outcome=None, summary=None) -> None:
         if not save_state:
             return
         entry = run_entry(cfg, ladder, history["task"], ended, started_at, outcome, summary)
-        entry = replace(entry, resumed=resume_from is not None, report=report_relpath(started_at))
+        # Only the first entry was resumed: in milestones, the milestones
+        # after the resumed one are new runs.
+        resumed = resume_from is not None and recorded["runs"] == 0
+        recorded["runs"] += 1
+        entry = replace(entry, resumed=resumed, report=report_relpath(started_at))
         try:
             append_run(cfg.workspace, entry)
         except OSError as exc:
@@ -943,20 +949,7 @@ def _run_task_command(
             return
         milestones = None
         if milestone_state is not None:
-            milestones = [
-                {
-                    "number": m.number,
-                    "title": m.title,
-                    "verdict": milestone_state.verdicts.get(m.number),
-                    "skills": (
-                        list(milestone_state.skills[m.number])
-                        if m.number in milestone_state.skills
-                        else None
-                    ),
-                    "usage": usage_dict(milestone_state.usage.get(m.number)),
-                }
-                for m in milestone_state.plan.milestones
-            ]
+            milestones = milestone_state.rows()
         result = run_result(
             outcome,
             task=history["task"],

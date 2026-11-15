@@ -30,13 +30,6 @@ first item is the suggested next one.
   was only for trying things out, delete it." Changes what the agent is
   told: bench it (local + cloud). Done when a run that leaves a scratch
   file failing a check removes it on the first fix attempt.
-- **Milestone state keeps stale or contradictory verdicts** (same run). A
-  verified milestone shows a later retry's `budget_exhausted`; skipped
-  milestones read "not started", "skipped" or `null` in three places;
-  earlier milestones show "-" for models and cost in the report. Keep
-  each milestone's last verified verdict and stats across runs, one label
-  for skipped ones; the resumed-run label goes only on the milestone that
-  was resumed.
 - **Generated files drown the handover and "Files changed"** (same run).
   Coverage and test-report files hid the source in the milestone handover
   ("… and 182 more") and made "Files changed" list ~2,900 files. Leave out

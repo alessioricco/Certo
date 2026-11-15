@@ -356,3 +356,64 @@ def test_handover_takes_the_last_plain_message_when_there_is_no_finish(tmp_path)
     text = handover(str(tmp_path), messages, 1)
 
     assert text.endswith("Converted both ways, with tests.")
+
+
+# --- what is kept per milestone ---------------------------------------------
+
+
+def _usage(cost):
+    from certo.run_summary import ModelUsage, RunSummary
+
+    return RunSummary(
+        duration_seconds=60.0,
+        models=(
+            ModelUsage(
+                model="m/x",
+                prompt_tokens=100,
+                completion_tokens=10,
+                cache_read_tokens=0,
+                cost=cost,
+            ),
+        ),
+    )
+
+
+def test_a_later_try_that_fails_keeps_the_milestones_verified(tmp_path):
+    # A user's project: M1 verified, run again on another model later,
+    # ran out of time, and its `verified` was lost.
+    workspace, _, state = _started(tmp_path)
+    state.record(1, "verified", ("a",), _usage(0.5))
+    state.record(1, "budget_exhausted", ("b",), _usage(2.0))
+
+    assert state.verdicts[1] == "verified"
+    assert state.label(1) == "verified (a later try: budget_exhausted)"
+    assert state.usage_of(1)["cost"] == 0.5
+    assert state.skills_of(1) == ("a",)
+    save_state(workspace, state)
+    assert "1. storage: `verified` (a later try: `budget_exhausted`)" in status_lines(workspace)
+
+    state.record(1, "verified", ("c",), _usage(0.3))
+    assert state.label(1) == "verified"
+
+
+def test_a_milestones_usage_and_skills_outlive_the_session(tmp_path):
+    workspace, task_file, state = _started(tmp_path)
+    state.record(1, "verified", ("a",), _usage(0.5))
+    save_state(workspace, state)
+
+    again = reopen(load_state(workspace))
+    rows = again.rows()
+    assert rows[0]["usage"]["cost"] == 0.5
+    assert rows[0]["skills"] == ["a"]
+    assert rows[1]["usage"] is None and rows[1]["label"] == "not started"
+
+
+def test_skipped_milestones_have_one_label_everywhere(tmp_path):
+    workspace, _, state = _started(tmp_path)
+    state.start = 2
+    save_state(workspace, state)
+
+    assert state.rows()[0]["label"] == "skipped (--from-milestone)"
+    assert state.rows()[0]["skipped"] is True
+    assert summary_lines(state)[0] == "1. storage: skipped (--from-milestone)"
+    assert "1. storage: skipped (--from-milestone)" in status_lines(workspace)

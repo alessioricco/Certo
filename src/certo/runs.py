@@ -232,10 +232,7 @@ class RunManager:
         def milestones() -> list[dict[str, Any]] | None:
             if state is None:
                 return None
-            return [
-                {"number": m.number, "title": m.title, "verdict": state.verdicts.get(m.number)}
-                for m in state.plan.milestones
-            ]
+            return state.rows()
 
         def finish(
             ended_as: str, outcome: Any = None, error: str | None = None, summary: Any = None
