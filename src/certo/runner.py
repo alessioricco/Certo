@@ -1456,6 +1456,41 @@ def _open_items_note(pending: list) -> str:
     )
 
 
+def _step_limit_hits(conversation: Any) -> int:
+    """How many times in this conversation the agent used all its steps
+    (each `MaxIterationsReached` error event). 0 when the events can't be
+    read (Docker)."""
+    try:
+        return sum(
+            1
+            for event in conversation.state.events
+            if isinstance(event, ConversationErrorEvent) and event.code == "MaxIterationsReached"
+        )
+    except Exception:  # noqa: BLE001 - unknown means "not seen"
+        return 0
+
+
+def _note_step_limit(conversation: Any, cfg: Config, outcome: TaskOutcome) -> TaskOutcome:
+    """Every run whose agent used all its steps says so in the report, also
+    when Certo's fix attempts went on after it, or a later limit (time,
+    cost) ended the run: a user's milestone, 2026-11-14, hit the step limit
+    at event 166, went on to event 297 and ended `budget_exhausted`, and
+    nothing said the steps had run out. A run whose verdict already carries
+    the step-limit note keeps only that one."""
+    hits = _step_limit_hits(conversation)
+    limitations = outcome.completion_contract.limitations
+    if not hits or any("steps (CERTO_MAX_ITERATIONS)" in note for note in limitations):
+        return outcome
+    times = "once" if hits == 1 else f"{hits} times"
+    note = (
+        f"The agent used all its {cfg.max_iterations} steps (CERTO_MAX_ITERATIONS) "
+        f"{times} during this run; Certo checked the work and went on with fix "
+        "attempts. --max-steps N gives it more steps."
+    )
+    contract = replace(outcome.completion_contract, limitations=[*limitations, note])
+    return replace(outcome, completion_contract=contract)
+
+
 def _note_open_items(conversation: Any, outcome: TaskOutcome) -> TaskOutcome:
     """A `verified` run whose agent left task_tracker items open says so,
     and counts as maybe unfinished (a bare --resume continues it)."""
@@ -2583,7 +2618,7 @@ def _run_stream_task_phases(
     if outcome.verification_state == "verified":
         outcome = _note_check_file_changes(cfg.workspace, check_files_before, outcome)
     outcome = _note_open_items(conversation, outcome)
-    return outcome
+    return _note_step_limit(conversation, cfg, outcome)
 
 
 def _note_check_file_changes(

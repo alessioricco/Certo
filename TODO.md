@@ -40,8 +40,6 @@ first item is the suggested next one.
   MODEL_DECISIONS.md entry; "Blocked outside the project root: 1 action"
   appears only in the end summary, with no path anywhere. Write both,
   with reasons, into the report (and decisions file).
-- **A step-limit hit isn't in the report** (same run): the agent reached
-  its step limit mid-milestone and the report says nothing.
 - **A longer time budget from `certo init` for Ollama?** The mazeman
   sample took 41 minutes on `qwen3.8:27b` (2026-10-22), past the default
   30-minute `CERTO_MAX_TASK_SECONDS`; it ended `verified` only because the

@@ -567,6 +567,9 @@ See [Safety](../concepts/safety.md).
   and of the files one milestone hands to the next. In a JavaScript game
   they made "Files changed" list about 2,900 files and hid the source in
   the handover ("... and 182 more").
+- **The report says when the agent ran out of steps**, whatever the
+  verdict. Before, a milestone that used all its 50 steps, went on with
+  fix attempts and then ran out of time read only `budget_exhausted`.
 - **Acceptance rows in the report show their text.** Every row on the
   same file read "CHANGELOG.md contains the expected text"; now each says
   which: `CHANGELOG.md contains "## Milestone 3: An alien sky"`.

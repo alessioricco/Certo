@@ -4210,3 +4210,30 @@ def test_a_resumed_conversation_reports_only_its_own_usage():
     assert round(usage["accumulated_cost"], 2) == 0.27
     assert usage["accumulated_token_usage"]["prompt_tokens"] == 1_000_000
     assert len(usage["token_usages"]) == 10
+
+
+def _limited_outcome(state: str, limitations: list[str] | None = None) -> runner.TaskOutcome:
+    return runner.TaskOutcome(
+        verification_state=state,
+        completion_contract=runner.CompletionContract(
+            goal="g", acceptance_criteria=[], verification_checks=[], limitations=limitations or []
+        ),
+    )
+
+
+def test_a_step_limit_hit_earlier_in_the_run_is_in_the_report():
+    # A user's milestone, 2026-11-14: steps ran out at event 166, fix
+    # attempts went on, the time ran out, and nothing said so.
+    conversation = _FakeConversation(initial_events=[_step_limit_event()])
+    noted = runner._note_step_limit(conversation, _cfg(), _limited_outcome("budget_exhausted"))
+    (note,) = noted.completion_contract.limitations
+    assert "used all its" in note and "once during this run" in note
+    assert noted.verification_state == "budget_exhausted"
+
+
+def test_a_step_limit_note_is_not_doubled_or_invented():
+    conversation = _FakeConversation(initial_events=[_step_limit_event()])
+    already = _limited_outcome("verified", [runner._step_limit_note(_cfg())])
+    assert runner._note_step_limit(conversation, _cfg(), already) == already
+    clean = _limited_outcome("verified")
+    assert runner._note_step_limit(_FakeConversation(), _cfg(), clean) == clean
