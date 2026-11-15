@@ -3,13 +3,15 @@
 Not released yet.
 
 This release keeps the agent in its project, lets runs use skills from
-repositories you trust, and makes bigger, milestone-by-milestone builds
-easier to start:
+repositories you trust, makes bigger, milestone-by-milestone builds
+easier to start, and starts each task on the least costly model that
+fits it:
 
 - **A task gets its own project folder.** In a Certo workspace, a task
   run without `--project` gets `projects/<name>`, named after the task.
 - **The agent stays in its project root.** It is told its root, and
-  Certo blocks an action that reaches outside it.
+  Certo blocks an action that reaches outside it, or a delete that
+  would remove more than the project.
 - **Trusted skill repositories.** List the repositories you trust in
   `skill_sources.yaml`; `certo skills assess` checks and classifies every
   skill in them; a run adds the ones that fit its project and task, and
@@ -20,9 +22,15 @@ easier to start:
   parallax, a 3D wireframe tank game, a team task board web app with
   SQLite, a fixed shooter built to production quality, and a
   first-person exploration game on a generated alien planet.
-- **`--auto-model` chooses per milestone**, by the milestone's own
-  title first, and the example task profiles gain `build`, for apps,
-  games and features.
+- **`--auto-model` picks the least costly model that fits the task**,
+  from what each kind of task needs, per milestone, by the milestone's
+  own title first. Certo reads its own model list and task profiles;
+  you keep only `models.yaml`, and a project's files change only what
+  they name.
+- **The agent knows the acceptance checks**, and is told when its time
+  is nearly up.
+- **An open to-do item no longer climbs the model ladder:** the
+  project's checks decide.
 - **The example model list, checked again** (2026-11-07): `cost`
   now follows the price to one decimal, five models re-rated, four new
   ones, Kimi K2.7 Code out. **`certo models check`** compares your list's
@@ -38,6 +46,8 @@ easier to start:
   `certo init models` at once.
 - **`certo check` gives an Ollama model's real speed**, in tokens a
   second, as Ollama measures it.
+- **Fuller run reports:** each blocked action, a step limit hit, a
+  model change on resume, and the changed lines of a test file.
 - **A guide to check another AI tool's work** with `certo verify`.
 
 ## New: the agent stays in its project root
@@ -94,6 +104,23 @@ chance and known local-model failures, not by the sentence. Details:
 
 See [Safety](../concepts/safety.md#what-the-agent-can-do) and
 [`certo`](../reference/commands.md#certo).
+
+## Safety: Certo blocks deletes that reach beyond the project
+
+In the 0.2.3 benchmark, an agent cleaning up a demo file ran
+`rm -rf "$(python -c '...print(tempfile.gettempdir())')"` and deleted the
+whole temporary folder of the user running Certo, with every benchmark
+project in it. The root guard read only the words of a command, so a path
+built at run time got through. Now a delete is blocked when its target is
+only known when it runs (`$(...)`, backticks, a variable the terminal
+never set), and when it would delete a folder that holds more than the
+project: the project root or a folder above it, the home folder, a system
+or tool folder itself, or the system's temporary folder. Deleting inside
+them stays allowed, and so do a variable set to a written-out path and a
+`mktemp` folder. Replayed over 7,541 terminal commands from earlier
+benchmarks, it blocks 3: this one, an `rm -rf "$d"` where `$d` was never
+set, and `rm -rf "$(cat file)"`.
+See [Safety](../concepts/safety.md).
 
 ## New: trusted skill repositories
 
@@ -177,13 +204,55 @@ each ([the record](../benchmark/milestone-samples-0.2.3.md)):
   TypeScript with Three.js. The sky, terrain, plants and animals are
   generated from the planet's physics (star class, mass, radius, orbit,
   atmosphere), and each world is a small JSON file in `levels/` or at a
-  URL, separate from the engine, in 7 milestones. Not run yet.
+  URL, separate from the engine, in 7 milestones. Its first run, with
+  `--auto-model` (Haiku first), verified all 7 milestones for about
+  $7.83; $2.08 of that went to the open-item climb this release removes
+  (see below).
 
 ```bash
 certo tasks/team-board.md --project team-board
 ```
 
 See [Run a task in milestones](../guides/run-in-milestones.md).
+
+## New: the agent knows the acceptance checks, and is told when time is nearly up
+
+Acceptance checks (a file must exist, or contain a text) were taken out
+of a milestone's text and never shown to the agent, so a closing step
+such as a changelog entry was easy to forget, and it was the step a
+deadline cut. Now the task the agent receives ends with the checks, in
+plain words:
+
+```text
+When you finish, Certo checks that each of these holds; the task isn't done until the required ones do:
+- NOTES.md contains the text "## Part 2"
+```
+
+And a margin before the time budget ends (15% of it, between 2 and 10
+minutes), Certo tells the agent once to stop starting new work, finish
+what is open, make the checks pass, and meet the acceptance checks that
+don't hold yet, which it names. See
+[Acceptance checks](../guides/acceptance-checks.md#what-happens-to-the-verdict).
+
+Benchmarked on Haiku with milestone tasks and a tight budget: 5/6 hidden
+tests passed with them and without, no milestone ran out of time with
+them (one did without), at about three quarters of the cost. The local
+half is still to run. [The record](../benchmark/wrap-up-0.2.3.md).
+
+## Changed: an open to-do item no longer climbs the model ladder
+
+When the agent finished with an item of its own to-do list still open,
+Certo asked it to finish, and moved to the next model at the same time;
+if the item stayed open, the verdict was `incomplete` and the project's
+checks never ran. In a milestone of the alien-trekking sample, every
+check passed and one item stayed "in progress": the run climbed from
+Haiku through Terra and Sonnet to Sol and stopped at its $2 cost limit.
+Now the follow-up stays on the same model, and the checks decide. A
+`verified` run with items still open says they are open and that the
+task may be unfinished, and `certo --resume` continues it. `incomplete`
+is no longer given. See [Verdicts](../reference/verdicts.md).
+[Replayed](../benchmark/open-items-replay-0.2.3.md) on every recorded
+run that ended `incomplete`: none would now be `verified`.
 
 ## New: `--auto-model` chooses per milestone, and a `build` profile
 
@@ -196,11 +265,11 @@ matches `build`, a milestone called "Fix the flaky tests" is
 milestone whose title has no trigger word falls back to the task's
 title, as before. Only titles are read, never the text under them.
 
-The example `task_profiles.yaml` has a new profile, `build` (build,
-implement, app, application, game, website, feature), which weighs code
-and cost. Before, an app or a game usually matched no profile and got
-`default`, which weighs cost most. Copy the new profile into your own
-`task_profiles.yaml` to use it: Certo never changes your copy.
+Certo's task profiles have a new one, `build` (build, implement, app,
+application, game, website, feature), which needs code 4. Before, an
+app or a game usually matched no profile and got `default`. Certo reads
+its own profiles (see "Certo keeps the model list" below), so you get
+it with no copying.
 
 `certo check --task` shows, for a task file written in milestones, each
 milestone's profile and first model:
@@ -216,6 +285,123 @@ It runs milestone by milestone. Each milestone is classified by its own title fi
 rewrote the file, so only the last milestone's choice was left.
 
 See [Pick models automatically](../guides/pick-models-automatically.md#how-a-model-is-chosen).
+
+## Changed: `--auto-model` picks the least costly model that fits the task
+
+A task profile now says what its kind of task **needs**, as a minimum
+rating per axis, instead of weights:
+
+```yaml
+  build:
+    triggers: [build, implement, app, game, website, feature]
+    needs: {code: 4}
+  docs:
+    triggers: [readme, documentation]
+    needs: {writing: 3}       # no speed: a slow local model is fine
+```
+
+Certo keeps the models that meet the needs and starts with the least
+costly of them; if its work fails the checks, the next one is a stronger
+model that also fits. With weights, one axis always won: weight `cost`
+and a local model got every task, weight reasoning and the frontier model
+did. Now a cheap or local model goes first where it is good enough, and
+Opus or Fable only where nothing cheaper fits. The example list has two
+new axes, `writing` and `speed` (estimates for now; `speed` never counts
+as capability), and the example profiles a `docs` and a `quick` kind of
+task. Profiles with `weights:` work as before. `certo check --task` shows
+for each model whether it fits, or which need it misses:
+
+```text
+  1. claude-sonnet (fits, cost 3)
+  2. claude-haiku (below: reasoning 3 < 4, cost 4.9)
+```
+
+See [How a model is chosen](../guides/pick-models-automatically.md#how-a-model-is-chosen).
+[Which models each rule puts first](../benchmark/fit-vs-weights-0.2.3.md),
+for each kind of task and each bundled sample: Opus now goes first only
+for architecture, builds start on Haiku. Not yet benchmarked with live
+runs.
+
+## Changed: Certo keeps the model list, you keep only `models.yaml`
+
+Before, `certo init models` copied Certo's model list and task profiles
+into your settings folder, and you kept those copies: a new release's
+models and ratings reached you only through `certo models update`, and
+the copies drifted (one user's list rated a model 4 where Certo's said 3).
+Now Certo reads its own list and profiles from the package, as the lowest
+layer, and a release brings their updates to you. The only file you need
+is `models.yaml`: the models you use and their keys. A `models_list.yaml`
+or `task_profiles.yaml` of yours holds only what differs, such as a model
+Certo doesn't know, a rating you disagree with, or the model that goes
+first for a kind of task (a profile can give only `model:`).
+
+`--auto-model` without a `task_profiles.yaml` of yours uses Certo's
+profiles; before, every model ranked the same and the order of the list
+decided (on 2026-11-10 that gave a milestone to a local model during the
+day). `certo init models --profiles` asks, for each kind of task, which
+model goes first, and writes only your choices.
+
+**If you have a full copy of the list** (written by Certo before 0.2.3):
+it still works, but it hides Certo's newer values. `certo models update`
+now slims it to your own changes: values the same as Certo's, or old
+values you never changed, are dropped; where Certo can't tell (no record
+of where your copy came from) it asks, or `--use-certos` takes Certo's.
+See [the command](../reference/commands.md#certo-models-update).
+A slimmed file needs 0.2.3 or newer: an older Certo sees only the
+models left in it. To go back, put `models_list.yaml.bak` back first.
+
+## Changed: model files are layered, a project changes only what it names
+
+Model files used to be found in one place: the current folder, else your
+user settings folder, and the first one found was used whole. A project
+`models.yaml` had to repeat every model and key. Now they are read in
+layers, your user folder, then the current folder, then the `--project`
+folder, merged by name: a project file can say only "Terra's code rating
+is 5 here" or "no Opus in this project", and everything else comes from
+your own files.
+
+**If you have a project `models.yaml` or `models_list.yaml` today:** it
+now adds to your user file instead of replacing it. Add `replace: true`
+at its top to keep the old behaviour. A file a setting names
+(`CERTO_MODELS_FILE`...) is still read alone. `certo check --project
+NAME` shows the layers and what each one changes. See
+[Where Certo looks](../reference/models-yaml.md#where-certo-looks).
+
+## New: `certo models choose`, a project's own models
+
+`certo models choose --project NAME` lists your enabled models with what
+one run of each costs, and you tick the ones the project may use. Certo
+then proposes both strategies for them, the `--auto-model` order per kind
+of task (cheaper models first) and the `--escalate` ladder (cheapest
+first), recommends one, and writes your choice to `certo-models.yaml` at
+the project's top. It holds names only, never keys. Runs in that project
+then use it, unless a flag or `CERTO_MODEL_SELECTION` chooses. See
+[the command](../reference/commands.md#certo-models-choose).
+
+## New: `certo models secure` moves keys out of `models.yaml`
+
+`models.yaml` could always name a key as `"${NAME}"`, read from your
+settings file, but a key pasted into it went unnoticed. Now `certo check`
+and every run warn about each one, and `certo models secure` moves them
+to `~/.config/certo/.env` under the provider's usual name
+(`OPENAI_API_KEY`...) and writes `"${NAME}"` in their place, keeping the
+file's comments. No key is printed. See
+[the command](../reference/commands.md#certo-models-secure).
+
+## New: `--auto-model` skips a local model that can't be reached
+
+Before a local model gets work, at the start of a run or milestone and at
+every fallback, `--auto-model` asks its server whether it is up and has
+the model, and skips it if not:
+
+```text
+Certo: skipping qwen3.8-27b-local: the Ollama server at turing.local:11434 didn't answer. Using claude-haiku-5-5.
+```
+
+Before, a run handed to a switched-off Ollama machine failed only after
+the provider's retries, minutes later. The skip is recorded in
+`MODEL_DECISIONS.md`. See
+[How a model is chosen](../guides/pick-models-automatically.md#how-a-model-is-chosen).
 
 ## Changed: the example model list, checked again
 
@@ -268,10 +454,10 @@ know, a price that differs and a `cost` that isn't what its price gives.
 the provider's pricing page. See
 [`certo models check`](../reference/commands.md#certo-models-check).
 
-With these ratings, `--auto-model` puts Opus 5.5 first for debugging and
-research, and Haiku 5.5 first for builds, with GPT-6.1 Sol and Sonnet
-5.5 next. Certo reads this list itself, so you get these ratings without
-copying anything (see "Certo keeps the model list" below).
+With these ratings and the new rule (see "`--auto-model` picks the
+least costly model that fits" above), Haiku 5.5 goes first for builds,
+GPT-6.1 Sol for debugging and research, and Opus 5.5 for architecture. Certo reads this list itself, so you get these ratings without
+copying anything (see "Certo keeps the model list" above).
 
 ## New: estimates from your own runs
 
@@ -331,162 +517,6 @@ A few tokens a second usually means part of the model runs on the CPU;
 see [Troubleshooting](../troubleshooting.md#every-step-is-very-slow).
 Cloud models print nothing new.
 
-## Changed: Certo keeps the model list, you keep only `models.yaml`
-
-Before, `certo init models` copied Certo's model list and task profiles
-into your settings folder, and you kept those copies: a new release's
-models and ratings reached you only through `certo models update`, and
-the copies drifted (one user's list rated a model 4 where Certo's said 3).
-Now Certo reads its own list and profiles from the package, as the lowest
-layer, and a release brings their updates to you. The only file you need
-is `models.yaml`: the models you use and their keys. A `models_list.yaml`
-or `task_profiles.yaml` of yours holds only what differs, such as a model
-Certo doesn't know, a rating you disagree with, or the model that goes
-first for a kind of task (a profile can give only `model:`).
-
-`--auto-model` without a `task_profiles.yaml` of yours uses Certo's
-profiles; before, every model ranked the same and the order of the list
-decided (on 2026-11-10 that gave a milestone to a local model during the
-day). `certo init models --profiles` asks, for each kind of task, which
-model goes first, and writes only your choices.
-
-**If you have a full copy of the list** (written by Certo before 0.2.3):
-it still works, but it hides Certo's newer values. `certo models update`
-now slims it to your own changes: values the same as Certo's, or old
-values you never changed, are dropped; where Certo can't tell (no record
-of where your copy came from) it asks, or `--use-certos` takes Certo's.
-See [the command](../reference/commands.md#certo-models-update).
-A slimmed file needs 0.2.3 or newer: an older Certo sees only the
-models left in it. To go back, put `models_list.yaml.bak` back first.
-
-## New: `--auto-model` skips a local model that can't be reached
-
-Before a local model gets work, at the start of a run or milestone and at
-every fallback, `--auto-model` asks its server whether it is up and has
-the model, and skips it if not:
-
-```text
-Certo: skipping qwen3.8-27b-local: the Ollama server at turing.local:11434 didn't answer. Using claude-haiku-5-5.
-```
-
-Before, a run handed to a switched-off Ollama machine failed only after
-the provider's retries, minutes later. The skip is recorded in
-`MODEL_DECISIONS.md`. See
-[How a model is chosen](../guides/pick-models-automatically.md#how-a-model-is-chosen).
-
-## Changed: `--auto-model` picks the least costly model that fits the task
-
-A task profile now says what its kind of task **needs**, as a minimum
-rating per axis, instead of weights:
-
-```yaml
-  build:
-    triggers: [build, implement, app, game, website, feature]
-    needs: {code: 4}
-  docs:
-    triggers: [readme, documentation]
-    needs: {writing: 3}       # no speed: a slow local model is fine
-```
-
-Certo keeps the models that meet the needs and starts with the least
-costly of them; if its work fails the checks, the next one is a stronger
-model that also fits. With weights, one axis always won: weight `cost`
-and a local model got every task, weight reasoning and the frontier model
-did. Now a cheap or local model goes first where it is good enough, and
-Opus or Fable only where nothing cheaper fits. The example list has two
-new axes, `writing` and `speed` (estimates for now; `speed` never counts
-as capability), and the example profiles a `docs` and a `quick` kind of
-task. Profiles with `weights:` work as before. `certo check --task` shows
-for each model whether it fits, or which need it misses:
-
-```text
-  1. claude-sonnet (fits, cost 3)
-  2. claude-haiku (below: reasoning 3 < 4, cost 4.9)
-```
-
-See [How a model is chosen](../guides/pick-models-automatically.md#how-a-model-is-chosen).
-[Which models each rule puts first](../benchmark/fit-vs-weights-0.2.3.md),
-for each kind of task and each bundled sample: Opus now goes first only
-for architecture, builds start on Haiku. Not yet benchmarked with live
-runs.
-
-## Changed: model files are layered, a project changes only what it names
-
-Model files used to be found in one place: the current folder, else your
-user settings folder, and the first one found was used whole. A project
-`models.yaml` had to repeat every model and key. Now they are read in
-layers, your user folder, then the current folder, then the `--project`
-folder, merged by name: a project file can say only "Terra's code rating
-is 5 here" or "no Opus in this project", and everything else comes from
-your own files.
-
-**If you have a project `models.yaml` or `models_list.yaml` today:** it
-now adds to your user file instead of replacing it. Add `replace: true`
-at its top to keep the old behaviour. A file a setting names
-(`CERTO_MODELS_FILE`...) is still read alone. `certo check --project
-NAME` shows the layers and what each one changes. See
-[Where Certo looks](../reference/models-yaml.md#where-certo-looks).
-
-## New: `certo models choose`, a project's own models
-
-`certo models choose --project NAME` lists your enabled models with what
-one run of each costs, and you tick the ones the project may use. Certo
-then proposes both strategies for them, the `--auto-model` order per kind
-of task (cheaper models first) and the `--escalate` ladder (cheapest
-first), recommends one, and writes your choice to `certo-models.yaml` at
-the project's top. It holds names only, never keys. Runs in that project
-then use it, unless a flag or `CERTO_MODEL_SELECTION` chooses. See
-[the command](../reference/commands.md#certo-models-choose).
-
-## New: `certo models secure` moves keys out of `models.yaml`
-
-`models.yaml` could always name a key as `"${NAME}"`, read from your
-settings file, but a key pasted into it went unnoticed. Now `certo check`
-and every run warn about each one, and `certo models secure` moves them
-to `~/.config/certo/.env` under the provider's usual name
-(`OPENAI_API_KEY`...) and writes `"${NAME}"` in their place, keeping the
-file's comments. No key is printed. See
-[the command](../reference/commands.md#certo-models-secure).
-
-## New: the agent knows the acceptance checks, and is told when time is nearly up
-
-Acceptance checks (a file must exist, or contain a text) were taken out
-of a milestone's text and never shown to the agent, so a closing step
-such as a changelog entry was easy to forget, and it was the step a
-deadline cut. Now the task the agent receives ends with the checks, in
-plain words:
-
-```text
-When you finish, Certo checks that each of these holds; the task isn't done until the required ones do:
-- NOTES.md contains the text "## Part 2"
-```
-
-And a margin before the time budget ends (15% of it, between 2 and 10
-minutes), Certo tells the agent once to stop starting new work, finish
-what is open, make the checks pass, and meet the acceptance checks that
-don't hold yet, which it names. See
-[Acceptance checks](../guides/acceptance-checks.md#what-happens-to-the-verdict).
-
-Benchmarked on Haiku with milestone tasks and a tight budget: 5/6 hidden
-tests passed with them and without, no milestone ran out of time with
-them (one did without), at about three quarters of the cost. The local
-half is still to run. [The record](../benchmark/wrap-up-0.2.3.md).
-
-## Changed: an open to-do item no longer climbs the model ladder
-
-When the agent finished with an item of its own to-do list still open,
-Certo asked it to finish, and moved to the next model at the same time;
-if the item stayed open, the verdict was `incomplete` and the project's
-checks never ran. In a milestone of the alien-trekking sample, every
-check passed and one item stayed "in progress": the run climbed from
-Haiku through Terra and Sonnet to Sol and stopped at its $2 cost limit.
-Now the follow-up stays on the same model, and the checks decide. A
-`verified` run with items still open says they are open and that the
-task may be unfinished, and `certo --resume` continues it. `incomplete`
-is no longer given. See [Verdicts](../reference/verdicts.md).
-[Replayed](../benchmark/open-items-replay-0.2.3.md) on every recorded
-run that ended `incomplete`: none would now be `verified`.
-
 ## Fixed: `--resume` keeps `--auto-model` and `--escalate`
 
 A run started with `--auto-model` (or `--escalate`) and resumed without
@@ -539,23 +569,6 @@ and a generator tag in the `<head>` of the project's `index.html`:
 Certo adds them itself, so the agent spends nothing on them. An existing
 project you point Certo at is never touched. `CERTO_CREDITS=no` turns
 it off.
-
-## Safety: Certo blocks deletes that reach beyond the project
-
-In the 0.2.3 benchmark, an agent cleaning up a demo file ran
-`rm -rf "$(python -c '...print(tempfile.gettempdir())')"` and deleted the
-whole temporary folder of the user running Certo, with every benchmark
-project in it. The root guard read only the words of a command, so a path
-built at run time got through. Now a delete is blocked when its target is
-only known when it runs (`$(...)`, backticks, a variable the terminal
-never set), and when it would delete a folder that holds more than the
-project: the project root or a folder above it, the home folder, a system
-or tool folder itself, or the system's temporary folder. Deleting inside
-them stays allowed, and so do a variable set to a written-out path and a
-`mktemp` folder. Replayed over 7,541 terminal commands from earlier
-benchmarks, it blocks 3: this one, an `rm -rf "$d"` where `$d` was never
-set, and `rm -rf "$(cat file)"`.
-See [Safety](../concepts/safety.md).
 
 ## Also
 
@@ -692,6 +705,9 @@ See [Safety](../concepts/safety.md).
 - **`certo skills list --task` reads a task file**, as `certo check
   --task` does. Before, a file's path was matched as if it were the
   task's text, so it said no skill goes in.
+- **Dependencies:** soupsieve 4.1.1, dnspython 2.9.2 and OpenTelemetry
+  1.45.2, which fix the security advisories GitHub reported for the
+  earlier versions. Certo pulls them in through the OpenHands tools.
 - **Claude on Anthropic's newer API version:** version 2026-10-21
   refuses `temperature`, `top_p` and `top_k`. Certo sends none of them to
   Claude, at any reasoning effort, so runs keep working when the tools
