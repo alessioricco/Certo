@@ -35,11 +35,6 @@ first item is the suggested next one.
   check required, lint globals for a new file, an assertion following a
   deliberate UI text change). Show the changed lines, and don't flag an
   edit an acceptance check requires.
-- **Records don't explain model switches or root-guard blocks** (same
-  run). A switch to another model in a resumed run had no
-  MODEL_DECISIONS.md entry; "Blocked outside the project root: 1 action"
-  appears only in the end summary, with no path anywhere. Write both,
-  with reasons, into the report (and decisions file).
 - **A longer time budget from `certo init` for Ollama?** The mazeman
   sample took 41 minutes on `qwen3.8:27b` (2026-10-22), past the default
   30-minute `CERTO_MAX_TASK_SECONDS`; it ended `verified` only because the

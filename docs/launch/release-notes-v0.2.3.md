@@ -570,6 +570,11 @@ See [Safety](../concepts/safety.md).
 - **The report says when the agent ran out of steps**, whatever the
   verdict. Before, a milestone that used all its 50 steps, went on with
   fix attempts and then ran out of time read only `budget_exhausted`.
+- **The report says what the root guard blocked, and when a resume
+  changed model.** Each blocked action is in "Why the verdict" with its
+  path; before, only the end summary counted them. A `--resume` that
+  starts on another model than the session it continues says so, and
+  why (`--auto-model` chose again, or the model set for the run).
 - **Acceptance rows in the report show their text.** Every row on the
   same file read "CHANGELOG.md contains the expected text"; now each says
   which: `CHANGELOG.md contains "## Milestone 3: An alien sky"`.

@@ -377,18 +377,19 @@ def _trusted_skills(cfg: Config, task: str, emit: Callable[[Message], None]) -> 
 
 
 def _root_guard(
-    cfg: Config, emit: Callable[[Message], None], blocked: list[int] | None = None
+    cfg: Config, emit: Callable[[Message], None], blocked: list[str] | None = None
 ) -> RootGuard | None:
     """The guard that keeps the agent in its project root (root_guard.py);
     None in Docker, where the container only has the project. A blocked
     action is said as a Certo notice (the SDK's own panel calls it a "User
-    Rejected Action") and counted in `blocked[0]` for the run summary."""
+    Rejected Action") and kept in `blocked` for the run summary and the
+    report."""
     if cfg.execution != "local":
         return None
 
     def said(text: str) -> None:
         if blocked is not None:
-            blocked[0] += 1
+            blocked.append(text)
         _emit_notice(emit, text)
 
     return RootGuard(project_root(cfg), emit=said)
@@ -1491,6 +1492,45 @@ def _note_step_limit(conversation: Any, cfg: Config, outcome: TaskOutcome) -> Ta
     return replace(outcome, completion_contract=contract)
 
 
+def _resume_switch_note(
+    resume_from: RunRecord | None, model: str, model_selection: str
+) -> str | None:
+    """What a resume that starts on another model than the session it
+    continues says, in the terminal and the report: a user's resumed
+    milestone (2026-11-14) went on with another model and no record said
+    why. None when it is the same model, or not a resume."""
+    if resume_from is None or not resume_from.model or resume_from.model == model:
+        return None
+    why = (
+        "--auto-model chose it again for this task (MODEL_DECISIONS.md says why)"
+        if model_selection == "auto"
+        else "the model set for this run (--model or CERTO_LLM_MODEL)"
+    )
+    return f"this resume runs on {model}, not {resume_from.model} as before: {why}."
+
+
+def _note_blocked(outcome: TaskOutcome, blocked: Sequence[str]) -> TaskOutcome:
+    """The report names each action the root guard blocked, with its
+    reason and path: before, a user's run said only "Blocked outside the
+    project root: 1 action" in the end summary (2026-11-15)."""
+    if not blocked:
+        return outcome
+    # "Certo blocked an action outside the project root: /x is outside the
+    # project root /p. Work only inside ..." -> its first sentence, without
+    # the words meant for the agent.
+    shown = list(
+        dict.fromkeys(text.removeprefix("Certo blocked ").split(". ")[0] for text in blocked)
+    )
+    note = "Certo blocked {} action{} the agent tried (it was told and went on): {}".format(
+        len(blocked), "s" if len(blocked) != 1 else "", " | ".join(shown[:5])
+    ) + (f" | and {len(shown) - 5} more" if len(shown) > 5 else "")
+    contract = outcome.completion_contract
+    return replace(
+        outcome,
+        completion_contract=replace(contract, limitations=[*contract.limitations, note]),
+    )
+
+
 def _note_open_items(conversation: Any, outcome: TaskOutcome) -> TaskOutcome:
     """A `verified` run whose agent left task_tracker items open says so,
     and counts as maybe unfinished (a bare --resume continues it)."""
@@ -1954,7 +1994,7 @@ def _stream_task(
         cfg = replace(cfg, checkpoints=False)
 
     condensed = [0]
-    blocked = [0]  # actions the root guard blocked (root_guard.py)
+    blocked: list[str] = []  # the root guard's notices (root_guard.py)
 
     def on_event(event: Event) -> None:
         if isinstance(event, LLMConvertibleEvent):
@@ -2064,6 +2104,10 @@ def _stream_task(
         entry = model_chain.current
         agent_cfg = config_for_entry(cfg, entry)
         agent_usage_id = f"certo:{entry.name}"
+
+    switch_note = _resume_switch_note(resume_from, agent_cfg.model, cfg.model_selection)
+    if switch_note:
+        _emit_notice(emit, f"Certo: {switch_note}")
 
     # Before the build: the writer sees the project as it is now.
     written = _write_independent_tests(task, agent_cfg, cfg, emit, resuming=resume_from is not None)
@@ -2208,7 +2252,7 @@ def _stream_task(
                 per_model_metrics,
                 efforts,
                 condensed[0],
-                blocked[0],
+                len(blocked),
             )
             if captured_error is not None:
                 # The exception is the only value that leaves this function
@@ -2254,6 +2298,13 @@ def _stream_task(
         if state_writer is not None:
             state_writer.finish(outcome)
         _checkpoint(cfg, f"finished: {outcome.verification_state}")
+        outcome = _note_blocked(outcome, blocked)
+        if switch_note:
+            contract = outcome.completion_contract
+            limitations = [*contract.limitations, switch_note]
+            outcome = replace(
+                outcome, completion_contract=replace(contract, limitations=limitations)
+            )
         return replace(outcome, run_summary=run_summary)
 
 
@@ -2757,7 +2808,7 @@ class _EscalationIO:
     run_progress: RunProgress | None = None
     # How many times the condenser summarized older steps, over every rung.
     condensed: list[int] = field(default_factory=lambda: [0])
-    blocked: list[int] = field(default_factory=lambda: [0])
+    blocked: list[str] = field(default_factory=list)
 
     def notify(self, text: str) -> None:
         """An escalation line: a notice in the transcript, and printed."""
@@ -3224,7 +3275,7 @@ def _stream_escalation(
             per_model_metrics,
             efforts,
             io.condensed[0],
-            io.blocked[0],
+            len(io.blocked),
         )
         if captured_error is not None:
             # The exception is the only value that leaves this function on a
@@ -3268,12 +3319,12 @@ def _stream_escalation(
                     per_model_metrics,
                     efforts,
                     io.condensed[0],
-                    io.blocked[0],
+                    len(io.blocked),
                 ),
             )
         raise last_error  # type: ignore[misc]
     return replace(
-        final_outcome,
+        _note_blocked(final_outcome, io.blocked),
         rungs=tuple(rungs),
         final_rung=final_rung,
         model_decisions=tuple(decisions),
@@ -3284,7 +3335,7 @@ def _stream_escalation(
             per_model_metrics,
             efforts,
             io.condensed[0],
-            io.blocked[0],
+            len(io.blocked),
         ),
     )
 

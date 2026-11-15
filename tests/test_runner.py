@@ -4133,14 +4133,14 @@ def test_a_broken_trusted_index_never_stops_a_run(monkeypatch, tmp_path):
     assert notices == ["Certo: trusted skills skipped: index.json: bad"]
 
 
-def test_blocked_actions_are_counted(tmp_path):
-    counter = [0]
-    guard = runner._root_guard(_cfg(workspace=str(tmp_path)), lambda _m: None, counter)
+def test_blocked_actions_are_kept(tmp_path):
+    kept: list[str] = []
+    guard = runner._root_guard(_cfg(workspace=str(tmp_path)), lambda _m: None, kept)
 
     guard.emit("x is outside the project root")
     guard.emit("y is outside the project root")
 
-    assert counter == [2]
+    assert kept == ["x is outside the project root", "y is outside the project root"]
 
 
 def test_the_run_summary_reports_blocked_actions():
@@ -4237,3 +4237,41 @@ def test_a_step_limit_note_is_not_doubled_or_invented():
     assert runner._note_step_limit(conversation, _cfg(), already) == already
     clean = _limited_outcome("verified")
     assert runner._note_step_limit(_FakeConversation(), _cfg(), clean) == clean
+
+
+def test_the_report_names_each_blocked_action_and_its_path():
+    blocked = [
+        "Certo blocked an action outside the project root: /etc/hosts is outside the "
+        "project root /p. Work only inside the project root: nothing outside it is part "
+        "of the task.",
+    ] * 2
+    noted = runner._note_blocked(_limited_outcome("verified"), blocked)
+    (note,) = noted.completion_contract.limitations
+    assert note == (
+        "Certo blocked 2 actions the agent tried (it was told and went on): an action "
+        "outside the project root: /etc/hosts is outside the project root /p"
+    )
+    assert (
+        runner._note_blocked(_limited_outcome("verified"), []).completion_contract.limitations == []
+    )
+
+
+def test_a_resume_on_another_model_says_so():
+    from certo.project_state import RunRecord
+
+    record = RunRecord(
+        task="t",
+        conversation_id="c",
+        model="openai/a",
+        execution="local",
+        started_at="s",
+        updated_at="u",
+    )
+    note = runner._resume_switch_note(record, "openai/b", "manual")
+    assert note == (
+        "this resume runs on openai/b, not openai/a as before: the model set for "
+        "this run (--model or CERTO_LLM_MODEL)."
+    )
+    assert "MODEL_DECISIONS.md" in runner._resume_switch_note(record, "openai/b", "auto")
+    assert runner._resume_switch_note(record, "openai/a", "manual") is None
+    assert runner._resume_switch_note(None, "openai/b", "manual") is None

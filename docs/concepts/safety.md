@@ -42,7 +42,10 @@ the whole workspace. A project that is a repository works as one.
 
 The run summary counts the blocked actions
 (`Blocked outside the project root: 2 actions`), and so does the JSON
-result (`blocked_outside_root`).
+result (`blocked_outside_root`). The report's "Why the verdict" names
+each one, with its path: `Certo blocked 1 action the agent tried (it was
+told and went on): an action outside the project root: /home/me/other is
+outside the project root /home/me/app`.
 
 This is a guard rail, not a sandbox: a command can still reach other
 files in ways its words don't show, such as a script, or paths piped to
