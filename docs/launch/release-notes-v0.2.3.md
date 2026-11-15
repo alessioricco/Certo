@@ -480,6 +480,8 @@ Now the follow-up stays on the same model, and the checks decide. A
 `verified` run with items still open says they are open and that the
 task may be unfinished, and `certo --resume` continues it. `incomplete`
 is no longer given. See [Verdicts](../reference/verdicts.md).
+[Replayed](../benchmark/open-items-replay-0.2.3.md) on every recorded
+run that ended `incomplete`: none would now be `verified`.
 
 ## Fixed: `--resume` keeps `--auto-model` and `--escalate`
 

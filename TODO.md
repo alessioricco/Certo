@@ -14,12 +14,10 @@ first item is the suggested next one.
 
 ## Before the next release
 
-- **Replay or bench the open-item change** (0.2.3, 2026-11-15): an open
-  task_tracker item no longer escalates or ends `incomplete`; the checks
-  decide and a pass is noted as maybe unfinished. It changes a Certo
-  decision: check it on an `--auto-model` and an `--escalate` milestone
-  run (local + cloud) before release. Done when no run is `verified`
-  that was `incomplete` for a real reason the checks miss, in the bench.
+- **A live run where an open to-do item stays open** (after 0.2.3's
+  replay, docs/benchmark/open-items-replay-0.2.3.md, which found no run
+  turned `verified`). Seen next on an `--escalate` milestone run: record
+  it there. Not blocking the release.
 - **Tell the agent which failing files it created in this run**
   (same run). A model that took over wrote a scratch script
   (`.milestone6-smoke.mjs`) in the project root; the project's lint
