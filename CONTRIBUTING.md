@@ -172,6 +172,37 @@ release. The last full check was 2026-11-07.
 Leaderboard pages sometimes load with no rows and some vendor sites
 refuse scripts; say so in the change rather than guessing a number.
 
+## Refresh the model data
+
+`src/certo/data/model_data.json` holds third-party scores and prices for
+every model LMArena or Epoch AI rates (about 475 on 2026-11-16), not only
+the models in Certo's list. Ratings will be computed from it
+(`ratings.py`, TODO.md item C); until `certo models refresh` uses it, runs
+still read the hand ratings above. Rebuild it before a release:
+
+```bash
+uv run --with pyarrow python scripts/build_model_data.py
+```
+
+It downloads LMArena's leaderboard dataset (parquet: `pyarrow` is needed
+only here), Epoch AI's benchmark ZIP and LiteLLM's price list.
+`--keep DIR` saves the downloads and `--from DIR` builds from them again
+without the network. Then review:
+
+1. **The report.** It lists Certo's models no source rates (they keep
+   their hand ratings, marked "no data") and every rating that would move
+   by a point or more. A move nobody can explain is a matching mistake
+   until shown otherwise.
+2. **Names.** Models are matched by `model_key()` (no case, provider,
+   variant or separators). When a source spells a model differently from
+   the id people use (an Ollama tag with no size, a vendor prefix), add a
+   line to `scripts/model_data_aliases.yaml`, only for the very same
+   model.
+3. **The diff** of the JSON file: new models, removed ones, prices.
+4. **Credit.** The file names its sources and their licenses (LMArena
+   and Epoch AI: CC-BY-4.0; LiteLLM: MIT). Keep them when the format
+   changes; CC-BY requires the credit wherever the data is shipped.
+
 ## Versioning
 
 Each change that adds a feature bumps the third digit of the version

@@ -116,6 +116,7 @@ exclude = [
 [tool.hatch.build.targets.wheel.force-include]
 "src/certo/data/models_list.yaml" = "certo/data/models_list.yaml"
 "src/certo/data/task_profiles.yaml" = "certo/data/task_profiles.yaml"
+"src/certo/data/model_data.json" = "certo/data/model_data.json"
 
 [tool.hatch.build.targets.sdist]
 include = [
@@ -149,6 +150,7 @@ exclude = [
 [tool.hatch.build.targets.sdist.force-include]
 "src/certo/data/models_list.yaml" = "src/certo/data/models_list.yaml"
 "src/certo/data/task_profiles.yaml" = "src/certo/data/task_profiles.yaml"
+"src/certo/data/model_data.json" = "src/certo/data/model_data.json"
 
 [tool.ruff]
 line-length = 100

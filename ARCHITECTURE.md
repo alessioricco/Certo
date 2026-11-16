@@ -530,6 +530,18 @@ given design was chosen.
   `CERTO_CONFIRM_MODE` in the session's own environment. Limitation:
   `cli._asker` and that variable are process-wide, which is fine for
   one run at a time.
+- **`model_data.py`** — the model data file (TODO C).
+  `scripts/build_model_data.py` (maintainer, `uv run --with pyarrow`)
+  fetches LMArena's parquet tables, Epoch's ZIP (`eci_scores.csv`) and
+  LiteLLM's prices and calls `build()`; `parse()` reads it back and
+  `ModelDataFile.lookup(model_id)` gives `ratings.ModelData`. Keys are
+  `model_key()`: lower case, last `/` segment, no `(variant)`, no date /
+  `preview` / `it-qat` suffix, no separators; `aliases` (from
+  `scripts/model_data_aliases.yaml`) join the rest. Scores: best
+  variant; cost per task: most used variant; price: the LiteLLM id with
+  the fewest `/`, then shortest (the provider's own, not a reseller's).
+  HF's datasets-server `filter` API was unreliable on 2026-11-16, hence
+  parquet.
 - **`ratings.py`** — computed ratings (TODO C). `rate(ModelData,
   anchors, own)` is pure: one source per axis through an `Anchor`
   (straight line, capped 1-5), local −1 on capability axes, cost from

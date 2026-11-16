@@ -1,0 +1,17 @@
+# Names the sources spell differently from the ids people use, for
+# scripts/build_model_data.py. Each line: the model_key() of a name people
+# use (an Ollama tag, a provider id) -> the model_key() of the model the
+# sources rate. Reviewed by a person: add a line only when both are the
+# same model (same size, same weights).
+#
+# model_key() drops case, the provider prefix, "(Max)"-style variants,
+# date and preview suffixes and every separator: `ollama/qwen3.8:27b` and
+# "Qwen3.8-27B" are already the same key, `qwen3827b`.
+
+# Ollama's default tags name no size.
+llama3: llama38binstruct          # ollama llama3 = Llama 3 8B Instruct
+qwen3: qwen38b                    # ollama qwen3 = Qwen3-8B
+# NVIDIA names its models with the vendor first.
+nemotron35lightning30b: nvidianemotron35lightning30ba3b
+# DeepSeek's moving alias, served by V4.1 Flash since 2026-10-17.
+deepseekflash: deepseekv41flash

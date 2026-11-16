@@ -138,10 +138,15 @@ def test_wheel_ships_certos_model_list_and_the_examples(built):
     names = set(_wheel_names(built["wheel"]))
     assert "certo/data/models_list.yaml" in names
     assert "certo/data/task_profiles.yaml" in names
+    assert "certo/data/model_data.json" in names  # the third-party scores (model_data.py)
     # Put back by their exact paths: the excludes and .gitignore keep out
     # every other copy (a user's).
     sdist = set(_sdist_names(built["sdist"]))
-    assert {"src/certo/data/models_list.yaml", "src/certo/data/task_profiles.yaml"} <= sdist
+    assert {
+        "src/certo/data/models_list.yaml",
+        "src/certo/data/task_profiles.yaml",
+        "src/certo/data/model_data.json",
+    } <= sdist
     for name in ("models_list.yaml", "task_profiles.yaml"):
         assert [n for n in names if n.endswith(name)] == [f"certo/data/{name}"]
     assert "certo/examples/models.yaml.example" in names

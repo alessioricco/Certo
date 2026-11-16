@@ -274,7 +274,11 @@ file), B, C, then 5a and 5b. Steps 2 (`certo models choose`) and A
      `DEFAULT_ANCHORS`). Left for refresh: turning own results into
      the observed rating per axis (verified rate → code, fooled rate →
      precision, cost per verified task → cost).
-  3. **Maintainer script** (reviewed by a person): fetches LMArena's
+  3. ~~Maintainer script~~: done (`scripts/build_model_data.py`,
+     `model_data.py`, `src/certo/data/model_data.json` shipped in the
+     package; CONTRIBUTING.md "Refresh the model data"). Left: attach
+     the file to each GitHub Release (release.yml), for refresh to fetch
+     the latest. Was: fetches LMArena's
      dataset, Epoch's ZIP and LiteLLM's prices, maps names through a
      reviewed name→id table (flags every name it can't match), writes
      the data file attached to each release with the attribution lines.

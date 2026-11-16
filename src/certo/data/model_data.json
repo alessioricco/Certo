@@ -1,0 +1,6389 @@
+{
+ "format": 1,
+ "scale": "2026-11-16",
+ "generated": "2026-11-16",
+ "lmarena_published": "2026-11-15",
+ "sources": [
+  {
+   "id": "lmarena",
+   "name": "LMArena leaderboard dataset",
+   "url": "https://huggingface.co/datasets/lmarena-ai/leaderboard-dataset",
+   "license": "CC-BY-4.0"
+  },
+  {
+   "id": "epoch",
+   "name": "Epoch AI Benchmarking Hub (Epoch Capabilities Index)",
+   "url": "https://epoch.ai/data/benchmark_data.zip",
+   "license": "CC-BY-4.0"
+  },
+  {
+   "id": "litellm",
+   "name": "LiteLLM model prices",
+   "url": "https://github.com/BerriAI/litellm",
+   "license": "MIT"
+  }
+ ],
+ "changes": "Selected and reshaped by Certo: per model, the best score of its variants on four of the sources' measures, the median cost per agent task of its most used variant, and its list price in $ per 1M tokens; names joined by a normalized key.",
+ "anchors": {
+  "code": {
+   "source": "lmarena_webdev",
+   "points": [
+    1350,
+    1450,
+    1550,
+    1650,
+    1750
+   ]
+  },
+  "reasoning": {
+   "source": "epoch_eci",
+   "points": [
+    135,
+    145,
+    155,
+    162,
+    168
+   ]
+  },
+  "precision": {
+   "source": "lmarena_text_factuality",
+   "points": [
+    1350,
+    1400,
+    1450,
+    1480,
+    1510
+   ]
+  },
+  "writing": {
+   "source": "lmarena_creative_writing",
+   "points": [
+    1350,
+    1400,
+    1450,
+    1500,
+    1550
+   ]
+  }
+ },
+ "aliases": {
+  "deepseekflash": "deepseekv41flash",
+  "llama3": "llama38binstruct",
+  "nemotron35lightning30b": "nvidianemotron35lightning30ba3b",
+  "qwen3": "qwen38b"
+ },
+ "models": {
+  "alpaca13b": {
+   "names": [
+    "Alpaca 13B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 967.44
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "amazonnova2lite": {
+   "names": [
+    "Amazon Nova 2 Lite"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1291.45,
+    "lmarena_text_factuality": 1379.43
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "amazonnovaexperimentalchat": {
+   "names": [
+    "amazon-nova-experimental-chat (10-09)",
+    "amazon-nova-experimental-chat (10-20)",
+    "amazon-nova-experimental-chat (11-10)",
+    "amazon-nova-experimental-chat (12-10)",
+    "amazon-nova-experimental-chat (26-01-10)",
+    "amazon-nova-experimental-chat (26-02-10)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1367.15,
+    "lmarena_text_factuality": 1451.6
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "amazonnovalite10": {
+   "names": [
+    "Amazon Nova Lite 1.0"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1196.72
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "amazonnovamicro10": {
+   "names": [
+    "Amazon Nova Micro 1.0"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1171.6
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "amazonnovapro10": {
+   "names": [
+    "Amazon Nova Pro 1.0"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1212.17
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "athene70b": {
+   "names": [
+    "Athene 70B (0725)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1238.16
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "athenev2chat": {
+   "names": [
+    "Athene V2 Chat"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1234.19
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "ayaexpanse32b": {
+   "names": [
+    "Aya Expanse 32B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1199.63
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "ayaexpanse8b": {
+   "names": [
+    "Aya Expanse 8B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1167.91
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "baichuan213b": {
+   "names": [
+    "Baichuan2-13B"
+   ],
+   "scores": {
+    "epoch_eci": 91.97
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "baichuan27b": {
+   "names": [
+    "Baichuan 2-7B"
+   ],
+   "scores": {
+    "epoch_eci": 83.75
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "beam10": {
+   "names": [
+    "Beam 1.0"
+   ],
+   "scores": {
+    "epoch_eci": 150.91
+   },
+   "cost_per_task": null,
+   "litellm": "baseten/reflection/Beam-1.0",
+   "price_in": 0.4,
+   "price_out": 1.2
+  },
+  "beam10501ba23b": {
+   "names": [
+    "Beam 1.0 501B A23B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1388.13,
+    "lmarena_text_factuality": 1440.6,
+    "lmarena_webdev": 1436.26
+   },
+   "cost_per_task": null,
+   "litellm": "wandb/reflection/Beam-1.0-501B-A23B",
+   "price_in": 0.3,
+   "price_out": 1.0
+  },
+  "cerebrasgpt13b": {
+   "names": [
+    "Cerebras-GPT-13B"
+   ],
+   "scores": {
+    "epoch_eci": 49.33
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "chatglm26b": {
+   "names": [
+    "ChatGLM2 6B",
+    "chatglm2-6b"
+   ],
+   "scores": {
+    "epoch_eci": 73.99,
+    "lmarena_creative_writing": 940.98
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "chatglm36b": {
+   "names": [
+    "ChatGLM3 6B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 969.88
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "chatglm6b": {
+   "names": [
+    "ChatGLM 6B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 899.91
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "chatgpt4o": {
+   "names": [
+    "ChatGPT-4o Latest (20250326)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1405.12,
+    "lmarena_text_factuality": 1443.77
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "claude2": {
+   "names": [
+    "Claude 2"
+   ],
+   "scores": {
+    "epoch_eci": 117.06
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "claude35haiku": {
+   "names": [
+    "Claude 3.5 Haiku",
+    "Claude 3.5 Haiku (20241022)"
+   ],
+   "scores": {
+    "epoch_eci": 124.93,
+    "lmarena_creative_writing": 1232.37
+   },
+   "cost_per_task": null,
+   "litellm": "vertex_ai/claude-3-5-haiku",
+   "price_in": 1.0,
+   "price_out": 5.0
+  },
+  "claude35sonnet": {
+   "names": [
+    "Claude 3.5 Sonnet",
+    "Claude 3.5 Sonnet (20240620)",
+    "Claude 3.5 Sonnet (20241022)",
+    "Claude 3.5 Sonnet (October 2024)"
+   ],
+   "scores": {
+    "epoch_eci": 133.43,
+    "lmarena_creative_writing": 1291.9
+   },
+   "cost_per_task": null,
+   "litellm": "snowflake/claude-3-5-sonnet",
+   "price_in": 3.0,
+   "price_out": 15.0
+  },
+  "claude37sonnet": {
+   "names": [
+    "Claude 3.7 Sonnet",
+    "Claude 3.7 Sonnet (20250219)",
+    "Claude 3.7 Sonnet (Thinking 32K, 20250219)"
+   ],
+   "scores": {
+    "epoch_eci": 141.0,
+    "lmarena_creative_writing": 1331.82
+   },
+   "cost_per_task": null,
+   "litellm": "snowflake/claude-3-7-sonnet",
+   "price_in": 3.0,
+   "price_out": 15.0
+  },
+  "claude3haiku": {
+   "names": [
+    "Claude 3 Haiku",
+    "Claude 3 Haiku (20240307)"
+   ],
+   "scores": {
+    "epoch_eci": 117.7,
+    "lmarena_creative_writing": 1157.18
+   },
+   "cost_per_task": null,
+   "litellm": "vertex_ai/claude-3-haiku",
+   "price_in": 0.25,
+   "price_out": 1.25
+  },
+  "claude3opus": {
+   "names": [
+    "Claude 3 Opus",
+    "Claude 3 Opus (20240229)"
+   ],
+   "scores": {
+    "epoch_eci": 125.52,
+    "lmarena_creative_writing": 1234.66
+   },
+   "cost_per_task": null,
+   "litellm": "vercel_ai_gateway/anthropic/claude-3-opus",
+   "price_in": 15.0,
+   "price_out": 75.0
+  },
+  "claude3sonnet": {
+   "names": [
+    "Claude 3 Sonnet",
+    "Claude 3 Sonnet (20240229)"
+   ],
+   "scores": {
+    "epoch_eci": 119.45,
+    "lmarena_creative_writing": 1186.03
+   },
+   "cost_per_task": null,
+   "litellm": "vertex_ai/claude-3-sonnet",
+   "price_in": 3.0,
+   "price_out": 15.0
+  },
+  "claudefable5": {
+   "names": [
+    "Claude Fable 5",
+    "Claude Fable 5 (High)"
+   ],
+   "scores": {
+    "epoch_eci": 164.13,
+    "lmarena_creative_writing": 1494.19,
+    "lmarena_text_factuality": 1483.04,
+    "lmarena_webdev": 1625.65
+   },
+   "cost_per_task": 3.3330234999999995,
+   "litellm": "claude-fable-5",
+   "price_in": 10.0,
+   "price_out": 50.0
+  },
+  "claudefable51": {
+   "names": [
+    "Claude Fable 5.1",
+    "Claude Fable 5.1 (Max)"
+   ],
+   "scores": {
+    "epoch_eci": 166.99,
+    "lmarena_creative_writing": 1514.12,
+    "lmarena_text_factuality": 1498.75,
+    "lmarena_webdev": 1742.93
+   },
+   "cost_per_task": 7.832357,
+   "litellm": "claude-fable-5-1",
+   "price_in": 10.0,
+   "price_out": 50.0
+  },
+  "claudefable52": {
+   "names": [
+    "Claude Fable 5.2",
+    "Claude Fable 5.2 (Max)",
+    "Claude Fable 5.2 (xHigh)"
+   ],
+   "scores": {
+    "epoch_eci": 173.44,
+    "lmarena_webdev": 1825.96
+   },
+   "cost_per_task": 9.019102999999998,
+   "litellm": "claude-fable-5-2",
+   "price_in": 8.0,
+   "price_out": 40.0
+  },
+  "claudehaiku45": {
+   "names": [
+    "Claude Haiku 4.5",
+    "Claude Haiku 4.5 (20251001)"
+   ],
+   "scores": {
+    "epoch_eci": 142.83,
+    "lmarena_creative_writing": 1370.52,
+    "lmarena_text_factuality": 1418.33,
+    "lmarena_webdev": 1330.14
+   },
+   "cost_per_task": null,
+   "litellm": "claude-haiku-4-5",
+   "price_in": 1.0,
+   "price_out": 5.0
+  },
+  "claudehaiku55": {
+   "names": [
+    "Claude Haiku 5.5",
+    "Claude Haiku 5.5 (High)"
+   ],
+   "scores": {
+    "epoch_eci": 160.43,
+    "lmarena_creative_writing": 1336.52,
+    "lmarena_text_factuality": 1421.79,
+    "lmarena_webdev": 1593.22
+   },
+   "cost_per_task": 0.08497953750000001,
+   "litellm": "claude-haiku-5-5",
+   "price_in": 0.1,
+   "price_out": 0.5
+  },
+  "claudeinstant": {
+   "names": [
+    "Claude Instant"
+   ],
+   "scores": {
+    "epoch_eci": 114.16
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "claudeopus4": {
+   "names": [
+    "Claude Opus 4",
+    "Claude Opus 4 (20250514)",
+    "Claude Opus 4 (Thinking 16K, 20250514)"
+   ],
+   "scores": {
+    "epoch_eci": 142.9,
+    "lmarena_creative_writing": 1386.5
+   },
+   "cost_per_task": null,
+   "litellm": "gmi/anthropic/claude-opus-4",
+   "price_in": 15.0,
+   "price_out": 75.0
+  },
+  "claudeopus41": {
+   "names": [
+    "Claude Opus 4.1",
+    "Claude Opus 4.1 (20250805)",
+    "Claude Opus 4.1 (Thinking 16K, 20250805)"
+   ],
+   "scores": {
+    "epoch_eci": 144.84,
+    "lmarena_creative_writing": 1411.84,
+    "lmarena_text_factuality": 1435.03,
+    "lmarena_webdev": 1390.11
+   },
+   "cost_per_task": null,
+   "litellm": "vercel_ai_gateway/anthropic/claude-opus-4.1",
+   "price_in": 15.0,
+   "price_out": 75.0
+  },
+  "claudeopus45": {
+   "names": [
+    "Claude Opus 4.5",
+    "Claude Opus 4.5 (20251101)",
+    "Claude Opus 4.5 (High, 32K, 20251101)"
+   ],
+   "scores": {
+    "epoch_eci": 151.92,
+    "lmarena_creative_writing": 1444.45,
+    "lmarena_text_factuality": 1459.25,
+    "lmarena_webdev": 1493.45
+   },
+   "cost_per_task": null,
+   "litellm": "claude-opus-4-5",
+   "price_in": 5.0,
+   "price_out": 25.0
+  },
+  "claudeopus46": {
+   "names": [
+    "Claude Opus 4.6",
+    "Claude Opus 4.6 (High)"
+   ],
+   "scores": {
+    "epoch_eci": 156.34,
+    "lmarena_creative_writing": 1504.03,
+    "lmarena_text_factuality": 1492.44,
+    "lmarena_webdev": 1546.83
+   },
+   "cost_per_task": null,
+   "litellm": "claude-opus-4-6",
+   "price_in": 5.0,
+   "price_out": 25.0
+  },
+  "claudeopus47": {
+   "names": [
+    "Claude Opus 4.7",
+    "Claude Opus 4.7 (High)"
+   ],
+   "scores": {
+    "epoch_eci": 157.44,
+    "lmarena_creative_writing": 1486.46,
+    "lmarena_text_factuality": 1477.82,
+    "lmarena_webdev": 1557.04
+   },
+   "cost_per_task": null,
+   "litellm": "claude-opus-4-7",
+   "price_in": 5.0,
+   "price_out": 25.0
+  },
+  "claudeopus48": {
+   "names": [
+    "Claude Opus 4.8",
+    "Claude Opus 4.8 (High)"
+   ],
+   "scores": {
+    "epoch_eci": 159.94,
+    "lmarena_creative_writing": 1455.11,
+    "lmarena_text_factuality": 1470.33,
+    "lmarena_webdev": 1555.33
+   },
+   "cost_per_task": null,
+   "litellm": "claude-opus-4-8",
+   "price_in": 5.0,
+   "price_out": 25.0
+  },
+  "claudeopus5": {
+   "names": [
+    "Claude Opus 5",
+    "Claude Opus 5 (High)",
+    "Claude Opus 5 (Max)"
+   ],
+   "scores": {
+    "epoch_eci": 164.68,
+    "lmarena_creative_writing": 1494.03,
+    "lmarena_text_factuality": 1487.73,
+    "lmarena_webdev": 1691.08
+   },
+   "cost_per_task": 4.5025445,
+   "litellm": "claude-opus-5",
+   "price_in": 5.0,
+   "price_out": 25.0
+  },
+  "claudeopus55": {
+   "names": [
+    "Claude Opus 5.5",
+    "Claude Opus 5.5 (High)",
+    "Claude Opus 5.5 (Max)"
+   ],
+   "scores": {
+    "epoch_eci": 168.54,
+    "lmarena_creative_writing": 1531.55,
+    "lmarena_text_factuality": 1505.02,
+    "lmarena_webdev": 1815.57
+   },
+   "cost_per_task": 2.121694,
+   "litellm": "claude-opus-5-5",
+   "price_in": 4.0,
+   "price_out": 20.0
+  },
+  "claudesonnet4": {
+   "names": [
+    "Claude Sonnet 4",
+    "Claude Sonnet 4 (20250514)",
+    "Claude Sonnet 4 (Thinking 32K, 20250514)"
+   ],
+   "scores": {
+    "epoch_eci": 141.86,
+    "lmarena_creative_writing": 1345.14
+   },
+   "cost_per_task": null,
+   "litellm": "gmi/anthropic/claude-sonnet-4",
+   "price_in": 3.0,
+   "price_out": 15.0
+  },
+  "claudesonnet45": {
+   "names": [
+    "Claude Sonnet 4.5",
+    "Claude Sonnet 4.5 (20250929)",
+    "Claude Sonnet 4.5 (High, 32K, 20250929)"
+   ],
+   "scores": {
+    "epoch_eci": 147.63,
+    "lmarena_creative_writing": 1442.26,
+    "lmarena_text_factuality": 1448.71,
+    "lmarena_webdev": 1393.91
+   },
+   "cost_per_task": null,
+   "litellm": "claude-sonnet-4-5",
+   "price_in": 3.0,
+   "price_out": 15.0
+  },
+  "claudesonnet46": {
+   "names": [
+    "Claude Sonnet 4.6"
+   ],
+   "scores": {
+    "epoch_eci": 152.86,
+    "lmarena_creative_writing": 1434.85,
+    "lmarena_text_factuality": 1460.86,
+    "lmarena_webdev": 1522.27
+   },
+   "cost_per_task": null,
+   "litellm": "claude-sonnet-4-6",
+   "price_in": 3.0,
+   "price_out": 15.0
+  },
+  "claudesonnet5": {
+   "names": [
+    "Claude Sonnet 5",
+    "Claude Sonnet 5 (High)"
+   ],
+   "scores": {
+    "epoch_eci": 156.94,
+    "lmarena_creative_writing": 1414.47,
+    "lmarena_text_factuality": 1451.61,
+    "lmarena_webdev": 1539.09
+   },
+   "cost_per_task": 0.86988025,
+   "litellm": "claude-sonnet-5",
+   "price_in": 2.0,
+   "price_out": 10.0
+  },
+  "claudesonnet55": {
+   "names": [
+    "Claude Sonnet 5.5",
+    "Claude Sonnet 5.5 (High)",
+    "Claude Sonnet 5.5 (Max)",
+    "Claude Sonnet 5.5 (xHigh)"
+   ],
+   "scores": {
+    "epoch_eci": 166.56,
+    "lmarena_creative_writing": 1466.17,
+    "lmarena_text_factuality": 1472.32,
+    "lmarena_webdev": 1772.23
+   },
+   "cost_per_task": 0.8770370000000001,
+   "litellm": "claude-sonnet-5-5",
+   "price_in": 2.0,
+   "price_out": 10.0
+  },
+  "codellama34binstruct": {
+   "names": [
+    "Code Llama 34B Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1031.45
+   },
+   "cost_per_task": null,
+   "litellm": "perplexity/codellama-34b-instruct",
+   "price_in": 0.35,
+   "price_out": 1.4
+  },
+  "codeqwen157b": {
+   "names": [
+    "CodeQwen1.5-7B"
+   ],
+   "scores": {
+    "epoch_eci": 75.18
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "commanda": {
+   "names": [
+    "Command A (03-2025)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1318.97,
+    "lmarena_text_factuality": 1363.01
+   },
+   "cost_per_task": null,
+   "litellm": "vercel_ai_gateway/cohere/command-a",
+   "price_in": 2.5,
+   "price_out": 10.0
+  },
+  "commandr": {
+   "names": [
+    "Command R",
+    "Command R (08-2024)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1169.76
+   },
+   "cost_per_task": null,
+   "litellm": "vercel_ai_gateway/cohere/command-r",
+   "price_in": 0.15,
+   "price_out": 0.6
+  },
+  "commandr+": {
+   "names": [
+    "Command R+",
+    "Command R+ (08-2024)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1234.53
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "dbrxinstruct": {
+   "names": [
+    "DBRX Instruct Preview"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1104.09
+   },
+   "cost_per_task": null,
+   "litellm": "fireworks_ai/accounts/fireworks/models/dbrx-instruct",
+   "price_in": 1.2,
+   "price_out": 1.2
+  },
+  "deepseekcoder33b": {
+   "names": [
+    "DeepSeek Coder 33B"
+   ],
+   "scores": {
+    "epoch_eci": 76.59
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "deepseekcoder67b": {
+   "names": [
+    "DeepSeek Coder 6.7B"
+   ],
+   "scores": {
+    "epoch_eci": 67.77
+   },
+   "cost_per_task": null,
+   "litellm": "llamagate/deepseek-coder-6.7b",
+   "price_in": 0.06,
+   "price_out": 0.12
+  },
+  "deepseekcoderv2": {
+   "names": [
+    "DeepSeek-Coder-V2"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1120.11
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "deepseekcoderv2litebase": {
+   "names": [
+    "DeepSeek-Coder-V2-Lite-Base"
+   ],
+   "scores": {
+    "epoch_eci": 99.67
+   },
+   "cost_per_task": null,
+   "litellm": "fireworks_ai/accounts/fireworks/models/deepseek-coder-v2-lite-base",
+   "price_in": 0.5,
+   "price_out": 0.5
+  },
+  "deepseekllm67bchat": {
+   "names": [
+    "DeepSeek LLM 67B Chat"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1067.27
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "deepseekr1": {
+   "names": [
+    "DeepSeek-R1",
+    "DeepSeek-R1 (0528)",
+    "DeepSeek-R1 (May 2025)"
+   ],
+   "scores": {
+    "epoch_eci": 140.73,
+    "lmarena_creative_writing": 1405.28
+   },
+   "cost_per_task": null,
+   "litellm": "kyma/deepseek-r1",
+   "price_in": 0.7425,
+   "price_out": 2.957
+  },
+  "deepseekv2": {
+   "names": [
+    "DeepSeek-V2 (MoE-236B, May 2024)"
+   ],
+   "scores": {
+    "epoch_eci": 120.88
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "deepseekv25": {
+   "names": [
+    "DeepSeek-V2.5",
+    "DeepSeek-V2.5 (1210)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1284.95
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "deepseekv3": {
+   "names": [
+    "DeepSeek-V3",
+    "DeepSeek-V3 (0324)",
+    "DeepSeek-V3 (Mar 2025)"
+   ],
+   "scores": {
+    "epoch_eci": 135.18,
+    "lmarena_creative_writing": 1364.14
+   },
+   "cost_per_task": null,
+   "litellm": "kyma/deepseek-v3",
+   "price_in": 0.518,
+   "price_out": 0.7571
+  },
+  "deepseekv31": {
+   "names": [
+    "DeepSeek-V3.1",
+    "DeepSeek-V3.1 (Thinking)"
+   ],
+   "scores": {
+    "epoch_eci": 140.85,
+    "lmarena_creative_writing": 1401.03
+   },
+   "cost_per_task": null,
+   "litellm": "azure_ai/deepseek-v3.1",
+   "price_in": 1.23,
+   "price_out": 4.94
+  },
+  "deepseekv31terminus": {
+   "names": [
+    "DeepSeek-V3.1-Terminus",
+    "DeepSeek-V3.1-Terminus (Thinking)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1403.5
+   },
+   "cost_per_task": null,
+   "litellm": "gmi/deepseek-ai/DeepSeek-V3.1-Terminus",
+   "price_in": 0.27,
+   "price_out": 1.0
+  },
+  "deepseekv32": {
+   "names": [
+    "DeepSeek-V3.2",
+    "DeepSeek-V3.2 (Thinking)"
+   ],
+   "scores": {
+    "epoch_eci": 146.25,
+    "lmarena_creative_writing": 1399.64,
+    "lmarena_text_factuality": 1436.77,
+    "lmarena_webdev": 1362.48
+   },
+   "cost_per_task": null,
+   "litellm": "deepseek.v3.2",
+   "price_in": 0.62,
+   "price_out": 1.85
+  },
+  "deepseekv32exp": {
+   "names": [
+    "DeepSeek-V3.2-Exp",
+    "DeepSeek-V3.2-Exp (Thinking)"
+   ],
+   "scores": {
+    "epoch_eci": 144.38,
+    "lmarena_creative_writing": 1403.04,
+    "lmarena_text_factuality": 1446.33,
+    "lmarena_webdev": 1271.77
+   },
+   "cost_per_task": null,
+   "litellm": "gmi/deepseek-ai/DeepSeek-V3.2-Exp",
+   "price_in": 0.27,
+   "price_out": 0.41
+  },
+  "deepseekv41flash": {
+   "names": [
+    "DeepSeek V4.1 Flash",
+    "DeepSeek-V4.1-Flash-20260910 (Max)",
+    "DeepSeek-V4.1-Flash-20261017 (Max)"
+   ],
+   "scores": {
+    "epoch_eci": 156.7,
+    "lmarena_creative_writing": 1437.68,
+    "lmarena_text_factuality": 1468.12,
+    "lmarena_webdev": 1661.41
+   },
+   "cost_per_task": 0.14055099000000004,
+   "litellm": "deepseek-flash",
+   "price_in": 0.3,
+   "price_out": 1.2
+  },
+  "deepseekv41flash1017": {
+   "names": [
+    "DeepSeek V4.1 Flash 1017"
+   ],
+   "scores": {
+    "epoch_eci": 159.41
+   },
+   "cost_per_task": null,
+   "litellm": "wally/deepseek-v4.1-flash-1017",
+   "price_in": 0.375,
+   "price_out": 1.5
+  },
+  "deepseekv4flash": {
+   "names": [
+    "DeepSeek-V4-Flash",
+    "DeepSeek-V4-Flash (High)",
+    "DeepSeek-V4-Flash Preview (High)"
+   ],
+   "scores": {
+    "epoch_eci": 146.85,
+    "lmarena_creative_writing": 1402.82,
+    "lmarena_text_factuality": 1439.06,
+    "lmarena_webdev": 1581.61
+   },
+   "cost_per_task": null,
+   "litellm": "deepseek-v4-flash",
+   "price_in": 0.3,
+   "price_out": 1.2
+  },
+  "deepseekv4flash0731": {
+   "names": [
+    "DeepSeek V4 Flash 0731"
+   ],
+   "scores": {
+    "epoch_eci": 154.41
+   },
+   "cost_per_task": null,
+   "litellm": "wally/deepseek-v4-flash-0731",
+   "price_in": 0.44,
+   "price_out": 1.32
+  },
+  "deepseekv4pro": {
+   "names": [
+    "DeepSeek-V4-Pro",
+    "DeepSeek-V4-Pro (High, 20260813)",
+    "DeepSeek-V4-Pro Preview (High)"
+   ],
+   "scores": {
+    "epoch_eci": 150.17,
+    "lmarena_creative_writing": 1446.47,
+    "lmarena_text_factuality": 1454.93,
+    "lmarena_webdev": 1580.83
+   },
+   "cost_per_task": null,
+   "litellm": "deepseek-v4-pro",
+   "price_in": 1.32,
+   "price_out": 3.96
+  },
+  "deepseekv4pro0813": {
+   "names": [
+    "DeepSeek V4 Pro 0813"
+   ],
+   "scores": {
+    "epoch_eci": 155.94
+   },
+   "cost_per_task": null,
+   "litellm": "tencent/deepseek-v4-pro-0813",
+   "price_in": 1.32,
+   "price_out": 3.96
+  },
+  "devstral2": {
+   "names": [
+    "Devstral 2"
+   ],
+   "scores": {
+    "lmarena_webdev": 1195.48
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "devstralmedium": {
+   "names": [
+    "Devstral Medium (2507)"
+   ],
+   "scores": {
+    "lmarena_webdev": 1071.16
+   },
+   "cost_per_task": null,
+   "litellm": "mistral/devstral-medium-latest",
+   "price_in": 0.4,
+   "price_out": 2.0
+  },
+  "dolaseed20pro": {
+   "names": [
+    "Dola Seed 2.0 Pro"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1407.01,
+    "lmarena_text_factuality": 1420.48
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "dolly2012b": {
+   "names": [
+    "Dolly 2.0 12B",
+    "Dolly 2.0-12b"
+   ],
+   "scores": {
+    "epoch_eci": 55.82,
+    "lmarena_creative_writing": 863.57
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "dolphin221mistral7b": {
+   "names": [
+    "Dolphin 2.2.1 Mistral 7B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1085.59
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "ernie50": {
+   "names": [
+    "ERNIE 5.0 (0110)",
+    "ERNIE-5.0-Preview (1022)",
+    "ERNIE-5.0-Preview (1203)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1426.32,
+    "lmarena_text_factuality": 1445.18
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "ernie51": {
+   "names": [
+    "ERNIE 5.1"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1440.54,
+    "lmarena_text_factuality": 1456.27
+   },
+   "cost_per_task": null,
+   "litellm": "aihubmix/ernie-5.1",
+   "price_in": 0.5634,
+   "price_out": 2.5353
+  },
+  "falcon180b": {
+   "names": [
+    "Falcon-180B"
+   ],
+   "scores": {
+    "epoch_eci": 107.11
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "falcon180bchat": {
+   "names": [
+    "Falcon 180B Chat"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1088.4
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "falcon211b": {
+   "names": [
+    "Falcon 2 11B"
+   ],
+   "scores": {
+    "epoch_eci": 99.33
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "falcon40b": {
+   "names": [
+    "Falcon-40B"
+   ],
+   "scores": {
+    "epoch_eci": 90.88
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "falcon7b": {
+   "names": [
+    "Falcon-7B"
+   ],
+   "scores": {
+    "epoch_eci": 73.37
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "fastchatt53b": {
+   "names": [
+    "FastChat-T5 3B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 901.98
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "gemini15flash": {
+   "names": [
+    "Gemini 1.5 Flash (001)",
+    "Gemini 1.5 Flash (002)",
+    "Gemini 1.5 Flash (May 2024)",
+    "Gemini 1.5 Flash (Sep 2024)"
+   ],
+   "scores": {
+    "epoch_eci": 126.96,
+    "lmarena_creative_writing": 1285.26
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "gemini15flash8b": {
+   "names": [
+    "Gemini 1.5 Flash-8B (001)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1217.36
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "gemini15pro": {
+   "names": [
+    "Gemini 1.5 Pro (001)",
+    "Gemini 1.5 Pro (002)",
+    "Gemini 1.5 Pro (May 2024)",
+    "Gemini 1.5 Pro (Sept 2024)"
+   ],
+   "scores": {
+    "epoch_eci": 130.37,
+    "lmarena_creative_writing": 1332.54
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "gemini20flash": {
+   "names": [
+    "Gemini 2.0 Flash (001)",
+    "Gemini 2.0 Flash (Feb 2025)"
+   ],
+   "scores": {
+    "epoch_eci": 133.94,
+    "lmarena_creative_writing": 1339.4
+   },
+   "cost_per_task": null,
+   "litellm": "vertex_ai/gemini-2.0-flash",
+   "price_in": 0.15,
+   "price_out": 0.6
+  },
+  "gemini20flashlite": {
+   "names": [
+    "Gemini 2.0 Flash-Lite Preview (02-05)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1318.81
+   },
+   "cost_per_task": null,
+   "litellm": "vertex_ai/gemini-2.0-flash-lite",
+   "price_in": 0.075,
+   "price_out": 0.3
+  },
+  "gemini20flashthinking": {
+   "names": [
+    "Gemini 2.0 Flash Thinking (Jan 2025)"
+   ],
+   "scores": {
+    "epoch_eci": 133.77
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "gemini20pro": {
+   "names": [
+    "Gemini 2.0 Pro"
+   ],
+   "scores": {
+    "epoch_eci": 135.34
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "gemini25flash": {
+   "names": [
+    "Gemini 2.5 Flash",
+    "Gemini 2.5 Flash (Apr 2025)",
+    "Gemini 2.5 Flash (Jun 2025)",
+    "Gemini 2.5 Flash (May 2025)",
+    "Gemini 2.5 Flash (Sep 2025)",
+    "Gemini 2.5 Flash Preview (09-2025)"
+   ],
+   "scores": {
+    "epoch_eci": 141.93,
+    "lmarena_creative_writing": 1400.16,
+    "lmarena_text_factuality": 1436.26
+   },
+   "cost_per_task": null,
+   "litellm": "gemini-2.5-flash",
+   "price_in": 0.3,
+   "price_out": 2.5
+  },
+  "gemini25flashlite": {
+   "names": [
+    "Gemini 2.5 Flash-Lite (Jun 2025)",
+    "Gemini 2.5 Flash-Lite Preview (Non-Thinking, 09-2025)",
+    "Gemini 2.5 Flash-Lite Preview (Thinking, 06-17)"
+   ],
+   "scores": {
+    "epoch_eci": 133.05,
+    "lmarena_creative_writing": 1367.26,
+    "lmarena_text_factuality": 1406.53
+   },
+   "cost_per_task": null,
+   "litellm": "gemini-2.5-flash-lite",
+   "price_in": 0.1,
+   "price_out": 0.4
+  },
+  "gemini25pro": {
+   "names": [
+    "Gemini 2.5 Pro",
+    "Gemini 2.5 Pro (Jun 2025)",
+    "Gemini 2.5 Pro (Mar 2025)",
+    "Gemini 2.5 Pro (May 2025)"
+   ],
+   "scores": {
+    "epoch_eci": 144.87,
+    "lmarena_creative_writing": 1453.92,
+    "lmarena_text_factuality": 1461.79,
+    "lmarena_webdev": 1226.37
+   },
+   "cost_per_task": null,
+   "litellm": "gemini-2.5-pro",
+   "price_in": 1.25,
+   "price_out": 10.0
+  },
+  "gemini31flashlite": {
+   "names": [
+    "Gemini 3.1 Flash-Lite",
+    "Gemini 3.1 Flash-Lite Preview"
+   ],
+   "scores": {
+    "epoch_eci": 145.01,
+    "lmarena_creative_writing": 1401.68,
+    "lmarena_text_factuality": 1432.95,
+    "lmarena_webdev": 1255.82
+   },
+   "cost_per_task": null,
+   "litellm": "gemini-3.1-flash-lite",
+   "price_in": 0.25,
+   "price_out": 1.5
+  },
+  "gemini31pro": {
+   "names": [
+    "Gemini 3.1 Pro",
+    "Gemini 3.1 Pro Preview"
+   ],
+   "scores": {
+    "epoch_eci": 156.18,
+    "lmarena_creative_writing": 1482.75,
+    "lmarena_text_factuality": 1471.51,
+    "lmarena_webdev": 1446.37
+   },
+   "cost_per_task": 0.5917246,
+   "litellm": "gemini-3.1-pro-preview",
+   "price_in": 2.0,
+   "price_out": 12.0
+  },
+  "gemini35flash": {
+   "names": [
+    "Gemini 3.5 Flash",
+    "Gemini 3.5 Flash (High)",
+    "Gemini 3.5 Flash (Medium)"
+   ],
+   "scores": {
+    "epoch_eci": 155.28,
+    "lmarena_creative_writing": 1470.63,
+    "lmarena_text_factuality": 1478.02,
+    "lmarena_webdev": 1499.93
+   },
+   "cost_per_task": null,
+   "litellm": "gemini-3.5-flash",
+   "price_in": 1.5,
+   "price_out": 9.0
+  },
+  "gemini35flashlite": {
+   "names": [
+    "Gemini 3.5 Flash-Lite"
+   ],
+   "scores": {
+    "epoch_eci": 145.63,
+    "lmarena_creative_writing": 1420.44,
+    "lmarena_text_factuality": 1446.64,
+    "lmarena_webdev": 1432.06
+   },
+   "cost_per_task": null,
+   "litellm": "gemini-3.5-flash-lite",
+   "price_in": 0.3,
+   "price_out": 2.5
+  },
+  "gemini36flash": {
+   "names": [
+    "Gemini 3.6 Flash",
+    "Gemini 3.6 Flash (High)"
+   ],
+   "scores": {
+    "epoch_eci": 155.21,
+    "lmarena_creative_writing": 1466.39,
+    "lmarena_text_factuality": 1472.05,
+    "lmarena_webdev": 1537.56
+   },
+   "cost_per_task": null,
+   "litellm": "gemini-3.6-flash",
+   "price_in": 0.75,
+   "price_out": 3.75
+  },
+  "gemini37flash": {
+   "names": [
+    "Gemini 3.7 Flash",
+    "Gemini 3.7 Flash (High)"
+   ],
+   "scores": {
+    "epoch_eci": 158.36,
+    "lmarena_creative_writing": 1484.98,
+    "lmarena_text_factuality": 1475.5,
+    "lmarena_webdev": 1588.35
+   },
+   "cost_per_task": 0.48935628750000004,
+   "litellm": "gemini-3.7-flash",
+   "price_in": 0.75,
+   "price_out": 3.75
+  },
+  "gemini38flash": {
+   "names": [
+    "Gemini 3.8 Flash",
+    "Gemini 3.8 Flash (High)"
+   ],
+   "scores": {
+    "epoch_eci": 158.79,
+    "lmarena_creative_writing": 1493.19,
+    "lmarena_text_factuality": 1470.33,
+    "lmarena_webdev": 1582.95
+   },
+   "cost_per_task": 0.7566018749999999,
+   "litellm": "gemini-3.8-flash",
+   "price_in": 0.75,
+   "price_out": 3.75
+  },
+  "gemini3flash": {
+   "names": [
+    "Gemini 3 Flash",
+    "Gemini 3 Flash (Minimal)"
+   ],
+   "scores": {
+    "epoch_eci": 152.32,
+    "lmarena_creative_writing": 1456.18,
+    "lmarena_text_factuality": 1467.9,
+    "lmarena_webdev": 1439.89
+   },
+   "cost_per_task": null,
+   "litellm": "gemini-3-flash-preview",
+   "price_in": 0.5,
+   "price_out": 3.0
+  },
+  "gemini3pro": {
+   "names": [
+    "Gemini 3 Pro"
+   ],
+   "scores": {
+    "epoch_eci": 152.98,
+    "lmarena_creative_writing": 1481.68,
+    "lmarena_text_factuality": 1481.54,
+    "lmarena_webdev": 1440.84
+   },
+   "cost_per_task": null,
+   "litellm": "vertex_ai/gemini-3-pro-preview",
+   "price_in": 2.0,
+   "price_out": 12.0
+  },
+  "gemini4argon": {
+   "names": [
+    "Gemini 4 Argon",
+    "Gemini 4 Argon (High)"
+   ],
+   "scores": {
+    "epoch_eci": 166.48,
+    "lmarena_creative_writing": 1532.73,
+    "lmarena_text_factuality": 1497.36,
+    "lmarena_webdev": 1679.12
+   },
+   "cost_per_task": 0.6994975,
+   "litellm": "kyma/gemini-4-argon",
+   "price_in": 5.4,
+   "price_out": 27.0
+  },
+  "gemini4carbon": {
+   "names": [
+    "Gemini 4 Carbon",
+    "Gemini 4 Carbon (High)"
+   ],
+   "scores": {
+    "epoch_eci": 169.76,
+    "lmarena_creative_writing": 1532.54,
+    "lmarena_text_factuality": 1521.36,
+    "lmarena_webdev": 1768.34
+   },
+   "cost_per_task": 1.3539045,
+   "litellm": "gemini/gemini-4-carbon",
+   "price_in": 2.0,
+   "price_out": 10.0
+  },
+  "gemini4hydrogen": {
+   "names": [
+    "Gemini 4 Hydrogen (High)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1509.48,
+    "lmarena_text_factuality": 1493.22,
+    "lmarena_webdev": 1703.9
+   },
+   "cost_per_task": 1.5251263,
+   "litellm": "gemini/gemini-4-hydrogen",
+   "price_in": 1.5,
+   "price_out": 7.5
+  },
+  "geminiadvanced": {
+   "names": [
+    "Gemini Advanced (0514)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1284.03
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "geminipro": {
+   "names": [
+    "Gemini Pro",
+    "Gemini Pro (Dev API)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1130.3
+   },
+   "cost_per_task": null,
+   "litellm": "gemini-pro-latest",
+   "price_in": 2.0,
+   "price_out": 12.0
+  },
+  "gemma112bit": {
+   "names": [
+    "Gemma 1.1 2B IT"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 997.83
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "gemma117bit": {
+   "names": [
+    "Gemma 1.1 7B IT"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1059.28
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "gemma227b": {
+   "names": [
+    "Gemma 2 27B"
+   ],
+   "scores": {
+    "epoch_eci": 118.59
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "gemma227bit": {
+   "names": [
+    "Gemma 2 27B IT"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1240.48
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "gemma22bit": {
+   "names": [
+    "Gemma 2 2B IT"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1146.61
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "gemma29b": {
+   "names": [
+    "Gemma 2 9B"
+   ],
+   "scores": {
+    "epoch_eci": 112.7
+   },
+   "cost_per_task": null,
+   "litellm": "vercel_ai_gateway/google/gemma-2-9b",
+   "price_in": 0.2,
+   "price_out": 0.2
+  },
+  "gemma29bit": {
+   "names": [
+    "Gemma 2 9B IT"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1205.44
+   },
+   "cost_per_task": null,
+   "litellm": "fireworks_ai/accounts/fireworks/models/gemma2-9b-it",
+   "price_in": 0.2,
+   "price_out": 0.2
+  },
+  "gemma29bitsimpo": {
+   "names": [
+    "Gemma 2 9B IT SimPO"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1238.64
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "gemma2b": {
+   "names": [
+    "Gemma 2B"
+   ],
+   "scores": {
+    "epoch_eci": 76.01
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "gemma2bit": {
+   "names": [
+    "Gemma 2B IT"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 986.3
+   },
+   "cost_per_task": null,
+   "litellm": "fireworks_ai/accounts/fireworks/models/gemma-2b-it",
+   "price_in": 0.1,
+   "price_out": 0.1
+  },
+  "gemma312bit": {
+   "names": [
+    "Gemma 3 12B IT"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1331.22
+   },
+   "cost_per_task": null,
+   "litellm": "crusoe/google/gemma-3-12b-it",
+   "price_in": 0.1,
+   "price_out": 0.1
+  },
+  "gemma327b": {
+   "names": [
+    "Gemma 3 27B"
+   ],
+   "scores": {
+    "epoch_eci": 127.51
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "gemma327bit": {
+   "names": [
+    "Gemma 3 27B IT"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1345.38,
+    "lmarena_text_factuality": 1379.35
+   },
+   "cost_per_task": null,
+   "litellm": "gemini/gemma-3-27b-it",
+   "price_in": 0.0,
+   "price_out": 0.0
+  },
+  "gemma34bit": {
+   "names": [
+    "Gemma 3 4B IT"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1270.33
+   },
+   "cost_per_task": null,
+   "litellm": "deepinfra/google/gemma-3-4b-it",
+   "price_in": 0.05,
+   "price_out": 0.1
+  },
+  "gemma3ne4bit": {
+   "names": [
+    "Gemma 3n E4B IT"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1286.98
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "gemma426ba4b": {
+   "names": [
+    "Gemma 4 26B A4B"
+   ],
+   "scores": {
+    "epoch_eci": 141.64,
+    "lmarena_creative_writing": 1401.6,
+    "lmarena_text_factuality": 1444.39,
+    "lmarena_webdev": 1358.12
+   },
+   "cost_per_task": null,
+   "litellm": "empiriolabs/gemma-4-26b-a4b",
+   "price_in": 0.05,
+   "price_out": 0.29
+  },
+  "gemma431b": {
+   "names": [
+    "Gemma 4 31B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1415.11,
+    "lmarena_text_factuality": 1449.05,
+    "lmarena_webdev": 1370.27
+   },
+   "cost_per_task": null,
+   "litellm": "kyma/gemma-4-31b",
+   "price_in": 0.1642,
+   "price_out": 0.4689
+  },
+  "gemma431bit": {
+   "names": [
+    "Gemma 4 31B IT"
+   ],
+   "scores": {
+    "epoch_eci": 144.27
+   },
+   "cost_per_task": null,
+   "litellm": "gemini/gemma-4-31b-it",
+   "price_in": 0.0,
+   "price_out": 0.0
+  },
+  "gemma7b": {
+   "names": [
+    "Gemma 7B"
+   ],
+   "scores": {
+    "epoch_eci": 103.27
+   },
+   "cost_per_task": null,
+   "litellm": "fireworks_ai/accounts/fireworks/models/gemma-7b",
+   "price_in": 0.2,
+   "price_out": 0.2
+  },
+  "gemma7bit": {
+   "names": [
+    "Gemma 7B IT"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1023.35
+   },
+   "cost_per_task": null,
+   "litellm": "anyscale/google/gemma-7b-it",
+   "price_in": 0.15,
+   "price_out": 0.15
+  },
+  "glm4": {
+   "names": [
+    "GLM-4 (0520)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1197.79
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "glm45": {
+   "names": [
+    "GLM-4.5"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1394.8
+   },
+   "cost_per_task": null,
+   "litellm": "zai/glm-4.5",
+   "price_in": 0.6,
+   "price_out": 2.2
+  },
+  "glm45air": {
+   "names": [
+    "GLM-4.5-Air"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1343.32,
+    "lmarena_text_factuality": 1394.13
+   },
+   "cost_per_task": null,
+   "litellm": "zai/glm-4.5-air",
+   "price_in": 0.2,
+   "price_out": 1.1
+  },
+  "glm45v": {
+   "names": [
+    "GLM-4.5V"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1295.11
+   },
+   "cost_per_task": null,
+   "litellm": "zai/glm-4.5v",
+   "price_in": 0.6,
+   "price_out": 1.8
+  },
+  "glm46": {
+   "names": [
+    "GLM-4.6"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1412.22,
+    "lmarena_text_factuality": 1447.12,
+    "lmarena_webdev": 1341.86
+   },
+   "cost_per_task": null,
+   "litellm": "zai/glm-4.6",
+   "price_in": 0.6,
+   "price_out": 2.2
+  },
+  "glm46v": {
+   "names": [
+    "GLM-4.6V"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1346.16,
+    "lmarena_text_factuality": 1391.31
+   },
+   "cost_per_task": null,
+   "litellm": "novita/zai-org/glm-4.6v",
+   "price_in": 0.3,
+   "price_out": 0.9
+  },
+  "glm47": {
+   "names": [
+    "GLM-4.7"
+   ],
+   "scores": {
+    "epoch_eci": 143.28,
+    "lmarena_creative_writing": 1402.1,
+    "lmarena_text_factuality": 1443.76,
+    "lmarena_webdev": 1435.78
+   },
+   "cost_per_task": null,
+   "litellm": "zai/glm-4.7",
+   "price_in": 0.6,
+   "price_out": 2.2
+  },
+  "glm47flash": {
+   "names": [
+    "GLM-4.7-Flash"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1295.51,
+    "lmarena_text_factuality": 1369.32
+   },
+   "cost_per_task": null,
+   "litellm": "zai/glm-4.7-flash",
+   "price_in": 0.0,
+   "price_out": 0.0
+  },
+  "glm4plus": {
+   "names": [
+    "GLM-4-Plus",
+    "GLM-4-Plus (0111)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1310.71
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "glm5": {
+   "names": [
+    "GLM-5"
+   ],
+   "scores": {
+    "epoch_eci": 146.48,
+    "lmarena_creative_writing": 1437.14,
+    "lmarena_text_factuality": 1451.8,
+    "lmarena_webdev": 1435.04
+   },
+   "cost_per_task": null,
+   "litellm": "zai/glm-5",
+   "price_in": 1.0,
+   "price_out": 3.2
+  },
+  "glm51": {
+   "names": [
+    "GLM-5.1"
+   ],
+   "scores": {
+    "epoch_eci": 150.73,
+    "lmarena_creative_writing": 1453.1,
+    "lmarena_text_factuality": 1455.89,
+    "lmarena_webdev": 1508.01
+   },
+   "cost_per_task": null,
+   "litellm": "zai/glm-5.1",
+   "price_in": 1.4,
+   "price_out": 4.4
+  },
+  "glm52": {
+   "names": [
+    "GLM-5.2",
+    "GLM-5.2 (Max)"
+   ],
+   "scores": {
+    "epoch_eci": 153.03,
+    "lmarena_creative_writing": 1459.3,
+    "lmarena_text_factuality": 1462.37,
+    "lmarena_webdev": 1607.61
+   },
+   "cost_per_task": 0.8600039,
+   "litellm": "zai/glm-5.2",
+   "price_in": 1.4,
+   "price_out": 4.4
+  },
+  "glm53": {
+   "names": [
+    "GLM-5.3",
+    "GLM-5.3 (Max)"
+   ],
+   "scores": {
+    "epoch_eci": 157.1,
+    "lmarena_creative_writing": 1459.23,
+    "lmarena_text_factuality": 1467.99,
+    "lmarena_webdev": 1622.27
+   },
+   "cost_per_task": 0.85981107,
+   "litellm": "zai/glm-5.3",
+   "price_in": 1.4,
+   "price_out": 4.4
+  },
+  "glm53flash": {
+   "names": [
+    "GLM-5.3-Flash"
+   ],
+   "scores": {
+    "epoch_eci": 153.82,
+    "lmarena_creative_writing": 1442.06,
+    "lmarena_text_factuality": 1462.21,
+    "lmarena_webdev": 1609.11
+   },
+   "cost_per_task": 0.142539095,
+   "litellm": "zai/glm-5.3-flash",
+   "price_in": 0.15,
+   "price_out": 0.5
+  },
+  "gpt35turbo": {
+   "names": [
+    "GPT-3.5 Turbo (0125)",
+    "GPT-3.5 Turbo (1106)",
+    "GPT-3.5 Turbo (Jan 2024)",
+    "GPT-3.5 Turbo (Jun 2023)",
+    "GPT-3.5 Turbo (Nov 2023)"
+   ],
+   "scores": {
+    "epoch_eci": 113.06,
+    "lmarena_creative_writing": 1092.24
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-3.5-turbo",
+   "price_in": 0.5,
+   "price_out": 1.5
+  },
+  "gpt4": {
+   "names": [
+    "GPT-4 (0314)",
+    "GPT-4 (0613)",
+    "GPT-4 (Jun 2023)",
+    "GPT-4 (Mar 2023)"
+   ],
+   "scores": {
+    "epoch_eci": 121.77,
+    "lmarena_creative_writing": 1191.29
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-4",
+   "price_in": 30.0,
+   "price_out": 60.0
+  },
+  "gpt41": {
+   "names": [
+    "GPT-4.1",
+    "GPT-4.1 (2025-04-14)"
+   ],
+   "scores": {
+    "epoch_eci": 136.15,
+    "lmarena_creative_writing": 1363.62,
+    "lmarena_text_factuality": 1407.47
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-4.1",
+   "price_in": 2.0,
+   "price_out": 8.0
+  },
+  "gpt41mini": {
+   "names": [
+    "GPT-4.1 mini",
+    "GPT-4.1 mini (2025-04-14)"
+   ],
+   "scores": {
+    "epoch_eci": 134.2,
+    "lmarena_creative_writing": 1299.38
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-4.1-mini",
+   "price_in": 0.4,
+   "price_out": 1.6
+  },
+  "gpt41nano": {
+   "names": [
+    "GPT-4.1 nano",
+    "GPT-4.1 nano (2025-04-14)"
+   ],
+   "scores": {
+    "epoch_eci": 126.77,
+    "lmarena_creative_writing": 1259.98
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-4.1-nano",
+   "price_in": 0.1,
+   "price_out": 0.4
+  },
+  "gpt45": {
+   "names": [
+    "GPT-4.5",
+    "GPT-4.5 Preview (2025-02-27)"
+   ],
+   "scores": {
+    "epoch_eci": 136.45,
+    "lmarena_creative_writing": 1393.69
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "gpt4all13bsnoozy": {
+   "names": [
+    "GPT4All 13B Snoozy"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 971.89
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "gpt4o": {
+   "names": [
+    "GPT-4o (2024-05-13)",
+    "GPT-4o (2024-08-06)",
+    "GPT-4o (Aug 2024)",
+    "GPT-4o (May 2024)",
+    "GPT-4o (Nov 2024)"
+   ],
+   "scores": {
+    "epoch_eci": 128.84,
+    "lmarena_creative_writing": 1291.31
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-4o",
+   "price_in": 2.5,
+   "price_out": 10.0
+  },
+  "gpt4omini": {
+   "names": [
+    "GPT-4o mini",
+    "GPT-4o mini (2024-07-18)"
+   ],
+   "scores": {
+    "epoch_eci": 123.86,
+    "lmarena_creative_writing": 1267.65
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-4o-mini",
+   "price_in": 0.15,
+   "price_out": 0.6
+  },
+  "gpt4turbo": {
+   "names": [
+    "GPT-4 Turbo (2024-04-09)",
+    "GPT-4 Turbo (Apr 2024)",
+    "GPT-4 Turbo (Nov 2023)",
+    "GPT-4 Turbo Preview (0125)",
+    "GPT-4 Turbo Preview (1106)"
+   ],
+   "scores": {
+    "epoch_eci": 125.82,
+    "lmarena_creative_writing": 1268.34
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-4-turbo",
+   "price_in": 10.0,
+   "price_out": 30.0
+  },
+  "gpt5": {
+   "names": [
+    "GPT-5",
+    "GPT-5 (High)",
+    "GPT-5 (Medium)"
+   ],
+   "scores": {
+    "epoch_eci": 150.0,
+    "lmarena_creative_writing": 1364.59,
+    "lmarena_text_factuality": 1420.58,
+    "lmarena_webdev": 1417.38
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-5",
+   "price_in": 1.25,
+   "price_out": 10.0
+  },
+  "gpt51": {
+   "names": [
+    "GPT-5.1",
+    "GPT-5.1 (High)",
+    "GPT-5.1 (Medium)"
+   ],
+   "scores": {
+    "epoch_eci": 150.94,
+    "lmarena_creative_writing": 1426.61,
+    "lmarena_text_factuality": 1457.92,
+    "lmarena_webdev": 1397.59
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-5.1",
+   "price_in": 1.25,
+   "price_out": 10.0
+  },
+  "gpt51codex": {
+   "names": [
+    "GPT-5.1-Codex"
+   ],
+   "scores": {
+    "lmarena_webdev": 1338.2
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-5.1-codex",
+   "price_in": 1.25,
+   "price_out": 10.0
+  },
+  "gpt51codexmini": {
+   "names": [
+    "GPT-5.1-Codex-Mini"
+   ],
+   "scores": {
+    "lmarena_webdev": 1243.48
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-5.1-codex-mini",
+   "price_in": 0.25,
+   "price_out": 2.0
+  },
+  "gpt52": {
+   "names": [
+    "GPT-5.2",
+    "GPT-5.2 (High)"
+   ],
+   "scores": {
+    "epoch_eci": 154.46,
+    "lmarena_creative_writing": 1375.79,
+    "lmarena_text_factuality": 1441.46,
+    "lmarena_webdev": 1418.95
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-5.2",
+   "price_in": 1.75,
+   "price_out": 14.0
+  },
+  "gpt52chat": {
+   "names": [
+    "GPT-5.2 Chat (20260210)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1399.75,
+    "lmarena_text_factuality": 1450.57
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-5.2-chat-latest",
+   "price_in": 1.75,
+   "price_out": 14.0
+  },
+  "gpt52codex": {
+   "names": [
+    "GPT-5.2-Codex"
+   ],
+   "scores": {
+    "lmarena_webdev": 1338.6
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-5.2-codex",
+   "price_in": 1.75,
+   "price_out": 14.0
+  },
+  "gpt52pro": {
+   "names": [
+    "GPT-5.2 Pro"
+   ],
+   "scores": {
+    "epoch_eci": 157.27
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-5.2-pro",
+   "price_in": 21.0,
+   "price_out": 168.0
+  },
+  "gpt53chat": {
+   "names": [
+    "GPT-5.3 Chat"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1355.66,
+    "lmarena_text_factuality": 1417.58
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-5.3-chat-latest",
+   "price_in": 1.75,
+   "price_out": 14.0
+  },
+  "gpt53codex": {
+   "names": [
+    "GPT-5.3-Codex (Codex Harness)"
+   ],
+   "scores": {
+    "lmarena_webdev": 1406.11
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-5.3-codex",
+   "price_in": 1.75,
+   "price_out": 14.0
+  },
+  "gpt54": {
+   "names": [
+    "GPT-5.4",
+    "GPT-5.4 (High)",
+    "GPT-5.4 (High, Codex Harness)",
+    "GPT-5.4 (Medium, Codex Harness)"
+   ],
+   "scores": {
+    "epoch_eci": 157.85,
+    "lmarena_creative_writing": 1437.33,
+    "lmarena_text_factuality": 1484.32,
+    "lmarena_webdev": 1461.53
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-5.4",
+   "price_in": 2.5,
+   "price_out": 15.0
+  },
+  "gpt54mini": {
+   "names": [
+    "GPT-5.4 Mini",
+    "GPT-5.4 mini (High)"
+   ],
+   "scores": {
+    "epoch_eci": 149.34,
+    "lmarena_creative_writing": 1369.48,
+    "lmarena_text_factuality": 1446.61,
+    "lmarena_webdev": 1397.78
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-5.4-mini",
+   "price_in": 0.75,
+   "price_out": 4.5
+  },
+  "gpt54nano": {
+   "names": [
+    "GPT-5.4 Nano",
+    "GPT-5.4 nano (High)"
+   ],
+   "scores": {
+    "epoch_eci": 146.4,
+    "lmarena_creative_writing": 1314.08,
+    "lmarena_text_factuality": 1416.3
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-5.4-nano",
+   "price_in": 0.2,
+   "price_out": 1.25
+  },
+  "gpt54pro": {
+   "names": [
+    "GPT-5.4 Pro"
+   ],
+   "scores": {
+    "epoch_eci": 160.24
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-5.4-pro",
+   "price_in": 30.0,
+   "price_out": 180.0
+  },
+  "gpt55": {
+   "names": [
+    "GPT-5.5",
+    "GPT-5.5 (Codex Harness)",
+    "GPT-5.5 (High)",
+    "GPT-5.5 (High, Codex Harness)",
+    "GPT-5.5 (xHigh, Codex Harness)"
+   ],
+   "scores": {
+    "epoch_eci": 160.1,
+    "lmarena_creative_writing": 1454.07,
+    "lmarena_text_factuality": 1485.42,
+    "lmarena_webdev": 1512.14
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-5.5",
+   "price_in": 5.0,
+   "price_out": 30.0
+  },
+  "gpt55instant": {
+   "names": [
+    "GPT-5.5 Instant"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1417.76,
+    "lmarena_text_factuality": 1442.78
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "gpt55pro": {
+   "names": [
+    "GPT-5.5 Pro"
+   ],
+   "scores": {
+    "epoch_eci": 162.7
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-5.5-pro",
+   "price_in": 30.0,
+   "price_out": 180.0
+  },
+  "gpt56luna": {
+   "names": [
+    "GPT-5.6 Luna",
+    "GPT-5.6 Luna (xHigh)",
+    "GPT-5.6 Luna (xHigh, Codex Harness)"
+   ],
+   "scores": {
+    "epoch_eci": 156.67,
+    "lmarena_creative_writing": 1396.4,
+    "lmarena_text_factuality": 1460.21,
+    "lmarena_webdev": 1519.07
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-5.6-luna",
+   "price_in": 0.2,
+   "price_out": 1.2
+  },
+  "gpt56sol": {
+   "names": [
+    "GPT-5.6 Sol",
+    "GPT-5.6 Sol (xHigh)",
+    "GPT-5.6 Sol (xHigh, Codex Harness)"
+   ],
+   "scores": {
+    "epoch_eci": 162.99,
+    "lmarena_creative_writing": 1450.88,
+    "lmarena_text_factuality": 1476.17,
+    "lmarena_webdev": 1615.73
+   },
+   "cost_per_task": 1.58848015,
+   "litellm": "gpt-5.6-sol",
+   "price_in": 4.0,
+   "price_out": 20.0
+  },
+  "gpt56terra": {
+   "names": [
+    "GPT-5.6 Terra",
+    "GPT-5.6 Terra (xHigh)",
+    "GPT-5.6 Terra (xHigh, Codex Harness)"
+   ],
+   "scores": {
+    "epoch_eci": 160.73,
+    "lmarena_creative_writing": 1413.74,
+    "lmarena_text_factuality": 1469.27,
+    "lmarena_webdev": 1520.24
+   },
+   "cost_per_task": 0.6269272,
+   "litellm": "gpt-5.6-terra",
+   "price_in": 2.0,
+   "price_out": 12.0
+  },
+  "gpt5chat": {
+   "names": [
+    "GPT-5 Chat"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1364.71,
+    "lmarena_text_factuality": 1421.96
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-5-chat",
+   "price_in": 1.25,
+   "price_out": 10.0
+  },
+  "gpt5mini": {
+   "names": [
+    "GPT-5 mini",
+    "GPT-5 mini (High)"
+   ],
+   "scores": {
+    "epoch_eci": 146.09,
+    "lmarena_creative_writing": 1325.21,
+    "lmarena_text_factuality": 1394.19
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-5-mini",
+   "price_in": 0.25,
+   "price_out": 2.0
+  },
+  "gpt5nano": {
+   "names": [
+    "GPT-5 nano",
+    "GPT-5 nano (High)"
+   ],
+   "scores": {
+    "epoch_eci": 139.1,
+    "lmarena_creative_writing": 1249.45
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-5-nano",
+   "price_in": 0.05,
+   "price_out": 0.4
+  },
+  "gpt5pro": {
+   "names": [
+    "GPT-5 Pro"
+   ],
+   "scores": {
+    "epoch_eci": 151.23
+   },
+   "cost_per_task": null,
+   "litellm": "gpt-5-pro",
+   "price_in": 15.0,
+   "price_out": 120.0
+  },
+  "gpt61sol": {
+   "names": [
+    "GPT-6.1 Sol",
+    "GPT-6.1 Sol (Max)",
+    "GPT-6.1 Sol (Medium)"
+   ],
+   "scores": {
+    "epoch_eci": 168.48,
+    "lmarena_creative_writing": 1419.61,
+    "lmarena_text_factuality": 1467.67,
+    "lmarena_webdev": 1742.34
+   },
+   "cost_per_task": 0.9854645499999999,
+   "litellm": "gpt-6.1-sol",
+   "price_in": 2.0,
+   "price_out": 10.0
+  },
+  "gpt61terra": {
+   "names": [
+    "GPT-6.1 Terra",
+    "GPT-6.1 Terra (Max)",
+    "GPT-6.1 Terra (Medium)"
+   ],
+   "scores": {
+    "epoch_eci": 167.67,
+    "lmarena_webdev": 1680.71
+   },
+   "cost_per_task": 0.1586163,
+   "litellm": "gpt-6.1-terra",
+   "price_in": 1.0,
+   "price_out": 5.0
+  },
+  "gpt6astra": {
+   "names": [
+    "GPT-6 Astra",
+    "GPT-6 Astra (Max)"
+   ],
+   "scores": {
+    "epoch_eci": 169.0,
+    "lmarena_creative_writing": 1421.46,
+    "lmarena_text_factuality": 1465.62,
+    "lmarena_webdev": 1762.88
+   },
+   "cost_per_task": 5.284447,
+   "litellm": "gpt-6-astra",
+   "price_in": 10.0,
+   "price_out": 50.0
+  },
+  "gpt6luna": {
+   "names": [
+    "GPT-6 Luna",
+    "GPT-6 Luna (Low)",
+    "GPT-6 Luna (Max)",
+    "GPT-6 Luna (Medium)"
+   ],
+   "scores": {
+    "epoch_eci": 156.41,
+    "lmarena_creative_writing": 1359.36,
+    "lmarena_text_factuality": 1466.46,
+    "lmarena_webdev": 1576.63
+   },
+   "cost_per_task": 0.08274393000000002,
+   "litellm": "gpt-6-luna",
+   "price_in": 0.1,
+   "price_out": 0.5
+  },
+  "gpt6sol": {
+   "names": [
+    "GPT-6 Sol",
+    "GPT-6 Sol (Max)"
+   ],
+   "scores": {
+    "epoch_eci": 163.75,
+    "lmarena_creative_writing": 1370.34,
+    "lmarena_text_factuality": 1439.25,
+    "lmarena_webdev": 1672.83
+   },
+   "cost_per_task": 1.8499479999999993,
+   "litellm": "gpt-6-sol",
+   "price_in": 2.0,
+   "price_out": 10.0
+  },
+  "gptoss120b": {
+   "names": [
+    "gpt-oss-120b"
+   ],
+   "scores": {
+    "epoch_eci": 140.16,
+    "lmarena_creative_writing": 1274.28,
+    "lmarena_text_factuality": 1384.67
+   },
+   "cost_per_task": null,
+   "litellm": "kyma/gpt-oss-120b",
+   "price_in": 0.0473,
+   "price_out": 0.2303
+  },
+  "gptoss20b": {
+   "names": [
+    "gpt-oss-20b"
+   ],
+   "scores": {
+    "epoch_eci": 134.97,
+    "lmarena_creative_writing": 1201.69
+   },
+   "cost_per_task": null,
+   "litellm": "ovhcloud/gpt-oss-20b",
+   "price_in": 0.04,
+   "price_out": 0.15
+  },
+  "granite302binstruct": {
+   "names": [
+    "Granite 3.0 2B Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1046.09
+   },
+   "cost_per_task": null,
+   "litellm": "replicate/ibm-granite/granite-3.0-2b-instruct",
+   "price_in": 0.03,
+   "price_out": 0.25
+  },
+  "granite308binstruct": {
+   "names": [
+    "Granite 3.0 8B Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1070.52
+   },
+   "cost_per_task": null,
+   "litellm": "replicate/ibm-granite/granite-3.0-8b-instruct",
+   "price_in": 0.05,
+   "price_out": 0.25
+  },
+  "granite312binstruct": {
+   "names": [
+    "Granite 3.1 2B Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1115.8
+   },
+   "cost_per_task": null,
+   "litellm": "replicate/ibm-granite/granite-3.1-2b-instruct",
+   "price_in": 0.03,
+   "price_out": 0.25
+  },
+  "granite318binstruct": {
+   "names": [
+    "Granite 3.1 8B Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1128.72
+   },
+   "cost_per_task": null,
+   "litellm": "replicate/ibm-granite/granite-3.1-8b-instruct",
+   "price_in": 0.03,
+   "price_out": 0.25
+  },
+  "granite40hsmall": {
+   "names": [
+    "Granite-4.0-H-Small"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1210.1
+   },
+   "cost_per_task": null,
+   "litellm": "replicate/ibm-granite/granite-4.0-h-small",
+   "price_in": 0.06,
+   "price_out": 0.25
+  },
+  "granite418b": {
+   "names": [
+    "Granite 4.1 8B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1251.48,
+    "lmarena_text_factuality": 1310.85,
+    "lmarena_webdev": 1192.71
+   },
+   "cost_per_task": null,
+   "litellm": "wandb/ibm-granite/granite-4.1-8b",
+   "price_in": 0.05,
+   "price_out": 0.1
+  },
+  "granite4230b": {
+   "names": [
+    "Granite 4.2 30B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1284.59,
+    "lmarena_text_factuality": 1375.79
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "granite423b": {
+   "names": [
+    "Granite 4.2 3B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1203.84,
+    "lmarena_text_factuality": 1323.43
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "granite428b": {
+   "names": [
+    "Granite 4.2 8B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1234.63,
+    "lmarena_text_factuality": 1341.26
+   },
+   "cost_per_task": null,
+   "litellm": "wandb/ibm-granite/granite-4.2-8b",
+   "price_in": 0.06,
+   "price_out": 0.15
+  },
+  "grok2": {
+   "names": [
+    "Grok 2 (2024-08-13)",
+    "Grok-2 (Dec 2024)"
+   ],
+   "scores": {
+    "epoch_eci": 129.73,
+    "lmarena_creative_writing": 1284.14
+   },
+   "cost_per_task": null,
+   "litellm": "vercel_ai_gateway/xai/grok-2",
+   "price_in": 2.0,
+   "price_out": 10.0
+  },
+  "grok2mini": {
+   "names": [
+    "Grok 2 mini (2024-08-13)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1241.4
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "grok3": {
+   "names": [
+    "Grok 3",
+    "Grok 3 Preview (02-24)"
+   ],
+   "scores": {
+    "epoch_eci": 137.49,
+    "lmarena_creative_writing": 1414.22
+   },
+   "cost_per_task": null,
+   "litellm": "azure_ai/grok-3",
+   "price_in": 3.0,
+   "price_out": 15.0
+  },
+  "grok3mini": {
+   "names": [
+    "Grok 3 Mini (High)",
+    "Grok-3 mini"
+   ],
+   "scores": {
+    "epoch_eci": 139.88,
+    "lmarena_creative_writing": 1334.59
+   },
+   "cost_per_task": null,
+   "litellm": "azure_ai/grok-3-mini",
+   "price_in": 0.25,
+   "price_out": 1.27
+  },
+  "grok3minibeta": {
+   "names": [
+    "Grok 3 Mini Beta"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1341.63
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "grok4": {
+   "names": [
+    "Grok 4",
+    "Grok 4 (0709)"
+   ],
+   "scores": {
+    "epoch_eci": 146.9,
+    "lmarena_creative_writing": 1396.13,
+    "lmarena_text_factuality": 1418.28
+   },
+   "cost_per_task": null,
+   "litellm": "azure_ai/grok-4",
+   "price_in": 3.0,
+   "price_out": 15.0
+  },
+  "grok41": {
+   "names": [
+    "Grok 4.1",
+    "Grok 4.1 (Thinking)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1410.94,
+    "lmarena_text_factuality": 1434.35,
+    "lmarena_webdev": 1216.02
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "grok41fast": {
+   "names": [
+    "Grok 4.1 Fast (Reasoning)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1395.11,
+    "lmarena_text_factuality": 1413.65,
+    "lmarena_webdev": 1241.63
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "grok420": {
+   "names": [
+    "Grok 4.20"
+   ],
+   "scores": {
+    "epoch_eci": 152.28
+   },
+   "cost_per_task": null,
+   "litellm": "xai/grok-4.20",
+   "price_in": 1.25,
+   "price_out": 2.5
+  },
+  "grok420beta": {
+   "names": [
+    "Grok 4.20 Beta (Reasoning, 0309)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1432.0,
+    "lmarena_text_factuality": 1455.89,
+    "lmarena_webdev": 1375.68
+   },
+   "cost_per_task": null,
+   "litellm": "xai/grok-4.20-beta",
+   "price_in": 1.25,
+   "price_out": 2.5
+  },
+  "grok420beta1": {
+   "names": [
+    "Grok 4.20 Beta 1"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1438.95,
+    "lmarena_text_factuality": 1452.52
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "grok420multiagentbeta": {
+   "names": [
+    "Grok 4.20 Multi-Agent Beta (0309)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1436.7,
+    "lmarena_text_factuality": 1457.6
+   },
+   "cost_per_task": null,
+   "litellm": "xai/grok-4.20-multi-agent-beta-latest",
+   "price_in": 1.25,
+   "price_out": 2.5
+  },
+  "grok43": {
+   "names": [
+    "Grok 4.3"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1379.67,
+    "lmarena_text_factuality": 1426.58,
+    "lmarena_webdev": 1357.42
+   },
+   "cost_per_task": null,
+   "litellm": "xai/grok-4.3",
+   "price_in": 1.25,
+   "price_out": 2.5
+  },
+  "grok43beta": {
+   "names": [
+    "Grok 4.3 Beta"
+   ],
+   "scores": {
+    "epoch_eci": 149.89
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "grok45": {
+   "names": [
+    "Grok 4.5"
+   ],
+   "scores": {
+    "epoch_eci": 154.98,
+    "lmarena_creative_writing": 1442.14,
+    "lmarena_text_factuality": 1464.91,
+    "lmarena_webdev": 1552.47
+   },
+   "cost_per_task": null,
+   "litellm": "xai/grok-4.5",
+   "price_in": 2.0,
+   "price_out": 6.0
+  },
+  "grok46": {
+   "names": [
+    "Grok 4.6",
+    "Grok 4.6 (High)",
+    "Grok 4.6 (xHigh)"
+   ],
+   "scores": {
+    "epoch_eci": 157.79,
+    "lmarena_creative_writing": 1427.61,
+    "lmarena_text_factuality": 1451.42,
+    "lmarena_webdev": 1618.15
+   },
+   "cost_per_task": 1.3260215,
+   "litellm": "xai/grok-4.6",
+   "price_in": 2.0,
+   "price_out": 6.0
+  },
+  "grok47": {
+   "names": [
+    "Grok 4.7",
+    "Grok 4.7 (xHigh)"
+   ],
+   "scores": {
+    "epoch_eci": 156.18,
+    "lmarena_creative_writing": 1384.04,
+    "lmarena_text_factuality": 1437.78,
+    "lmarena_webdev": 1640.09
+   },
+   "cost_per_task": 3.200790000000001,
+   "litellm": "xai/grok-4.7",
+   "price_in": 2.0,
+   "price_out": 6.0
+  },
+  "grok4fast": {
+   "names": [
+    "Grok 4 Fast",
+    "Grok 4 Fast (Non-Reasoning)",
+    "Grok 4 Fast (Reasoning)"
+   ],
+   "scores": {
+    "epoch_eci": 144.31,
+    "lmarena_creative_writing": 1386.44,
+    "lmarena_text_factuality": 1417.18,
+    "lmarena_webdev": 1158.72
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "grokcodefast1": {
+   "names": [
+    "Grok Code Fast 1"
+   ],
+   "scores": {
+    "lmarena_webdev": 1165.38
+   },
+   "cost_per_task": null,
+   "litellm": "xai/grok-code-fast-1",
+   "price_in": 1.0,
+   "price_out": 2.0
+  },
+  "guanaco33b": {
+   "names": [
+    "Guanaco 33B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1079.84
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "hunyuanlarge": {
+   "names": [
+    "Hunyuan Large (2025-02-10)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1264.17
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "hunyuanlargevision": {
+   "names": [
+    "Hunyuan Large Vision"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1247.95
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "hunyuanstandard": {
+   "names": [
+    "Hunyuan Standard (2025-02-10)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1242.03
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "hunyuanstandard256k": {
+   "names": [
+    "Hunyuan Standard 256K"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1164.92
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "hunyuant1": {
+   "names": [
+    "Hunyuan T1 (20250711)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1392.5
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "hunyuanturbo": {
+   "names": [
+    "Hunyuan Turbo (0110)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1268.84
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "hunyuanturbos": {
+   "names": [
+    "Hunyuan TurboS (20250226)",
+    "Hunyuan TurboS (20250416)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1358.54
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "hunyuanvision15thinking": {
+   "names": [
+    "Hunyuan Vision 1.5 Thinking"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1389.5
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "hy3": {
+   "names": [
+    "Hy3",
+    "Hy3 preview"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1405.25,
+    "lmarena_text_factuality": 1446.25,
+    "lmarena_webdev": 1505.84
+   },
+   "cost_per_task": 0.08266497360000001,
+   "litellm": "kyma/hy3",
+   "price_in": 0.1594,
+   "price_out": 0.6576
+  },
+  "hy4": {
+   "names": [
+    "Hy4",
+    "Hy4 preview"
+   ],
+   "scores": {
+    "lmarena_webdev": 1631.65
+   },
+   "cost_per_task": 0.426427813,
+   "litellm": "tencent/hy4",
+   "price_in": 0.417,
+   "price_out": 1.2505
+  },
+  "inkling": {
+   "names": [
+    "Inkling"
+   ],
+   "scores": {
+    "epoch_eci": 148.39,
+    "lmarena_creative_writing": 1395.13,
+    "lmarena_text_factuality": 1452.2,
+    "lmarena_webdev": 1414.14
+   },
+   "cost_per_task": 0.29953541999999994,
+   "litellm": "baseten/thinkingmachines/inkling",
+   "price_in": 1.0,
+   "price_out": 4.05
+  },
+  "inkling2small": {
+   "names": [
+    "Inkling 2 Small"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1347.87,
+    "lmarena_text_factuality": 1422.65,
+    "lmarena_webdev": 1644.68
+   },
+   "cost_per_task": 0.25609528000000004,
+   "litellm": "nebius/thinkingmachines/Inkling-2-Small",
+   "price_in": 0.3,
+   "price_out": 1.0
+  },
+  "inklingsmall": {
+   "names": [
+    "Inkling-Small"
+   ],
+   "scores": {
+    "epoch_eci": 150.75,
+    "lmarena_creative_writing": 1337.22,
+    "lmarena_text_factuality": 1426.05,
+    "lmarena_webdev": 1408.08
+   },
+   "cost_per_task": 0.16270649999999998,
+   "litellm": "baseten/thinkingmachines/inkling-small",
+   "price_in": 0.5,
+   "price_out": 1.2
+  },
+  "intellect1": {
+   "names": [
+    "INTELLECT-1"
+   ],
+   "scores": {
+    "epoch_eci": 83.54
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "intellect3": {
+   "names": [
+    "INTELLECT-3"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1317.05,
+    "lmarena_text_factuality": 1372.91
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "internlm20b": {
+   "names": [
+    "internlm-20b"
+   ],
+   "scores": {
+    "epoch_eci": 99.09
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "internlm2520bchat": {
+   "names": [
+    "InternLM2.5 20B Chat"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1122.6
+   },
+   "cost_per_task": null,
+   "litellm": "ollama/internlm2_5-20b-chat",
+   "price_in": 0.0,
+   "price_out": 0.0
+  },
+  "internlm7b": {
+   "names": [
+    "internlm-7b"
+   ],
+   "scores": {
+    "epoch_eci": 84.84
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "jamba15large": {
+   "names": [
+    "Jamba 1.5 Large"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1211.58
+   },
+   "cost_per_task": null,
+   "litellm": "jamba-1.5-large",
+   "price_in": 2.0,
+   "price_out": 8.0
+  },
+  "jamba15mini": {
+   "names": [
+    "Jamba 1.5 Mini"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1164.22
+   },
+   "cost_per_task": null,
+   "litellm": "jamba-1.5-mini",
+   "price_in": 0.2,
+   "price_out": 0.4
+  },
+  "katcoderprov1": {
+   "names": [
+    "KAT-Coder-Pro V1"
+   ],
+   "scores": {
+    "lmarena_webdev": 1257.17
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "kimik2": {
+   "names": [
+    "Kimi K2 (Jul 2025)",
+    "Kimi K2 Preview (0711)",
+    "Kimi K2 Preview (0905)"
+   ],
+   "scores": {
+    "epoch_eci": 141.24,
+    "lmarena_creative_writing": 1349.58,
+    "lmarena_text_factuality": 1402.16
+   },
+   "cost_per_task": null,
+   "litellm": "vercel_ai_gateway/moonshotai/kimi-k2",
+   "price_in": 0.55,
+   "price_out": 2.2
+  },
+  "kimik25": {
+   "names": [
+    "Kimi K2.5",
+    "Kimi K2.5 (Instant)",
+    "Kimi K2.5 (Thinking)"
+   ],
+   "scores": {
+    "epoch_eci": 148.76,
+    "lmarena_creative_writing": 1421.81,
+    "lmarena_text_factuality": 1444.8,
+    "lmarena_webdev": 1436.53
+   },
+   "cost_per_task": null,
+   "litellm": "azure_ai/kimi-k2.5",
+   "price_in": 0.6,
+   "price_out": 3.0
+  },
+  "kimik26": {
+   "names": [
+    "Kimi K2.6"
+   ],
+   "scores": {
+    "epoch_eci": 151.56,
+    "lmarena_creative_writing": 1433.37,
+    "lmarena_text_factuality": 1456.2,
+    "lmarena_webdev": 1509.53
+   },
+   "cost_per_task": null,
+   "litellm": "kyma/kimi-k2.6",
+   "price_in": 0.5909,
+   "price_out": 2.758
+  },
+  "kimik27code": {
+   "names": [
+    "Kimi K2.7 Code"
+   ],
+   "scores": {
+    "epoch_eci": 151.15,
+    "lmarena_webdev": 1474.47
+   },
+   "cost_per_task": null,
+   "litellm": "kyma/kimi-k2.7-code",
+   "price_in": 1.009,
+   "price_out": 4.774
+  },
+  "kimik2thinking": {
+   "names": [
+    "Kimi K2 Thinking"
+   ],
+   "scores": {
+    "epoch_eci": 145.43
+   },
+   "cost_per_task": null,
+   "litellm": "azure_ai/kimi-k2-thinking",
+   "price_in": 0.6,
+   "price_out": 2.5
+  },
+  "kimik2thinkingturbo": {
+   "names": [
+    "Kimi K2 Thinking Turbo"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1373.77,
+    "lmarena_text_factuality": 1422.93,
+    "lmarena_webdev": 1321.74
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "kimik3": {
+   "names": [
+    "Kimi K3",
+    "Kimi K3 (Max)"
+   ],
+   "scores": {
+    "epoch_eci": 158.58,
+    "lmarena_creative_writing": 1452.74,
+    "lmarena_text_factuality": 1470.79,
+    "lmarena_webdev": 1657.71
+   },
+   "cost_per_task": 0.8894658,
+   "litellm": "kyma/kimi-k3",
+   "price_in": 3.052,
+   "price_out": 15.258
+  },
+  "kimik31pro": {
+   "names": [
+    "Kimi K3.1 Pro",
+    "Kimi K3.1 Pro (Max)"
+   ],
+   "scores": {
+    "epoch_eci": 161.37,
+    "lmarena_creative_writing": 1438.64,
+    "lmarena_text_factuality": 1477.62,
+    "lmarena_webdev": 1686.23
+   },
+   "cost_per_task": 1.1583907999999998,
+   "litellm": "kyma/kimi-k3.1-pro",
+   "price_in": 2.7,
+   "price_out": 13.5
+  },
+  "koala13b": {
+   "names": [
+    "Koala 13B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 972.82
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "lagunam1": {
+   "names": [
+    "Laguna M.1"
+   ],
+   "scores": {
+    "lmarena_webdev": 1349.84
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "lagunaxs2": {
+   "names": [
+    "Laguna XS.2"
+   ],
+   "scores": {
+    "lmarena_webdev": 1303.54
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "lingflash20": {
+   "names": [
+    "Ling-flash-2.0"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1287.47
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "llama13b": {
+   "names": [
+    "LLaMA 13B",
+    "LLaMA-13B"
+   ],
+   "scores": {
+    "epoch_eci": 85.42,
+    "lmarena_creative_writing": 793.83
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "llama213b": {
+   "names": [
+    "Llama 2-13B"
+   ],
+   "scores": {
+    "epoch_eci": 96.66
+   },
+   "cost_per_task": null,
+   "litellm": "ollama/llama2:13b",
+   "price_in": 0.0,
+   "price_out": 0.0
+  },
+  "llama213bchat": {
+   "names": [
+    "Llama 2 13B Chat"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1046.72
+   },
+   "cost_per_task": null,
+   "litellm": "replicate/meta/llama-2-13b-chat",
+   "price_in": 0.1,
+   "price_out": 0.5
+  },
+  "llama234b": {
+   "names": [
+    "Llama 2-34B"
+   ],
+   "scores": {
+    "epoch_eci": 94.09
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "llama270b": {
+   "names": [
+    "Llama 2-70B"
+   ],
+   "scores": {
+    "epoch_eci": 105.85
+   },
+   "cost_per_task": null,
+   "litellm": "ollama/llama2:70b",
+   "price_in": 0.0,
+   "price_out": 0.0
+  },
+  "llama270bchat": {
+   "names": [
+    "Llama 2 70B Chat"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1074.74
+   },
+   "cost_per_task": null,
+   "litellm": "perplexity/llama-2-70b-chat",
+   "price_in": 0.7,
+   "price_out": 2.8
+  },
+  "llama270bsteerlmchat": {
+   "names": [
+    "Llama 2 70B SteerLM Chat"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1090.37
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "llama27b": {
+   "names": [
+    "Llama 2-7B"
+   ],
+   "scores": {
+    "epoch_eci": 83.38
+   },
+   "cost_per_task": null,
+   "litellm": "ollama/llama2:7b",
+   "price_in": 0.0,
+   "price_out": 0.0
+  },
+  "llama27bchat": {
+   "names": [
+    "Llama 2 7B Chat"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1033.09
+   },
+   "cost_per_task": null,
+   "litellm": "replicate/meta/llama-2-7b-chat",
+   "price_in": 0.05,
+   "price_out": 0.25
+  },
+  "llama31405b": {
+   "names": [
+    "Llama 3.1-405B"
+   ],
+   "scores": {
+    "epoch_eci": 127.8
+   },
+   "cost_per_task": null,
+   "litellm": "snowflake/llama3.1-405b",
+   "price_in": 1.2,
+   "price_out": 1.2
+  },
+  "llama31405binstruct": {
+   "names": [
+    "Llama 3.1 405B Instruct (BF16)",
+    "Llama 3.1 405B Instruct (FP8)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1261.81
+   },
+   "cost_per_task": null,
+   "litellm": "together_ai/meta-llama/Llama-3.1-405B-Instruct",
+   "price_in": 3.5,
+   "price_out": 3.5
+  },
+  "llama3170b": {
+   "names": [
+    "Llama 3.1-70B"
+   ],
+   "scores": {
+    "epoch_eci": 124.7
+   },
+   "cost_per_task": null,
+   "litellm": "cerebras/llama-3.1-70b",
+   "price_in": 0.6,
+   "price_out": 0.6
+  },
+  "llama3170binstruct": {
+   "names": [
+    "Llama 3.1 70B Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1231.73
+   },
+   "cost_per_task": null,
+   "litellm": "perplexity/llama-3.1-70b-instruct",
+   "price_in": 1.0,
+   "price_out": 1.0
+  },
+  "llama318b": {
+   "names": [
+    "Llama 3.1-8B"
+   ],
+   "scores": {
+    "epoch_eci": 111.14
+   },
+   "cost_per_task": null,
+   "litellm": "cerebras/llama3.1-8b",
+   "price_in": 0.1,
+   "price_out": 0.1
+  },
+  "llama318binstruct": {
+   "names": [
+    "Llama 3.1 8B Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1154.16
+   },
+   "cost_per_task": null,
+   "litellm": "lambda_ai/llama3.1-8b-instruct",
+   "price_in": 0.025,
+   "price_out": 0.04
+  },
+  "llama31nemotron51binstruct": {
+   "names": [
+    "Llama 3.1 Nemotron 51B Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1213.1
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "llama31nemotron70binstruct": {
+   "names": [
+    "Llama 3.1 Nemotron 70B Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1268.43
+   },
+   "cost_per_task": null,
+   "litellm": "deepinfra/nvidia/Llama-3.1-Nemotron-70B-Instruct",
+   "price_in": 0.6,
+   "price_out": 0.6
+  },
+  "llama31nemotronultra253bv1": {
+   "names": [
+    "Llama 3.1 Nemotron Ultra 253B v1"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1314.13
+   },
+   "cost_per_task": null,
+   "litellm": "nebius/nvidia/Llama-3.1-Nemotron-Ultra-253B-v1",
+   "price_in": 0.6,
+   "price_out": 1.8
+  },
+  "llama31tulu370b": {
+   "names": [
+    "Llama 3.1 Tulu 3 70B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1231.13
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "llama31tulu38b": {
+   "names": [
+    "Llama 3.1 Tulu 3 8B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1181.33
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "llama321binstruct": {
+   "names": [
+    "Llama 3.2 1B Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1032.63
+   },
+   "cost_per_task": null,
+   "litellm": "novita/meta-llama/llama-3.2-1b-instruct",
+   "price_in": 0.02,
+   "price_out": 0.02
+  },
+  "llama323binstruct": {
+   "names": [
+    "Llama 3.2 3B Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1094.02
+   },
+   "cost_per_task": null,
+   "litellm": "lambda_ai/llama3.2-3b-instruct",
+   "price_in": 0.015,
+   "price_out": 0.025
+  },
+  "llama3290b": {
+   "names": [
+    "Llama 3.2 90B"
+   ],
+   "scores": {
+    "epoch_eci": 122.85
+   },
+   "cost_per_task": null,
+   "litellm": "vercel_ai_gateway/meta/llama-3.2-90b",
+   "price_in": 0.72,
+   "price_out": 0.72
+  },
+  "llama3370b": {
+   "names": [
+    "Llama 3.3 70B"
+   ],
+   "scores": {
+    "epoch_eci": 126.13
+   },
+   "cost_per_task": null,
+   "litellm": "kyma/llama-3.3-70b",
+   "price_in": 0.135,
+   "price_out": 0.432
+  },
+  "llama3370binstruct": {
+   "names": [
+    "Llama 3.3 70B Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1250.29
+   },
+   "cost_per_task": null,
+   "litellm": "azure_ai/Llama-3.3-70B-Instruct",
+   "price_in": 0.71,
+   "price_out": 0.71
+  },
+  "llama33b": {
+   "names": [
+    "LLaMA-33B"
+   ],
+   "scores": {
+    "epoch_eci": 96.64
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "llama33nemotronsuper49bv1": {
+   "names": [
+    "Llama 3.3 Nemotron Super 49B v1"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1287.87
+   },
+   "cost_per_task": null,
+   "litellm": "nebius/nvidia/Llama-3.3-Nemotron-Super-49B-v1",
+   "price_in": 0.1,
+   "price_out": 0.4
+  },
+  "llama33nemotronsuper49bv15": {
+   "names": [
+    "Llama 3.3 Nemotron Super 49B v1.5"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1305.66
+   },
+   "cost_per_task": null,
+   "litellm": "deepinfra/nvidia/Llama-3.3-Nemotron-Super-49B-v1.5",
+   "price_in": 0.1,
+   "price_out": 0.4
+  },
+  "llama370b": {
+   "names": [
+    "Llama 3-70B"
+   ],
+   "scores": {
+    "epoch_eci": 121.22
+   },
+   "cost_per_task": null,
+   "litellm": "ollama/llama3:70b",
+   "price_in": 0.0,
+   "price_out": 0.0
+  },
+  "llama370binstruct": {
+   "names": [
+    "Llama 3 70B Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1209.59
+   },
+   "cost_per_task": null,
+   "litellm": "replicate/meta/llama-3-70b-instruct",
+   "price_in": 0.65,
+   "price_out": 2.75
+  },
+  "llama38b": {
+   "names": [
+    "Llama 3-8B"
+   ],
+   "scores": {
+    "epoch_eci": 109.42
+   },
+   "cost_per_task": null,
+   "litellm": "ollama/llama3:8b",
+   "price_in": 0.0,
+   "price_out": 0.0
+  },
+  "llama38binstruct": {
+   "names": [
+    "Llama 3 8B Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1149.66
+   },
+   "cost_per_task": null,
+   "litellm": "ollama/llama3",
+   "price_in": 0.0,
+   "price_out": 0.0
+  },
+  "llama4maverick": {
+   "names": [
+    "Llama 4 Maverick"
+   ],
+   "scores": {
+    "epoch_eci": 132.08
+   },
+   "cost_per_task": null,
+   "litellm": "kyma/llama-4-maverick",
+   "price_in": 0.3344,
+   "price_out": 1.337
+  },
+  "llama4maverick17b128einstruct": {
+   "names": [
+    "Llama 4 Maverick 17B 128E Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1266.43
+   },
+   "cost_per_task": null,
+   "litellm": "sambanova/Llama-4-Maverick-17B-128E-Instruct",
+   "price_in": 0.63,
+   "price_out": 1.8
+  },
+  "llama4scout": {
+   "names": [
+    "Llama 4 Scout"
+   ],
+   "scores": {
+    "epoch_eci": 127.68
+   },
+   "cost_per_task": null,
+   "litellm": "vercel_ai_gateway/meta/llama-4-scout",
+   "price_in": 0.1,
+   "price_out": 0.3
+  },
+  "llama4scout17b16einstruct": {
+   "names": [
+    "Llama 4 Scout 17B 16E Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1248.83
+   },
+   "cost_per_task": null,
+   "litellm": "azure_ai/Llama-4-Scout-17B-16E-Instruct",
+   "price_in": 0.2,
+   "price_out": 0.78
+  },
+  "llama65b": {
+   "names": [
+    "LLaMA-65B"
+   ],
+   "scores": {
+    "epoch_eci": 101.68
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "llama7b": {
+   "names": [
+    "LLaMA-7B"
+   ],
+   "scores": {
+    "epoch_eci": 77.53
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "longcatflashchat": {
+   "names": [
+    "LongCat-Flash-Chat"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1345.39
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "longcatflashchatexp": {
+   "names": [
+    "LongCat-Flash-Chat Exp (2602)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1387.57,
+    "lmarena_text_factuality": 1428.55
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "magistralmedium": {
+   "names": [
+    "Magistral Medium (2506)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1245.03
+   },
+   "cost_per_task": null,
+   "litellm": "mistral/magistral-medium-latest",
+   "price_in": 1.5,
+   "price_out": 7.5
+  },
+  "mercury": {
+   "names": [
+    "Mercury"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1186.57,
+    "lmarena_text_factuality": 1304.09
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "mercury2": {
+   "names": [
+    "Mercury 2"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1287.71,
+    "lmarena_text_factuality": 1367.75,
+    "lmarena_webdev": 1170.6
+   },
+   "cost_per_task": null,
+   "litellm": "inception/mercury-2",
+   "price_in": 0.25,
+   "price_out": 0.75
+  },
+  "mimov25": {
+   "names": [
+    "MiMo-V2.5"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1391.1,
+    "lmarena_text_factuality": 1438.63,
+    "lmarena_webdev": 1437.93
+   },
+   "cost_per_task": null,
+   "litellm": "kyma/mimo-v2.5",
+   "price_in": 0.1859,
+   "price_out": 0.3718
+  },
+  "mimov25pro": {
+   "names": [
+    "MiMo-V2.5-Pro"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1437.28,
+    "lmarena_text_factuality": 1464.25,
+    "lmarena_webdev": 1479.19
+   },
+   "cost_per_task": null,
+   "litellm": "opencode_go/mimo-v2.5-pro",
+   "price_in": 0.435,
+   "price_out": 0.87
+  },
+  "mimov26flash": {
+   "names": [
+    "MiMo-V2.6-Flash"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1402.0,
+    "lmarena_text_factuality": 1449.37,
+    "lmarena_webdev": 1638.53
+   },
+   "cost_per_task": 0.07505981480000001,
+   "litellm": "kyma/mimo-v2.6-flash",
+   "price_in": 0.189,
+   "price_out": 0.378
+  },
+  "mimov26pro": {
+   "names": [
+    "MiMo-V2.6-Pro"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1467.77,
+    "lmarena_text_factuality": 1484.88,
+    "lmarena_webdev": 1623.84
+   },
+   "cost_per_task": 0.1599013956,
+   "litellm": "kyma/mimo-v2.6-pro",
+   "price_in": 0.5805,
+   "price_out": 1.1745
+  },
+  "mimov2flash": {
+   "names": [
+    "MiMo-V2-Flash (Non-Thinking)",
+    "MiMo-V2-Flash (Thinking)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1376.35,
+    "lmarena_text_factuality": 1422.16,
+    "lmarena_webdev": 1331.23
+   },
+   "cost_per_task": null,
+   "litellm": "novita/xiaomimimo/mimo-v2-flash",
+   "price_in": 0.11,
+   "price_out": 0.33
+  },
+  "mimov2omni": {
+   "names": [
+    "MiMo-V2-Omni"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1392.24,
+    "lmarena_text_factuality": 1435.03
+   },
+   "cost_per_task": null,
+   "litellm": "aihubmix/mimo-v2-omni",
+   "price_in": 0.44,
+   "price_out": 2.2
+  },
+  "mimov2pro": {
+   "names": [
+    "MiMo-V2-Pro"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1415.38,
+    "lmarena_text_factuality": 1443.72,
+    "lmarena_webdev": 1434.31
+   },
+   "cost_per_task": null,
+   "litellm": "aihubmix/mimo-v2-pro",
+   "price_in": 1.1,
+   "price_out": 3.3
+  },
+  "minimaxm1": {
+   "names": [
+    "MiniMax-M1"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1297.67,
+    "lmarena_text_factuality": 1369.64
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "minimaxm2": {
+   "names": [
+    "MiniMax-M2"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1287.02,
+    "lmarena_text_factuality": 1360.11,
+    "lmarena_webdev": 1298.85
+   },
+   "cost_per_task": null,
+   "litellm": "minimax/MiniMax-M2",
+   "price_in": 0.3,
+   "price_out": 1.2
+  },
+  "minimaxm21": {
+   "names": [
+    "MiniMax-M2.1 Preview"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1362.28,
+    "lmarena_text_factuality": 1410.5,
+    "lmarena_webdev": 1384.15
+   },
+   "cost_per_task": null,
+   "litellm": "minimax/MiniMax-M2.1",
+   "price_in": 0.3,
+   "price_out": 1.2
+  },
+  "minimaxm25": {
+   "names": [
+    "MiniMax-M2.5"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1330.49,
+    "lmarena_text_factuality": 1385.0,
+    "lmarena_webdev": 1385.81
+   },
+   "cost_per_task": null,
+   "litellm": "kyma/minimax-m2.5",
+   "price_in": 0.4188,
+   "price_out": 1.675
+  },
+  "minimaxm27": {
+   "names": [
+    "MiniMax-M2.7"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1353.95,
+    "lmarena_text_factuality": 1421.86,
+    "lmarena_webdev": 1397.91
+   },
+   "cost_per_task": null,
+   "litellm": "kyma/minimax-m2.7",
+   "price_in": 0.405,
+   "price_out": 1.62
+  },
+  "minimaxm3": {
+   "names": [
+    "MiniMax-M3"
+   ],
+   "scores": {
+    "epoch_eci": 147.74,
+    "lmarena_creative_writing": 1395.05,
+    "lmarena_text_factuality": 1433.08,
+    "lmarena_webdev": 1484.06
+   },
+   "cost_per_task": 0.37911052,
+   "litellm": "kyma/minimax-m3",
+   "price_in": 0.3956,
+   "price_out": 1.582
+  },
+  "minimaxm31flash": {
+   "names": [
+    "MiniMax-M3.1-Flash"
+   ],
+   "scores": {
+    "lmarena_webdev": 1582.03
+   },
+   "cost_per_task": 0.21146031,
+   "litellm": "kyma/minimax-m3.1-flash",
+   "price_in": 0.2025,
+   "price_out": 0.81
+  },
+  "ministral8b": {
+   "names": [
+    "Ministral 8B (2410)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1174.61
+   },
+   "cost_per_task": null,
+   "litellm": "mistral/ministral-8b-latest",
+   "price_in": 0.15,
+   "price_out": 0.15
+  },
+  "mistral7binstruct": {
+   "names": [
+    "Mistral 7B Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1028.22
+   },
+   "cost_per_task": null,
+   "litellm": "perplexity/mistral-7b-instruct",
+   "price_in": 0.07,
+   "price_out": 0.28
+  },
+  "mistral7binstructv02": {
+   "names": [
+    "Mistral 7B Instruct v0.2"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1067.53
+   },
+   "cost_per_task": null,
+   "litellm": "ollama/mistral-7B-Instruct-v0.2",
+   "price_in": 0.0,
+   "price_out": 0.0
+  },
+  "mistral7bv01": {
+   "names": [
+    "Mistral 7B v0.1"
+   ],
+   "scores": {
+    "epoch_eci": 102.84
+   },
+   "cost_per_task": null,
+   "litellm": "replicate/mistralai/mistral-7b-v0.1",
+   "price_in": 0.05,
+   "price_out": 0.25
+  },
+  "mistrallarge": {
+   "names": [
+    "Mistral Large",
+    "Mistral Large (2402)",
+    "Mistral Large (2411)"
+   ],
+   "scores": {
+    "epoch_eci": 119.81,
+    "lmarena_creative_writing": 1241.68
+   },
+   "cost_per_task": null,
+   "litellm": "azure/mistral-large-latest",
+   "price_in": 8.0,
+   "price_out": 24.0
+  },
+  "mistrallarge2": {
+   "names": [
+    "Mistral Large 2 (2407)",
+    "Mistral Large 2 (Jul 2024)"
+   ],
+   "scores": {
+    "epoch_eci": 126.34,
+    "lmarena_creative_writing": 1242.68
+   },
+   "cost_per_task": null,
+   "litellm": "snowflake/mistral-large2",
+   "price_in": 2.0,
+   "price_out": 6.0
+  },
+  "mistrallarge3": {
+   "names": [
+    "Mistral Large 3"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1386.33,
+    "lmarena_text_factuality": 1434.44,
+    "lmarena_webdev": 1230.88
+   },
+   "cost_per_task": null,
+   "litellm": "mistral/mistral-large-3",
+   "price_in": 0.5,
+   "price_out": 1.5
+  },
+  "mistrallarge4": {
+   "names": [
+    "Mistral Large 4",
+    "Mistral Large 4 Preview"
+   ],
+   "scores": {
+    "epoch_eci": 154.62,
+    "lmarena_creative_writing": 1342.62,
+    "lmarena_text_factuality": 1421.78,
+    "lmarena_webdev": 1566.32
+   },
+   "cost_per_task": 0.31893227,
+   "litellm": "mistral/mistral-large-4",
+   "price_in": 0.7,
+   "price_out": 2.1
+  },
+  "mistralmedium": {
+   "names": [
+    "Mistral Medium"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1157.55
+   },
+   "cost_per_task": null,
+   "litellm": "mistral/mistral-medium",
+   "price_in": 1.5,
+   "price_out": 7.5
+  },
+  "mistralmedium3": {
+   "names": [
+    "Mistral Medium 3",
+    "Mistral Medium 3 (2505)"
+   ],
+   "scores": {
+    "epoch_eci": 132.81,
+    "lmarena_creative_writing": 1343.56
+   },
+   "cost_per_task": null,
+   "litellm": "mistral/mistral-medium-3",
+   "price_in": 1.5,
+   "price_out": 7.5
+  },
+  "mistralmedium31": {
+   "names": [
+    "Mistral Medium 3.1 (2508)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1391.0,
+    "lmarena_text_factuality": 1429.04
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "mistralmedium35": {
+   "names": [
+    "Mistral Medium 3.5"
+   ],
+   "scores": {
+    "epoch_eci": 141.59,
+    "lmarena_creative_writing": 1373.63,
+    "lmarena_text_factuality": 1429.9,
+    "lmarena_webdev": 1263.21
+   },
+   "cost_per_task": 0.2957094,
+   "litellm": "mistral/mistral-medium-3-5",
+   "price_in": 1.5,
+   "price_out": 7.5
+  },
+  "mistralnemo": {
+   "names": [
+    "Mistral NeMo"
+   ],
+   "scores": {
+    "epoch_eci": 113.88
+   },
+   "cost_per_task": null,
+   "litellm": "azure_ai/mistral-nemo",
+   "price_in": 0.15,
+   "price_out": 0.15
+  },
+  "mistralsmall24binstruct": {
+   "names": [
+    "Mistral Small 24B Instruct (2501)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1194.53
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "mistralsmall3124binstruct": {
+   "names": [
+    "Mistral Small 3.1 24B Instruct (2503)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1252.56
+   },
+   "cost_per_task": null,
+   "litellm": "cloudflare/@cf/mistralai/mistral-small-3.1-24b-instruct",
+   "price_in": 0.351,
+   "price_out": 0.555
+  },
+  "mistralsmall32": {
+   "names": [
+    "Mistral Small 3.2 (2506)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1304.49
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "mixtral8x22b": {
+   "names": [
+    "Mixtral 8x22B"
+   ],
+   "scores": {
+    "epoch_eci": 118.69
+   },
+   "cost_per_task": null,
+   "litellm": "fireworks_ai/accounts/fireworks/models/mixtral-8x22b",
+   "price_in": 1.2,
+   "price_out": 1.2
+  },
+  "mixtral8x22binstructv01": {
+   "names": [
+    "Mixtral 8x22B Instruct v0.1"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1141.21
+   },
+   "cost_per_task": null,
+   "litellm": "ollama/mixtral-8x22B-Instruct-v0.1",
+   "price_in": 0.0,
+   "price_out": 0.0
+  },
+  "mixtral8x7b": {
+   "names": [
+    "Mixtral 8x7B"
+   ],
+   "scores": {
+    "epoch_eci": 113.22
+   },
+   "cost_per_task": null,
+   "litellm": "fireworks_ai/accounts/fireworks/models/mixtral-8x7b",
+   "price_in": 0.5,
+   "price_out": 0.5
+  },
+  "mixtral8x7binstructv01": {
+   "names": [
+    "Mixtral 8x7B Instruct v0.1"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1108.63
+   },
+   "cost_per_task": null,
+   "litellm": "ollama/mixtral-8x7B-Instruct-v0.1",
+   "price_in": 0.0,
+   "price_out": 0.0
+  },
+  "mpt30b": {
+   "names": [
+    "MPT-30B"
+   ],
+   "scores": {
+    "epoch_eci": 85.49
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "mpt30bchat": {
+   "names": [
+    "MPT 30B Chat"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1073.9
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "mpt7b": {
+   "names": [
+    "MPT-7B"
+   ],
+   "scores": {
+    "epoch_eci": 73.72
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "mpt7bchat": {
+   "names": [
+    "MPT 7B Chat"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 957.53
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "museember": {
+   "names": [
+    "Muse Ember (Max)"
+   ],
+   "scores": {
+    "lmarena_webdev": 1607.95
+   },
+   "cost_per_task": 0.01997756,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "museglimmer": {
+   "names": [
+    "Muse Glimmer"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1340.63,
+    "lmarena_text_factuality": 1401.85,
+    "lmarena_webdev": 1353.77
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "musespark": {
+   "names": [
+    "Muse Spark"
+   ],
+   "scores": {
+    "epoch_eci": 153.14,
+    "lmarena_creative_writing": 1458.97,
+    "lmarena_text_factuality": 1467.86
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "musespark11": {
+   "names": [
+    "Muse Spark 1.1"
+   ],
+   "scores": {
+    "epoch_eci": 154.87,
+    "lmarena_creative_writing": 1435.07,
+    "lmarena_text_factuality": 1463.29,
+    "lmarena_webdev": 1541.55
+   },
+   "cost_per_task": null,
+   "litellm": "kyma/muse-spark-1.1",
+   "price_in": 1.542,
+   "price_out": 5.243
+  },
+  "musespark12": {
+   "names": [
+    "Muse Spark 1.2",
+    "Muse Spark 1.2 (xHigh)"
+   ],
+   "scores": {
+    "epoch_eci": 155.04,
+    "lmarena_creative_writing": 1439.25,
+    "lmarena_text_factuality": 1478.37,
+    "lmarena_webdev": 1533.94
+   },
+   "cost_per_task": 0.4116305,
+   "litellm": "kyma/muse-spark-1.2",
+   "price_in": 1.773,
+   "price_out": 6.025
+  },
+  "musespark13": {
+   "names": [
+    "Muse Spark 1.3",
+    "Muse Spark 1.3 (Max)",
+    "Muse Spark 1.3 (xHigh)"
+   ],
+   "scores": {
+    "epoch_eci": 158.24,
+    "lmarena_creative_writing": 1467.03,
+    "lmarena_text_factuality": 1480.68,
+    "lmarena_webdev": 1655.13
+   },
+   "cost_per_task": 0.4654368500000001,
+   "litellm": "kyma/muse-spark-1.3",
+   "price_in": 1.688,
+   "price_out": 5.738
+  },
+  "musesparkopen": {
+   "names": [
+    "Muse Spark Open",
+    "Muse Spark Open (Max)"
+   ],
+   "scores": {
+    "epoch_eci": 155.42,
+    "lmarena_webdev": 1527.45
+   },
+   "cost_per_task": null,
+   "litellm": "kyma/muse-spark-open",
+   "price_in": 1.688,
+   "price_out": 5.738
+  },
+  "musewonder": {
+   "names": [
+    "Muse Wonder",
+    "Muse Wonder (Max)"
+   ],
+   "scores": {
+    "epoch_eci": 161.68,
+    "lmarena_creative_writing": 1492.74,
+    "lmarena_text_factuality": 1494.44,
+    "lmarena_webdev": 1647.34
+   },
+   "cost_per_task": 1.1554890666666666,
+   "litellm": "kyma/muse-wonder",
+   "price_in": 5.4,
+   "price_out": 27.0
+  },
+  "musewonderfull": {
+   "names": [
+    "Muse Wonder Full (Max)"
+   ],
+   "scores": {
+    "lmarena_webdev": 1723.85
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "nemotron3ultra": {
+   "names": [
+    "Nemotron 3 Ultra"
+   ],
+   "scores": {
+    "epoch_eci": 146.95
+   },
+   "cost_per_task": 0.1261755,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "nemotron415b": {
+   "names": [
+    "Nemotron-4 15B"
+   ],
+   "scores": {
+    "epoch_eci": 99.24
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "nemotron4340binstruct": {
+   "names": [
+    "Nemotron-4 340B Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1202.39
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "noushermes2mixtral8x7bdpo": {
+   "names": [
+    "Nous Hermes 2 Mixtral 8x7B DPO"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1101.52
+   },
+   "cost_per_task": null,
+   "litellm": "fireworks_ai/accounts/fireworks/models/nous-hermes-2-mixtral-8x7b-dpo",
+   "price_in": 0.5,
+   "price_out": 0.5
+  },
+  "nvidianemotron35lightning30ba3b": {
+   "names": [
+    "NVIDIA-Nemotron-3.5-Lightning-30B-A3B (NVFP4)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1259.28,
+    "lmarena_text_factuality": 1368.7
+   },
+   "cost_per_task": null,
+   "litellm": "wandb/nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B",
+   "price_in": 0.07,
+   "price_out": 0.2
+  },
+  "nvidianemotron35supervl120ba12b": {
+   "names": [
+    "NVIDIA-Nemotron-3.5-Super-VL-120B-A12B (NVFP4)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1377.21,
+    "lmarena_text_factuality": 1425.67,
+    "lmarena_webdev": 1400.96
+   },
+   "cost_per_task": null,
+   "litellm": "wandb/nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B",
+   "price_in": 0.15,
+   "price_out": 0.5
+  },
+  "nvidianemotron3nano30ba3b": {
+   "names": [
+    "NVIDIA-Nemotron-3-Nano-30B-A3B (BF16)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1269.9,
+    "lmarena_text_factuality": 1362.13
+   },
+   "cost_per_task": null,
+   "litellm": "nebius/nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+   "price_in": 0.06,
+   "price_out": 0.24
+  },
+  "nvidianemotron3super120ba12b": {
+   "names": [
+    "NVIDIA-Nemotron-3-Super-120B-A12B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1315.15,
+    "lmarena_text_factuality": 1389.24
+   },
+   "cost_per_task": null,
+   "litellm": "deepinfra/nvidia/NVIDIA-Nemotron-3-Super-120B-A12B",
+   "price_in": 0.075,
+   "price_out": 0.4
+  },
+  "nvidianemotron3ultra550ba55b": {
+   "names": [
+    "NVIDIA-Nemotron-3-Ultra-550B-A55B (NVFP4)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1398.73,
+    "lmarena_text_factuality": 1431.77
+   },
+   "cost_per_task": null,
+   "litellm": "wandb/nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B",
+   "price_in": 0.5,
+   "price_out": 2.15
+  },
+  "o1": {
+   "names": [
+    "o1",
+    "o1 (2024-12-17)",
+    "o1-preview"
+   ],
+   "scores": {
+    "epoch_eci": 141.16,
+    "lmarena_creative_writing": 1347.31
+   },
+   "cost_per_task": null,
+   "litellm": "o1",
+   "price_in": 15.0,
+   "price_out": 60.0
+  },
+  "o1mini": {
+   "names": [
+    "o1-mini"
+   ],
+   "scores": {
+    "epoch_eci": 135.3,
+    "lmarena_creative_writing": 1244.12
+   },
+   "cost_per_task": null,
+   "litellm": "azure/o1-mini",
+   "price_in": 1.1,
+   "price_out": 4.4
+  },
+  "o3": {
+   "names": [
+    "o3",
+    "o3 (2025-04-16)"
+   ],
+   "scores": {
+    "epoch_eci": 147.05,
+    "lmarena_creative_writing": 1358.6,
+    "lmarena_text_factuality": 1404.46
+   },
+   "cost_per_task": null,
+   "litellm": "o3",
+   "price_in": 2.0,
+   "price_out": 8.0
+  },
+  "o3mini": {
+   "names": [
+    "o3-mini",
+    "o3-mini (High)"
+   ],
+   "scores": {
+    "epoch_eci": 140.61,
+    "lmarena_creative_writing": 1285.67
+   },
+   "cost_per_task": null,
+   "litellm": "o3-mini",
+   "price_in": 1.1,
+   "price_out": 4.4
+  },
+  "o3pro": {
+   "names": [
+    "o3-pro"
+   ],
+   "scores": {
+    "epoch_eci": 147.46
+   },
+   "cost_per_task": null,
+   "litellm": "o3-pro",
+   "price_in": 20.0,
+   "price_out": 80.0
+  },
+  "o4mini": {
+   "names": [
+    "o4-mini",
+    "o4-mini (2025-04-16)"
+   ],
+   "scores": {
+    "epoch_eci": 145.25,
+    "lmarena_creative_writing": 1294.0,
+    "lmarena_text_factuality": 1367.48
+   },
+   "cost_per_task": null,
+   "litellm": "o4-mini",
+   "price_in": 1.1,
+   "price_out": 4.4
+  },
+  "olmo232binstruct": {
+   "names": [
+    "OLMo 2 32B Instruct (0325)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1198.38
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "olmo3132binstruct": {
+   "names": [
+    "Olmo 3.1 32B Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1265.63,
+    "lmarena_text_factuality": 1341.55
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "olmo3132bthink": {
+   "names": [
+    "Olmo 3.1 32B Think"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1226.61,
+    "lmarena_text_factuality": 1299.8
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "olmo332bthink": {
+   "names": [
+    "Olmo 3 32B Think"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1254.24,
+    "lmarena_text_factuality": 1318.38
+   },
+   "cost_per_task": null,
+   "litellm": "publicai/allenai/Olmo-3-32B-Think",
+   "price_in": 0.0,
+   "price_out": 0.0
+  },
+  "olmo7binstruct": {
+   "names": [
+    "OLMo 7B Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 989.58
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "openassistantpythia12b": {
+   "names": [
+    "OpenAssistant Pythia 12B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 923.15
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "openchat35": {
+   "names": [
+    "OpenChat 3.5",
+    "OpenChat 3.5 (0106)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1125.42
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "openhermes25mistral7b": {
+   "names": [
+    "OpenHermes 2.5 Mistral 7B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1097.03
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "openllama7b": {
+   "names": [
+    "open_llama_7b"
+   ],
+   "scores": {
+    "epoch_eci": 64.42
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "palm2": {
+   "names": [
+    "PaLM 2"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 991.27
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "palm2l": {
+   "names": [
+    "PaLM 2-L"
+   ],
+   "scores": {
+    "epoch_eci": 114.1
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "palm2m": {
+   "names": [
+    "PaLM 2-M"
+   ],
+   "scores": {
+    "epoch_eci": 98.32
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "palm2s": {
+   "names": [
+    "PaLM 2-S"
+   ],
+   "scores": {
+    "epoch_eci": 94.12
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "phi15": {
+   "names": [
+    "Phi-1.5"
+   ],
+   "scores": {
+    "epoch_eci": 68.7
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "phi2": {
+   "names": [
+    "Phi-2"
+   ],
+   "scores": {
+    "epoch_eci": 96.38
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "phi3medium14b": {
+   "names": [
+    "phi-3-medium 14B"
+   ],
+   "scores": {
+    "epoch_eci": 114.35
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "phi3medium4kinstruct": {
+   "names": [
+    "Phi-3 Medium 4K Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1106.32
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "phi3mini128kinstruct": {
+   "names": [
+    "Phi-3 Mini 128K Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1024.05
+   },
+   "cost_per_task": null,
+   "litellm": "fireworks_ai/accounts/fireworks/models/phi-3-mini-128k-instruct",
+   "price_in": 0.1,
+   "price_out": 0.1
+  },
+  "phi3mini38b": {
+   "names": [
+    "phi-3-mini 3.8B"
+   ],
+   "scores": {
+    "epoch_eci": 110.63
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "phi3mini4kinstruct": {
+   "names": [
+    "Phi-3 Mini 4K Instruct",
+    "Phi-3 Mini 4K Instruct (June 2024)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1044.49
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "phi3small74b": {
+   "names": [
+    "phi-3-small 7.4B"
+   ],
+   "scores": {
+    "epoch_eci": 116.45
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "phi3small8kinstruct": {
+   "names": [
+    "Phi-3 Small 8K Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1082.66
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "phi4": {
+   "names": [
+    "Phi-4"
+   ],
+   "scores": {
+    "epoch_eci": 129.04,
+    "lmarena_creative_writing": 1181.44
+   },
+   "cost_per_task": null,
+   "litellm": "azure_ai/Phi-4",
+   "price_in": 0.125,
+   "price_out": 0.5
+  },
+  "qwen14b": {
+   "names": [
+    "Qwen-14B"
+   ],
+   "scores": {
+    "epoch_eci": 101.86
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "qwen14bchat": {
+   "names": [
+    "Qwen-14B-Chat"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1027.53
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "qwen15110bchat": {
+   "names": [
+    "Qwen1.5-110B-Chat"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1147.76
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "qwen1514bchat": {
+   "names": [
+    "Qwen1.5-14B-Chat"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1090.37
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "qwen1532bchat": {
+   "names": [
+    "Qwen1.5-32B-Chat"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1082.77
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "qwen154bchat": {
+   "names": [
+    "Qwen1.5-4B-Chat"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 969.1
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "qwen1572bchat": {
+   "names": [
+    "Qwen1.5-72B-Chat"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1136.92
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "qwen157bchat": {
+   "names": [
+    "Qwen1.5-7B-Chat"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1034.39
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "qwen18b": {
+   "names": [
+    "Qwen-1_8B"
+   ],
+   "scores": {
+    "epoch_eci": 59.93
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "qwen2572b": {
+   "names": [
+    "Qwen2.5-72B"
+   ],
+   "scores": {
+    "epoch_eci": 127.18
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "qwen2572binstruct": {
+   "names": [
+    "Qwen2.5-72B-Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1221.12
+   },
+   "cost_per_task": null,
+   "litellm": "nebius/Qwen/Qwen2.5-72B-Instruct",
+   "price_in": 0.13,
+   "price_out": 0.4
+  },
+  "qwen25coder": {
+   "names": [
+    "Qwen2.5-Coder (1.5B)",
+    "Qwen2.5-Coder (7B)"
+   ],
+   "scores": {
+    "epoch_eci": 107.7
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "qwen25coder05b": {
+   "names": [
+    "Qwen2.5-Coder-0.5B"
+   ],
+   "scores": {
+    "epoch_eci": 68.36
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "qwen25coder14b": {
+   "names": [
+    "Qwen2.5-Coder-14B"
+   ],
+   "scores": {
+    "epoch_eci": 113.92
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "qwen25coder32b": {
+   "names": [
+    "Qwen2.5-Coder-32B"
+   ],
+   "scores": {
+    "epoch_eci": 118.94
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "qwen25coder32binstruct": {
+   "names": [
+    "Qwen2.5-Coder-32B-Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1173.76
+   },
+   "cost_per_task": null,
+   "litellm": "lambda_ai/qwen25-coder-32b-instruct",
+   "price_in": 0.05,
+   "price_out": 0.1
+  },
+  "qwen25coder3b": {
+   "names": [
+    "Qwen2.5-Coder-3B"
+   ],
+   "scores": {
+    "epoch_eci": 97.17
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "qwen25max": {
+   "names": [
+    "Qwen2.5-Max"
+   ],
+   "scores": {
+    "epoch_eci": 131.15,
+    "lmarena_creative_writing": 1338.6
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "qwen25plus": {
+   "names": [
+    "Qwen2.5-Plus (1127)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1261.69
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "qwen272b": {
+   "names": [
+    "Qwen2-72B"
+   ],
+   "scores": {
+    "epoch_eci": 122.3
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "qwen272binstruct": {
+   "names": [
+    "Qwen2-72B-Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1180.75
+   },
+   "cost_per_task": null,
+   "litellm": "fireworks_ai/accounts/fireworks/models/qwen2-72b-instruct",
+   "price_in": 0.9,
+   "price_out": 0.9
+  },
+  "qwen314b": {
+   "names": [
+    "Qwen3-14B"
+   ],
+   "scores": {
+    "epoch_eci": 136.14
+   },
+   "cost_per_task": null,
+   "litellm": "nebius/Qwen/Qwen3-14B",
+   "price_in": 0.08,
+   "price_out": 0.24
+  },
+  "qwen3235ba22b": {
+   "names": [
+    "Qwen3-235B-A22B",
+    "Qwen3-235B-A22B (Non-Thinking)"
+   ],
+   "scores": {
+    "epoch_eci": 138.42,
+    "lmarena_creative_writing": 1356.6
+   },
+   "cost_per_task": null,
+   "litellm": "nebius/Qwen/Qwen3-235B-A22B",
+   "price_in": 0.2,
+   "price_out": 0.6
+  },
+  "qwen3235ba22binstruct": {
+   "names": [
+    "Qwen3-235B-A22B-Instruct (2507)",
+    "Qwen3-235B-A22B-Instruct (Jul 2025)"
+   ],
+   "scores": {
+    "epoch_eci": 138.05,
+    "lmarena_creative_writing": 1374.61,
+    "lmarena_text_factuality": 1430.79
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "qwen3235ba22bthinking": {
+   "names": [
+    "Qwen3-235B-A22B-Thinking (2507)",
+    "Qwen3-235B-A22B-Thinking (Jul 2025)"
+   ],
+   "scores": {
+    "epoch_eci": 143.21,
+    "lmarena_creative_writing": 1383.52
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "qwen330ba3b": {
+   "names": [
+    "Qwen3-30B-A3B"
+   ],
+   "scores": {
+    "epoch_eci": 134.14,
+    "lmarena_creative_writing": 1271.41
+   },
+   "cost_per_task": null,
+   "litellm": "gmi/Qwen/Qwen3-30B-A3B",
+   "price_in": 0.08,
+   "price_out": 0.25
+  },
+  "qwen330ba3binstruct": {
+   "names": [
+    "Qwen3-30B-A3B-Instruct (2507)",
+    "Qwen3-30B-A3B-Instruct (Jul 2025)"
+   ],
+   "scores": {
+    "epoch_eci": 135.15,
+    "lmarena_creative_writing": 1317.42
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "qwen330ba3bthinking": {
+   "names": [
+    "Qwen3-30B-A3B-Thinking (Jul 2025)"
+   ],
+   "scores": {
+    "epoch_eci": 138.35
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "qwen332b": {
+   "names": [
+    "Qwen3-32B"
+   ],
+   "scores": {
+    "epoch_eci": 136.89,
+    "lmarena_creative_writing": 1297.19
+   },
+   "cost_per_task": null,
+   "litellm": "kyma/qwen-3-32b",
+   "price_in": 0.108,
+   "price_out": 0.378
+  },
+  "qwen35122ba10b": {
+   "names": [
+    "Qwen3.5-122B-A10B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1367.82,
+    "lmarena_text_factuality": 1427.65,
+    "lmarena_webdev": 1360.17
+   },
+   "cost_per_task": null,
+   "litellm": "aihubmix/qwen3.5-122b-a10b",
+   "price_in": 0.1126,
+   "price_out": 0.9008
+  },
+  "qwen3527b": {
+   "names": [
+    "Qwen3.5-27B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1362.24,
+    "lmarena_text_factuality": 1419.19,
+    "lmarena_webdev": 1357.41
+   },
+   "cost_per_task": null,
+   "litellm": "empiriolabs/qwen3-5-27b",
+   "price_in": 0.086,
+   "price_out": 0.688
+  },
+  "qwen3535ba3b": {
+   "names": [
+    "Qwen3.5-35B-A3B"
+   ],
+   "scores": {
+    "epoch_eci": 143.98,
+    "lmarena_creative_writing": 1346.82,
+    "lmarena_text_factuality": 1407.22,
+    "lmarena_webdev": 1252.97
+   },
+   "cost_per_task": null,
+   "litellm": "empiriolabs/qwen3-5-35b-a3b",
+   "price_in": 0.057,
+   "price_out": 0.459
+  },
+  "qwen35397ba17b": {
+   "names": [
+    "Qwen3.5 397B-A17B",
+    "Qwen3.5-397B-A17B"
+   ],
+   "scores": {
+    "epoch_eci": 147.9,
+    "lmarena_creative_writing": 1402.07,
+    "lmarena_text_factuality": 1444.21,
+    "lmarena_webdev": 1400.13
+   },
+   "cost_per_task": null,
+   "litellm": "aihubmix/qwen3.5-397b-a17b",
+   "price_in": 0.1644,
+   "price_out": 0.9864
+  },
+  "qwen359b": {
+   "names": [
+    "Qwen3.5-9B"
+   ],
+   "scores": {
+    "epoch_eci": 139.32
+   },
+   "cost_per_task": null,
+   "litellm": "empiriolabs/qwen3-5-9b",
+   "price_in": 0.09,
+   "price_out": 0.13
+  },
+  "qwen35flash": {
+   "names": [
+    "Qwen 3.5 Flash (hosted 35B-A3B)",
+    "Qwen3.5-Flash"
+   ],
+   "scores": {
+    "epoch_eci": 143.81,
+    "lmarena_creative_writing": 1343.16,
+    "lmarena_text_factuality": 1413.6,
+    "lmarena_webdev": 1243.69
+   },
+   "cost_per_task": null,
+   "litellm": "empiriolabs/qwen3-5-flash",
+   "price_in": 0.09,
+   "price_out": 0.368
+  },
+  "qwen35max": {
+   "names": [
+    "Qwen3.5-Max-Preview"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1465.24,
+    "lmarena_text_factuality": 1475.13
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "qwen35plus": {
+   "names": [
+    "Qwen 3.5 Plus (hosted 397B-A17B)"
+   ],
+   "scores": {
+    "epoch_eci": 147.29
+   },
+   "cost_per_task": null,
+   "litellm": "empiriolabs/qwen3-5-plus",
+   "price_in": 0.36,
+   "price_out": 2.21
+  },
+  "qwen3627b": {
+   "names": [
+    "Qwen3.6 27B"
+   ],
+   "scores": {
+    "epoch_eci": 146.73
+   },
+   "cost_per_task": null,
+   "litellm": "aihubmix/qwen3.6-27b",
+   "price_in": 0.422,
+   "price_out": 2.532
+  },
+  "qwen3635ba3b": {
+   "names": [
+    "Qwen 3.6 35B-A3B"
+   ],
+   "scores": {
+    "epoch_eci": 144.02
+   },
+   "cost_per_task": null,
+   "litellm": "zerogpu/qwen3.6-35b-a3b",
+   "price_in": 0.2,
+   "price_out": 1.5
+  },
+  "qwen36flash": {
+   "names": [
+    "Qwen 3.6 Flash"
+   ],
+   "scores": {
+    "epoch_eci": 143.65
+   },
+   "cost_per_task": null,
+   "litellm": "empiriolabs/qwen3-6-flash",
+   "price_in": 0.25,
+   "price_out": 1.5
+  },
+  "qwen36max": {
+   "names": [
+    "Qwen 3.6 Max (Preview)",
+    "Qwen3.6-Max-Preview"
+   ],
+   "scores": {
+    "epoch_eci": 149.83,
+    "lmarena_creative_writing": 1436.13,
+    "lmarena_text_factuality": 1452.16,
+    "lmarena_webdev": 1482.34
+   },
+   "cost_per_task": null,
+   "litellm": "aihubmix/qwen3.6-max-preview",
+   "price_in": 1.268,
+   "price_out": 7.608
+  },
+  "qwen36plus": {
+   "names": [
+    "Qwen 3.6 Plus",
+    "Qwen3.6-Plus"
+   ],
+   "scores": {
+    "epoch_eci": 148.88,
+    "lmarena_creative_writing": 1403.92,
+    "lmarena_text_factuality": 1437.39,
+    "lmarena_webdev": 1461.48
+   },
+   "cost_per_task": null,
+   "litellm": "kyma/qwen-3.6-plus",
+   "price_in": 0.4388,
+   "price_out": 2.633
+  },
+  "qwen37max": {
+   "names": [
+    "Qwen3.7-Max",
+    "Qwen3.7-Max (20260517)",
+    "Qwen3.7-Max-Preview"
+   ],
+   "scores": {
+    "epoch_eci": 154.54,
+    "lmarena_creative_writing": 1447.19,
+    "lmarena_text_factuality": 1479.74,
+    "lmarena_webdev": 1515.22
+   },
+   "cost_per_task": 0.2784901475,
+   "litellm": "kyma/qwen-3.7-max",
+   "price_in": 2.071,
+   "price_out": 6.207
+  },
+  "qwen37plus": {
+   "names": [
+    "Qwen3.7-Plus"
+   ],
+   "scores": {
+    "epoch_eci": 147.87,
+    "lmarena_creative_writing": 1438.06,
+    "lmarena_text_factuality": 1452.32
+   },
+   "cost_per_task": 0.173622848,
+   "litellm": "kyma/qwen-3.7-plus",
+   "price_in": 0.4325,
+   "price_out": 1.731
+  },
+  "qwen3827b": {
+   "names": [
+    "Qwen 3.8 27B",
+    "Qwen3.8-27B"
+   ],
+   "scores": {
+    "epoch_eci": 152.64,
+    "lmarena_creative_writing": 1376.59,
+    "lmarena_text_factuality": 1435.41,
+    "lmarena_webdev": 1589.91
+   },
+   "cost_per_task": 0.3860743,
+   "litellm": "kyma/qwen3.8-27b",
+   "price_in": 0.3826,
+   "price_out": 2.732
+  },
+  "qwen38b": {
+   "names": [
+    "Qwen3-8B"
+   ],
+   "scores": {
+    "epoch_eci": 132.09
+   },
+   "cost_per_task": null,
+   "litellm": "llamagate/qwen3-8b",
+   "price_in": 0.04,
+   "price_out": 0.14
+  },
+  "qwen38flashnext": {
+   "names": [
+    "Qwen3.8-Flash-Next"
+   ],
+   "scores": {
+    "lmarena_webdev": 1624.53
+   },
+   "cost_per_task": 0.22613438599999997,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "qwen38max": {
+   "names": [
+    "Qwen 3.8 Max",
+    "Qwen3.8 Max (0902)",
+    "Qwen3.8-Max",
+    "Qwen3.8-Max (0902)"
+   ],
+   "scores": {
+    "epoch_eci": 157.59,
+    "lmarena_creative_writing": 1482.04,
+    "lmarena_text_factuality": 1473.02,
+    "lmarena_webdev": 1675.58
+   },
+   "cost_per_task": 1.2359138,
+   "litellm": "kyma/qwen-3.8-max",
+   "price_in": 2.228,
+   "price_out": 6.684
+  },
+  "qwen3coder480ba35binstruct": {
+   "names": [
+    "Qwen3-Coder-480B-A35B-Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1333.2,
+    "lmarena_text_factuality": 1399.95,
+    "lmarena_webdev": 1274.3
+   },
+   "cost_per_task": null,
+   "litellm": "novita/qwen/qwen3-coder-480b-a35b-instruct",
+   "price_in": 0.38,
+   "price_out": 1.55
+  },
+  "qwen3max": {
+   "names": [
+    "Qwen3-Max",
+    "Qwen3-Max (2025-09-23)",
+    "Qwen3-Max-Preview"
+   ],
+   "scores": {
+    "epoch_eci": 142.57,
+    "lmarena_creative_writing": 1401.64,
+    "lmarena_text_factuality": 1441.8
+   },
+   "cost_per_task": null,
+   "litellm": "novita/qwen/qwen3-max",
+   "price_in": 2.11,
+   "price_out": 8.45
+  },
+  "qwen3next80ba3binstruct": {
+   "names": [
+    "Qwen3-Next-80B-A3B-Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1333.22,
+    "lmarena_text_factuality": 1418.58
+   },
+   "cost_per_task": null,
+   "litellm": "dashscope/qwen3-next-80b-a3b-instruct",
+   "price_in": 0.15,
+   "price_out": 1.2
+  },
+  "qwen3next80ba3bthinking": {
+   "names": [
+    "Qwen3-Next-80B-A3B-Thinking"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1314.59
+   },
+   "cost_per_task": null,
+   "litellm": "dashscope/qwen3-next-80b-a3b-thinking",
+   "price_in": 0.15,
+   "price_out": 1.2
+  },
+  "qwen3vl235ba22binstruct": {
+   "names": [
+    "Qwen3-VL-235B-A22B-Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1364.9,
+    "lmarena_text_factuality": 1414.39
+   },
+   "cost_per_task": null,
+   "litellm": "dashscope/qwen3-vl-235b-a22b-instruct",
+   "price_in": 0.4,
+   "price_out": 1.6
+  },
+  "qwen3vl235ba22bthinking": {
+   "names": [
+    "Qwen3-VL-235B-A22B-Thinking"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1344.16
+   },
+   "cost_per_task": null,
+   "litellm": "dashscope/qwen3-vl-235b-a22b-thinking",
+   "price_in": 0.4,
+   "price_out": 4.0
+  },
+  "qwen4max": {
+   "names": [
+    "Qwen4-Max (xHigh)"
+   ],
+   "scores": {
+    "lmarena_webdev": 1749.81
+   },
+   "cost_per_task": 1.47294,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "qwen7b": {
+   "names": [
+    "Qwen-7B"
+   ],
+   "scores": {
+    "epoch_eci": 89.22
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "qwenmax": {
+   "names": [
+    "Qwen-Max (0919)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1247.95
+   },
+   "cost_per_task": null,
+   "litellm": "dashscope/qwen-max",
+   "price_in": 1.6,
+   "price_out": 6.4
+  },
+  "qwenplus": {
+   "names": [
+    "Qwen-Plus (0125)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1292.33
+   },
+   "cost_per_task": null,
+   "litellm": "dashscope/qwen-plus",
+   "price_in": 0.4,
+   "price_out": 1.2
+  },
+  "qwq32b": {
+   "names": [
+    "QwQ-32B",
+    "QwQ-32B-Preview"
+   ],
+   "scores": {
+    "epoch_eci": 136.48,
+    "lmarena_creative_writing": 1287.45
+   },
+   "cost_per_task": null,
+   "litellm": "nebius/Qwen/QwQ-32B",
+   "price_in": 0.15,
+   "price_out": 0.45
+  },
+  "redpajamaincite7bbase": {
+   "names": [
+    "RedPajama-INCITE-7B-Base"
+   ],
+   "scores": {
+    "epoch_eci": 58.01
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "rekacore": {
+   "names": [
+    "Reka Core (20240904)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1236.09
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "rekaflash": {
+   "names": [
+    "Reka Flash (20240904)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1202.08
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "rekaflash21b": {
+   "names": [
+    "Reka Flash 21B (20240226)",
+    "Reka Flash 21B (Online, 20240226)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1130.39
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "ringflash20": {
+   "names": [
+    "Ring-flash-2.0"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1269.92
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "rwkv4raven14b": {
+   "names": [
+    "RWKV-4 Raven 14B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 933.62
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "seed21pro": {
+   "names": [
+    "Seed2.1 Pro Preview"
+   ],
+   "scores": {
+    "lmarena_webdev": 1519.37
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "smollm217binstruct": {
+   "names": [
+    "SmolLM2 1.7B Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1031.28
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "snowflakearcticinstruct": {
+   "names": [
+    "Snowflake Arctic Instruct"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1080.78
+   },
+   "cost_per_task": null,
+   "litellm": "replicate/snowflake/snowflake-arctic-instruct",
+   "price_in": 20.0,
+   "price_out": 20.0
+  },
+  "solar107binstructv10": {
+   "names": [
+    "SOLAR 10.7B Instruct v1.0"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1089.21
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "solarpro4": {
+   "names": [
+    "Solar Pro 4"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1316.8,
+    "lmarena_text_factuality": 1414.69,
+    "lmarena_webdev": 1368.99
+   },
+   "cost_per_task": 0.041036742,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "sparkx26": {
+   "names": [
+    "Spark-X2.6"
+   ],
+   "scores": {
+    "lmarena_webdev": 1484.87
+   },
+   "cost_per_task": 0.08322359200000001,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "stablebeluga2": {
+   "names": [
+    "Stable Beluga 2"
+   ],
+   "scores": {
+    "epoch_eci": 109.53
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "stablelmtunedalpha7b": {
+   "names": [
+    "StableLM Tuned Alpha 7B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 867.74
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "starcoder215b": {
+   "names": [
+    "StarCoder 2 15B"
+   ],
+   "scores": {
+    "epoch_eci": 96.31
+   },
+   "cost_per_task": null,
+   "litellm": "fireworks_ai/accounts/fireworks/models/starcoder2-15b",
+   "price_in": 0.2,
+   "price_out": 0.2
+  },
+  "starcoder23b": {
+   "names": [
+    "StarCoder 2 3B"
+   ],
+   "scores": {
+    "epoch_eci": 66.94
+   },
+   "cost_per_task": null,
+   "litellm": "fireworks_ai/accounts/fireworks/models/starcoder2-3b",
+   "price_in": 0.1,
+   "price_out": 0.1
+  },
+  "starcoder27b": {
+   "names": [
+    "StarCoder 2 7B"
+   ],
+   "scores": {
+    "epoch_eci": 72.65
+   },
+   "cost_per_task": null,
+   "litellm": "fireworks_ai/accounts/fireworks/models/starcoder2-7b",
+   "price_in": 0.2,
+   "price_out": 0.2
+  },
+  "starlinglm7balpha": {
+   "names": [
+    "Starling LM 7B Alpha"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1099.03
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "starlinglm7bbeta": {
+   "names": [
+    "Starling LM 7B Beta"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1095.51
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "step1oturbo": {
+   "names": [
+    "Step-1o Turbo (202506)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1306.96
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "step216kexp": {
+   "names": [
+    "Step-2 16K Exp (202412)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1327.45
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "step3": {
+   "names": [
+    "Step-3"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1321.57
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "step35flash": {
+   "names": [
+    "Step-3.5-Flash"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1356.58,
+    "lmarena_text_factuality": 1415.82
+   },
+   "cost_per_task": null,
+   "litellm": "empiriolabs/step-3-5-flash",
+   "price_in": 0.1,
+   "price_out": 0.3
+  },
+  "step5": {
+   "names": [
+    "Step 5 Preview",
+    "Step 5 Preview (High)"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1414.53,
+    "lmarena_text_factuality": 1448.69,
+    "lmarena_webdev": 1571.75
+   },
+   "cost_per_task": 0.7049517000000001,
+   "litellm": "kyma/step-5-preview",
+   "price_in": 1.35,
+   "price_out": 3.645
+  },
+  "stripedhyenanous7b": {
+   "names": [
+    "StripedHyena Nous 7B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1029.14
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "trinitylarge": {
+   "names": [
+    "Trinity Large Preview"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1318.84,
+    "lmarena_text_factuality": 1371.73
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "trinitylargethinking": {
+   "names": [
+    "Trinity Large Thinking"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1308.14,
+    "lmarena_text_factuality": 1370.22,
+    "lmarena_webdev": 1236.72
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "tulu2dpo70b": {
+   "names": [
+    "Tulu 2 DPO 70B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1104.82
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "u2flash": {
+   "names": [
+    "U2 Flash"
+   ],
+   "scores": {
+    "lmarena_webdev": 1612.25
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "vicuna13b": {
+   "names": [
+    "Vicuna 13B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1057.96
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "vicuna13bv11": {
+   "names": [
+    "vicuna-13b-v1.1"
+   ],
+   "scores": {
+    "epoch_eci": 76.4
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "vicuna33b": {
+   "names": [
+    "Vicuna 33B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1124.53
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "vicuna7b": {
+   "names": [
+    "Vicuna 7B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1020.94
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "wizardlm13b": {
+   "names": [
+    "WizardLM 13B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1090.3
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "wizardlm70b": {
+   "names": [
+    "WizardLM 70B"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1149.04
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "xgen7b": {
+   "names": [
+    "XGen-7B"
+   ],
+   "scores": {
+    "epoch_eci": 70.59
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "yi1534bchat": {
+   "names": [
+    "Yi 1.5 34B Chat"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1135.0
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "yi34bchat": {
+   "names": [
+    "Yi 34B Chat"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1107.89
+   },
+   "cost_per_task": null,
+   "litellm": "fireworks_ai/accounts/fireworks/models/yi-34b-chat",
+   "price_in": 0.9,
+   "price_out": 0.9
+  },
+  "yi6b": {
+   "names": [
+    "Yi 6B"
+   ],
+   "scores": {
+    "epoch_eci": 94.43
+   },
+   "cost_per_task": null,
+   "litellm": "fireworks_ai/accounts/fireworks/models/yi-6b",
+   "price_in": 0.2,
+   "price_out": 0.2
+  },
+  "yi9b": {
+   "names": [
+    "Yi-9B"
+   ],
+   "scores": {
+    "epoch_eci": 102.31
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "yilightning": {
+   "names": [
+    "Yi Lightning"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1279.93
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "zephyr7balpha": {
+   "names": [
+    "Zephyr 7B Alpha"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1068.6
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  },
+  "zephyr7bbeta": {
+   "names": [
+    "Zephyr 7B Beta"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1102.15
+   },
+   "cost_per_task": null,
+   "litellm": "anyscale/HuggingFaceH4/zephyr-7b-beta",
+   "price_in": 0.15,
+   "price_out": 0.15
+  },
+  "zephyrorpo141ba35bv01": {
+   "names": [
+    "Zephyr ORPO 141B A35B v0.1"
+   ],
+   "scores": {
+    "lmarena_creative_writing": 1113.0
+   },
+   "cost_per_task": null,
+   "litellm": null,
+   "price_in": null,
+   "price_out": null
+  }
+ }
+}
