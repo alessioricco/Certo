@@ -148,7 +148,7 @@ def rate(
         shift = (observed - computed) * runs / (runs + SHRINK_RUNS)
         shift = max(-MAX_ADJUSTMENT, min(MAX_ADJUSTMENT, shift))
         ratings[axis] = min(5.0, max(1.0, computed + shift))
-        sources[axis] += f", own results ({runs} runs)"
+        sources[axis] += f", own results ({runs} run{'' if runs == 1 else 's'})"
 
     return Rated(
         ratings={axis: round(value, 1) for axis, value in ratings.items()},

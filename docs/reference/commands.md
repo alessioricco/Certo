@@ -515,7 +515,8 @@ Where each number comes from:
   sources measured.
 - **Your own runs** (from `run_stats.csv`) move `code` toward the share
   of your runs that ended `verified`: a little after a few runs, at most
-  one point.
+  one point. Only verdicts that judge the work count: a run that hit the
+  time or cost limit, was stopped, or ended `inconclusive` doesn't.
 
 The model data comes from Certo's latest release when there is newer
 data online, else from the one this version ships. Prices come from

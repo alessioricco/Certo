@@ -50,6 +50,11 @@ def test_own_results_point_code_at_the_share_of_runs_that_ended_verified():
         {"model": "anthropic/claude-haiku-5-5", "kind": "bench", "verdict": "failed"},
         {"model": "anthropic/claude-haiku-5-5", "kind": "planning", "verdict": "verified"},
         {"model": "ollama/qwen3.8:27b", "kind": "task", "verdict": "failed"},
+        # Limits, interrupts and undecided checks say nothing about the work.
+        {"model": "ollama/qwen3.8:27b", "kind": "task", "verdict": "budget_exhausted"},
+        {"model": "ollama/qwen3.8:27b", "kind": "task", "verdict": "cost_exhausted"},
+        {"model": "ollama/qwen3.8:27b", "kind": "task", "verdict": "inconclusive"},
+        {"model": "ollama/qwen3.8:27b", "kind": "task", "verdict": "interrupted"},
     ]
     own = cr.own_results(rows)
     assert own["anthropic/claude-haiku-5-5"] == (pytest.approx(1 + 4 * 2 / 3), 3)

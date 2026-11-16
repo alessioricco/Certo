@@ -11,7 +11,9 @@ Certo's hand ratings, below anything the user's own `models_list.yaml` or
 `ratings.yaml`, no change: the hand ratings stay until the user refreshes.
 
 Own results move only `code` for now, from the share of task runs that
-ended `verified`: outside the benchmark, a run can't tell real work from
+ended `verified` among those whose verdict judges the work (a run that hit
+the time or cost limit, was interrupted or couldn't be checked doesn't
+count): outside the benchmark, a run can't tell real work from
 work that fooled the checks, so precision waits.
 """
 
@@ -42,6 +44,20 @@ LITELLM_PRICES_URL = (
 )
 FETCH_TIMEOUT_SECONDS = 20
 OWN_KINDS = ("task", "milestone", "bench")
+# The verdicts that judge the model's work. The others measure a limit
+# (time, cost), an interrupt or checks that couldn't decide, not the model.
+OWN_FAILURES = frozenset(
+    {
+        "failed",
+        "retry_exhausted",
+        "no_progress",
+        "timed_out",
+        "acceptance_failed",
+        "independent_failed",
+        "stuck",
+        "unchanged",
+    }
+)
 AXES = ("code", "reasoning", "precision", "writing", "cost", "speed")
 
 Opener = Callable[[str], bytes]
@@ -135,10 +151,14 @@ def list_price(model: str, prices: Mapping[str, Any] | None) -> tuple[float, flo
 
 def own_results(rows: Iterable[Mapping[str, str]]) -> dict[str, tuple[float, int]]:
     """Per model id: the code rating its own runs point to (1 + 4 × the
-    share that ended verified) and how many runs that rests on."""
+    share that ended verified) and how many runs that rests on. Only runs
+    whose verdict judges the work count (verified, or one of
+    `OWN_FAILURES`)."""
     counts: dict[str, list[int]] = {}
     for row in rows:
         if row.get("kind") not in OWN_KINDS or not row.get("model"):
+            continue
+        if row.get("verdict") != "verified" and row.get("verdict") not in OWN_FAILURES:
             continue
         seen = counts.setdefault(row["model"], [0, 0])
         seen[0] += row.get("verdict") == "verified"
