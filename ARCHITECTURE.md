@@ -515,10 +515,21 @@ given design was chosen.
   `SessionState` (`handle`, `task_argv`, `status_lines`, `header`) with an
   `Actions` object for runs and commands, so tests need no terminal;
   `run_loop` is the prompt_toolkit `PromptSession` (bottom toolbar,
-  slash completer, `s-tab`/`c-t`/`c-o` bindings). A run is
-  `_run_task_command(args, parser, holder)`; the holder's JSON result
-  gives the project, folder, verdict and cost. The confirm switch is set
-  through `CERTO_CONFIRM_MODE` in the session's own environment.
+  slash completer, `s-tab`/`c-t`/`c-o` bindings, `refresh_interval`
+  0.25s) inside `patch_stdout(raw=True)`. A run is
+  `_run_task_command(args, parser, holder, on_progress=live.watch)` in a
+  daemon thread (`Actions.start`; tests pass `lambda w: w()`), inside
+  `cancel_token(live.cancel)`: Ctrl-C at the prompt sets it, and the
+  runner raises `RunCancelled` between steps (cli treats it as Ctrl-C).
+  The run's `input()` calls go through `cli._ask_line`, which the session
+  points at `LiveRun.ask` (a queue the prompt answers). The status line
+  reads the run's `RunProgress` (steps and last action from the runner's
+  `on_event`, `live_cost()`, `model`/`rung` from `attach_progress` and
+  `model_changed`). The holder's JSON result gives the project, folder,
+  verdict and cost. The confirm switch is set through
+  `CERTO_CONFIRM_MODE` in the session's own environment. Limitation:
+  `cli._asker` and that variable are process-wide, which is fine for
+  one run at a time.
 - **`milestone_planner.py`** — `--make-milestones`. `cli._make_milestones`
   runs before `plan_run`: refusals, `choose_planner` (setting, else the
   `planning` profile via `rank_for_profile` with local models probed,

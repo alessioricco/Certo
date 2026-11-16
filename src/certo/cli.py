@@ -12,7 +12,7 @@ import sys
 import textwrap
 import urllib.error
 import urllib.request
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import replace
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
@@ -50,6 +50,7 @@ from .project_state import (
 )
 from .result import run_result
 from .run_history import append_run, note_models_in_readme, run_entry
+from .cancel import RunCancelled
 from .run_progress import RunProgress
 from .run_report import report_relpath, write_report
 from .worktree import was_created_by_certo, worktree_warning
@@ -99,6 +100,15 @@ def _looks_like_url(value: str) -> bool:
     return parsed.scheme in ("http", "https") and bool(parsed.netloc)
 
 
+# Where the run's questions are answered: the terminal (`input`), or the
+# interactive session's prompt while a run works in its thread (session.py).
+_asker: Callable[[str], str] | None = None
+
+
+def _ask_line(prompt: str) -> str:
+    return (_asker or input)(prompt)
+
+
 def _unproven_states() -> tuple[str, ...]:
     from .runner import UNPROVEN_STATES
 
@@ -114,7 +124,7 @@ def _confirm_pending_actions(pending: Sequence[ActionEvent]) -> bool:
     print("\n--- Confirmation required (CERTO_CONFIRM_MODE=always) ---")
     for action in pending:
         print(f"  {action.tool_name}: {action.action}")
-    answer = input("Approve? [y/N] ").strip().lower()
+    answer = _ask_line("Approve? [y/N] ").strip().lower()
     return answer in ("y", "yes")
 
 
@@ -128,7 +138,7 @@ def _prompt_for_continuation(narrative: str) -> str | None:
     """
     if narrative:
         print(f"\n{narrative}\n")
-    reply = input("Your reply (Enter to finish the task): ").strip()
+    reply = _ask_line("Your reply (Enter to finish the task): ").strip()
     return reply or None
 
 
@@ -146,7 +156,7 @@ def _prompt_for_model_choice(
         print(f"  [{i}] {entry.name}{marker} — {ratings}")
         if entry.description:
             print(f"      {entry.description}")
-    answer = input(
+    answer = _ask_line(
         f"Use recommended model [{candidates[recommended_index].name}]? [Y/n or a number]: "
     ).strip()
     if not answer or answer.lower() in ("y", "yes"):
@@ -164,7 +174,7 @@ def _confirm_escalation(question: str) -> bool:
     """Interactive terminal handler for an escalation climb: Enter or yes
     climbs, anything else stops with the current verdict."""
     try:
-        answer = input(f"\n{question} [Y/n] ").strip().lower()
+        answer = _ask_line(f"\n{question} [Y/n] ").strip().lower()
     except EOFError:
         return False
     return answer in ("", "y", "yes")
@@ -713,14 +723,23 @@ def _session(first: list[str]) -> int:
     module, as the command line would."""
     from .session import session_main
 
-    def run(argv: list[str]) -> dict[str, Any] | None:
+    def run(argv: list[str], live: Any = None) -> dict[str, Any] | None:
+        """One run, in the session's run thread: its questions go to the
+        session's prompt, its progress to the status line (`live`)."""
+        global _asker
         parser = _build_parser()
         try:
             args = parser.parse_args(argv)
         except SystemExit:
             return None
         holder: dict[str, Any] = {}
-        _run_task_command(args, parser, holder)
+        _asker = live.ask if live is not None else None
+        try:
+            _run_task_command(
+                args, parser, holder, on_progress=live.watch if live is not None else None
+            )
+        finally:
+            _asker = None
         return holder.get("result")
 
     def command(name: str, argv: list[str]) -> int:
@@ -828,7 +847,7 @@ def _make_milestones(
         if answer == "stop":
             print("Stopped before the first milestone. The plan is kept.")
             return 0
-        input(f"Edit {path}, save it, then press Enter: ")
+        _ask_line(f"Edit {path}, save it, then press Enter: ")
         planned = _read_edited_plan(path, planned)
         if planned is None:
             return 1
@@ -846,7 +865,7 @@ def _make_milestones(
 def _ask_about_plan() -> str:
     """`--interactive`: run the plan, edit it first, or stop."""
     print("\n  1. Run it\n  2. Let me edit the file first\n  3. Stop")
-    answer = input("Your choice [1]: ").strip()
+    answer = _ask_line("Your choice [1]: ").strip()
     return {"": "go", "1": "go", "2": "edit", "3": "stop"}.get(answer, "go")
 
 
@@ -871,10 +890,15 @@ def _read_edited_plan(path: str, before: Any) -> Any:
 
 
 def _run_task_command(
-    args: argparse.Namespace, parser: argparse.ArgumentParser, holder: dict[str, Any] | None
+    args: argparse.Namespace,
+    parser: argparse.ArgumentParser,
+    holder: dict[str, Any] | None,
+    on_progress: Callable[[RunProgress], None] | None = None,
 ) -> int:
     """`certo "task"` after its flags are parsed. With `holder`, the run's JSON
-    result is put in `holder["result"]` once the run has started."""
+    result is put in `holder["result"]` once the run has started.
+    `on_progress` (the interactive session) gets the run's progress to show
+    live; the periodic progress line is then not printed."""
     if args.task is None and args.escalate and not args.resume:
         # `certo --escalate "task"`: LADDER is optional, so argparse took the
         # task for a ladder name. A ladder with no task can't run, so it was
@@ -1079,11 +1103,13 @@ def _run_task_command(
 
     # The progress line (run_progress.py): one for the whole run, so its
     # time and cost count every milestone.
-    progress = (
-        RunProgress(say=_print_progress, every_seconds=cfg.progress_seconds)
-        if cfg.progress_seconds > 0
-        else None
-    )
+    progress = None
+    if on_progress is not None:
+        # The session's status line shows it live: no line every few minutes.
+        progress = RunProgress(say=_print_progress, every_seconds=0)
+        on_progress(progress)
+    elif cfg.progress_seconds > 0:
+        progress = RunProgress(say=_print_progress, every_seconds=cfg.progress_seconds)
 
     def run_one(text: str, resume, instruction: str | None, checks):
         if progress is not None and milestone_state is not None:
@@ -1109,6 +1135,7 @@ def _run_task_command(
         summary = result.outcome.run_summary
         if progress is not None and summary is not None:
             progress.cost_before += summary.total_cost
+            progress.detach()
         return result
 
     if save_state and milestone_state is None and resume_from is None:
@@ -1160,7 +1187,8 @@ def _run_task_command(
                 history=history,
                 record_run=record_run,
             )
-    except KeyboardInterrupt as exc:
+    except (KeyboardInterrupt, RunCancelled) as exc:
+        # Ctrl-C, or the session's Ctrl-C while the run works in its thread.
         # The runner attaches the usage up to the interrupt to the exception.
         record_run("interrupted", summary=getattr(exc, "run_summary", None))
         keep_result(None, "interrupted")

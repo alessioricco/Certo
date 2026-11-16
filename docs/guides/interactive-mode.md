@@ -25,13 +25,14 @@ with one. Certo shows a header, then a prompt (since 0.2.4):
 ```
 
 - **A message is a task.** The run prints what `certo "task"` prints
-  (the agent's work, Certo's checks, the verdict). In a Certo workspace
-  the task gets its own project folder, as usual.
+  (the agent's work, Certo's checks, the verdict) above the prompt. In a
+  Certo workspace the task gets its own project folder, as usual.
 - **The next message continues it**, as `certo --resume "message"`: the
   agent gets its conversation back, and Certo checks the result again.
   `/new` makes the next message a new task.
-- **Ctrl-C** stops a run and comes back to the prompt; the next message
-  continues it. Ctrl-D or `/quit` ends the session. The transcript stays
+- **Ctrl-C** stops a run after its current step and comes back to the
+  prompt; the next message continues it. Ctrl-D or `/quit` ends the
+  session (a run still working is stopped first). The transcript stays
   in your terminal's scrollback.
 - **Under the prompt**, a status line shows the model, the mode, the
   project, the last verdict and its time, and what the session has
@@ -42,11 +43,45 @@ with one. Certo shows a header, then a prompt (since 0.2.4):
    ask before actions: off · mode: manual · effort: default   (shift+tab, ctrl+t, ctrl+o)
   ```
 
+  With `--auto-model` or `--escalate` the line shows the model that
+  ended the last run, or `model per task` before the first.
+
   Shift+Tab turns asking before each action ([confirm mode](#confirm-mode-approve-every-action))
   on or off, Ctrl+T cycles the mode (manual, `--auto-model`,
   `--escalate`), Ctrl+O the reasoning effort. A switch changes the next
   task, never one that is running.
-- **Type `/`** to see the commands, completed as you type:
+- **Type `/`** to see the commands, completed as you type (the table
+  below).
+
+### While a run works
+
+The prompt stays, and the status line follows the run, about four times
+a second. The model working now comes first: with `--escalate`, the
+rung's model and which rung; with `--auto-model`, the model Certo chose
+(and the next one, if a model fails and Certo moves on). Then the
+milestone, the fix attempt and the last check run when they apply, the
+agent's steps, the time, the cost so far and the last action:
+
+```text
+ ⠹ haiku-5-5 · step 7 · 17s · $0.0035 · last: terminal python -m pytest -v 2>&1; python -c "from hello im…
+ ctrl+c stops · ask before actions: off · mode: manual · effort: default   (shift+tab, ctrl+t, ctrl+o)
+```
+
+```text
+ ⠋ qwen3.8-27b-local · rung 1 of 6 · 11s · $0.0000
+```
+
+- **The run's questions come to the prompt.** With asking before actions
+  on, `Approve? [y/N]` replaces `>`: type the answer and press Enter.
+- **A message you type waits** for the run to end, then continues it.
+  The status line shows it (`queued: ...`); a second message replaces
+  the first. If you stop the run, the waiting message isn't sent, and
+  Certo says so.
+- **Commands:** `/help`, `/ask`, `/model`, `/mode`, `/effort`, `/clear`
+  and `/quit` work during a run. The others (`/verify`, `/new`,
+  `/rollback`, ...) say they wait for the run to end.
+
+The commands:
 
 | Command | Does |
 |---|---|

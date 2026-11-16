@@ -70,7 +70,14 @@ from .checkpoints import (
 from .cost_limit import cost_limit, cost_limit_reached, pause_at_cost_limit, set_cost_limit
 from .root_guard import RootGuard
 from .skill_match import skills_for_run
-from .run_progress import RunProgress, attach_progress, checks_ran, fix_attempt, report_progress
+from .run_progress import (
+    RunProgress,
+    attach_progress,
+    checks_ran,
+    fix_attempt,
+    model_changed,
+    report_progress,
+)
 from .cancel import RunCancelled, cancel_token, raise_if_cancelled, stop_when_cancelled
 from .deadline import stop_at_deadline
 from .independent_tests import (
@@ -1069,6 +1076,7 @@ def _run_conversation_once(
             conversation.switch_llm(
                 llm_for_entry(cfg, next_entry, usage_id=f"certo:{next_entry.name}")
             )
+            model_changed(conversation, next_entry.name)
 
 
 def _run_with_confirmation(
@@ -1404,6 +1412,7 @@ def _verify_and_report(
                 conversation.switch_llm(
                     llm_for_entry(cfg, next_entry, usage_id=f"certo:{next_entry.name}")
                 )
+                model_changed(conversation, next_entry.name)
         conversation.send_message(
             _verification_followup(
                 run,
@@ -2100,6 +2109,8 @@ def _stream_task(
     blocked: list[str] = []  # the root guard's notices (root_guard.py)
 
     def on_event(event: Event) -> None:
+        if run_progress is not None and isinstance(event, ActionEvent):
+            run_progress.note_action(event.tool_name, event.action)
         if isinstance(event, LLMConvertibleEvent):
             message = event.to_llm_message()
             checkpoint_buffer.append(message)
@@ -2278,7 +2289,12 @@ def _stream_task(
         # CERTO_MAX_TASK_COST covers the whole task, the tests written
         # before the build included (cost_limit.py).
         set_cost_limit(conversation, cfg.max_task_cost, _metrics_cost(written))
-        attach_progress(conversation, run_progress, _metrics_cost(written))
+        attach_progress(
+            conversation,
+            run_progress,
+            _metrics_cost(written),
+            model=model_chain.current.name if model_chain is not None else "",
+        )
         # A shared, task-level wall-clock budget spanning every phase below —
         # CERTO_MAX_ITERATIONS alone only bounds a single conversation.run()
         # call, and runner.py can call that up to three times per task (this
@@ -3221,6 +3237,7 @@ def _stream_escalation(
                     io.run_progress,
                     _metrics_cost(written) + sum(r.cost for r in rungs),
                     model=rung.name,
+                    rung=f"rung {number} of {total}",
                 )
 
                 restarted = number > 1 and _restart_rung(cfg, restart_from, rungs[-1], io)

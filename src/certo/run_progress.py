@@ -8,7 +8,10 @@ after each check run and when a fix attempt starts:
     Progress: milestone 2 of 4 · fix attempt 1 of 2 · checks failed: pytest (2 failed) · 6m 12s · $0.0310
 
 Only a terminal run asks for it (cli.py); the server, the MCP server and
-the benchmark don't. As for the cost limit (cost_limit.py), each
+the benchmark don't. The interactive session (session.py) reads the same
+object for its live status line: `live_cost()`, the steps and the last
+action, and the model running now (a ladder's rung, `--auto-model`'s
+choice, or the model a fallback switched to). As for the cost limit (cost_limit.py), each
 conversation gets its own, and a watcher thread prints it while
 `conversation.run()` goes. It reads, never changes, the run.
 """
@@ -18,6 +21,7 @@ from __future__ import annotations
 import threading
 import time
 import weakref
+import re
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
@@ -38,14 +42,45 @@ class RunProgress:
     where: str = ""
     cost_before: float = 0.0
     model: str = ""
+    rung: str = ""  # "rung 2 of 3", on a ladder
     fix: str = ""
     checks: str = ""
+    steps: int = 0  # the agent's actions so far, over the whole run
+    action: str = ""  # the last one, in a few words
+    spent: Callable[[], float] | None = None  # the attached conversation's cost so far
 
     def line(self, spent: float) -> str:
         parts = [p for p in (self.where, self.model, self.fix, self.checks) if p]
         parts.append(format_duration(time.monotonic() - self.started))
         parts.append(f"${self.cost_before + spent:.4f}")
         return "Progress: " + " · ".join(parts)
+
+    def live_cost(self) -> float:
+        """What the run has cost so far, read now."""
+        try:
+            return self.cost_before + (self.spent() if self.spent is not None else 0.0)
+        except Exception:  # noqa: BLE001 - a status line, never the run's outcome
+            return self.cost_before
+
+    def note_action(self, tool: str, action: Any) -> None:
+        """The agent took a step: count it and keep it in a few words."""
+        self.steps += 1
+        self.action = action_text(tool, action)
+
+    def detach(self) -> None:
+        """The conversation ended and its cost went into `cost_before`."""
+        self.spent = None
+
+
+def action_text(tool: str, action: Any, limit: int = 60) -> str:
+    """An action in a few words: the tool, and its command or path."""
+    parts = [tool]
+    for name in ("command", "path"):
+        value = getattr(action, name, None)
+        if isinstance(value, str) and value.strip():
+            parts.append(value)
+    text = re.sub(r"\s+", " ", " ".join(parts)).strip()
+    return text if len(text) <= limit else text[: limit - 1] + "…"
 
 
 @dataclass
@@ -67,15 +102,35 @@ def attach_progress(
     progress: RunProgress | None,
     spent_before: float = 0.0,
     model: str = "",
+    rung: str = "",
 ) -> None:
     """Show `progress` for `conversation` (None: no line), counting
     `spent_before` (independent tests, earlier rungs) as already spent.
-    `model` names an escalation rung's model."""
+    `model` names the model when Certo chose it (an escalation rung,
+    `--auto-model`); `rung` says which rung."""
     if progress is None:
         return
     progress.model = model
+    progress.rung = rung
     progress.fix = ""
-    _attached[conversation] = _Attached(progress, spent_before, conversation_cost(conversation))
+    attached = _Attached(progress, spent_before, conversation_cost(conversation))
+    _attached[conversation] = attached
+    ref = weakref.ref(conversation)
+
+    def spent() -> float:
+        alive = ref()
+        if alive is None:
+            return attached.spent_before
+        return attached.spent_before + conversation_cost(alive) - attached.start
+
+    progress.spent = spent
+
+
+def model_changed(conversation: Any, model: str) -> None:
+    """`--auto-model` moved to another model during the run."""
+    found = _attached.get(conversation)
+    if found is not None:
+        found.progress.model = model
 
 
 def checks_text(run: Any) -> str:

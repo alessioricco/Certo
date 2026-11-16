@@ -49,11 +49,16 @@ typed with `/`. Choices made with the Author on 2026-11-16:
 - **Status line** (prompt_toolkit's bottom toolbar), below the input:
   the model, the mode, the project, the last verdict, its time, and the
   session's total cost; under it, the switches and their keys.
-- **During a run** the prompt is not shown: the run prints exactly what
-  `certo "task"` prints (the SDK's stream, Certo's notices, the summary),
-  and its own questions (confirm an action, approve a climb, the
-  `--make-milestones` plan) are asked as they are today. Ctrl-C stops the
-  run and comes back to the prompt; the run can be continued.
+- **During a run** (changed the same day, after the first version): the
+  run works in a thread and prints above the prompt, which stays. The
+  status line follows the run live: the model working now first (a
+  ladder's rung and its number, `--auto-model`'s choice, the Author
+  asked for it), then the milestone, fix attempt, last checks, steps,
+  time, cost and last action. The run's questions are asked at the
+  prompt; a typed message waits for the run and continues it; commands
+  that start no run (`/help`, `/ask`, `/model`, `/mode`, `/effort`,
+  `/clear`, `/quit`) work, the others wait. Ctrl-C stops the run after
+  its current step and drops a waiting message.
 
 ## What a message does
 

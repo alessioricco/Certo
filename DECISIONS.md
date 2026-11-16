@@ -2062,3 +2062,13 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   does. Without a terminal or with `--json`, nothing changes, so scripts
   and CI keep the plain run. Effort is on Ctrl+O: Ctrl+E is "end of
   line" in terminals.
+- **The session's run works in a thread; the prompt stays** (0.2.4,
+  2026-11-16; the Author agreed: commands that start no run work during
+  one, one message waits, the model working now first on the line).
+  Answering the run's questions at the same prompt avoids two readers
+  of the terminal; a typed message waits instead of interrupting,
+  since a run can't take a message mid-step. Stopping reuses the MCP
+  server's cancel token (between steps), not a signal: a thread can't
+  get SIGINT. A stopped run drops the waiting message and says so: Ctrl-C
+  means "I want control back". The session sets no periodic progress
+  line: the status line shows the same facts live.

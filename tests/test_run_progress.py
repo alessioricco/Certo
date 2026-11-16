@@ -141,3 +141,40 @@ def test_a_line_that_cant_be_printed_never_breaks_the_run():
 
     with report_progress(conversation):
         threading.Event().wait(0.05)
+
+
+# --- what the interactive session's status line reads, live -----------------
+
+
+def test_each_action_counts_as_a_step_and_the_last_is_kept_in_a_few_words():
+    progress = RunProgress(say=lambda _l: None, every_seconds=0)
+    progress.note_action("file_editor", types.SimpleNamespace(command="create", path="/p/app.py"))
+    progress.note_action("terminal", types.SimpleNamespace(command="pytest   -q\n  --tb=short"))
+    assert progress.steps == 2
+    assert progress.action == "terminal pytest -q --tb=short"
+    assert run_progress.action_text("think", None) == "think"
+    long = run_progress.action_text("terminal", types.SimpleNamespace(command="x" * 200))
+    assert len(long) == 60 and long.endswith("…")
+
+
+def test_the_live_cost_follows_the_conversation_and_stops_when_it_is_detached():
+    progress = RunProgress(say=lambda _l: None, every_seconds=0, cost_before=0.5)
+    conversation = _Conversation(cost=1.0)
+    attach_progress(conversation, progress, spent_before=0.25)
+    assert progress.live_cost() == 0.75  # earlier milestones + the tests written before
+    conversation.metrics.accumulated_cost = 1.5
+    assert progress.live_cost() == 1.25
+    progress.cost_before += 0.75  # the runner's summary, once the conversation ended
+    progress.detach()
+    assert progress.live_cost() == 1.25
+
+
+def test_the_model_certo_chose_its_rung_and_a_switch_are_kept():
+    progress = RunProgress(say=lambda _l: None, every_seconds=0)
+    conversation = _Conversation()
+    attach_progress(conversation, progress, model="haiku-5-5", rung="rung 1 of 3")
+    assert (progress.model, progress.rung) == ("haiku-5-5", "rung 1 of 3")
+    run_progress.model_changed(conversation, "sonnet-5-5")  # --auto-model's fallback
+    assert progress.model == "sonnet-5-5"
+    attach_progress(_Conversation(), progress)  # a plain run names no model
+    assert (progress.model, progress.rung) == ("", "")

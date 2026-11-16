@@ -363,13 +363,12 @@ cut that first run's output from 2,949 lines to 1,021.)
   (never keys), for "why did my run pick Opus?". Done when the question
   set passes on a local and a cloud model with no made-up answer.
 - **The interactive session: what's left** (built in 0.2.4,
-  docs/history/interactive-session.md). The status line and prompt
-  aren't on screen during a run (the run prints as `certo "task"` does);
-  a live progress line under a fixed input box, as other agent
-  terminals have, needs the run in a thread and its questions (confirm,
-  escalation, the plan) answered in the prompt. Also: the model choice
-  of `--auto-model` and escalation confirmations aren't asked in the
-  session, and `?` there could call `certo ask`.
+  docs/history/interactive-session.md). The model choice of
+  `--auto-model` and escalation confirmations aren't asked in the
+  session (`CERTO_INTERACTIVE` is off there; the prompt can now answer
+  them), and `?` there could call `certo ask`. The run's own
+  `Continue with: certo --resume` line shows in the session, where
+  typing a message is the way.
 - **A first run in minutes, with one model.** No catalog, no ladders:
   `certo init`, then a first verified project. Getting started shows only
   that path. Measured 2026-10-19 in an empty home folder: 88.5s from

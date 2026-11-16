@@ -18,12 +18,15 @@ Progress: checks verified · 30.3s · $0.0066
 ```
 
 It shows, when they apply: the milestone (`milestone 2 of 4`), the
-escalation rung's model, the fix attempt (`fix attempt 1 of 2`), the
+model Certo chose (an escalation rung's, or `--auto-model`'s), the fix attempt (`fix attempt 1 of 2`), the
 last check run (`checks failed: pytest (2 failed)`), then the time and
 the cost so far. In milestones, the time and the cost count every
 milestone so far. `CERTO_PROGRESS_SECONDS` sets how often it comes, and
 `0` turns it off. Only a run in the terminal prints it, not
-`certo-server`, the MCP server or `certo bench`.
+`certo-server`, the MCP server or `certo bench`. The
+[interactive session](interactive-mode.md#while-a-run-works) shows the
+same facts live in its status line instead, so it doesn't print the line
+every few minutes.
 
 ## The run summary
 
