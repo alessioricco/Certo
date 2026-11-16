@@ -509,6 +509,16 @@ given design was chosen.
   write. `tests/test_cli.py` stubs `write_report` (autouse
   `written_reports`), as it does `append_run`: its workspace is the
   checkout.
+- **`milestone_planner.py`** — `--make-milestones`. `cli._make_milestones`
+  runs before `plan_run`: refusals, `choose_planner` (setting, else the
+  `planning` profile via `rank_for_profile` with local models probed,
+  only for auto/escalate, else `cfg`), `prepare_workspace` early (the
+  plan file would otherwise create the project folder and Certo would
+  not record that it made it), one `llm.completion` outside the agent
+  (usage id `planner`, not in the run's cost), then `save_plan` and
+  `clear_state`; `args.task` becomes the plan's absolute path, so
+  `plan_run(milestones_file=...)` and `--resume` treat it as any
+  milestone file. `plan_milestones(complete=...)` takes a fake in tests.
 - **`report_cmd.py`** — `certo report`: reads `run.json`, the newest
   page in `.certo/reports/` (embedded, headings one level down) and the
   error events of the run's saved conversation (`events/*.json` read as

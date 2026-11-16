@@ -68,45 +68,29 @@ first item is the suggested next one.
 
 ## 2. Complex tasks
 
-- **Certo writes the milestones when the task has none** (the Author,
-  2026-11-10; already decided 2026-10-25, DECISIONS.md "Milestone mode:
-  the Author's three decisions": "otherwise Certo plans them"). Opt-in,
-  with a flag (the Author, 2026-11-10): `certo --make-milestones TASK`.
-  Before the run, a cheap model good at reasoning rewrites the task as a
-  milestone task (`## Milestone N: title` sections, the format
-  `certo --milestones` already runs), saved as an ordinary task file,
-  `.certo/milestones.md` in the project (beside `milestones.json` and
-  `STATUS.md`); the run then goes milestone by milestone, and `--resume`
-  continues that plan. The user can open the saved plan, edit it and run
-  it again with `certo --milestones .certo/milestones.md`. Without the
-  flag nothing changes. Points to settle in the design:
-  - *When:* only with `--make-milestones`; the planner may answer "one
-    milestone" and the task runs as it is. Refused with
-    `--milestones`, `--no-milestones` or a task already written in
-    milestones, and never for `verify`. A default on (no flag needed)
-    only after the benchmark below shows no loss.
-  - *Which model:* chosen from the catalog, never named in code (golden
-    rule 3): a planning profile for `--auto-model`'s ratings, or a
-    setting such as `CERTO_PLANNER_MODEL`; default the build's model
-    when nothing better is configured.
-  - *Checks:* the plan is parsed with the milestone parser before use;
-    an unreadable plan falls back to one task. Acceptance checks written
-    by the planner can be wrong (as independent tests can): start
-    without them, or report-only, until measured.
-  - *The user:* with `--interactive` Certo shows the plan and asks
-    before the first milestone (the 2026-10-25 decision): go, edit the
-    file and go, or stop.
-  - *A plan the agent wrote:* live 2026-11-10 (a user's milestone project), the agent
-    wrote a `PLAN.md` in milestones (`## 1. ...` headings, not
-    `## Milestone N:`), the user approved it with "go ahead", and the
-    whole plan ran as one task on one budget of 50 steps. Certo could
-    spot such a plan file in the project and offer to run it milestone
-    by milestone (each with its own steps and checks), or the planner
-    above could rewrite it in the milestone format.
+- **`--make-milestones`: what's left** (built in 0.2.4, opt-in and
+  experimental; DECISIONS.md "Certo writes the milestones: the task as
+  context, the planner's milestones after it"). Left:
+  - *Measure* (working agreement 2): the app tasks and the milestone
+    samples with their milestones removed, three arms (the hand-written
+    milestones, the planned ones, one go), on qwen3.8 and Haiku. On the
+    spreadsheet, milestones haven't helped qwen yet
+    (`milestones-0.1.27.md`: stopped at milestone 2), so the gain isn't
+    a given. Needs a bench arm option that plans before the run. A
+    default on (no flag) only after it shows no loss on either model.
+  - *Planner-written acceptance checks:* left out for now (they can be
+    wrong, as independent tests can); try them report-only once measured.
+  - *Over MCP:* `run_task` has `milestones_file` but no way to plan.
+  - *A plan the agent wrote:* live 2026-11-10 (a user's milestone
+    project), the agent wrote a `PLAN.md` in milestones (`## 1. ...`
+    headings, not `## Milestone N:`), the user approved it with "go
+    ahead", and the whole plan ran as one task on one budget of 50
+    steps. Certo could spot such a plan file and offer to run it
+    milestone by milestone, or the planner could rewrite it.
   - *Stop for approval:* a task file written for a person who approves
-    each milestone ("STOP and wait for my approval", a user's
-    task, 2026-11-10). `--interactive` doesn't pause between milestones today;
-    it could show each verified milestone's summary and ask before the
+    each milestone ("STOP and wait for my approval", a user's task,
+    2026-11-10). `--interactive` doesn't pause between milestones; it
+    could show each verified milestone's summary and ask before the
     next. A milestone with nothing to check (a plan only) ends
     `inconclusive` and stops the run, which works as a pause, by
     accident: `certo --resume "approved"` continues it.
@@ -115,16 +99,8 @@ first item is the suggested next one.
     every milestone, as context.
   - *Run `star-swarm.md` once* (the sample from a user's milestone task,
     10 milestones) and add it to `milestone-samples-0.2.3.md`.
-  - *Measure* (working agreement 2): the app tasks and the milestone
-    samples with their milestones removed, three arms (the hand-written
-    milestones, the planned ones, one go), on qwen3.8 and Haiku. On the
-    spreadsheet, milestones haven't helped qwen yet
-    (`milestones-0.1.27.md`: stopped at milestone 2), so the gain isn't
-    a given. Opt-in until the benchmark shows no loss on either model.
-  Done when a task with no milestones runs on a plan Certo wrote, saved
-  in `.certo/`, and the benchmark shows no loss. Supersedes the "then
-  Certo planning the milestones itself" item below and area (5) of the
-  agent-loop study.
+  Done when the benchmark shows planned milestones no worse than one go
+  on both models. Supersedes area (5) of the agent-loop study.
 - **Study and improve the agent loop** (the Author's prompt, 2026-11-07,
   "a big activity, not now"; kept as written in
   `docs/history/agent-loop-prompt.md`). Trace the run, verification,
@@ -138,7 +114,7 @@ first item is the suggested next one.
   (4) bounded smoke checks of the app (an HTTP endpoint, a page that
   renders), within the existing security decisions; (5) Certo proposes
   milestones with acceptance criteria for the user to approve (now its
-  own item: "Certo writes the milestones when the task has none"). Sky
+  item: "`--make-milestones`: what's left"). Sky
   Hopper is the candidate evaluation task. Benchmark on a local and a cloud model before claiming a gain; no live
   calls without the Author's OK. Done item by item.
 - **The three milestone samples: the menu?** First runs done

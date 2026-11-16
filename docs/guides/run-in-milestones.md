@@ -61,6 +61,54 @@ run takes much longer and uses more model credits (not measured yet):
 certo --milestones tasks/team-board.md --project team-board
 ```
 
+## Let Certo write the milestones
+
+For a task you wrote in one piece, `--make-milestones` has a model split
+it before the run ([experimental](../README.md#experimental-features),
+not benchmarked yet):
+
+```bash
+certo --make-milestones task.md --project ledger
+```
+
+The model writes only the milestones: a `## Milestone N: title` heading
+each, what to build in it, and how to tell it is done. Certo saves your
+task as you wrote it, followed by those milestones, as
+`.certo/milestones.md` in the project, and runs that file milestone by
+milestone. Your task is the context every milestone gets, so nothing in
+it is lost. From a real run on `anthropic/claude-haiku-5-5`, for an
+expense ledger task of six requirements:
+
+```text
+Planning milestones with anthropic/claude-haiku-5-5 (the run's model)...
+Plan: 4 milestones, written by anthropic/claude-haiku-5-5 in 8s, $0.0008. Saved as /home/me/certo-projects/projects/ledger/.certo/milestones.md
+  1. Project setup and add command
+  2. List expenses
+  3. Total
+  4. CSV export
+Edit it and run it again any time: certo --milestones /home/me/certo-projects/projects/ledger/.certo/milestones.md
+```
+
+- With `--interactive`, Certo asks before the first milestone: run the
+  plan, edit the file first (it reads it again and shows the new
+  plan), or stop. The plan is kept when you stop.
+- A task small enough to build in one go stays one task: when the model
+  answers with one milestone, or with a plan Certo can't read, or fails,
+  Certo says so and runs the task as it is.
+- The plan has no acceptance blocks: if the model writes one, Certo
+  takes it out. Add your own when you edit the file.
+- `certo --resume` continues the plan, as for any milestone file. To run
+  it again after editing it: `certo --milestones .certo/milestones.md`.
+- Not with `--milestones`, `--no-milestones`, `--resume`,
+  `--from-milestone`, or a task already written in milestones.
+
+The model that writes the plan is `CERTO_PLANNER_MODEL` (a model's name
+in your `models.yaml`) when you set it. Otherwise, with `--auto-model` or
+`--escalate`, it is the first model of Certo's `planning` task profile
+(models with `reasoning` 4 or more, the least costly first). Otherwise it
+is the run's own model. The plan's cost is shown on its line; it isn't
+counted in the run's cost or in `CERTO_MAX_TASK_COST`.
+
 ## Run it
 
 ```bash
@@ -242,7 +290,7 @@ milestones.
 
 ## Not yet
 
-- Certo doesn't plan milestones for you: they come from the task file.
+- `--make-milestones` is only on the command line, not over MCP.
 - Not in server mode (`certo-server`) yet. Over MCP, `run_task` takes a
   `milestones_file` and `run_resume` continues it (see
   [Use Certo over MCP](use-certo-over-mcp.md)). In `certo bench`, an arm with

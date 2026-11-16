@@ -2599,6 +2599,121 @@ def test_milestones_run_one_at_a_time_with_their_checks_adding_up(monkeypatch, t
     assert "Verification: verified" in out
 
 
+_PLANNED = "## Milestone 1: Record\nAdd ledger.py.\n\n## Milestone 2: Totals\nAdd totals.\n"
+
+
+def _fake_planner(monkeypatch, answer=_PLANNED):
+    """--make-milestones with the planner's answer given, no model called."""
+    from certo import milestone_planner
+
+    real = milestone_planner.plan_milestones
+
+    def fake(task, cfg, complete=None):
+        return real(task, cfg, lambda c, p: (answer, 0.001))
+
+    monkeypatch.setattr(milestone_planner, "plan_milestones", fake)
+
+
+def test_make_milestones_saves_the_plan_and_runs_it_in_milestones(monkeypatch, tmp_path, capsys):
+    from certo.milestones import load_state
+
+    calls: list = []
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))
+    monkeypatch.setattr(cli, "run_task", _milestone_run_task(calls, ["verified", "verified"]))
+    _fake_planner(monkeypatch)
+
+    assert cli.main(["--make-milestones", "Build a ledger"]) == 0
+    plan = tmp_path / "project" / ".certo" / "milestones.md"
+    assert plan.read_text() == "Build a ledger\n\n" + _PLANNED
+    assert len(calls) == 2
+    assert "milestone 1 of 2: Record" in calls[0]["task"]
+    assert calls[1]["task"].startswith("Build a ledger")  # every milestone gets the task
+    assert load_state(str(tmp_path / "project")).source == str(plan)
+    out = capsys.readouterr().out
+    assert "Plan: 2 milestones, written by openai/gpt-4o" in out
+    assert "  1. Record\n  2. Totals\n" in out
+    assert f"certo --milestones {plan}" in out
+
+
+def test_make_milestones_runs_a_small_task_as_one(monkeypatch, tmp_path, capsys):
+    calls: list = []
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))
+    monkeypatch.setattr(cli, "run_task", _recording_run_task(calls))
+    _fake_planner(monkeypatch, "ONE MILESTONE")
+
+    assert cli.main(["--make-milestones", "Add a --version flag"]) == 0
+    assert [c["task"] for c in calls] == ["Add a --version flag"]
+    assert "The task runs as one, as it is." in capsys.readouterr().out
+    assert not (tmp_path / "project" / ".certo" / "milestones.md").exists()
+
+
+@pytest.mark.parametrize(
+    ("argv", "message"),
+    [
+        (["--make-milestones", "--resume"], "can't be combined with --resume"),
+        (["--make-milestones", "--from-milestone", "2", "x"], "can't be combined with --from"),
+    ],
+)
+def test_make_milestones_is_refused_with_resume_or_from_milestone(
+    monkeypatch, tmp_path, capsys, argv, message
+):
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))
+    monkeypatch.setattr(cli, "run_task", _fail_if_called)
+    assert cli.main(argv) == 1
+    assert message in capsys.readouterr().err
+
+
+def test_make_milestones_is_refused_for_a_task_already_in_milestones(monkeypatch, tmp_path, capsys):
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))
+    monkeypatch.setattr(cli, "run_task", _fail_if_called)
+    assert cli.main(["--make-milestones", _milestone_file(tmp_path)]) == 1
+    assert "already written in milestones" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("other", ["--milestones", "--no-milestones"])
+def test_make_milestones_and_the_other_milestone_flags_exclude_each_other(
+    monkeypatch, capsys, other
+):
+    monkeypatch.setattr(cli, "run_task", _fail_if_called)
+    with pytest.raises(SystemExit):
+        cli.main(["--make-milestones", other, "x"])
+    assert "not allowed with argument" in capsys.readouterr().err
+
+
+def test_interactive_make_milestones_can_stop_before_the_first(monkeypatch, tmp_path, capsys):
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path, interactive=True))
+    monkeypatch.setattr(cli, "run_task", _fail_if_called)
+    monkeypatch.setattr("builtins.input", lambda prompt="": "3")
+    _fake_planner(monkeypatch)
+
+    assert cli.main(["--make-milestones", "Build a ledger"]) == 0
+    assert "Stopped before the first milestone. The plan is kept." in capsys.readouterr().out
+    assert (tmp_path / "project" / ".certo" / "milestones.md").exists()
+
+
+def test_interactive_make_milestones_runs_the_plan_as_the_user_edited_it(monkeypatch, tmp_path):
+    calls: list = []
+    plan = tmp_path / "project" / ".certo" / "milestones.md"
+    answers = iter(["2", "edited", "1"])
+
+    def answer(prompt=""):
+        reply = next(answers)
+        if reply == "edited":  # the user edits the file, then presses Enter
+            plan.write_text(plan.read_text() + "\n## Milestone 3: Export\nAdd CSV export.\n")
+            return ""
+        return reply
+
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path, interactive=True))
+    monkeypatch.setattr(cli, "run_task", _milestone_run_task(calls, ["verified"] * 3))
+    monkeypatch.setattr("builtins.input", answer)
+    monkeypatch.setattr(cli, "_prompt_for_continuation", lambda narrative: None)
+    _fake_planner(monkeypatch)
+
+    assert cli.main(["--make-milestones", "Build a ledger"]) == 0
+    assert len(calls) == 3
+    assert "milestone 3 of 3: Export" in calls[2]["task"]
+
+
 def test_the_next_milestone_gets_what_the_last_one_left(monkeypatch, tmp_path):
     calls: list = []
     finish = _FakeMessage("Built todo.py.")

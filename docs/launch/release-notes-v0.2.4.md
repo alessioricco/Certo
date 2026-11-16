@@ -2,12 +2,42 @@
 
 Not released yet.
 
-This release makes it easier to tell Certo's maintainers what went wrong:
+This release lets Certo split a big task into milestones itself, and
+makes it easier to tell Certo's maintainers what went wrong:
 
+- **`--make-milestones`**: a model splits a task written in one piece
+  into milestones, saved in the project for you to read and edit, and
+  Certo runs them one at a time, each checked before the next.
 - **`certo report`** writes the last run's problems to one file, with
   keys hidden, to attach to a GitHub issue.
 - **The run report lists Certo's notices**, and so does `certo --json`
   (a new `notices` field).
+
+## New: Certo writes the milestones
+
+Milestone mode runs a big task one checked piece at a time, but you had
+to write the milestones. Now `certo --make-milestones task.md` asks a
+model for them first. It writes only the milestones (a title, what to
+build, how to tell it is done); Certo saves your task as you wrote it
+followed by them, as `.certo/milestones.md`, so no requirement is lost,
+and runs it. From a real run on Haiku:
+
+```text
+Planning milestones with anthropic/claude-haiku-5-5 (the run's model)...
+Plan: 4 milestones, written by anthropic/claude-haiku-5-5 in 8s, $0.0008. Saved as /home/me/certo-projects/projects/ledger/.certo/milestones.md
+  1. Project setup and add command
+  2. List expenses
+  3. Total
+  4. CSV export
+```
+
+With `--interactive`, Certo asks before the first milestone: run it,
+edit the file first, or stop. A task small enough for one go stays one
+task. The model is `CERTO_PLANNER_MODEL` when set; with `--auto-model`
+or `--escalate`, the first model of a new `planning` task profile
+(`reasoning` 4 or more, least costly first); else the run's own.
+Experimental: not yet benchmarked against hand-written milestones. See
+[Let Certo write the milestones](../guides/run-in-milestones.md#let-certo-write-the-milestones).
 
 ## New: `certo report`
 

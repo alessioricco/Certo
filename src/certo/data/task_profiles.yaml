@@ -101,6 +101,11 @@ task_profiles:
     triggers: [build, implement, app, application, game, website, feature]
     needs: {code: 4}
 
+  # Writing the milestones of a task, for --make-milestones: no triggers,
+  # so no task is classified as planning. Thinking ahead, not code.
+  planning:
+    needs: {reasoning: 4}
+
   # Anything else.
   default:
     needs: {code: 3}

@@ -339,6 +339,17 @@ def _build_parser() -> argparse.ArgumentParser:
             "of running it milestone by milestone."
         ),
     )
+    milestones.add_argument(
+        "--make-milestones",
+        action="store_true",
+        help=(
+            "Before the run, have a model split a task with no milestones into "
+            "milestones, saved as .certo/milestones.md in the project, then run them "
+            "as --milestones does. The model: CERTO_PLANNER_MODEL, else the 'planning' "
+            "task profile with --auto-model or --escalate, else the run's own. A task "
+            "the planner keeps as one milestone runs as it is."
+        ),
+    )
     parser.add_argument(
         "--execution",
         choices=("local", "docker"),
@@ -719,6 +730,106 @@ def _project_from_task(args: argparse.Namespace, task: str | None, cfg: Any) -> 
     return name
 
 
+def _make_milestones(
+    args: argparse.Namespace, options: RunOptions, cfg: Any, task: str | None
+) -> str | int:
+    """`--make-milestones`: the planner's milestone task, saved in the
+    project's `.certo/` and set as the task file to run in milestones (the
+    text is returned); the task as it was when the planner kept it as one;
+    or an exit code when the run must stop."""
+    from .milestone_planner import choose_planner, plan_milestones, save_plan
+    from .milestones import written_in_milestones
+
+    if args.resume or args.from_milestone is not None:
+        flag = "--resume" if args.resume else "--from-milestone"
+        print(
+            f"Error: --make-milestones can't be combined with {flag}: it writes a new plan. "
+            "To continue a plan it wrote: certo --resume.",
+            file=sys.stderr,
+        )
+        return 1
+    if task is None:  # only with --resume, refused above
+        return 1
+    if written_in_milestones(task):
+        print(
+            f"Error: {args.task} is already written in milestones; run it without "
+            "--make-milestones.",
+            file=sys.stderr,
+        )
+        return 1
+    try:
+        planner, how = choose_planner(cfg)
+        # The plan goes in the project's .certo/: the folder is made now, so
+        # Certo still knows it created it.
+        prepare_workspace(cfg, options)
+    except ConfigError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+    print(f"Planning milestones with {planner.model} ({how})...", flush=True)
+    planned = plan_milestones(task, planner)
+    cost = f", ${planned.cost:.4f}" if planned.cost else ""
+    if planned.text is None:
+        print(f"Certo: {planned.reason}. The task runs as one, as it is.")
+        return task
+    while True:
+        path = save_plan(cfg.workspace, planned.text)
+        print(
+            f"Plan: {len(planned.titles)} milestones, written by {planned.model} in "
+            f"{planned.seconds:.0f}s{cost}. Saved as {path}"
+        )
+        for number, title in enumerate(planned.titles, start=1):
+            print(f"  {number}. {title}")
+        print(f"Edit it and run it again any time: certo --milestones {shlex.quote(path)}")
+        if not cfg.interactive:
+            break
+        answer = _ask_about_plan()
+        if answer == "go":
+            break
+        if answer == "stop":
+            print("Stopped before the first milestone. The plan is kept.")
+            return 0
+        input(f"Edit {path}, save it, then press Enter: ")
+        planned = _read_edited_plan(path, planned)
+        if planned is None:
+            return 1
+        if not planned.titles:
+            break  # unchanged
+    from .milestones import clear_state
+
+    clear_state(cfg.workspace)  # a new plan: its milestones start from 1
+    args.milestones = True
+    args.task = path
+    with open(path, encoding="utf-8") as f:
+        return f.read()
+
+
+def _ask_about_plan() -> str:
+    """`--interactive`: run the plan, edit it first, or stop."""
+    print("\n  1. Run it\n  2. Let me edit the file first\n  3. Stop")
+    answer = input("Your choice [1]: ").strip()
+    return {"": "go", "1": "go", "2": "edit", "3": "stop"}.get(answer, "go")
+
+
+def _read_edited_plan(path: str, before: Any) -> Any:
+    """The plan after the user edited it: shown again (unless unchanged),
+    or None when it no longer reads as milestones."""
+    from dataclasses import replace as _replace
+
+    from .milestones import MilestoneError, parse_milestones
+
+    with open(path, encoding="utf-8") as f:
+        text = f.read()
+    if text == before.text:
+        return _replace(before, titles=())
+    try:
+        plan = parse_milestones(text)
+    except MilestoneError as exc:
+        print(f"Error: {path}: {exc}", file=sys.stderr)
+        return None
+    titles = tuple(m.label for m in plan.milestones)
+    return _replace(before, text=text, titles=titles, model=f"{before.model}, edited by you")
+
+
 def _run_task_command(
     args: argparse.Namespace, parser: argparse.ArgumentParser, holder: dict[str, Any] | None
 ) -> int:
@@ -785,6 +896,11 @@ def _run_task_command(
         except (UsageError, ConfigError) as exc:
             print(f"Error: {exc}", file=sys.stderr)
             return 1
+    if args.make_milestones:
+        made = _make_milestones(args, options, cfg, task)
+        if isinstance(made, int):
+            return made
+        task = made
     try:
         plan = plan_run(
             cfg,

@@ -2026,4 +2026,18 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   the packaging excludes and `.gitignore` that keep a user's copies out
   of a release stay as they are, and these two files are put back by
   exact path (`force-include`), checked by tests/test_packaging.py.
+- **Certo writes the milestones: the task as context, the planner's
+  milestones after it** (0.2.4, 2026-11-16; the Author's flag,
+  2026-11-10). `--make-milestones` asks a model for the milestone
+  sections only and saves the user's task, unchanged, before them in
+  `.certo/milestones.md`: the task is every milestone's context, so a
+  rewrite can't drop a requirement, and the file runs and resumes as any
+  milestone file. Planner model, never named in code:
+  `CERTO_PLANNER_MODEL` (a models.yaml name), else the `planning`
+  profile (`reasoning` 4+, no triggers) only when the run already lets
+  Certo choose models (auto/escalate), else the run's own: a manual run
+  never silently plans on another model. A failed call, an unreadable
+  plan or one milestone runs the task as one, as it is; acceptance
+  blocks the planner writes are dropped (unmeasured). Opt-in and
+  experimental until the three-arm bench (TODO).
 

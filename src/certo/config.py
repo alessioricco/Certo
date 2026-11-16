@@ -276,6 +276,11 @@ class Config:
     # files as they were before the first rung, restored from a checkpoint
     # (the previous rung's work stays in one, see checkpoints.py).
     escalation_handoff: str = "continue"
+    # CERTO_PLANNER_MODEL: the models.yaml model that writes the milestones
+    # for `--make-milestones` (milestone_planner.py). Blank: the planning
+    # task profile's first model under --auto-model or --escalate, else the
+    # run's own model.
+    planner_model: str = ""
     # CERTO_MAX_TASK_COST: a USD cap on a task, every rung and the
     # independent tests included. The agent is stopped once the cost
     # reaches it (cost_limit.py), and no escalation rung starts past it;
@@ -753,6 +758,7 @@ def load_config(
     task_profiles_file = _get(env, "TASK_PROFILES_FILE") or ""
     escalation_file = _get(env, "ESCALATION_FILE") or ""
     escalation_ladder = _get(env, "ESCALATION_LADDER") or ""
+    planner_model = _get(env, "PLANNER_MODEL") or ""
     escalation_handoff = _parse_choice(
         env, "ESCALATION_HANDOFF", default="continue", choices=ESCALATION_HANDOFFS
     )
@@ -816,6 +822,7 @@ def load_config(
         escalation_file=escalation_file,
         escalation_ladder=escalation_ladder,
         escalation_handoff=escalation_handoff,
+        planner_model=planner_model,
         max_task_cost=max_task_cost,
         artifacts_dir=artifacts_dir,
         no_worktree_warning=no_worktree_warning,
