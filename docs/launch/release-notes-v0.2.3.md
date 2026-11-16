@@ -1,7 +1,5 @@
 # Certo v0.2.3
 
-Not released yet.
-
 This release keeps the agent in its project, lets runs use skills from
 repositories you trust, makes bigger, milestone-by-milestone builds
 easier to start, and starts each task on the least costly model that
