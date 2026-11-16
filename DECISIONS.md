@@ -2112,4 +2112,11 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   price formula. Models no source rates are marked "no data" and keep
   their hand ratings. The data file covers every model the sources
   rate, not only Certo's list: users run others.
+- **`writing` stays derived: the mean of reasoning and precision**
+  (2026-11-16, the Author; supersedes LMArena creative writing in the
+  anchors entry above). The creative-writing arena put GPT-6 Luna at 1.2
+  and GPT-6.1 Sol at 2.4 against Opus 5.5 at 4.6, and the general text
+  arena shows the same gap: voters judge chat answers and stories, not
+  READMEs. No source measures the writing Certo needs, so one rule
+  beats guessed anchors.
 

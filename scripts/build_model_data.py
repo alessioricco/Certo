@@ -84,7 +84,6 @@ def review(data: dict, out: Path) -> None:
     for source in (
         "lmarena_webdev",
         "lmarena_text_factuality",
-        "lmarena_creative_writing",
         "epoch_eci",
     ):
         print(f"  {source}: {sum(source in m['scores'] for m in models.values())}")

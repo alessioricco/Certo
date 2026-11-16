@@ -32,7 +32,6 @@ SCALE = "2026-11-16"
 LMARENA_SCORES = {
     "lmarena_webdev": ("webdev", "overall"),
     "lmarena_text_factuality": ("text_factuality", "overall"),
-    "lmarena_creative_writing": ("text", "creative_writing"),
 }
 LMARENA_TABLES = ("webdev", "text_factuality", "text", "agent")
 
@@ -164,7 +163,7 @@ def build(
         "sources": list(SOURCES),
         "changes": (
             "Selected and reshaped by Certo: per model, the best score of its "
-            "variants on four of the sources' measures, the median cost per "
+            "variants on three of the sources' measures, the median cost per "
             "agent task of its most used variant, and its list price in $ per "
             "1M tokens; names joined by a normalized key."
         ),

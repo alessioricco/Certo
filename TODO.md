@@ -284,9 +284,9 @@ file), B, C, then 5a and 5b. Steps 2 (`certo models choose`) and A
      the data file attached to each release with the attribution lines.
      Every model the sources rate, not only Certo's list, keyed by
      LiteLLM id, with input/output $ per 1M tokens. Start from the
-     comparison script of 2026-11-16 (36 of 39 matched; qwen3-coder
-     30B, devstral-small-2, flint 40B have no data: marked "no data",
-     hand ratings kept).
+     comparison script of 2026-11-16 (35 of 39 have data; Llama 3 8B,
+     qwen3-coder 30B, devstral-small-2, flint 40B have none: marked
+     "no data", hand ratings kept).
   4. **`certo models refresh`**: reads the cached data file, fetches
      current list prices ($ per 1M tokens in and out) from LiteLLM's
      price list (else the data file's, else the installed LiteLLM's),

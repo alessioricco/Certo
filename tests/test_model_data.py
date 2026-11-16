@@ -39,8 +39,7 @@ def _data():
         "webdev": [_row("Claude Opus 5.5 (High)", 1790.0), _row("Claude Opus 5.5 (Max)", 1815.6)],
         "text_factuality": [_row("Claude Opus 5.5 (Max)", 1505.0)],
         "text": [
-            _row("Claude Opus 5.5 (Max)", 1530.0, "creative_writing"),
-            _row("Claude Opus 5.5 (Max)", 1514.0),  # overall: not a score Certo reads
+            _row("Claude Opus 5.5 (Max)", 1530.0, "creative_writing"),  # not read
             _row("Qwen3-8B", 1300.0, "creative_writing"),
         ],
         "agent": [
@@ -71,13 +70,13 @@ def test_the_file_keeps_each_models_best_variant_and_the_most_used_variants_cost
     opus = data["models"]["claudeopus55"]
     assert opus["scores"] == {
         "epoch_eci": 168.5,
-        "lmarena_creative_writing": 1530.0,
         "lmarena_text_factuality": 1505.0,
         "lmarena_webdev": 1815.6,
     }
     assert opus["cost_per_task"] == 2.1  # the (High) variant: 900 sessions
     # The provider's own id, not a reseller's.
     assert (opus["litellm"], opus["price_in"], opus["price_out"]) == ("claude-opus-5-5", 4.0, 20.0)
+    assert data["models"]["qwen38b"]["scores"] == {"epoch_eci": 130.0}
     assert data["models"]["qwen38b"]["litellm"] is None  # an embedding has no chat price
     assert [s["license"] for s in data["sources"]] == ["CC-BY-4.0", "CC-BY-4.0", "MIT"]
 
@@ -103,4 +102,9 @@ def test_the_shipped_file_reads_and_rates_certos_own_models():
     certos = yaml.safe_load(data.joinpath("models_list.yaml").read_text(encoding="utf-8"))
     without = sorted(m["name"] for m in certos["models"] if shipped.lookup(m["model"]) is None)
     # The local models no source rates: marked "no data", hand ratings kept.
-    assert without == ["devstral-small-2-local", "flint-40b-local", "qwen3-coder-local"]
+    assert without == [
+        "devstral-small-2-local",
+        "flint-40b-local",
+        "ollama-local",  # Llama 3 8B: only the creative-writing arena rated it
+        "qwen3-coder-local",
+    ]

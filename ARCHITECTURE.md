@@ -544,7 +544,8 @@ given design was chosen.
   parquet.
 - **`ratings.py`** — computed ratings (TODO C). `rate(ModelData,
   anchors, own)` is pure: one source per axis through an `Anchor`
-  (straight line, capped 1-5), local −1 on capability axes, cost from
+  (straight line, capped 1-5) for code, reasoning, precision; writing is
+  their `DERIVED` mean of reasoning and precision; local −1 on capability axes, cost from
   `task_cost_rating` (per agent task) else `model_pricing.cost_rating`
   (list price), speed cloud 4 / local 2, own results shrunk in with
   `n/(n+5)` capped at ±1. Returns where each rating came from and which

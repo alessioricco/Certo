@@ -1,8 +1,10 @@
 """Ratings computed from third-party data (DECISIONS.md, 2026-11-16).
 
 `rate()` turns one model's raw scores into 1-5 ratings, one decimal, on a
-fixed scale: each capability axis reads one source and maps it through
-fixed anchor points (a straight line between them, capped at 1 and 5).
+fixed scale: code, reasoning and precision each read one source and map
+it through fixed anchor points (a straight line between them, capped at
+1 and 5). Writing is the mean of reasoning and precision: no source
+measures the writing Certo needs (READMEs, docs, messages).
 Cost comes from the real cost per agent task where a model has one, else
 from its list price; speed is only cloud (4) or local (2). A local model
 loses a point on the capability axes, as it runs quantized with a short
@@ -60,8 +62,9 @@ DEFAULT_ANCHORS: dict[str, Anchor] = {
     "code": Anchor("lmarena_webdev", (1350, 1450, 1550, 1650, 1750)),
     "reasoning": Anchor("epoch_eci", (135, 145, 155, 162, 168)),
     "precision": Anchor("lmarena_text_factuality", (1350, 1400, 1450, 1480, 1510)),
-    "writing": Anchor("lmarena_creative_writing", (1350, 1400, 1450, 1500, 1550)),
 }
+# Derived from other axes, never from a source: their mean.
+DERIVED = {"writing": ("reasoning", "precision")}
 
 
 @dataclass(frozen=True)
@@ -118,6 +121,12 @@ def rate(
             value = max(1.0, value - LOCAL_PENALTY)
             source += ", local −1"
         ratings[axis], sources[axis] = value, source
+    for axis, parts in DERIVED.items():
+        if all(part in ratings for part in parts):
+            ratings[axis] = sum(ratings[part] for part in parts) / len(parts)
+            sources[axis] = "mean of " + " and ".join(parts)
+        else:
+            missing.append(axis)
 
     if data.local:
         ratings["cost"], sources["cost"] = LOCAL_COST, "local"

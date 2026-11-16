@@ -38,7 +38,6 @@ def test_a_cloud_model_is_rated_on_every_axis_from_its_sources():
             "lmarena_webdev": 1816,
             "epoch_eci": 169,
             "lmarena_text_factuality": 1505,
-            "lmarena_creative_writing": 1532,
         },
         cost_per_task=2.12,
         price_in=5,
@@ -49,7 +48,7 @@ def test_a_cloud_model_is_rated_on_every_axis_from_its_sources():
         "code": 5.0,
         "reasoning": 5.0,
         "precision": 4.8,
-        "writing": 4.6,
+        "writing": 4.9,  # the mean of reasoning and precision
         "cost": 2.5,  # from the cost per task, not the list price
         "speed": 4.0,
     }
@@ -68,7 +67,7 @@ def test_a_local_model_loses_a_point_on_capability_and_is_free_and_slow():
     rated = rate(qwen, DEFAULT_ANCHORS)
     assert rated.ratings == {"code": 2.4, "reasoning": 1.8, "cost": 5.0, "speed": 2.0}
     assert rated.sources["code"] == "lmarena_webdev, local −1"
-    assert rated.missing == ("precision", "writing")
+    assert rated.missing == ("precision", "writing")  # writing needs precision
     low = rate(ModelData(scores={"lmarena_webdev": 1300}, local=True), DEFAULT_ANCHORS)
     assert low.ratings["code"] == 1.0  # never below 1
 
