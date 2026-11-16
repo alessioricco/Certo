@@ -10,7 +10,9 @@ mode.
 ## The interactive session
 
 In a terminal, run `certo` with no task, or `certo -i "task"` to start
-with one. Certo shows a header, then a prompt (since 0.2.4):
+with one (since 0.2.4). The session takes the whole terminal window: the
+transcript at the top, starting with a header, an input box under it, and
+a status line at the bottom:
 
 ```text
 ╭─────────────────────────────────────────────╮
@@ -21,19 +23,29 @@ with one. Certo shows a header, then a prompt (since 0.2.4):
 │   folder   ~/certo-projects                 │
 │   /help for commands · shift+tab: switches  │
 ╰─────────────────────────────────────────────╯
->
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│>                                                                             │
+└──────────────────────────────────────────────────────────────────────────────┘
+ haiku-5-5 · manual · ~/certo-projects
+ ask before actions: off · mode: manual · effort: default   (shift+tab, ctrl+t, ctrl+o)
 ```
 
 - **A message is a task.** The run prints what `certo "task"` prints
-  (the agent's work, Certo's checks, the verdict) above the prompt. In a
-  Certo workspace the task gets its own project folder, as usual.
+  (the agent's work, Certo's checks, the verdict) into the transcript.
+  In a Certo workspace the task gets its own project folder, as usual.
 - **The next message continues it**, as `certo --resume "message"`: the
   agent gets its conversation back, and Certo checks the result again.
   `/new` makes the next message a new task.
-- **Ctrl-C** stops a run after its current step and comes back to the
-  prompt; the next message continues it. Ctrl-D or `/quit` ends the
-  session (a run still working is stopped first). The transcript stays
-  in your terminal's scrollback.
+- **Ctrl-C** stops a run after its current step; the next message
+  continues it. With nothing running, it clears the input box. Ctrl-D
+  (on an empty box) or `/quit` ends the session; a run still working is
+  stopped first. When the session ends, the whole transcript is printed
+  to the terminal, so it stays in its scrollback.
+- **Scroll the transcript** with the mouse wheel or PgUp/PgDn; pressing
+  Enter goes back to the end. Up and Down in the input box bring back
+  what you typed before. The session takes the mouse, so to select text
+  for copying, hold Shift (Option in macOS Terminal) while you drag.
 - **Under the prompt**, a status line shows the model, the mode, the
   project, the last verdict and its time, and what the session has
   spent; under it, the switches:
@@ -71,15 +83,19 @@ agent's steps, the time, the cost so far and the last action:
  ⠋ qwen3.8-27b-local · rung 1 of 6 · 11s · $0.0000
 ```
 
-- **The run's questions come to the prompt.** With asking before actions
-  on, `Approve? [y/N]` replaces `>`: type the answer and press Enter.
+- **Questions come to the input box.** With asking before actions on,
+  `Approve? [y/N]` replaces `>`: type the answer and press Enter. A
+  command that asks, such as `/rollback`, asks there too.
 - **A message you type waits** for the run to end, then continues it.
   The status line shows it (`queued: ...`); a second message replaces
   the first. If you stop the run, the waiting message isn't sent, and
   Certo says so.
 - **Commands:** `/help`, `/ask`, `/model`, `/mode`, `/effort`, `/clear`
   and `/quit` work during a run. The others (`/verify`, `/new`,
-  `/rollback`, ...) say they wait for the run to end.
+  `/rollback`, ...) say they wait for the run to end. A command such as
+  `/verify` works in the background too, with its name on the status
+  line. `/clear` empties the screen; the transcript printed at the end
+  still has everything.
 
 The commands:
 

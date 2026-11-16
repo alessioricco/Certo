@@ -2139,4 +2139,16 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   and 150 Haiku runs still reach the one-point cap. Hitting the time or
   cost limit, an interrupt or `inconclusive` say nothing about the
   model's code, so they don't count at all.
+- **The interactive session is full screen** (2026-11-16, the Author:
+  "looks better and is the standard"; supersedes "inline, not
+  full-screen" above). Still prompt_toolkit, no new library: one
+  Application with the transcript pane, an input box and the status
+  line. Everything printed goes to the pane (stdout, stderr, logging
+  handlers), and every `input()` is asked in the input box, since a
+  second reader of the terminal would break the screen; commands run in
+  a thread like runs. The pane keeps color codes and drops other
+  terminal control codes (a shell's `ESC[?2004l` printed as text). The
+  Author's choices: the transcript is printed to the terminal on exit,
+  so the scrollback keeps it; the mouse is captured (wheel scrolls;
+  selecting text needs Shift/Option).
 

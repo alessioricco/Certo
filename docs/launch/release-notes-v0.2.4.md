@@ -30,9 +30,10 @@ agent's conversation, until `/new`. Type `/` for the commands: `/verify`,
 prompt, a status line shows the model, the mode, the project, the last
 verdict, its time and what the session spent, with three switches:
 Shift+Tab asks before each action, Ctrl+T cycles manual, `--auto-model`
-and `--escalate`, Ctrl+O the reasoning effort. It stays in the terminal
-(no full screen), and needs no new library. While a run works, the
-prompt stays: the status line follows it live (the model working now,
+and `--escalate`, Ctrl+O the reasoning effort. It takes the whole
+terminal window, as other agent terminals do (the transcript scrolls with
+the mouse wheel or PgUp/PgDn, and is printed to the terminal when you
+quit), and needs no new library. While a run works, the input box stays: the status line follows it live (the model working now,
 with the rung on a ladder or `--auto-model`'s choice, the steps, time,
 cost and last action), the run's questions are answered at the prompt,
 a message typed meanwhile waits for the run, and Ctrl-C stops it. Scripts are unaffected:

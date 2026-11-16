@@ -1,28 +1,26 @@
 """The interactive session: `certo` alone in a terminal, or `certo -i "task"`
 (docs/history/interactive-session.md; DECISIONS.md, 2026-11-16).
 
-Inline, as the common coding-agent terminals are: a header printed once,
-then a prompt with `/` commands and, below it, a status line with the
-switches. A message is a task: the first one new, the next ones
-continuing it (`--resume` in its project) until `/new`.
+Full screen, as the common coding-agent terminals are (session_screen.py):
+the transcript in a scrollable pane, an input box with `/` commands, and a
+status line with the switches. A message is a task: the first one new, the
+next ones continuing it (`--resume` in its project) until `/new`.
 
-A run works in its own thread and prints what `certo "task"` prints, above
-the prompt (prompt_toolkit's `patch_stdout`). The prompt stays: the status
-line shows the run live (the model running now, step, time, cost, last
-action), the run's questions are answered there, a message typed meanwhile
-waits for the run to end, and Ctrl-C stops the run after its current step
-(the runner's cancel token, cancel.py).
+A run works in its own thread and prints what `certo "task"` prints, into
+the pane. The input box stays: the status line shows the run live (the
+model running now, step, time, cost, last action), the run's questions are
+answered there, a message typed meanwhile waits for the run to end, and
+Ctrl-C stops the run after its current step (the runner's cancel token,
+cancel.py).
 
-Everything but the input loop is plain functions on `SessionState`,
-tested without a terminal. Built on prompt_toolkit, already a dependency.
+Everything but the screen is plain functions on `SessionState`, tested
+without a terminal. Built on prompt_toolkit, already a dependency.
 """
 
 from __future__ import annotations
 
-import contextlib
 import os
 import queue
-import shlex
 import sys
 import threading
 import time
@@ -77,10 +75,15 @@ class LiveRun:
     questions to the prompt, and its cancel token."""
 
     def __init__(
-        self, mode: str = "manual", model: str = "", refresh: Callable[[], None] = lambda: None
+        self,
+        mode: str = "manual",
+        model: str = "",
+        refresh: Callable[[], None] = lambda: None,
+        label: str = "",
     ) -> None:
         self.mode = mode  # the run's own mode and model: switches change the next task
         self.model = model
+        self.label = label  # a command working in the thread ("/verify"), not a run
         self.started = time.monotonic()
         self.progress: Any = None  # run_progress.RunProgress, once the run made it
         self.cancel = threading.Event()
@@ -254,6 +257,8 @@ def status_lines(state: SessionState, now: float | None = None) -> tuple[str, st
 def _live_facts(live: LiveRun, now: float) -> str:
     """The status line while a run works: the model running now first."""
     spin = SPINNER[int(now * 8) % len(SPINNER)]
+    if live.label:
+        return f"{spin} {live.label} · {_duration(now - live.started)}"
     facts = [f"{spin} {live.model_now()}"]
     progress = live.progress
     if progress is not None:
@@ -482,81 +487,13 @@ def run_loop(
     input=None,
     output=None,
 ) -> int:
-    """The input loop. `first`: certo arguments to run as the first task.
-    `input`/`output`: prompt_toolkit's, for tests (the run's output is then
-    not routed above the prompt)."""
-    from prompt_toolkit import PromptSession
-    from prompt_toolkit.completion import Completer, Completion
-    from prompt_toolkit.key_binding import KeyBindings
-    from prompt_toolkit.patch_stdout import patch_stdout
+    """The session's screen (session_screen.py). `first`: certo arguments
+    to run as the first task. `input`/`output`: prompt_toolkit's, for tests."""
+    from .session_screen import run_screen
 
-    class SlashCompleter(Completer):
-        def get_completions(self, document, complete_event):
-            word = document.text_before_cursor
-            for name, meta in completions(word):
-                yield Completion(name, start_position=-len(word), display_meta=meta)
-
-    keys = KeyBindings()
-
-    @keys.add("s-tab")
-    def _ask(event) -> None:
-        state.cycle("ask")
-
-    @keys.add("c-t")
-    def _mode(event) -> None:
-        state.cycle("mode")
-
-    @keys.add("c-o")
-    def _effort(event) -> None:
-        state.cycle("effort")
-
-    def toolbar() -> str:
-        facts, switches = status_lines(state)
-        return f" {facts}\n {switches}"
-
-    def message() -> str:
-        live = state.live
-        return live.question if live is not None and live.question else "> "
-
-    session = PromptSession(
-        message,
-        completer=SlashCompleter(),
-        complete_while_typing=True,
-        bottom_toolbar=toolbar,
-        key_bindings=keys,
-        # The status line moves while a run works.
-        refresh_interval=0.25,
-        input=input,
-        output=output,
+    return run_screen(
+        state, actions, show_header=show_header, first=first, input=input, output=output
     )
-    actions.refresh = session.app.invalidate
-    above = patch_stdout(raw=True) if output is None else contextlib.nullcontext()
-    with above:
-        if show_header:
-            for line in header(state):
-                actions.say(line)
-        if first:
-            actions.say(f"> {shlex.join(first)}")
-            _run(state, list(first), actions)
-        while True:
-            try:
-                line = session.prompt()
-            except KeyboardInterrupt:
-                _stop(state, actions)  # Ctrl-C at the prompt clears the line
-                continue
-            except EOFError:
-                _end(state, actions)
-                return 0
-            live = state.live
-            if live is not None and live.question:
-                live.answer(line)
-                continue
-            try:
-                if not handle(state, line, actions):
-                    _end(state, actions)
-                    return 0
-            except KeyboardInterrupt:
-                actions.say("\nStopped.")
 
 
 def first_task(argv: Sequence[str]) -> list[str]:

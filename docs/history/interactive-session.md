@@ -12,7 +12,10 @@ typed with `/`. Choices made with the Author on 2026-11-16:
   plain run that scripts and CI use. Without a terminal (a pipe, CI,
   `--json`), nothing changes: `certo` alone prints the usage error, and
   `--interactive` keeps its plain prompts.
-- **Inline, not full-screen:** the transcript scrolls in the terminal and
+- **Inline, not full-screen** (superseded the same day: the Author asked
+  for full screen, as the other agent terminals have; the transcript is
+  printed to the terminal on exit, and the mouse is captured):
+  the transcript scrolls in the terminal and
   stays in its scrollback after the session ends; the input box and the
   status line stay at the bottom while you type. Built on
   `prompt_toolkit`, already a Certo dependency (the `certo init` menus):

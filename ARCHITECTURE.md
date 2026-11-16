@@ -534,6 +534,17 @@ given design was chosen.
   `CERTO_CONFIRM_MODE` in the session's own environment. Limitation:
   `cli._asker` and that variable are process-wide, which is fine for
   one run at a time.
+- **`session_screen.py`** — the session's full screen. `run_screen`:
+  one `Application(full_screen=True, mouse_support=True)`; `OutputPane`
+  is a `TextIOBase` standing in for stdout (lines of merged ANSI
+  fragments, last 5,000 kept; raw text kept for the print-back on exit;
+  `_CONTROL` drops non-SGR escapes). The pane window follows the output
+  through `FormattedTextControl(get_cursor_position=...)` at
+  `line_count - 1 - scroll`; its `mouse_handler` scrolls. `printing_to`
+  points `sys.stdout`/`sys.stderr`, terminal `StreamHandler`s and
+  `builtins.input` at the session for the screen's lifetime (the output
+  is created first, from the real stdout). `actions.command` is wrapped
+  to run in a thread with a labelled `LiveRun` ("/verify").
 - **`model_data.py`** — the model data file (TODO C).
   `scripts/build_model_data.py` (maintainer, `uv run --with pyarrow`)
   fetches LMArena's parquet tables, Epoch's ZIP (`eci_scores.csv`) and
