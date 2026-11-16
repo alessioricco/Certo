@@ -200,6 +200,53 @@ def _print_path(out: TextIO, label: str, path: str | None, missing: str) -> None
         print(line, file=out)
 
 
+def _print_ratings_source(out: TextIO, list_path: str) -> None:
+    """Where the ratings come from: `certo models refresh`'s file (with a
+    note when its data is old), Certo's hand ratings, or a list a setting
+    names, read as written."""
+    from .computed_ratings import age_notes, read_ratings_file, shipped_data, today
+
+    if not is_built_in(layers_of(list_path)[0]):
+        print("  Ratings: as written in the list", file=out)
+        return
+    found = read_ratings_file()
+    if found is None:
+        print(
+            "  Ratings: Certo's, set by hand (certo models refresh computes them from "
+            "current benchmark data)",
+            file=out,
+        )
+        return
+    print(
+        f"  Ratings: computed by certo models refresh on {found.refreshed}, from model "
+        f"data of {found.data} ({found.path})",
+        file=out,
+    )
+    try:
+        shipped = shipped_data().generated
+    except (OSError, ValueError, KeyError):
+        shipped = ""
+    for note in age_notes(found, shipped, today()):
+        print(f"  Note: {note}", file=out)
+
+
+def _origin_lines(catalog: ModelCatalog) -> list[str]:
+    """Per active model, where its ratings come from."""
+    from .computed_ratings import origin, read_ratings_file
+
+    found = read_ratings_file()
+    if found is None:
+        return []
+    active = [m for m in catalog.models if m.activated]
+    if not active:
+        return []
+    width = max(len(m.name) for m in active)
+    lines = ["  Where the active models' ratings come from:"]
+    for entry in active:
+        lines.append(f"    {entry.name:{width}}  {origin(entry.name, entry.ratings, found)}")
+    return lines
+
+
 def _load_catalog(out: TextIO, project_dir: str = "") -> ModelCatalog | None:
     """Find and load the model files for `project_dir` (else the current
     folder), printing which ones are used and what each layer changes.
@@ -221,6 +268,7 @@ def _load_catalog(out: TextIO, project_dir: str = "") -> ModelCatalog | None:
             strategy = read_strategy(project) or "not set"
             print(f"  Project choice: {project} (strategy: {strategy})", file=out)
         _print_path(out, "List", list_path, "")
+        _print_ratings_source(out, list_path)
         _print_path(out, "Personal settings", models_path, "")
         _print_path(out, "Task profiles", profiles_path, "none (optional, for --auto-model)")
         _print_path(out, "Escalation", escalation_path, "none (optional, for --escalate)")
@@ -356,6 +404,8 @@ def print_catalog_report(
         return False
     report = check_catalog(catalog)
     for line in _catalog_lines(catalog):
+        print(line, file=out)
+    for line in _origin_lines(catalog):
         print(line, file=out)
     for error in report.errors:
         print(f"  Error: {error}", file=out)

@@ -290,9 +290,9 @@ file), B, C, then 5a and 5b. Steps 2 (`certo models choose`) and A
      `ratings.yaml` in the user folder, read as a layer on Certo's
      list). Left: own results for precision (needs a fooled signal
      outside the benchmark) and cost (Certo's task size differs from
-     LMArena's); `certo check` saying when the data is old and where
-     each rating came from; benchmark auto-model and derived ladders on
-     computed ratings (local + cloud) before release.
+     LMArena's); benchmark auto-model and derived ladders on computed
+     ratings (local + cloud) before release. (`certo check` now says
+     where ratings come from and when the data is old.)
   5. ~~`certo models choose` fingerprint~~: done (`generated:` in
      `certo-models.yaml`, `--replace-edits`).
   Done when a user's table is recomputed from current data for their

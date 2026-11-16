@@ -222,3 +222,71 @@ def test_refresh_writes_the_ratings_and_shows_them_with_prices(tmp_path, monkeyp
     finally:
         if os.path.exists(cr.ratings_path()):
             os.remove(cr.ratings_path())
+
+
+# --- certo check: where the ratings come from, and how old the data is ------
+
+
+def _ratings_file(**models):
+    return cr.RatingsFile(
+        "/cfg/ratings.yaml",
+        "2026-11-16",
+        "2026-11-16",
+        {name: cr.Computed(*args) for name, args in models.items()},
+    )
+
+
+def test_old_data_or_newer_data_in_this_version_says_refresh():
+    found = _ratings_file()
+    assert cr.age_notes(found, "2026-11-16", "2026-12-01") == []
+    assert cr.age_notes(found, "2027-01-10", "2027-01-20") == [
+        "this Certo version has newer model data (2027-01-10): run certo models refresh",
+        "the model data is 65 days old: run certo models refresh for newer data",
+    ]
+
+
+def test_each_models_ratings_say_where_they_came_from():
+    found = _ratings_file(
+        haiku=(
+            "anthropic/claude-haiku-5-5",
+            {"code": 4.4, "reasoning": 3.8, "cost": 4.8},
+            {"code": "lmarena_webdev, own results (150 runs)"},
+        ),
+        terra=("openai/gpt-6.1-terra", {"code": 4.4, "cost": 4.3}, {}),
+        flint=("ollama/flint:40b", {"cost": 5.0, "speed": 2.0}, {}, True),
+    )
+    assert cr.origin("haiku", {"code": 4.4, "reasoning": 3.8, "cost": 4.8}, found) == (
+        "computed; code with your 150 runs"
+    )
+    # Precision is Certo's (no source), cost is the user's own.
+    assert cr.origin("terra", {"code": 4.4, "precision": 3, "cost": 2}, found) == (
+        "computed; Certo's for precision; yours for cost"
+    )
+    assert cr.origin("flint", {"code": 2, "cost": 5.0, "speed": 1}, found) == (
+        "Certo's (no data); yours for speed"
+    )
+    assert cr.origin("other", {"code": 3}, found) == "Certo's"
+
+
+def test_certo_check_says_where_the_ratings_come_from(tmp_path, monkeypatch):
+    from certo.catalog_report import _origin_lines, _print_ratings_source
+
+    out = io.StringIO()
+    _print_ratings_source(out, certo_file("models_list.yaml"))
+    assert "Ratings: Certo's, set by hand (certo models refresh computes them" in out.getvalue()
+
+    path = _write_ratings()
+    try:
+        out = io.StringIO()
+        _print_ratings_source(out, certo_file("models_list.yaml"))
+        assert "Ratings: computed by certo models refresh on" in out.getvalue()
+        catalog = load_model_catalog(certo_file("models_list.yaml"), _models_yaml(tmp_path))
+        lines = _origin_lines(catalog)
+        assert lines[0] == "  Where the active models' ratings come from:"
+        assert "claude-haiku-5-5  computed" in lines[1]
+    finally:
+        os.remove(path)
+
+    out = io.StringIO()
+    _print_ratings_source(out, str(tmp_path / "pinned.yaml"))
+    assert out.getvalue() == "  Ratings: as written in the list\n"

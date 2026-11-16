@@ -24,7 +24,7 @@ import os
 import urllib.error
 import urllib.request
 from collections.abc import Callable, Iterable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from importlib.resources import files
 from typing import Any
@@ -235,20 +235,93 @@ def render(rows: Sequence[Refreshed], source: DataSource, today: str) -> str:
 class Computed:
     model: str
     ratings: dict[str, float]
+    sources: dict[str, str] = field(default_factory=dict)
+    no_data: bool = False
+
+
+@dataclass(frozen=True)
+class RatingsFile:
+    """`ratings.yaml`, read back: when it was written, from which data."""
+
+    path: str
+    refreshed: str
+    data: str
+    models: dict[str, Computed]
+
+
+def read_ratings_file(path: str | None = None) -> RatingsFile | None:
+    """The file a refresh wrote, or None without a readable one."""
+    path = path or ratings_path()
+    try:
+        with open(path, encoding="utf-8") as f:
+            raw = yaml.safe_load(f)
+        models = {}
+        for entry in raw.get("models") or []:
+            ratings = {str(k): float(v) for k, v in (entry.get("ratings") or {}).items()}
+            sources = {str(k): str(v) for k, v in (entry.get("from") or {}).items()}
+            models[str(entry["name"])] = Computed(
+                str(entry["model"]), ratings, sources, bool(entry.get("no_data"))
+            )
+        return RatingsFile(
+            path, str(raw.get("refreshed") or ""), str(raw.get("data") or ""), models
+        )
+    except (OSError, yaml.YAMLError, AttributeError, KeyError, TypeError, ValueError):
+        return None
 
 
 def read_computed(path: str | None = None) -> dict[str, Computed]:
     """The ratings a refresh wrote, by model name; {} without a readable file."""
+    found = read_ratings_file(path)
+    return found.models if found is not None else {}
+
+
+OLD_DATA_DAYS = 60
+
+
+def age_notes(found: RatingsFile, shipped: str, today_: str) -> list[str]:
+    """What `certo check` says about the data's age: older than
+    `OLD_DATA_DAYS`, or older than the data this Certo version ships."""
+    notes = []
+    if shipped > found.data:
+        notes.append(
+            f"this Certo version has newer model data ({shipped}): run certo models refresh"
+        )
     try:
-        with open(path or ratings_path(), encoding="utf-8") as f:
-            raw = yaml.safe_load(f)
-        out = {}
-        for entry in raw.get("models") or []:
-            ratings = {str(k): float(v) for k, v in (entry.get("ratings") or {}).items()}
-            out[str(entry["name"])] = Computed(str(entry["model"]), ratings)
-        return out
-    except (OSError, yaml.YAMLError, AttributeError, KeyError, TypeError, ValueError):
-        return {}
+        days = (datetime.fromisoformat(today_) - datetime.fromisoformat(found.data)).days
+    except ValueError:
+        return notes
+    if days > OLD_DATA_DAYS:
+        notes.append(f"the model data is {days} days old: run certo models refresh for newer data")
+    return notes
+
+
+def origin(name: str, ratings: Mapping[str, float], found: RatingsFile | None) -> str:
+    """Where one model's ratings come from, in a few words: computed, with
+    the user's own runs; Certo's (no data); or the user's own overrides."""
+    computed = found.models.get(name) if found is not None else None
+    if computed is None:
+        return "Certo's"
+    if computed.no_data:
+        kept = "Certo's (no data)"
+        yours = [
+            a for a in ("cost", "speed") if a in ratings and ratings[a] != computed.ratings.get(a)
+        ]
+        return kept + (f"; yours for {', '.join(yours)}" if yours else "")
+    parts = ["computed"]
+    runs = computed.sources.get("code", "")
+    if "own results" in runs:
+        parts.append("code with your " + runs.split("own results (", 1)[1].rstrip(")"))
+    hand = [a for a in AXES if a in ratings and a not in computed.ratings]
+    if hand:
+        parts.append(f"Certo's for {', '.join(hand)}")
+    yours = [
+        a
+        for a in AXES
+        if a in computed.ratings and a in ratings and ratings[a] != computed.ratings[a]
+    ]
+    if yours:
+        parts.append(f"yours for {', '.join(yours)}")
+    return "; ".join(parts)
 
 
 def apply_computed(

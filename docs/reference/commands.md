@@ -533,8 +533,9 @@ the ratings in Certo's list. Your own ratings, in `models_list.yaml` or
 `models.yaml`, always win over the computed ones. Delete `ratings.yaml`
 to go back to the ratings in Certo's list.
 
-It prints the ratings of your enabled models, with prices in $ per 1M
-tokens, what changed by half a point or more, and which models fit each
+[`certo check`](#certo-check) then says where each model's ratings come
+from, and when the data gets old. It prints the ratings of your enabled
+models, with prices in $ per 1M tokens, what changed by half a point or more, and which models fit each
 kind of task:
 
 ```text
@@ -805,12 +806,19 @@ answers with a tool call. Every message and its fix:
 **The model files.** When `models_list.yaml` or `models.yaml` exists (see
 [where Certo looks](models-yaml.md#where-certo-looks)), `certo check` also
 reports them: which files it found (including the optional
-`task_profiles.yaml` and `escalation.yaml`, or `none`), the active and inactive models, how
+`task_profiles.yaml` and `escalation.yaml`, or `none`), where the ratings
+come from (computed by [`certo models refresh`](#certo-models-refresh),
+with the date of its data; Certo's own, set by hand; or as written in a
+list a setting names), with a note when that data is more than 60 days
+old or this Certo version ships newer data, the active and inactive models, how
 many listed models aren't used, for each task profile the first three
 models `--auto-model` would try (with their scores), each ladder with its usable rungs, the
 ladder Certo would build from the ratings (and the models it leaves out
 of it, with the model that beats each one), and every error and warning
-(see [Checks](models-yaml.md#checks)). A missing file is an error with the
+(see [Checks](models-yaml.md#checks)). After a refresh, one more line per
+active model says where its ratings come from: `computed`, with how many
+of your runs moved `code`; `Certo's` for an axis no source rates, or for
+a model with no data; `yours` for an axis you rated yourself. A missing file is an error with the
 command that copies its example. Keys are never printed. For example:
 
 ```text
@@ -833,6 +841,19 @@ Model files:
   Derived ladder: qwen-local (capability 5, cost rating 5; effort default) -> gpt-luna (capability 7, cost rating 4; effort default) -> claude-sonnet (capability 10, cost rating 2; effort default)
   Warning: Ladder 'local-only', rung 2: gemma-local has 'activated: false', so this rung is skipped.
   Warning: Ladder 'local-only' has only one usable rung (qwen-local), so it can't escalate.
+```
+
+After `certo models refresh`, the ratings lines read like this (a real
+run, cut short):
+
+```text
+  List: built into Certo 0.2.4
+  Ratings: computed by certo models refresh on 2026-11-16, from model data of 2026-11-16 (~/.config/certo/ratings.yaml)
+  ...
+  Where the active models' ratings come from:
+    devstral-small-2-local  Certo's (no data)
+    gpt-6.1-terra           computed; code with your 4 runs; Certo's for precision, writing
+    claude-haiku-5-5        computed; code with your 150 runs
 ```
 
 With `--models`, each active model gets a line such as

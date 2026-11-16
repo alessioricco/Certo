@@ -564,6 +564,10 @@ given design was chosen.
   `models_list.yaml` (single path or `LayeredPath`): computed axes over
   Certo's, then the ratings any user layer gave on top; same name and
   same `model` id only. tests isolate it through `XDG_CONFIG_HOME`.
+  `certo check` (`catalog_report._print_ratings_source`, `_origin_lines`)
+  reads it back with `read_ratings_file`: `age_notes` (data older than
+  60 days, or older than the package's) and `origin()` per active model
+  (an axis whose value differs from the computed one is "yours").
 - **`milestone_planner.py`** — `--make-milestones`. `cli._make_milestones`
   runs before `plan_run`: refusals, `choose_planner` (setting, else the
   `planning` profile via `rank_for_profile` with local models probed,
