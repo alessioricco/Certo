@@ -467,19 +467,40 @@ def merge_layer(base: dict, over: dict) -> dict:
 
 
 def _read_mapping(path: str) -> dict:
+    from .model_files import is_built_in
+
     layers = getattr(path, "layers", None)
     if not layers:
         raw = _read_one(path)
         if isinstance(raw.get("replace"), bool):
             raw = {k: v for k, v in raw.items() if k != "replace"}
-        return raw
+        return _computed_on_certos(raw, {}) if _is_certos_list(path, is_built_in) else raw
     raws = [_read_one(p, empty_ok=True) for p in layers]
     # A layer with `replace: true` hides the layers below it.
     start = max((i for i, r in enumerate(raws) if r.get("replace") is True), default=0)
     merged: dict = {}
     for raw in raws[start:]:
         merged = merge_layer(merged, raw)
-    return merged
+    if not _is_certos_list(layers[start], is_built_in):
+        return merged
+    # `certo models refresh`'s ratings go on Certo's list; ratings the
+    # user's own layers give stay on top.
+    mine: dict[str, dict] = {}
+    for raw in raws[start + 1 :]:
+        for entry in raw.get("models") or []:
+            if isinstance(entry, dict) and isinstance(entry.get("ratings"), dict):
+                mine.setdefault(entry.get("name"), {}).update(entry["ratings"])
+    return _computed_on_certos(merged, mine)
+
+
+def _is_certos_list(path: str, is_built_in: Any) -> bool:
+    return Path(path).name == LIST_FILE and is_built_in(path)
+
+
+def _computed_on_certos(raw: dict, mine: dict) -> dict:
+    from .computed_ratings import apply_computed
+
+    return apply_computed(raw, mine)
 
 
 def _parse_profiles(raw: Any, path: str) -> list[TaskProfile]:

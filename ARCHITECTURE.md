@@ -549,8 +549,17 @@ given design was chosen.
   `task_cost_rating` (per agent task) else `model_pricing.cost_rating`
   (list price), speed cloud 4 / local 2, own results shrunk in with
   `n/(n+5)` capped at ±1. Returns where each rating came from and which
-  axes no source rates. Not wired to any command yet; the data file and
-  `certo models refresh` will feed it.
+  axes no source rates.
+- **`computed_ratings.py`** — `certo models refresh` (`models_cmd.refresh_main`).
+  `newest_data` (latest Release asset → `~/.cache/certo/model_data.json`,
+  used when its `generated` is newer than the package's), `fetch_prices`
+  (LiteLLM raw JSON, else `model_pricing.litellm_price`), `own_results`
+  (`run_stats.csv`: verified share → code), `compute`, `render` →
+  `ratings.yaml` beside the user `.env`. `model_catalog._read_mapping`
+  calls `apply_computed` when the lowest layer read is Certo's own
+  `models_list.yaml` (single path or `LayeredPath`): computed axes over
+  Certo's, then the ratings any user layer gave on top; same name and
+  same `model` id only. tests isolate it through `XDG_CONFIG_HOME`.
 - **`milestone_planner.py`** — `--make-milestones`. `cli._make_milestones`
   runs before `plan_run`: refusals, `choose_planner` (setting, else the
   `planning` profile via `rank_for_profile` with local models probed,

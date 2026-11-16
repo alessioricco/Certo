@@ -276,9 +276,8 @@ file), B, C, then 5a and 5b. Steps 2 (`certo models choose`) and A
      precision, cost per verified task → cost).
   3. ~~Maintainer script~~: done (`scripts/build_model_data.py`,
      `model_data.py`, `src/certo/data/model_data.json` shipped in the
-     package; CONTRIBUTING.md "Refresh the model data"). Left: attach
-     the file to each GitHub Release (release.yml), for refresh to fetch
-     the latest. Was: fetches LMArena's
+     package, attached to each GitHub Release by release.yml;
+     CONTRIBUTING.md "Refresh the model data"). Was: fetches LMArena's
      dataset, Epoch's ZIP and LiteLLM's prices, maps names through a
      reviewed name→id table (flags every name it can't match), writes
      the data file attached to each release with the attribution lines.
@@ -287,12 +286,13 @@ file), B, C, then 5a and 5b. Steps 2 (`certo models choose`) and A
      comparison script of 2026-11-16 (35 of 39 have data; Llama 3 8B,
      qwen3-coder 30B, devstral-small-2, flint 40B have none: marked
      "no data", hand ratings kept).
-  4. **`certo models refresh`**: reads the cached data file, fetches
-     current list prices ($ per 1M tokens in and out) from LiteLLM's
-     price list (else the data file's, else the installed LiteLLM's),
-     applies own results, prints the ratings for the folder (or `--project`),
-     what changed, and which projects' generated ladder no longer
-     matches them; `certo check` says when the data is old.
+  4. ~~`certo models refresh`~~: done (computed_ratings.py,
+     `ratings.yaml` in the user folder, read as a layer on Certo's
+     list). Left: own results for precision (needs a fooled signal
+     outside the benchmark) and cost (Certo's task size differs from
+     LMArena's); `certo check` saying when the data is old and where
+     each rating came from; benchmark auto-model and derived ladders on
+     computed ratings (local + cloud) before release.
   5. **`certo models choose`** stores a fingerprint of what it generated
      in `certo-models.yaml`: next time it rewrites untouched sections and
      shows the difference before replacing hand-edited ones.

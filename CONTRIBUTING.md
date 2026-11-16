@@ -176,9 +176,11 @@ refuse scripts; say so in the change rather than guessing a number.
 
 `src/certo/data/model_data.json` holds third-party scores and prices for
 every model LMArena or Epoch AI rates (about 475 on 2026-11-16), not only
-the models in Certo's list. Ratings will be computed from it
-(`ratings.py`, TODO.md item C); until `certo models refresh` uses it, runs
-still read the hand ratings above. Rebuild it before a release:
+the models in Certo's list. `certo models refresh` computes ratings from
+it (`ratings.py`); a user who never runs it keeps the hand ratings above.
+The release workflow attaches the committed file to the GitHub Release,
+and refresh reads the latest Release's when it is newer than the
+installed one's. Rebuild it before a release:
 
 ```bash
 uv run --with pyarrow python scripts/build_model_data.py

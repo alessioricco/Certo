@@ -115,6 +115,36 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Move the keys without asking. Needed without a terminal.",
     )
+    refresh = sub.add_parser(
+        "refresh",
+        help="Rate the models from current benchmark data, prices and your own runs.",
+        description=(
+            "Compute every model's ratings from Certo's model data (LMArena and Epoch "
+            "AI scores; the newest from Certo's latest release, else the one this "
+            "version ships), the current list prices from LiteLLM, and how your own "
+            "runs ended. The ratings are written to ratings.yaml in your user settings "
+            "folder, which runs then read: your own ratings in models_list.yaml or "
+            "models.yaml still win. Prints the ratings of your enabled models, what "
+            "changed, and which kinds of task each fits. No project file is changed."
+        ),
+    )
+    refresh.add_argument(
+        "--project",
+        metavar="NAME",
+        default=".",
+        help=(
+            "Rate the models as that project sees them (its own models_list.yaml "
+            "included): a name in CERTO_PROJECTS_DIR, or . for the current folder."
+        ),
+    )
+    refresh.add_argument(
+        "--offline",
+        action="store_true",
+        help=(
+            "Use no network: the model data cached or shipped with this version, and "
+            "the installed LiteLLM's prices."
+        ),
+    )
     choose = sub.add_parser(
         "choose",
         help="Choose the models a project may use; Certo proposes how to pick among them.",
@@ -451,6 +481,164 @@ def check_main(args: argparse.Namespace, *, prompter: Prompter, lookup=None) -> 
     return 1
 
 
+def refresh_main(args: argparse.Namespace, *, prompter: Prompter, opener=None) -> int:
+    """`certo models refresh`. 0 when the ratings were written, 1 when not.
+    `opener` (tests) fetches a URL; None uses the network unless --offline."""
+    from . import computed_ratings as cr
+    from .model_catalog import ModelCatalogError, _parse_list, _parse_profiles
+    from .run_stats import read_rows
+
+    if opener is None and not args.offline:
+        opener = cr._open
+    try:
+        folder = _project_folder(args.project)
+        list_path = find_layers(
+            LIST_FILE, os.environ.get("CERTO_MODELS_LIST_FILE", ""), project_dir=folder
+        )
+        listed = _parse_list(list_path) if list_path else []
+    except (ValueError, ModelCatalogError) as exc:
+        prompter.say(f"Error: {exc}")
+        return 1
+    if not listed:
+        prompter.say(f"No {LIST_FILE} found: nothing to rate.")
+        return 1
+    # Addresses and the models in use come from models.yaml, when there is one.
+    enabled: set[str] = set()
+    addresses: dict[str, str | None] = {}
+    profiles = []
+    try:
+        from .catalog_check import load_checked_catalog
+
+        catalog = load_checked_catalog(
+            os.environ.get("CERTO_MODELS_FILE", ""),
+            os.environ.get("CERTO_MODELS_LIST_FILE", ""),
+            project_dir=folder,
+        )
+        enabled = {m.name for m in catalog.models if m.configured and m.activated}
+        addresses = {m.name: m.base_url for m in catalog.models}
+        profiles = list(catalog.task_profiles)
+    except (ValueError, ModelCatalogError):
+        pass
+    if not profiles:
+        profiles_path = find_layers("task_profiles.yaml", project_dir=folder)
+        try:
+            profiles = _parse_profiles(_read_profiles(profiles_path), str(profiles_path))
+        except (ValueError, ModelCatalogError, OSError):
+            profiles = []
+
+    entries = [_RefreshEntry(e.name, e.model, addresses.get(e.name, e.base_url)) for e in listed]
+    before = cr.read_computed()
+    before_ratings = {n: c.ratings for n, c in before.items()} or {
+        e.name: e.ratings for e in listed
+    }
+    source = cr.newest_data(cr.data_cache_path(), opener)
+    prices, price_note = cr.fetch_prices(opener)
+    own = cr.own_results(read_rows())
+    rows = cr.compute(entries, source.data, own, prices)
+
+    path = cr.ratings_path()
+    try:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(cr.render(rows, source, cr.today()))
+    except OSError as exc:
+        prompter.say(f"Error: couldn't write {path}: {exc}")
+        return 1
+
+    prompter.say(
+        f"Model data of {source.data.generated}, from {source.where}"
+        + (f" ({source.note})" if source.note else "")
+        + "."
+    )
+    prompter.say(
+        "Prices: LiteLLM's current list."
+        if prices is not None
+        else f"Prices: the installed LiteLLM's ({price_note})."
+    )
+    shown = [r for r in rows if r.name in enabled] or rows
+    prompter.say(
+        f"\n{'Your enabled models' if enabled else 'The models in the list'} "
+        "(1-5; $ per 1M tokens in/out):"
+    )
+    width = max(len(r.name) for r in shown)
+    hand = {e.name: e.ratings for e in listed}
+    prompter.say(f"  {'':{width}}  code  reas  prec  writ  cost speed  price")
+    kept = False
+    for row in shown:
+        r = row.rated.ratings
+        cells = ""
+        for axis in cr.AXES:
+            if axis in r:
+                cells += f"{r[axis]:5.1f} "
+            elif axis in hand.get(row.name, {}):
+                cells += f"{hand[row.name][axis]:5.1f}*"
+                kept = True
+            else:
+                cells += "    - "
+        price = (
+            "local" if row.local else (f"${row.price[0]:g}/${row.price[1]:g}" if row.price else "-")
+        )
+        notes = []
+        if row.rated.no_data:
+            notes.append("no data")
+        if "own results" in row.rated.sources.get("code", ""):
+            notes.append(row.rated.sources["code"].split(", ")[-1])
+        prompter.say(
+            f"  {row.name:{width}} {cells} {price}" + (f"  ({'; '.join(notes)})" if notes else "")
+        )
+    if kept:
+        prompter.say("  * Certo's own rating, kept: no source rates that model on that axis.")
+    moved = cr.changes(before_ratings, shown)
+    prompter.say(
+        "\nChanged by half a point or more"
+        + (" since the last refresh" if before else " from Certo's list")
+        + (":" if moved else ": none.")
+    )
+    for line in moved:
+        prompter.say(f"  {line}")
+    fits = _fits(profiles, shown)
+    if fits:
+        prompter.say("\nWhich models fit each kind of task (cheapest first):")
+        for line in fits:
+            prompter.say(f"  {line}")
+    prompter.say(f"\nWrote {path}. Runs use these ratings from now on.")
+    if os.path.isfile(os.path.join(folder, PROJECT_FILE)):
+        prompter.say(
+            f"{PROJECT_FILE} here was made from the earlier ratings: run certo models "
+            "choose to make its ladder and profiles again."
+        )
+    return 0
+
+
+class _RefreshEntry:
+    def __init__(self, name: str, model: str, base_url: str | None) -> None:
+        self.name, self.model, self.base_url = name, model, base_url
+
+
+def _read_profiles(path):
+    from .model_catalog import _read_section_file
+
+    return _read_section_file(path, "task_profiles") if path else None
+
+
+def _fits(profiles, rows) -> list[str]:
+    """Per task profile with needs: the models whose ratings meet them."""
+    out = []
+    for profile in profiles:
+        if not profile.needs:
+            continue
+        fit = [
+            row
+            for row in rows
+            if all(row.rated.ratings.get(axis, 0) >= need for axis, need in profile.needs.items())
+        ]
+        fit.sort(key=lambda row: -row.rated.ratings.get("cost", 0))
+        needs = ", ".join(f"{a} {v:g}" for a, v in profile.needs.items())
+        names = ", ".join(row.name for row in fit) or "none"
+        out.append(f"{profile.name} (needs {needs}): {names}")
+    return out
+
+
 def _used_models() -> set[str]:
     """The model names models.yaml uses (names only, never keys)."""
     path = find(MODELS_FILE)
@@ -604,4 +792,6 @@ def models_main(
         return secure_main(args, prompter=prompter, interactive=interactive)
     if args.command == "choose":
         return choose_main(args, prompter=prompter, interactive=interactive)
+    if args.command == "refresh":
+        return refresh_main(args, prompter=prompter)
     return 2

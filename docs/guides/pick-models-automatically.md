@@ -262,8 +262,13 @@ them again as often as you like:
   them. Or name it with `model:`.
 - **A local model where you need answers fast?** Add `speed: 4` to the
   profile's needs.
+- **Ratings out of date?** Run
+  [`certo models refresh`](../reference/commands.md#certo-models-refresh):
+  it rates every model from current benchmark data, list prices and how
+  your own runs ended, and shows which models now fit each kind of task.
 - **A model rated wrong for your use?** Change its rating for yourself in
-  `models.yaml` (`ratings: {code: 4}`).
+  `models.yaml` (`ratings: {code: 4}`). Your ratings always win over the
+  computed ones.
 
 ## See what was chosen and why
 

@@ -39,6 +39,19 @@ a message typed meanwhile waits for the run, and Ctrl-C stops it. Scripts are un
 without a terminal, or with `--json`, `certo` runs as before. See
 [The interactive session](../guides/interactive-mode.md#the-interactive-session).
 
+## New: ratings from current benchmark data
+
+Certo's model ratings were set by hand. `certo models refresh` now
+computes them from public, openly licensed data: LMArena's web
+development and factuality arenas and Epoch AI's capabilities index for
+code, reasoning and precision; what a model spends on a typical agent
+task, else its list price, for cost; and how your own runs ended, which
+moves `code` a little at a time. The data covers about 475 models, not
+only Certo's list, so models you added get ratings too. It prints the
+ratings with prices in $ per 1M tokens, what changed, and which models
+fit each kind of task; your own ratings still win. See
+[`certo models refresh`](../reference/commands.md#certo-models-refresh).
+
 ## New: Certo writes the milestones
 
 Milestone mode runs a big task one checked piece at a time, but you had

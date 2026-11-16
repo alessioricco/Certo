@@ -77,7 +77,9 @@ that names a file that doesn't exist is an error.
 **Otherwise the file is read in layers,** lowest first:
 
 0. for `models_list.yaml` and `task_profiles.yaml`, Certo's own, from
-   the package;
+   the package (for the list, with the ratings
+   [`certo models refresh`](commands.md#certo-models-refresh) computed,
+   when you have run it: `ratings.yaml` in the user settings folder);
 1. the user settings folder, next to the user `.env`:
    `~/.config/certo/` (or `$XDG_CONFIG_HOME/certo/`);
 2. the current folder;
@@ -197,9 +199,10 @@ what to move where.
 
 The axis names are yours. Certo's list uses `reasoning`, `precision`,
 `code`, `writing`, `speed` and `cost`, but you can add any name, such as
-`latency`. Its `writing` and `speed` ratings are estimates for now (the
-comments at its top say how they were set); rate your own local models'
-`speed` for your machine in `models.yaml`. `speed` says how fast answers
+`latency`. Its ratings are set by hand (the comments at its top say how);
+[`certo models refresh`](commands.md#certo-models-refresh) computes them
+from current benchmark data instead. Rate your own local models' `speed`
+for your machine in `models.yaml`. `speed` says how fast answers
 come, not how good they are, so it never counts as capability (for
 example in an escalation ladder).
 

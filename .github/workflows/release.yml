@@ -84,8 +84,9 @@ jobs:
   # The GitHub Release page, after PyPI succeeds: its text is
   # docs/launch/release-notes-v<version>.md without the title, with
   # `../` links pointing at the files at this tag, and docs.zip (the user
-  # pages, for `certo ask`) attached. A missing notes file fails the job; a
-  # Release made by hand for this tag only gets docs.zip.
+  # pages, for `certo ask`) and model_data.json (for `certo models refresh`,
+  # which reads the latest Release's) attached. A missing notes file fails
+  # the job; a Release made by hand for this tag only gets the two files.
   github-release:
     needs: publish
     runs-on: ubuntu-latest
@@ -107,12 +108,14 @@ jobs:
           fi
           # The user pages, for `certo ask` (src/certo/docs_source.py).
           python3 scripts/build_docs_zip.py docs.zip
+          # The model data, as reviewed and committed (scripts/build_model_data.py).
+          cp src/certo/data/model_data.json model_data.json
           if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
-            echo "A Release for ${GITHUB_REF_NAME} already exists; adding docs.zip only."
-            gh release upload "${GITHUB_REF_NAME}" docs.zip --clobber
+            echo "A Release for ${GITHUB_REF_NAME} already exists; adding its files only."
+            gh release upload "${GITHUB_REF_NAME}" docs.zip model_data.json --clobber
             exit 0
           fi
           base="https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_REF_NAME}/docs"
           tail -n +3 "${notes}" | sed -E "s#\]\(\.\./([^)]*)\)#](${base}/\1)#g" > body.md
           gh release create "${GITHUB_REF_NAME}" --title "Certo ${version}" \
-            --notes-file body.md --verify-tag --latest docs.zip
+            --notes-file body.md --verify-tag --latest docs.zip model_data.json

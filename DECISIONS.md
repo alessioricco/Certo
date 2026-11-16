@@ -2119,4 +2119,16 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   arena shows the same gap: voters judge chat answers and stories, not
   READMEs. No source measures the writing Certo needs, so one rule
   beats guessed anchors.
+- **Refreshed ratings live in the user's `ratings.yaml`, read as a layer
+  on Certo's list** (2026-11-16; the Author: "update the model rating
+  every time we want"). Not computed at every load: runs keep the hand
+  ratings until the user refreshes, so auto-model and ladders change only
+  when asked, and the numbers can be read in one file. The layer sits on
+  Certo's list only: the user's own list layers and `models.yaml` win
+  axis by axis, and a list a setting names (a benchmark's) is read as
+  written. Own results move only `code` for now (verified share): a run
+  outside the benchmark can't tell real work from work that fooled the
+  checks, and Certo's tasks are a different size from LMArena's for
+  cost. The data comes from the latest Release's `model_data.json` when
+  newer than the package's.
 

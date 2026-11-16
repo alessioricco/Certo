@@ -329,7 +329,8 @@ is created with `certo init ./models`.
 
 Manage your model files. Subcommands: `update` and `check` for the list,
 `models_list.yaml`; `secure` for the keys in `models.yaml`; `choose` for
-the models a project may use.
+the models a project may use; `refresh` for ratings computed from current
+benchmark data.
 
 ### `certo models update`
 
@@ -481,6 +482,79 @@ src/certo/examples/models_list.yaml.example: 39 models, against LiteLLM's price 
 
 Exit code 0 when everything agrees (or `--fix` fixed all of it), 1 when
 something needs a look, 2 when there is no list or it can't be read.
+
+
+### `certo models refresh`
+
+Rate the models from current benchmark data, list prices and your own
+runs (since 0.2.4). The ratings go to `ratings.yaml` in your user
+settings folder, and every run reads them from then on. No project file
+is changed, and no model is called.
+
+```text
+certo models refresh [--project NAME] [--offline]
+```
+
+| Flag | Effect |
+|---|---|
+| `--project NAME` | Rate the models as that project sees them, its own `models_list.yaml` included. Default: the current folder. |
+| `--offline` | Use no network: the model data cached or shipped with this version, and the installed LiteLLM's prices. |
+
+Where each number comes from:
+
+- **`code`**: LMArena's web development arena. **`reasoning`**: Epoch
+  AI's capabilities index. **`precision`**: LMArena's factuality
+  arena, the least certain of the three. **`writing`**: the mean of
+  reasoning and precision. Each score maps to 1-5 through fixed points,
+  with one decimal.
+- **`cost`**: from what a model spent on a typical agent task (LMArena),
+  else from its list price. Local models: 5.
+- **`speed`**: 4 for a cloud model, 2 for a local one.
+- **A local model** loses one point on code, reasoning, precision and
+  writing: it runs smaller, with a shorter context, than the version the
+  sources measured.
+- **Your own runs** (from `run_stats.csv`) move `code` toward the share
+  of your runs that ended `verified`: a little after a few runs, at most
+  one point.
+
+The model data comes from Certo's latest release when there is newer
+data online, else from the one this version ships. Prices come from
+LiteLLM's current list. A model no source rates says `no data` and keeps
+the ratings in Certo's list. Your own ratings, in `models_list.yaml` or
+`models.yaml`, always win over the computed ones. Delete `ratings.yaml`
+to go back to the ratings in Certo's list.
+
+It prints the ratings of your enabled models, with prices in $ per 1M
+tokens, what changed by half a point or more, and which models fit each
+kind of task:
+
+```text
+Model data of 2026-11-16, from this Certo version.
+Prices: the installed LiteLLM's (offline).
+
+Your enabled models (1-5; $ per 1M tokens in/out):
+                          code  reas  prec  writ  cost speed  price
+  devstral-small-2-local   2.0*  1.0*  2.0*  2.0*  5.0   2.0  local  (no data)
+  qwen3.8-27b-local        2.4   1.8   1.7   1.7   5.0   2.0  local
+  gpt-6.1-sol              4.9   5.0   3.6   4.3   3.0   4.0  $2/$10
+  claude-haiku-5-5         3.4   3.8   2.4   3.1   4.8   4.0  $0.1/$0.5
+  claude-opus-5-5          5.0   5.0   4.8   4.9   2.5   4.0  $4/$20
+  * Certo's own rating, kept: no source rates that model on that axis.
+
+Changed by half a point or more from Certo's list:
+  qwen3.8-27b-local: reasoning 3 → 1.8, precision 3 → 1.7, writing 3 → 1.7, speed 1 → 2
+  gpt-6.1-sol: reasoning 4 → 5, precision 5 → 3.6, writing 5 → 4.3
+  claude-haiku-5-5: code 4 → 3.4, reasoning 3 → 3.8, precision 3 → 2.4, speed 5 → 4
+
+Which models fit each kind of task (cheapest first):
+  debugging (needs reasoning 4, code 4): claude-sonnet-5-5, gpt-6.1-sol, claude-opus-5-5
+  docs (needs writing 3): gpt-6-luna, claude-haiku-5-5, gpt-5.6-luna, claude-sonnet-5-5, gpt-6.1-sol, claude-opus-5-5
+```
+
+A project with a `certo-models.yaml` keeps the ladder and profiles it was
+made with: run [`certo models choose`](#certo-models-choose) to make them
+again from the new ratings. Exit code 0 when the ratings were written,
+1 when not.
 
 ## `certo skills`
 

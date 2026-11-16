@@ -92,7 +92,8 @@ Some commands have no tool: those that ask you questions (`certo init`,
 `certo models update`, `certo models choose`), `certo bench`, which runs for hours, and the
 commands of `certo-server` and `certo-admin`. Run them in a terminal.
 `certo models secure` never gets a tool either: it handles your API
-keys, so you run it yourself. The skills commands that download or turn on code (`certo skills add`
+keys, so you run it yourself. Nor does `certo models refresh`: it
+changes the ratings every run uses. The skills commands that download or turn on code (`certo skills add`
 from git, `update`, `sync` and `enable`) never get a tool: accepting a
 skill's license, or running code someone else wrote, is for you to
 decide, not an agent. `certo skills add` with a file or folder of your
