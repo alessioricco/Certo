@@ -2,12 +2,16 @@
 
 Not released yet.
 
-This release lets Certo split a big task into milestones itself, and
-makes it easier to tell Certo's maintainers what went wrong:
+This release lets Certo split a big task into milestones itself,
+answers questions about Certo from its own docs, and makes it easier to
+tell Certo's maintainers what went wrong:
 
 - **`--make-milestones`**: a model splits a task written in one piece
   into milestones, saved in the project for you to read and edit, and
   Certo runs them one at a time, each checked before the next.
+- **`certo ask "<question>"`** answers from the docs of your Certo's
+  own version, with a link to each section it used, and says when the
+  docs don't cover something.
 - **`certo report`** writes the last run's problems to one file, with
   keys hidden, to attach to a GitHub issue.
 - **The run report lists Certo's notices**, and so does `certo --json`
@@ -38,6 +42,23 @@ or `--escalate`, the first model of a new `planning` task profile
 (`reasoning` 4 or more, least costly first); else the run's own.
 Experimental: not yet benchmarked against hand-written milestones. See
 [Let Certo write the milestones](../guides/run-in-milestones.md#let-certo-write-the-milestones).
+
+## New: `certo ask`
+
+Ask about Certo in your own words, and get the answer from the docs of
+your own version, with a link to each section it used:
+
+```text
+$ certo ask "My task gets stopped after half an hour. How do I give it longer?"
+Set a longer time budget with `--max-time MINUTES` for one run [1]. The default budget is 1800 seconds (30 minutes) [1]. ...
+```
+
+When the docs don't answer, it says so instead of guessing. Installed,
+it downloads the version's docs once (a new `docs.zip` on each GitHub
+Release) and works offline afterwards; only your question goes to the
+model (`CERTO_ASK_MODEL`, else your configured one). On 30 test
+questions Haiku answered all right, made nothing up, for $0.03 in all
+([the record](../benchmark/ask-0.2.4.md)).
 
 ## New: `certo report`
 

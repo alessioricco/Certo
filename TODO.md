@@ -352,39 +352,16 @@ the first task, Wordle, ended `verified` in 11m 49s. What got in the way
 is in the first item and in "Smaller bugs". (The quieter run, 0.1.21,
 cut that first run's output from 2,949 lines to 1,021.)
 
-- **Ask Certo about Certo** (the Author's idea; design agreed
-  2026-11-14). Answer questions about Certo from its own docs, citing
-  the pages used, instead of the user reading them. In order:
-  1. *Question set first:* about 30 questions with known answers
-     ("which flag sets the time budget?" → `--max-time`), including
-     paraphrases and a few the docs don't cover. It measures every step
-     below (wrong answers, missing links, "not covered" said right) and
-     shows which pages are missing.
-  2. *Docs source:* the release workflow attaches a `docs.zip` (user
-     pages only, no benchmark records) to each release; Certo fetches
-     the zip of its own version's tag on first use and caches it in
-     `~/.cache/certo/docs/<version>/` (offline afterwards). Not `main`:
-     it documents unreleased flags. Run from a checkout, Certo reads the
-     `docs/` next to it. Offline with no cached copy: say so. GitHub sees
-     only the version, never the question.
-  3. *Finding the sections:* the docs split at headings; a model gets
-     the question and the table of contents (headings with page paths,
-     ~5-6K tokens) and names 3-5 sections, with keyword scores added as
-     a backup for exact names (flags, `CERTO_*`). No vector search: it
-     needs the same embedding model at build and question time (a
-     provider key or a heavy dependency), the corpus is small (~600
-     sections) and exact identifiers suit keywords better. Revisit only
-     if the question set shows paraphrases missed.
-  4. *Answering:* a second call answers from those sections only, with a
-     link per claim; when nothing fits, "the docs don't cover this" plus
-     the closest pages. The model: a setting (e.g. `CERTO_ASK_MODEL`),
-     default the main model; fits a 32K local window.
-  5. *`certo ask "<question>"`* first; then `?` at the `--interactive`
-     and menu prompts. `--mine` (opt-in, first version) also sends what
-     `certo check` prints, `MODEL_DECISIONS.md` and the last run report,
-     never keys, for "why did my run pick Opus?".
-  Done when the question set passes on a local and a cloud model with no
-  made-up answer, and every answer links the pages it used.
+- **`certo ask`: what's left** (built in 0.2.4: the question set in
+  `docs/benchmark/ask-questions-0.2.4.yaml`, `docs.zip` on each release,
+  the table of contents plus keyword hits, answers that cite sections;
+  DECISIONS.md "certo ask"). Left: (1) the question set on a local model
+  (qwen3.8, at night) with `scripts/ask_eval.py`, recorded next to the
+  cloud run in `docs/benchmark/ask-0.2.4.md`; (2) `?` at the
+  `--interactive` and menu prompts; (3) `--mine`, opt-in: also send what
+  `certo check` prints, `MODEL_DECISIONS.md` and the last run report
+  (never keys), for "why did my run pick Opus?". Done when the question
+  set passes on a local and a cloud model with no made-up answer.
 - **MCP docs tool** (separate, small; can come before `certo ask`). The
   MCP server offers the same docs (step 2 above) and a section search,
   so an editor's own agent answers from them with no model call by

@@ -251,6 +251,7 @@ _COMMANDS: tuple[tuple[str, str], ...] = (
         "report [PATH]",
         "Write the last run's problems to one file, to share with Certo's maintainers.",
     ),
+    ("ask QUESTION", "Answer a question about Certo from its own docs, with links."),
     ("skills", "See, add and remove the skills a run gets."),
     ("models", "Manage your model files: update or check the list, secure the keys."),
     ("mcp", "Run Certo as an MCP server, for an editor or an agent."),
@@ -638,7 +639,7 @@ def _start_update_check() -> update_check.UpdateCheck | None:
 
 def _main(argv: list[str]) -> int:
     # `verify`, `init`, `check`, `models`, `skills`, `bench`, `checkpoints`,
-    # `mcp`, `rollback` and `report` are
+    # `mcp`, `rollback`, `report` and `ask` are
     # subcommands only as the exact, whole first argument. A task is always
     # one argument (quoted), so "verify the login flow" or "init a repo" can
     # never match, and `certo -- verify` still runs the one-word task.
@@ -672,6 +673,10 @@ def _main(argv: list[str]) -> int:
         from .checkpoints_cmd import rollback_main
 
         return rollback_main(argv[1:])
+    if argv and argv[0] == "ask":
+        from .ask_cmd import ask_main
+
+        return ask_main(argv[1:])
     if argv and argv[0] == "report":
         from .report_cmd import report_main
 

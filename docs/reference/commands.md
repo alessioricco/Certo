@@ -6,7 +6,7 @@ things up; for a walk-through, see [Getting started](../getting-started.md).
 Certo installs three commands: `certo`, `certo-server` and `certo-admin`.
 `certo` also has these subcommands: `certo verify`, `certo init`,
 `certo check`, `certo models`, `certo skills`, `certo bench`,
-`certo checkpoints`, `certo rollback`, `certo report` and `certo mcp`. Every command and
+`certo checkpoints`, `certo rollback`, `certo report`, `certo ask` and `certo mcp`. Every command and
 subcommand accepts `-h` / `--help`; `certo --help` lists the subcommands
 under `commands:`, after the options.
 
@@ -919,6 +919,52 @@ with `[hidden]`, and the terminal says how many. The file still holds
 the task and the checks' output: read it before you share it. Exit code:
 0, or 1 if `PATH` is not a folder or has no recorded run. Guide:
 [Share a run's problems](../guides/run-records-and-costs.md#share-a-runs-problems).
+
+## `certo ask`
+
+Answer a question about Certo from its own docs, with a link to each
+section the answer uses.
+
+```text
+certo ask QUESTION
+```
+
+| Argument | Effect |
+|---|---|
+| `QUESTION` | The question, in your own words; quotes are optional. |
+
+It reads the docs of your Certo's own version: from a source checkout,
+the `docs/` folder; installed, the `docs.zip` of that version's GitHub
+Release, downloaded the first time and kept in `~/.cache/certo/docs/`
+(offline afterwards; GitHub sees only the version, never the question).
+Two calls to the model: the first picks the sections from the docs'
+headings, the second answers from those sections only. The model is
+`CERTO_ASK_MODEL`, else your configured model. From a real run on
+`anthropic/claude-haiku-5-5`, in a checkout (installed, the links are
+the pages on GitHub at your version's tag):
+
+```text
+$ certo ask "My task gets stopped after half an hour. How do I give it longer?"
+Set a longer time budget with `--max-time MINUTES` for one run [1]. The default budget is 1800 seconds (30 minutes) [1]. To change it for all runs, set `CERTO_MAX_TASK_SECONDS` to a number of seconds [1].
+
+The budget covers the first run and every retry together [1]. A resumed run keeps the same time budget unless you give `--max-time` [2].
+
+Sources:
+  [1] reference/configuration.md › Limits and verification
+      /home/me/certo/docs/reference/configuration.md#limits-and-verification
+  [2] guides/resume-a-run.md › Continue where it stopped
+      /home/me/certo/docs/guides/resume-a-run.md#continue-where-it-stopped
+
+(Answered by anthropic/claude-haiku-5-5 from 4 section(s) in 7s, $0.0010.)
+```
+
+When the docs don't answer it, it says `The docs don't cover this.` and
+lists the closest pages. An answer that names no section comes with a
+note that it can't be checked against the docs. Exit code: 0, or 1 when
+there are no docs to read (a version with no `docs.zip`, or offline with
+no copy kept), no model is configured, or the model fails. On 30 test
+questions, Haiku answered all right, and said "not covered" for each of
+the 6 the docs don't answer ([the record](../benchmark/ask-0.2.4.md)).
 
 ## `certo mcp`
 

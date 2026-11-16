@@ -26,7 +26,7 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from .config import Config, ConfigError
+from .config import Config
 from .milestones import MilestoneError, _take_acceptance, parse_milestones
 from .project_state import ensure_state_dir
 
@@ -83,17 +83,9 @@ Complete = Callable[[Config, str], tuple[str, float]]
 
 
 def _complete(cfg: Config, prompt: str) -> tuple[str, float]:
-    """One call to `cfg`'s model, outside the agent loop."""
-    from openhands.sdk import Message, TextContent
+    from .llm import complete_once
 
-    from .llm import build_llm
-
-    llm = build_llm(cfg, usage_id="planner")
-    response = llm.completion(messages=[Message(role="user", content=[TextContent(text=prompt)])])
-    reply = "\n".join(
-        text for content in response.message.content if (text := getattr(content, "text", None))
-    )
-    return reply, response.metrics.accumulated_cost or 0.0
+    return complete_once(cfg, prompt, usage_id="planner")
 
 
 def milestone_sections(reply: str) -> str | None:
@@ -176,8 +168,12 @@ def choose_planner(cfg: Config) -> tuple[Config, str]:
         return cfg, "the run's model"
     from .catalog_check import load_checked_catalog
     from .model_catalog import ModelCatalogError, rank_for_profile
-    from .model_selection import config_for_entry
+    from .model_selection import config_for_entry, config_for_named_model
 
+    if cfg.planner_model:
+        return config_for_named_model(cfg, cfg.planner_model, "CERTO_PLANNER_MODEL"), (
+            "CERTO_PLANNER_MODEL"
+        )
     try:
         catalog = load_checked_catalog(
             cfg.models_file,
@@ -186,20 +182,8 @@ def choose_planner(cfg: Config) -> tuple[Config, str]:
             escalation_file=cfg.escalation_file,
             project_dir=cfg.workspace,
         )
-    except ModelCatalogError as exc:
-        if cfg.planner_model:
-            raise ConfigError(f"CERTO_PLANNER_MODEL needs the model files: {exc}") from exc
+    except ModelCatalogError:
         return cfg, "the run's model (the model files couldn't be read)"
-    enabled = [m for m in catalog.models if m.activated]
-    if cfg.planner_model:
-        entry = next((m for m in enabled if m.name == cfg.planner_model), None)
-        if entry is None:
-            names = ", ".join(m.name for m in enabled) or "none"
-            raise ConfigError(
-                f"CERTO_PLANNER_MODEL is {cfg.planner_model!r}, which isn't a model "
-                f"enabled in models.yaml (enabled: {names})."
-            )
-        return config_for_entry(cfg, entry), "CERTO_PLANNER_MODEL"
     profile = next((p for p in catalog.task_profiles if p.name == PLANNING_PROFILE), None)
     if profile is None:
         return cfg, f"the run's model (no '{PLANNING_PROFILE}' task profile)"

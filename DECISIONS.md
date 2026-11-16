@@ -2040,4 +2040,15 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   plan or one milestone runs the task as one, as it is; acceptance
   blocks the planner writes are dropped (unmeasured). Opt-in and
   experimental until the three-arm bench (TODO).
+- **`certo ask` reads its own version's docs, picked by table of
+  contents** (0.2.4, 2026-11-16; design agreed 2026-11-14). The docs
+  come from the checkout, else `docs.zip` on the version's GitHub
+  Release (user pages only), cached in `~/.cache/certo/docs/<version>/`;
+  never `main`, which documents unreleased flags. A first call picks up
+  to 5 sections from the headings (~5K tokens), keyword hits add exact
+  names (flags, `CERTO_*`); no embeddings (same model at build and
+  question time, a heavy dependency, ~550 sections). A second call
+  answers only from those sections, citing `[S12]`; an answer citing
+  nothing is shown with a warning, not hidden. No MCP tool: it calls a
+  model, and an editor's agent has its own.
 

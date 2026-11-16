@@ -1,0 +1,133 @@
+# The question set for `certo ask` (TODO: "Ask Certo about Certo", step 1).
+#
+# Each question has a known answer in Certo's docs (`covered: true`), or
+# none (`covered: false`). A right answer:
+#   - covered: contains at least one of `expect` (case-insensitive) and
+#     cites at least one of `pages` (a page path under docs/);
+#   - not covered: says the docs don't cover it, and cites nothing as if
+#     it did.
+# Paraphrases (`paraphrase_of`) ask the same thing in other words, to see
+# whether finding the sections depends on the docs' own wording.
+# scripts/ask_eval.py runs it on a model and counts wrong answers, missing
+# links and "not covered" said right.
+
+questions:
+  - id: time-budget
+    question: Which flag sets the time budget for a run?
+    expect: ["--max-time"]
+    pages: [reference/commands.md, reference/configuration.md, guides/run-records-and-costs.md]
+  - id: time-budget-p
+    paraphrase_of: time-budget
+    question: My task gets stopped after half an hour. How do I give it longer?
+    expect: ["--max-time", "CERTO_MAX_TASK_SECONDS"]
+    pages: [reference/commands.md, reference/configuration.md, guides/run-records-and-costs.md, troubleshooting.md]
+  - id: step-limit
+    question: How many steps can the agent take by default, and how do I change it?
+    expect: ["50"]
+    pages: [reference/commands.md, reference/configuration.md]
+  - id: cost-limit
+    question: How do I stop a task from spending more than 2 dollars?
+    expect: ["CERTO_MAX_TASK_COST"]
+    pages: [reference/configuration.md, guides/run-records-and-costs.md, guides/keep-costs-down.md]
+  - id: resume
+    question: My run was interrupted with Ctrl-C. How do I continue it?
+    expect: ["--resume"]
+    pages: [guides/resume-a-run.md, reference/commands.md]
+  - id: resume-p
+    paraphrase_of: resume
+    question: Can I pick up where the agent left off after my laptop went to sleep?
+    expect: ["--resume"]
+    pages: [guides/resume-a-run.md, reference/commands.md]
+  - id: no-progress
+    question: What does the verdict no_progress mean?
+    expect: ["changed nothing", "same check failed", "same output"]
+    pages: [reference/verdicts.md, troubleshooting.md]
+  - id: inconclusive-no-tests
+    question: Why did my run end inconclusive?
+    expect: ["no tests", "nothing to check", "couldn't check", "could not check"]
+    pages: [reference/verdicts.md, troubleshooting.md]
+  - id: verify-only
+    question: How do I run Certo's checks on a project without an agent or a model?
+    expect: ["certo verify"]
+    pages: [reference/commands.md, guides/verify-another-tools-work.md, guides/verify-before-commit.md, guides/verify-in-ci.md]
+  - id: undo
+    question: How do I undo the files the agent changed in a run?
+    expect: ["certo rollback", "checkpoint"]
+    pages: [guides/checkpoints.md, reference/commands.md]
+  - id: undo-p
+    paraphrase_of: undo
+    question: The agent broke my project. Can I go back to how it was before?
+    expect: ["certo rollback", "checkpoint"]
+    pages: [guides/checkpoints.md, reference/commands.md]
+  - id: checkpoints-need
+    question: What do checkpoints need installed?
+    expect: ["git"]
+    pages: [guides/checkpoints.md, reference/commands.md, reference/configuration.md]
+  - id: json
+    question: How can a script read the verdict of a run?
+    expect: ["--json"]
+    pages: [reference/json-result.md, reference/commands.md, guides/verify-in-ci.md]
+  - id: verbose
+    question: How do I see the full system prompt the agent gets?
+    expect: ["--verbose", "CERTO_VERBOSE"]
+    pages: [reference/commands.md, reference/configuration.md]
+  - id: update-check
+    question: How do I turn off the message that a newer Certo is available?
+    expect: ["CERTO_UPDATE_CHECK"]
+    pages: [reference/configuration.md]
+  - id: projects-dir
+    question: Where does --project put the project folder?
+    expect: ["CERTO_PROJECTS_DIR", "./projects", "projects/"]
+    pages: [reference/configuration.md, reference/commands.md]
+  - id: python-version
+    question: Which Python version does Certo need?
+    expect: ["3.12"]
+    pages: [getting-started.md, README.md]
+  - id: milestones-format
+    question: How do I write a task file in milestones?
+    expect: ["## Milestone"]
+    pages: [guides/run-in-milestones.md, reference/commands.md]
+  - id: make-milestones
+    question: Can Certo split my task into milestones by itself?
+    expect: ["--make-milestones"]
+    pages: [guides/run-in-milestones.md, reference/commands.md]
+  - id: escalate
+    question: How do I start on a cheap model and move to a stronger one only when it fails?
+    expect: ["--escalate"]
+    pages: [guides/escalate-between-models.md, reference/commands.md]
+  - id: auto-model
+    question: How does --auto-model choose the model for a task?
+    expect: ["task profile", "needs", "least costly"]
+    pages: [guides/pick-models-automatically.md, concepts/where-model-settings-come-from.md, reference/models-yaml.md]
+  - id: independent-tests
+    question: Can a second model write tests to check the agent's work?
+    expect: ["--independent-tests"]
+    pages: [guides/independent-tests.md, reference/commands.md]
+  - id: report
+    question: How do I send the Certo maintainers the details of a run that went wrong?
+    expect: ["certo report"]
+    pages: [guides/run-records-and-costs.md, reference/commands.md, troubleshooting.md]
+  - id: keys-where
+    question: Where should I put my API keys?
+    expect: [".env", "settings file", "~/.config/certo"]
+    pages: [getting-started.md, reference/configuration.md, reference/models-yaml.md, guides/openai-claude-gemini.md]
+
+  # Not in the docs: a right answer says so.
+  - id: kubernetes
+    covered: false
+    question: How do I deploy Certo on a Kubernetes cluster with autoscaling?
+  - id: fortran
+    covered: false
+    question: Which Fortran compilers does Certo's verification support?
+  - id: gpu
+    covered: false
+    question: How many GPUs does Certo use to train its own model?
+  - id: vscode-theme
+    covered: false
+    question: How do I change the colour theme of Certo's VS Code extension?
+  - id: sla
+    covered: false
+    question: What uptime does the Certo cloud service guarantee?
+  - id: price
+    covered: false
+    question: How much does a Certo Pro subscription cost per month?

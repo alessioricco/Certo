@@ -94,6 +94,7 @@ takes you from install to your first verified project.
 | Run the agent inside a container | [Run in Docker](guides/run-in-docker.md) |
 | Call Certo over HTTP | [Run as a server](guides/run-as-a-server.md) |
 | Use Certo from an editor or an agent | [Use Certo over MCP](guides/use-certo-over-mcp.md) |
+| Ask a question about Certo and get the answer from these docs, with links | [`certo ask`](reference/commands.md#certo-ask) |
 | See what a run did and what it cost | [Run records and costs](guides/run-records-and-costs.md) |
 | Spend less on cloud models, without worse results | [Keep costs down](guides/keep-costs-down.md) |
 | Continue a task after an interruption or a failed verdict | [Resume an interrupted run](guides/resume-a-run.md) |

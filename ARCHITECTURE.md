@@ -519,6 +519,17 @@ given design was chosen.
   `clear_state`; `args.task` becomes the plan's absolute path, so
   `plan_run(milestones_file=...)` and `--resume` treat it as any
   milestone file. `plan_milestones(complete=...)` takes a fake in tests.
+- **`docs_source.py`, `docs_index.py`, `ask_cmd.py`** — `certo ask`.
+  `docs_source.find_docs`: `checkout_docs()` (a `pyproject.toml` and
+  `docs/README.md` two folders above the module), else the cache, else
+  the release's `docs.zip` (urllib, 20 s, 20 MB cap; `extract` writes
+  only `docs/<user page>` members into a staging folder, then swaps it
+  in). `is_user_page` is the one definition of a user page, also used by
+  `scripts/build_docs_zip.py` (loads the module by path: no install in
+  the release job). `docs_index.split_sections` skips headings in code
+  fences and dedupes anchors as GitHub does (`-1`). `ask_cmd.ask(question,
+  sections, complete)` is the core, `complete` a `prompt -> (text, cost)`
+  function: tests and `scripts/ask_eval.py` pass their own.
 - **`report_cmd.py`** — `certo report`: reads `run.json`, the newest
   page in `.certo/reports/` (embedded, headings one level down) and the
   error events of the run's saved conversation (`events/*.json` read as

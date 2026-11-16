@@ -16,6 +16,7 @@ import pytest
 
 from certo import (
     admin_cli,
+    ask_cmd,
     bench,
     checkpoints_cmd,
     cli,
@@ -117,6 +118,7 @@ def _all_parsers() -> list[argparse.ArgumentParser]:
         checkpoints_cmd.build_checkpoints_parser(),
         checkpoints_cmd.build_rollback_parser(),
         report_cmd.build_report_parser(),
+        ask_cmd.build_ask_parser(),
         admin_cli.build_parser(),
         _server_parser(),
     ]

@@ -88,3 +88,16 @@ def build_llm(cfg: Config, *, usage_id: str = "certo") -> LLM:
         **_reasoning_effort_kwargs(cfg),
         **_context_kwargs(cfg),
     )
+
+
+def complete_once(cfg: Config, prompt: str, *, usage_id: str) -> tuple[str, float]:
+    """One call to `cfg`'s model outside the agent loop (the milestone
+    planner, `certo ask`): the reply's text and its cost in US dollars."""
+    from openhands.sdk import Message, TextContent
+
+    llm = build_llm(cfg, usage_id=usage_id)
+    response = llm.completion(messages=[Message(role="user", content=[TextContent(text=prompt)])])
+    reply = "\n".join(
+        text for content in response.message.content if (text := getattr(content, "text", None))
+    )
+    return reply, response.metrics.accumulated_cost or 0.0

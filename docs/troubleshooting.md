@@ -7,6 +7,10 @@ for a few words of your error message.
 For model problems, `certo check` is the fastest test: it shows where each
 setting comes from and makes one small call to the model.
 
+To find something in all of Certo's docs, ask in your own words:
+`certo ask "why did my run end inconclusive?"` answers from them, with a
+link to each section it used (see [`certo ask`](reference/commands.md#certo-ask)).
+
 If nothing here fits, run `certo report` in the project folder: it writes
 the last run's problems to one file, with keys hidden, that you can attach
 to a [GitHub issue](https://github.com/alessioricco/certo/issues). See

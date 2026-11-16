@@ -62,6 +62,7 @@ NO_TOOL: dict[str, str] = {
     ),
     "certo bench": "runs for hours, and is set up and read in a terminal",
     "certo report": "writes a file for a person to read before sharing it: run it in a terminal",
+    "certo ask": "calls a model; an editor's agent has its own, and the docs tool comes later",
     "certo mcp": "it is this server",
     "certo-server": "another server, over HTTP",
     "certo-admin": "manages certo-server's task store, not this server's runs",
