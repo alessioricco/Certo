@@ -6,6 +6,9 @@ This release lets Certo split a big task into milestones itself,
 answers questions about Certo from its own docs, and makes it easier to
 tell Certo's maintainers what went wrong:
 
+- **An interactive session**: `certo` alone opens it, laid out as
+  coding-agent terminals are, with a header, `/` commands, follow-up
+  messages that continue the task, and a status line with switches.
 - **`--make-milestones`**: a model splits a task written in one piece
   into milestones, saved in the project for you to read and edit, and
   Certo runs them one at a time, each checked before the next.
@@ -16,6 +19,21 @@ tell Certo's maintainers what went wrong:
   keys hidden, to attach to a GitHub issue.
 - **The run report lists Certo's notices**, and so does `certo --json`
   (a new `notices` field).
+
+## New: the interactive session
+
+In a terminal, `certo` with no task (or `certo -i "task"`) opens a
+session. A header shows the version, the model and the folder; each
+message you type is a task, and the next ones continue it, with the
+agent's conversation, until `/new`. Type `/` for the commands: `/verify`,
+`/ask`, `/report`, `/rollback`, `/make-milestones` and more. Under the
+prompt, a status line shows the model, the mode, the project, the last
+verdict, its time and what the session spent, with three switches:
+Shift+Tab asks before each action, Ctrl+T cycles manual, `--auto-model`
+and `--escalate`, Ctrl+O the reasoning effort. It stays in the terminal
+(no full screen), and needs no new library. Scripts are unaffected:
+without a terminal, or with `--json`, `certo` runs as before. See
+[The interactive session](../guides/interactive-mode.md#the-interactive-session).
 
 ## New: Certo writes the milestones
 

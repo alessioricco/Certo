@@ -26,7 +26,16 @@ certo TASK [--project NAME] [--execution {local,docker}] [--model MODEL]
            [--json] [--require-verification] [--acceptance-checks JSON_OR_FILE]
            [--escalate [LADDER]] [--milestones] [--from-milestone N]
 certo --resume [TASK] [same options]
+certo                     # in a terminal: the interactive session
+certo -i [TASK] [options] # the session, starting with TASK
 ```
+
+In a terminal, `certo` with no task and `certo -i` (`--interactive`)
+open the interactive session: a header, a prompt where each message is a
+task (the next ones continue it), `/` commands, and a status line with
+switches. See [The interactive session](../guides/interactive-mode.md#the-interactive-session).
+Without a terminal (a pipe, CI) or with `--json`, nothing opens: `certo`
+alone is a usage error and `--interactive` keeps the plain prompts.
 
 **`TASK`** (required, except with `--resume`) is one of, checked in this order:
 
@@ -53,7 +62,7 @@ current folder, the file is read instead.
 | `--agents-md TEXT` | none | Write `TEXT` as the project's `AGENTS.md` before the task. Needs `--project`. |
 | `--independent-tests` | off (`CERTO_INDEPENDENT_TESTS`) | Before the build, have tests written from the task and the project as it is; after the verdict, run them and print the result under it. Report only: the verdict and exit code don't change. Local runs, not on `--resume`. See [Independent tests](../guides/independent-tests.md). |
 | `--independent-tests-strict` | off (`CERTO_INDEPENDENT_TESTS_STRICT`) | Like `--independent-tests`, but when most sets fail, a `verified` run ends `independent_failed` (exit 1). Other verdicts stay as they are. See [Make them change the verdict](../guides/independent-tests.md#make-them-change-the-verdict). |
-| `--interactive` | off (`CERTO_INTERACTIVE`) | Let the agent stop and ask you questions. See [Interactive and confirm mode](../guides/interactive-mode.md). |
+| `-i`, `--interactive` | off (`CERTO_INTERACTIVE`) | In a terminal: open the [interactive session](../guides/interactive-mode.md#the-interactive-session) and start `TASK` in it (other flags apply to that first task). Without a terminal: let the agent stop and ask you questions. See [Interactive and confirm mode](../guides/interactive-mode.md). |
 | `--verbose` | off (`CERTO_VERBOSE`) | Print the agent's full output: the whole system prompt, the task with the skills Certo adds, and the SDK's own logs. Without it, each of these is one line. |
 | `--auto-model` | off (`CERTO_MODEL_SELECTION`) | Pick the model from the model files (`models_list.yaml`, `models.yaml`, and the task profiles in `task_profiles.yaml`). Refused without task profiles (no `task_profiles.yaml`, or one with no profile): every model would rank the same, and the first in `models_list.yaml` would go first. The error names `certo init models --profiles`. A missing or broken model file is a configuration error (the error says which example to copy, or lists the problems): no banner, no resume hint, and no run is recorded. See [Pick models automatically](../guides/pick-models-automatically.md). |
 | `--json` | off | Print the run's result as one JSON object on standard output (verdict, checks, acceptance checks, cost, models, milestones), and everything else on standard error. Nothing on standard output when Certo refuses to start. See [The JSON result](json-result.md). |

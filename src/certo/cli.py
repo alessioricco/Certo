@@ -447,10 +447,13 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "-i",
         "--interactive",
         action="store_true",
         help=(
-            "Allow the agent to pause and ask you a question instead of "
+            "In a terminal: open the interactive session (as `certo` alone does) and "
+            "start TASK in it. Without a terminal: "
+            "allow the agent to pause and ask you a question instead of "
             "always pushing forward autonomously. When the initial run "
             "reaches a normal stop, you'll be prompted at the terminal to "
             "reply (continuing the task) or press Enter to accept it as "
@@ -681,8 +684,16 @@ def _main(argv: list[str]) -> int:
         from .report_cmd import report_main
 
         return report_main(argv[1:])
+    # In a terminal, `certo` alone and `certo -i [TASK]` open the interactive
+    # session (session.py); scripts, pipes and --json keep the plain run.
+    from .session import first_task, is_terminal
+
+    if is_terminal() and (not argv or argv in (["-i"], ["--interactive"])):
+        return _session([])
     parser = _build_parser()
     args = parser.parse_args(argv)
+    if args.interactive and not args.json and is_terminal():
+        return _session(first_task(argv))
     if not args.json:
         return _run_task_command(args, parser, None)
     # stdout carries only the JSON result: everything a run prints goes to
@@ -695,6 +706,30 @@ def _main(argv: list[str]) -> int:
         out.write(json.dumps(holder["result"], indent=2) + "\n")
         out.flush()
     return code
+
+
+def _session(first: list[str]) -> int:
+    """The interactive session, running tasks and commands through this
+    module, as the command line would."""
+    from .session import session_main
+
+    def run(argv: list[str]) -> dict[str, Any] | None:
+        parser = _build_parser()
+        try:
+            args = parser.parse_args(argv)
+        except SystemExit:
+            return None
+        holder: dict[str, Any] = {}
+        _run_task_command(args, parser, holder)
+        return holder.get("result")
+
+    def command(name: str, argv: list[str]) -> int:
+        try:
+            return _main([name, *argv])
+        except SystemExit as exc:  # a usage error, already printed
+            return int(exc.code or 0)
+
+    return session_main(run, command, first)
 
 
 def _written_in_milestones(args: argparse.Namespace, task: str | None) -> int:

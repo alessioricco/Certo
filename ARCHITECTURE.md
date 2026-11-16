@@ -509,6 +509,16 @@ given design was chosen.
   write. `tests/test_cli.py` stubs `write_report` (autouse
   `written_reports`), as it does `append_run`: its workspace is the
   checkout.
+- **`session.py`** — the interactive session. `cli._main` opens it
+  (`_session`) when stdin and stdout are terminals and argv is empty or
+  `-i [...]` without `--json`. Logic is plain functions on
+  `SessionState` (`handle`, `task_argv`, `status_lines`, `header`) with an
+  `Actions` object for runs and commands, so tests need no terminal;
+  `run_loop` is the prompt_toolkit `PromptSession` (bottom toolbar,
+  slash completer, `s-tab`/`c-t`/`c-o` bindings). A run is
+  `_run_task_command(args, parser, holder)`; the holder's JSON result
+  gives the project, folder, verdict and cost. The confirm switch is set
+  through `CERTO_CONFIRM_MODE` in the session's own environment.
 - **`milestone_planner.py`** — `--make-milestones`. `cli._make_milestones`
   runs before `plan_run`: refusals, `choose_planner` (setting, else the
   `planning` profile via `rank_for_profile` with local models probed,

@@ -2051,4 +2051,14 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   answers only from those sections, citing `[S12]`; an answer citing
   nothing is shown with a warning, not hidden. No MCP tool: it calls a
   model, and an editor's agent has its own.
-
+- **The interactive session is inline, on prompt_toolkit, and opens only
+  in a terminal** (0.2.4, 2026-11-16; the Author's choices: `certo` alone
+  opens it, inline not full-screen, three switches). Laid out as
+  coding-agent terminals are (header, `/` commands, status line), but
+  the transcript stays in the scrollback and no library is added
+  (prompt_toolkit was already one). A message is a task and the next
+  ones are `--resume` in its project, so the session adds no new run
+  path: each run goes through `_run_task_command` as the command line
+  does. Without a terminal or with `--json`, nothing changes, so scripts
+  and CI keep the plain run. Effort is on Ctrl+O: Ctrl+E is "end of
+  line" in terminals.

@@ -1,9 +1,74 @@
 # Interactive and confirm mode
 
 By default, Certo's agent works alone from start to finish. This guide
-shows the two ways to stay involved: answering the agent's questions
-(interactive mode) and approving every action before it runs (confirm
-mode). Both work only in the `certo` command, not in server mode.
+shows how to stay involved: the interactive session, where you give
+tasks and follow-ups one message at a time; answering the agent's
+questions (interactive mode); and approving every action before it runs
+(confirm mode). They work only in the `certo` command, not in server
+mode.
+
+## The interactive session
+
+In a terminal, run `certo` with no task, or `certo -i "task"` to start
+with one. Certo shows a header, then a prompt (since 0.2.4):
+
+```text
+╭─────────────────────────────────────────────╮
+│ ✓ certo 0.2.4                               │
+│   the coding agent that checks its own work │
+│                                             │
+│   model    anthropic/claude-haiku-5-5       │
+│   folder   ~/certo-projects                 │
+│   /help for commands · shift+tab: switches  │
+╰─────────────────────────────────────────────╯
+>
+```
+
+- **A message is a task.** The run prints what `certo "task"` prints
+  (the agent's work, Certo's checks, the verdict). In a Certo workspace
+  the task gets its own project folder, as usual.
+- **The next message continues it**, as `certo --resume "message"`: the
+  agent gets its conversation back, and Certo checks the result again.
+  `/new` makes the next message a new task.
+- **Ctrl-C** stops a run and comes back to the prompt; the next message
+  continues it. Ctrl-D or `/quit` ends the session. The transcript stays
+  in your terminal's scrollback.
+- **Under the prompt**, a status line shows the model, the mode, the
+  project, the last verdict and its time, and what the session has
+  spent; under it, the switches:
+
+  ```text
+   haiku-5-5 · manual · ledger · verified · 4m 12s · $0.03
+   ask before actions: off · mode: manual · effort: default   (shift+tab, ctrl+t, ctrl+o)
+  ```
+
+  Shift+Tab turns asking before each action ([confirm mode](#confirm-mode-approve-every-action))
+  on or off, Ctrl+T cycles the mode (manual, `--auto-model`,
+  `--escalate`), Ctrl+O the reasoning effort. A switch changes the next
+  task, never one that is running.
+- **Type `/`** to see the commands, completed as you type:
+
+| Command | Does |
+|---|---|
+| `/help` | The commands and the keys. |
+| `/new` | The next message is a new task. |
+| `/resume` | Continue the last run here, as `certo --resume`. |
+| `/milestones FILE` | Run a task file [milestone by milestone](run-in-milestones.md). |
+| `/make-milestones TASK` | Have a model [plan the milestones](run-in-milestones.md#let-certo-write-the-milestones), then run them. |
+| `/verify` | Check the project, with no agent (`certo verify`). |
+| `/ask QUESTION` | Answer from Certo's docs (`certo ask`). |
+| `/report [NOTE]` | Write the last run's problems to a file (`certo report`). |
+| `/checkpoints` | List the checkpoints. |
+| `/rollback N` | Go back to checkpoint `N` (asks first). |
+| `/model NAME` | Use this model for the next tasks. |
+| `/mode manual\|auto\|escalate` | Set the mode, as Ctrl+T. |
+| `/effort default\|low\|medium\|high` | Set the effort, as Ctrl+O. |
+| `/clear` | Clear the screen. |
+| `/quit` | End the session (also `/exit`, Ctrl-D). |
+
+`/verify`, `/report`, `/checkpoints` and `/rollback` work on the last
+task's project. Without a terminal (a pipe, CI) or with `--json`, no
+session opens: scripts keep the plain run.
 
 ## Why the agent doesn't ask by default
 

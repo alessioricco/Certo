@@ -362,20 +362,14 @@ cut that first run's output from 2,949 lines to 1,021.)
   `certo check` prints, `MODEL_DECISIONS.md` and the last run report
   (never keys), for "why did my run pick Opus?". Done when the question
   set passes on a local and a cloud model with no made-up answer.
-- **A text UI for interactive mode** (the Author, 2026-11-08; for the
-  version after 0.2.3, not before). Today `--interactive` prints the
-  agent's stream and asks questions on plain stdin lines. Give it a
-  classic terminal UI like other coding-agent harnesses (Claude Code,
-  Copilot CLI): a scrolling transcript, an input box at the bottom, the
-  progress line and run summary in a status area, and confirm-mode
-  approvals as prompts in it. Two steps: (1) design it: what it shows,
-  the keys, how it falls back when the terminal can't do it (pipes, CI,
-  `--json`), and which library, if any (a heavy dependency needs the
-  Author's OK); write the design in `docs/history/` and a DECISIONS
-  entry; (2) implement it behind `--interactive`, leaving the plain
-  output for non-interactive runs, with docs and tests (rendering tested
-  without a real terminal). Done when an interactive run of a sample
-  task works end to end in the new UI, and plain runs are unchanged.
+- **The interactive session: what's left** (built in 0.2.4,
+  docs/history/interactive-session.md). The status line and prompt
+  aren't on screen during a run (the run prints as `certo "task"` does);
+  a live progress line under a fixed input box, as other agent
+  terminals have, needs the run in a thread and its questions (confirm,
+  escalation, the plan) answered in the prompt. Also: the model choice
+  of `--auto-model` and escalation confirmations aren't asked in the
+  session, and `?` there could call `certo ask`.
 - **A first run in minutes, with one model.** No catalog, no ladders:
   `certo init`, then a first verified project. Getting started shows only
   that path. Measured 2026-10-19 in an empty home folder: 88.5s from
