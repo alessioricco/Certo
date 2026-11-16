@@ -4,9 +4,10 @@
 `models.yaml` holds the user's personal settings (which models to use,
 keys, addresses, overrides). Two more are optional, one per mode:
 `task_profiles.yaml` (`--auto-model`) and `escalation.yaml` (`--escalate`,
-and `certo bench`). Certo ships all four only as examples, in
-`certo/examples/`, and never reads an example: a release can update the
-examples without touching anyone's own copies.
+and `certo bench`). Certo's own model list and task profiles are in
+`certo/data/` and read as the lowest layer (below); `models.yaml` and
+`escalation.yaml` ship only as examples, in `certo/examples/`, which
+Certo never reads.
 
 Each file is looked up on its own. A path a setting names
 (`CERTO_MODELS_LIST_FILE`, `CERTO_MODELS_FILE`, `CERTO_TASK_PROFILES_FILE`,
