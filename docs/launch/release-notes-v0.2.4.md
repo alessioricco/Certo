@@ -60,6 +60,9 @@ model (`CERTO_ASK_MODEL`, else your configured one). On 30 test
 questions Haiku answered all right, made nothing up, for $0.03 in all
 ([the record](../benchmark/ask-0.2.4.md)).
 
+Over MCP, the new `search_docs` and `read_docs` tools give an editor's
+agent the same docs, with no model call by Certo.
+
 ## New: `certo report`
 
 When a run goes wrong in a way Certo should handle better, the facts

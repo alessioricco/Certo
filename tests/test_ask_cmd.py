@@ -195,3 +195,11 @@ def test_a_question_without_exact_names_adds_the_section_sharing_most_words():
         "Limits and verification"
     ]
     assert word_hits("What is CERTO_VERBOSE?", sections) == []  # names go by keyword_hits
+
+
+def test_search_ranks_exact_names_then_heading_words():
+    from certo.docs_index import search
+
+    assert [s.id for s in search("CERTO_MAX_TASK_COST", _sections())] == ["S5"]
+    assert search("continue", _sections())[0].title == "Continue"
+    assert search("zzzz qqqq", _sections()) == []

@@ -88,8 +88,11 @@ def test_the_core_tools_are_listed_with_their_hints(tmp_path):
         "list_projects",
         "list_models",
         "list_skills",
+        "search_docs",
+        "read_docs",
     }
     assert tools["run_task"].annotations.destructive_hint is True
+    assert tools["search_docs"].annotations.read_only_hint is True
     assert tools["run_status"].annotations.read_only_hint is True
     assert tools["run_events"].annotations.read_only_hint is True
 
@@ -577,3 +580,32 @@ def test_list_skills_lists_official_and_project_skills(tmp_path, monkeypatch):
 def test_list_skills_for_a_project_that_doesnt_exist_is_refused(tmp_path):
     is_error, text = _call(_server(tmp_path), "list_skills", {"project": "nope"})
     assert is_error and "doesn't exist" in text
+
+
+# --- the docs tools (this checkout's docs, as `certo ask` reads them) --------
+
+
+def test_search_docs_finds_a_setting_by_name_with_its_link(tmp_path):
+    error, result = _call(_server(tmp_path), "search_docs", {"query": "CERTO_MAX_TASK_COST"})
+    assert not error
+    first = result["sections"][0]
+    assert first["page"].startswith("reference/")
+    assert first["link"].endswith(f"{first['page']}#{first['anchor']}")
+    assert "reference/configuration.md" in [s["page"] for s in result["sections"]]
+
+
+def test_read_docs_gives_a_section_or_a_page(tmp_path):
+    server = _server(tmp_path)
+    error, found = _call(server, "search_docs", {"query": "certo rollback", "limit": 1})
+    section = found["sections"][0]
+    error, result = _call(
+        server, "read_docs", {"page": section["page"], "anchor": section["anchor"]}
+    )
+    assert not error and result["text"].startswith("#")
+    error, page = _call(server, "read_docs", {"page": "guides/checkpoints.md"})
+    assert not error and page["text"].startswith("# ")
+
+
+def test_read_docs_names_the_pages_when_one_is_wrong(tmp_path):
+    error, text = _call(_server(tmp_path), "read_docs", {"page": "guides/nope.md"})
+    assert error and "reference/commands.md" in text

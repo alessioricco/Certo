@@ -362,11 +362,6 @@ cut that first run's output from 2,949 lines to 1,021.)
   `certo check` prints, `MODEL_DECISIONS.md` and the last run report
   (never keys), for "why did my run pick Opus?". Done when the question
   set passes on a local and a cloud model with no made-up answer.
-- **MCP docs tool** (separate, small; can come before `certo ask`). The
-  MCP server offers the same docs (step 2 above) and a section search,
-  so an editor's own agent answers from them with no model call by
-  Certo. Done when a client can search and read the docs of the
-  installed version.
 - **A text UI for interactive mode** (the Author, 2026-11-08; for the
   version after 0.2.3, not before). Today `--interactive` prints the
   agent's stream and asks questions on plain stdin lines. Give it a

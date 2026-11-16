@@ -36,6 +36,7 @@ COMMAND_TOOLS: dict[str, tuple[str, ...]] = {
     "certo skills list": ("list_skills",),
     "certo checkpoints": ("checkpoints",),
     "certo rollback": ("rollback",),
+    "certo ask": ("search_docs", "read_docs"),
 }
 
 # The commands with no tool, and why. Those that say "on request" get a
@@ -62,7 +63,6 @@ NO_TOOL: dict[str, str] = {
     ),
     "certo bench": "runs for hours, and is set up and read in a terminal",
     "certo report": "writes a file for a person to read before sharing it: run it in a terminal",
-    "certo ask": "calls a model; an editor's agent has its own, and the docs tool comes later",
     "certo mcp": "it is this server",
     "certo-server": "another server, over HTTP",
     "certo-admin": "manages certo-server's task store, not this server's runs",
@@ -83,7 +83,8 @@ INSTRUCTIONS = (
     "show what there is to work with. Work happens only in a named project "
     "(project) or in a folder the server was started with (folder). A project's "
     "certo://projects/NAME/status and certo://projects/NAME/runs resources hold its last "
-    "run's status and its run history."
+    "run's status and its run history. search_docs and read_docs answer questions about "
+    "Certo itself from its docs."
 )
 
 
@@ -535,6 +536,67 @@ def build_server(
                 ],
             }
         return answer
+
+    def _docs_sections() -> tuple[Any, list[Any]]:
+        from . import __version__
+        from .docs_index import split_sections
+        from .docs_source import DocsUnavailable, find_docs, user_pages
+
+        try:
+            docs = find_docs(__version__)
+        except DocsUnavailable as exc:
+            raise UsageError(str(exc)) from exc
+        return docs, split_sections(user_pages(docs.folder))
+
+    @server.tool(annotations=ToolAnnotations(title="Search Certo's docs", readOnlyHint=True))
+    @_user_errors
+    def search_docs(query: str, limit: int = 8) -> dict[str, Any]:
+        """Search the docs of this Certo's version (what `certo ask` reads), with
+        no model call: the best sections for `query`, best first, each with its
+        page, heading, anchor and link. Exact names (a --flag, a CERTO_ setting, a
+        command) count most. Read one with read_docs."""
+        docs, sections = _docs_sections()
+        from .docs_index import search
+
+        found = search(query, sections, max(1, min(limit, 20)))
+        return {
+            "version": docs.version,
+            "sections": [
+                {
+                    "page": s.page,
+                    "heading": s.title,
+                    "anchor": s.anchor,
+                    "link": docs.link(s.page, s.anchor),
+                    "start": s.text[:200],
+                }
+                for s in found
+            ],
+        }
+
+    @server.tool(annotations=ToolAnnotations(title="Read Certo's docs", readOnlyHint=True))
+    @_user_errors
+    def read_docs(page: str, anchor: str | None = None) -> dict[str, Any]:
+        """One page of this Certo's docs (a path such as reference/commands.md),
+        or only its section with `anchor` (as search_docs gives it). Without a
+        page found, the list of pages."""
+        docs, sections = _docs_sections()
+        on_page = [s for s in sections if s.page == page]
+        if not on_page:
+            pages = sorted({s.page for s in sections})
+            raise UsageError(f"no page {page!r} in the docs; the pages: {', '.join(pages)}")
+        if anchor:
+            section = next((s for s in on_page if s.anchor == anchor), None)
+            if section is None:
+                anchors = ", ".join(s.anchor for s in on_page)
+                raise UsageError(f"no section {anchor!r} on {page}; its anchors: {anchors}")
+            return {
+                "page": page,
+                "anchor": anchor,
+                "link": docs.link(page, anchor),
+                "text": section.text,
+            }
+        text = "\n\n".join(s.text for s in on_page)
+        return {"page": page, "link": docs.link(page), "text": text}
 
     @server.tool(annotations=ToolAnnotations(title="Check the model", openWorldHint=True))
     @_user_errors

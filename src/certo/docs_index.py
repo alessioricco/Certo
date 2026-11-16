@@ -192,3 +192,20 @@ def word_hits(question: str, sections: Sequence[Section], limit: int = 1) -> lis
             scored.append((score, s.page.startswith("reference/"), -int(s.id[1:]), s))
     scored.sort(key=lambda t: t[:3], reverse=True)
     return [s for *_, s in scored[:limit]]
+
+
+def search(query: str, sections: Sequence[Section], limit: int = 8) -> list[Section]:
+    """The sections that best match `query`, with no model. With exact names
+    (a flag, a setting, a command): the sections holding most of them, a
+    reference page first. Then words: in a heading counts twice."""
+    names, words = names_in(query), words_in(query)
+    scored = []
+    for s in sections:
+        lower, title = s.text.lower(), s.title.lower()
+        named = sum(name in s.text for name in names)
+        worded = 2 * sum(w in title for w in words) + sum(w in lower for w in words)
+        if named or (worded and not names):
+            reference = s.page.startswith("reference/")
+            scored.append((named, reference, worded, -int(s.id[1:]), s))
+    scored.sort(key=lambda t: t[:4], reverse=True)
+    return [s for *_, s in scored[:limit]]

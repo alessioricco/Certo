@@ -85,6 +85,8 @@ so Certo doesn't use it.
 | `list_projects` | The projects under `CERTO_PROJECTS_DIR`, each with its last run (task, status, verdict, model, time) and the `run_id` of a run working there now. |
 | `list_models` | The configured model and, when you have [model files](../reference/models-yaml.md), each model with its id, whether it is active, its ratings and description, the ladders `escalate` takes by name, and the files' problems. Never a key. `run_task`'s `model` takes a model id from it. |
 | `list_skills` | The skills a run gets, as `certo skills list` shows them: official and yours, and with `project` or `folder` that project's too. Each says how it fires, its size in tokens, and whether it is on. With `task`, which skills would go into a run of that task. |
+| `search_docs` | Certo's own docs, for this version (the ones `certo ask` reads), searched with no model call: the best sections for a query, each with its page, heading, anchor and link. Exact names (a `--flag`, a `CERTO_` setting, a command) count most. |
+| `read_docs` | One page of those docs (such as `reference/commands.md`), or one section of it by `anchor`. A wrong page gets the list of pages. |
 
 Some commands have no tool: those that ask you questions (`certo init`,
 `certo models update`, `certo models choose`), `certo bench`, which runs for hours, and the
