@@ -293,9 +293,8 @@ file), B, C, then 5a and 5b. Steps 2 (`certo models choose`) and A
      LMArena's); `certo check` saying when the data is old and where
      each rating came from; benchmark auto-model and derived ladders on
      computed ratings (local + cloud) before release.
-  5. **`certo models choose`** stores a fingerprint of what it generated
-     in `certo-models.yaml`: next time it rewrites untouched sections and
-     shows the difference before replacing hand-edited ones.
+  5. ~~`certo models choose` fingerprint~~: done (`generated:` in
+     `certo-models.yaml`, `--replace-edits`).
   Done when a user's table is recomputed from current data for their
   own models with no hand-written rating.
 - **5a. A model drafts the profiles.** From the author's description in

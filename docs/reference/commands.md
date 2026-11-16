@@ -382,7 +382,7 @@ among them, with both strategies, and writes your choice to
 top. It calls no model.
 
 ```text
-certo models choose [--project NAME] [--use NAMES] [--strategy {auto,escalate}] [--yes]
+certo models choose [--project NAME] [--use NAMES] [--strategy {auto,escalate}] [--yes] [--replace-edits]
 ```
 
 | Flag | Effect |
@@ -390,7 +390,8 @@ certo models choose [--project NAME] [--use NAMES] [--strategy {auto,escalate}] 
 | `--project NAME` | The project, as for a run: a name in `CERTO_PROJECTS_DIR`, or `.` (the default) for the folder a run without `--project` works in. |
 | `--use NAMES` | The models, comma-separated (names from your `models.yaml`), instead of ticking them. Needed without a terminal. |
 | `--strategy {auto,escalate}` | The strategy to write, instead of choosing. Default: the recommended one. |
-| `--yes`, `-y` | Write the file without asking. Needed without a terminal. |
+| `--yes`, `-y` | Write the file without asking. Needed without a terminal. A ladder or task profiles you edited by hand are kept. |
+| `--replace-edits` | Replace the ladder and task profiles even where you edited them, with the ones the current ratings give. |
 
 On a terminal it lists your enabled models with what one run of each
 costs: free for a local model, else the median of your own last runs
@@ -407,9 +408,16 @@ two. Then it shows:
   model), otherwise `--auto-model`.
 
 You choose the strategy and confirm. Runs in that project then use it,
-unless a flag or `CERTO_MODEL_SELECTION` chooses. Running it again
-replaces the file, with your earlier models ticked. Exit code 0 when the
-file was written, 1 when not, 130 on Ctrl-C.
+unless a flag or `CERTO_MODEL_SELECTION` chooses.
+
+Running it again (after [`certo models refresh`](#certo-models-refresh),
+say) writes the file again, with your earlier models ticked. The ladder
+and task profiles are made again from the current ratings, unless you
+edited them: the file remembers what `choose` wrote (`generated:`), so
+it shows the difference and asks whether to keep yours or replace them.
+The models and the strategy change either way. With `--yes` your edits
+are kept; `--replace-edits` replaces them. Exit code 0 when the file was
+written, 1 when not, 130 on Ctrl-C.
 
 ### `certo models secure`
 
@@ -554,7 +562,7 @@ Which models fit each kind of task (cheapest first):
 
 A project with a `certo-models.yaml` keeps the ladder and profiles it was
 made with: run [`certo models choose`](#certo-models-choose) to make them
-again from the new ratings. Exit code 0 when the ratings were written,
+again from the new ratings. It asks before replacing ones you edited. Exit code 0 when the ratings were written,
 1 when not.
 
 ## `certo skills`

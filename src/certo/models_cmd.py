@@ -182,7 +182,18 @@ def build_parser() -> argparse.ArgumentParser:
         "--yes",
         "-y",
         action="store_true",
-        help="Write the file without asking. Needed without a terminal.",
+        help=(
+            "Write the file without asking. Needed without a terminal. A ladder or "
+            "profiles you edited by hand are kept (see --replace-edits)."
+        ),
+    )
+    choose.add_argument(
+        "--replace-edits",
+        action="store_true",
+        help=(
+            "Replace the ladder and task profiles even where you edited them by hand, "
+            "with the ones the current ratings give."
+        ),
     )
     return parser
 
@@ -266,7 +277,7 @@ def choose_main(args: argparse.Namespace, *, prompter: Prompter, interactive: bo
     from .catalog_check import load_checked_catalog
     from .init_cmd import _write_private
     from .model_catalog import ModelCatalogError, project_use
-    from .models_choose import propose, render
+    from .models_choose import generated_sections, propose, read_existing, render, sections_diff
 
     try:
         folder = _project_folder(args.project)
@@ -320,6 +331,39 @@ def choose_main(args: argparse.Namespace, *, prompter: Prompter, interactive: bo
     if strategy == "escalate" and proposal.ladder is None:
         prompter.say(f"Error: no ladder to climb ({proposal.ladder_problem}).")
         return 1
+    # A ladder or profiles the author edited are replaced only when asked.
+    existing = None
+    if os.path.isfile(path):
+        with open(path, encoding="utf-8") as f:
+            existing = read_existing(f.read())
+    keep = None
+    diff = sections_diff(existing.sections, generated_sections(proposal)) if existing else []
+    if existing is not None and existing.edited and diff:
+        prompter.say(
+            f"\n{PROJECT_FILE} has a ladder or task profiles that differ from what choose "
+            "wrote (edited by hand, or written by an earlier Certo):"
+        )
+        for line in diff:
+            prompter.say(f"  {line}")
+        if not args.replace_edits:
+            keep = existing
+            if not args.yes and interactive:
+                try:
+                    answer = prompter.choose(
+                        "Your ladder and task profiles:",
+                        [
+                            "Keep mine (the models and the strategy still change)",
+                            "Replace them with the new ones",
+                            "Cancel",
+                        ],
+                        0,
+                    )
+                except Cancelled:
+                    answer = 2
+                if answer == 2:
+                    prompter.say("Nothing was written.")
+                    return 1
+                keep = existing if answer == 0 else None
     if not args.yes:
         if not interactive:
             prompter.say("\nNothing was written: run it on a terminal to confirm, or add --yes.")
@@ -338,12 +382,17 @@ def choose_main(args: argparse.Namespace, *, prompter: Prompter, interactive: bo
         except Cancelled:
             prompter.say("\nCancelled. Nothing was written.")
             return 130
-    _write_private(path, render(chosen, strategy, proposal))
+    _write_private(path, render(chosen, strategy, proposal, keep))
     flag = "--auto-model" if strategy == "auto" else "--escalate"
     prompter.say(
         f"Written {path}. Runs in this project now use {flag} with these models (a flag "
         "or CERTO_MODEL_SELECTION still wins). Preview a task with certo check --task."
     )
+    if keep is not None:
+        prompter.say(
+            "Your ladder and task profiles were kept as you wrote them; certo models choose "
+            "--replace-edits replaces them."
+        )
     return 0
 
 

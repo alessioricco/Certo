@@ -264,3 +264,99 @@ def test_certo_check_shows_the_project_choice(monkeypatch, files, tmp_path):
 
     assert f"Project choice: {tmp_path / PROJECT_FILE} (strategy: escalate)" in out.getvalue()
     assert {m.name for m in catalog.models if m.activated} == {"cheap", "strong"}
+
+
+# --- the fingerprint: choose rewrites its own sections, asks about yours ----
+
+
+def _written(folder):
+    return yaml.safe_load((folder / PROJECT_FILE).read_text())
+
+
+def _edit_ladder(folder, rungs):
+    data = _written(folder)
+    data["escalation"]["ladders"]["default"] = [{"model": r} for r in rungs]
+    (folder / PROJECT_FILE).write_text(yaml.safe_dump(data, sort_keys=False))
+
+
+def test_an_untouched_ladder_is_rewritten_without_asking(monkeypatch, files, tmp_path):
+    _choose(["--use", "cheap,strong", "--yes"], monkeypatch, files, tmp_path)
+    first = _written(tmp_path)
+    assert first["generated"]
+
+    code, output = _choose(["--use", "cheap,mid,strong", "--yes"], monkeypatch, files, tmp_path)
+
+    assert code == 0, output
+    assert "edited by hand" not in output
+    data = _written(tmp_path)
+    assert [r["model"] for r in data["escalation"]["ladders"]["default"]][-1] == "strong"
+    assert data["use"] == ["cheap", "mid", "strong"] and data["generated"] != first["generated"]
+
+
+def test_an_edited_ladder_is_kept_with_yes_and_the_difference_shown(monkeypatch, files, tmp_path):
+    _choose(["--use", "cheap,strong", "--yes"], monkeypatch, files, tmp_path)
+    _edit_ladder(tmp_path, ["strong"])
+
+    code, output = _choose(["--use", "cheap,mid,strong", "--yes"], monkeypatch, files, tmp_path)
+
+    assert code == 0, output
+    assert "edited by hand, or written by an earlier Certo" in output
+    assert "--- yours" in output and "+    - {model: cheap}" in output
+    assert "--replace-edits replaces them" in output
+    data = _written(tmp_path)
+    assert data["escalation"]["ladders"]["default"] == [{"model": "strong"}]
+    assert data["use"] == ["cheap", "mid", "strong"]  # the choice itself still changes
+    # Still edited next time: its old fingerprint was kept.
+    _, again = _choose(["--use", "cheap,strong", "--yes"], monkeypatch, files, tmp_path)
+    assert "edited by hand" in again
+
+
+def test_replace_edits_writes_the_new_ladder(monkeypatch, files, tmp_path):
+    _choose(["--use", "cheap,strong", "--yes"], monkeypatch, files, tmp_path)
+    _edit_ladder(tmp_path, ["strong"])
+
+    code, output = _choose(
+        ["--use", "cheap,strong", "--yes", "--replace-edits"], monkeypatch, files, tmp_path
+    )
+
+    assert code == 0, output
+    assert _written(tmp_path)["escalation"]["ladders"]["default"] != [{"model": "strong"}]
+    _, again = _choose(["--use", "cheap,strong", "--yes"], monkeypatch, files, tmp_path)
+    assert "edited by hand" not in again
+
+
+def test_on_a_terminal_the_author_chooses_to_replace_or_cancel(monkeypatch, files, tmp_path):
+    _choose(["--use", "cheap,strong", "--yes"], monkeypatch, files, tmp_path)
+    _edit_ladder(tmp_path, ["strong"])
+    monkeypatch.setattr(Prompter, "confirm", lambda self, q: True)
+    monkeypatch.setattr(Prompter, "menus", False, raising=False)
+
+    picks = iter([2])  # Cancel
+    monkeypatch.setattr(Prompter, "choose", lambda self, q, options, default=0: next(picks))
+    code, output = _choose(
+        ["--use", "cheap,strong", "--strategy", "auto"], monkeypatch, files, tmp_path, True
+    )
+    assert code == 1 and "Nothing was written." in output
+    assert _written(tmp_path)["escalation"]["ladders"]["default"] == [{"model": "strong"}]
+
+    picks = iter([1])  # Replace them
+    monkeypatch.setattr(Prompter, "choose", lambda self, q, options, default=0: next(picks))
+    code, output = _choose(
+        ["--use", "cheap,strong", "--strategy", "auto"], monkeypatch, files, tmp_path, True
+    )
+    assert code == 0, output
+    assert _written(tmp_path)["escalation"]["ladders"]["default"] != [{"model": "strong"}]
+
+
+def test_a_file_from_before_the_fingerprint_with_the_same_sections_gets_one(
+    monkeypatch, files, tmp_path
+):
+    _choose(["--use", "cheap,strong", "--yes"], monkeypatch, files, tmp_path)
+    data = _written(tmp_path)
+    del data["generated"]
+    (tmp_path / PROJECT_FILE).write_text(yaml.safe_dump(data, sort_keys=False))
+
+    code, output = _choose(["--use", "cheap,strong", "--yes"], monkeypatch, files, tmp_path)
+
+    assert code == 0 and "edited by hand" not in output
+    assert _written(tmp_path)["generated"]

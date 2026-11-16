@@ -9,6 +9,11 @@ strategies proposed for them, with a recommendation.
   (escalation.derive_ladder): cheapest first, a model dropped when another
   is at least as capable and costs no more.
 
+The ladder and profiles it writes carry a fingerprint (`generated:`): a
+later `choose` rewrites them while they still match it, and shows the
+difference and asks before replacing ones the author edited
+(DECISIONS.md, 2026-11-16).
+
 Costs shown are what one run is expected to cost (run_stats.estimate_for:
 the median of your own runs when there are enough, else a guess from the
 price; a local model is free). No model is called; nothing is written
@@ -17,6 +22,9 @@ until the author accepts.
 
 from __future__ import annotations
 
+import difflib
+import hashlib
+import json
 from collections.abc import Iterable
 from dataclasses import dataclass, replace
 
@@ -123,8 +131,11 @@ def run_cost(entry: ModelCatalogEntry) -> str:
     return f"about ${cost:.2f} a run (a guess from the price)"
 
 
-def render(chosen: list[str], strategy: str, proposal: Proposal) -> str:
-    """The text of certo-models.yaml."""
+GENERATED = ("task_profiles", "escalation")  # the sections choose writes from the ratings
+
+
+def generated_sections(proposal: Proposal) -> dict:
+    """The ladder and profiles, as written."""
     profiles = {
         p.name: {
             **({"triggers": list(p.triggers)} if p.triggers else {}),
@@ -132,11 +143,74 @@ def render(chosen: list[str], strategy: str, proposal: Proposal) -> str:
         }
         for p in proposal.profiles
     }
-    data: dict = {"use": chosen, "strategy": strategy, "task_profiles": profiles}
+    sections: dict = {"task_profiles": profiles}
     if proposal.ladder is not None:
-        data["escalation"] = {
+        sections["escalation"] = {
             "ladders": {"default": [{"model": r.name} for r in proposal.ladder.rungs]}
         }
+    return sections
+
+
+def fingerprint(sections: dict) -> str:
+    """A short hash of the generated sections, as they read back."""
+    picked = {key: sections.get(key) for key in GENERATED}
+    # As the file reads back: YAML's numbers and lists, not Python's.
+    picked = yaml.safe_load(yaml.safe_dump(picked))
+    text = json.dumps(picked, sort_keys=True, default=str)
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+
+
+@dataclass(frozen=True)
+class Existing:
+    """A project file already there: its generated sections, and whether
+    the author changed them since `choose` wrote them."""
+
+    sections: dict
+    stamp: str  # the fingerprint it was written with ("" when none)
+    edited: bool
+
+
+def read_existing(text: str) -> Existing | None:
+    """The file's generated sections, or None when it has none."""
+    try:
+        data = yaml.safe_load(text) or {}
+    except yaml.YAMLError:
+        return None
+    if not isinstance(data, dict):
+        return None
+    sections = {key: data[key] for key in GENERATED if data.get(key) is not None}
+    if not sections:
+        return None
+    stamp = str(data.get("generated") or "")
+    return Existing(sections, stamp, stamp != fingerprint(sections))
+
+
+def sections_diff(old: dict, new: dict) -> list[str]:
+    """The generated sections, yours against the new ones, line by line."""
+
+    def lines(sections: dict) -> list[str]:
+        return yaml.safe_dump(
+            {k: sections[k] for k in GENERATED if k in sections},
+            sort_keys=False,
+            default_flow_style=None,
+        ).splitlines()
+
+    return list(
+        difflib.unified_diff(lines(old), lines(new), "yours", "from the ratings now", lineterm="")
+    )
+
+
+def render(
+    chosen: list[str], strategy: str, proposal: Proposal, keep: Existing | None = None
+) -> str:
+    """The text of certo-models.yaml. `keep`: the author's edited sections,
+    kept as they are (with their old fingerprint, so they still read as
+    edited next time)."""
+    sections = keep.sections if keep is not None else generated_sections(proposal)
+    stamp = keep.stamp if keep is not None else fingerprint(sections)
+    data: dict = {"use": chosen, "strategy": strategy, **sections}
+    if stamp:
+        data["generated"] = stamp
     header = (
         f"# {PROJECT_FILE}: the models this project may use, and how Certo picks\n"
         "# among them. Written by certo models choose; edit it freely, or run the\n"
@@ -147,5 +221,7 @@ def render(chosen: list[str], strategy: str, proposal: Proposal) -> str:
         "#   task_profiles  --auto-model's kinds of task: what each needs; the\n"
         "#              least costly model that meets it goes first, then stronger\n"
         "#   escalation the ladder --escalate climbs, cheapest first\n"
+        "#   generated  how choose knows you edited the two sections above: it\n"
+        "#              asks before replacing your edits\n"
     )
     return header + yaml.safe_dump(data, sort_keys=False, default_flow_style=None)

@@ -323,7 +323,11 @@ given design was chosen.
   file's extra keys (`PROJECT_KEYS`) and turns off models outside `use:`
   (`_restrict_to`). `models_choose.propose` builds Certo's profiles
   with `cost_first` weights and `derive_ladder` on the chosen models;
-  `certo models choose` reads only the user's files.
+  `certo models choose` reads only the user's files. `generated:` is
+  `fingerprint()` (sha256, 16 hex) of `task_profiles` + `escalation`
+  after a YAML round trip; `read_existing` marks the file edited when it
+  differs (or is missing, as in files written before 0.2.4). Kept edits
+  keep their old stamp, so they still read as edited next time.
 - **`models_secure.py`** — `certo models secure`: plans which settings
   variable each written-out key goes to (provider's usual name, else a
   per-model one when the name holds another key in the file or the

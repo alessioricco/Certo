@@ -51,6 +51,8 @@ only Certo's list, so models you added get ratings too. It prints the
 ratings with prices in $ per 1M tokens, what changed, and which models
 fit each kind of task; your own ratings still win. See
 [`certo models refresh`](../reference/commands.md#certo-models-refresh).
+`certo models choose` then makes a project's ladder and task profiles
+again from the new ratings, and asks before replacing ones you edited.
 
 ## New: Certo writes the milestones
 

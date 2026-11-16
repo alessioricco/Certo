@@ -355,6 +355,7 @@ escalation:
 | `strategy` | `auto` (as `--auto-model`) or `escalate` (as `--escalate`). It applies to every run in the project, unless a flag (`--auto-model`, `--escalate`, `--model`) or `CERTO_MODEL_SELECTION` chooses. |
 | `task_profiles` | As in [`task_profiles.yaml`](#task_profilesyaml). `certo models choose` writes Certo's profiles, each with what its kind of task needs. |
 | `escalation` | As in [`escalation.yaml`](#escalationyaml). `certo models choose` writes the ladder Certo derives from the chosen models, as `default`. |
+| `generated` | Written by `certo models choose`: a fingerprint of the `task_profiles` and `escalation` it wrote. When you edit those, the next `choose` sees it and asks before replacing them. Leave it as it is. |
 
 `certo check`, run in the project folder, says it uses the file.
 

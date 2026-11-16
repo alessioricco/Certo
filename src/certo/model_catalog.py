@@ -356,7 +356,7 @@ ESCALATION_FILE = "escalation.yaml"
 # ladder proposed for those models, in one file at the project's top.
 # Read as the task profiles and escalation files (model_files.py).
 PROJECT_FILE = "certo-models.yaml"
-PROJECT_KEYS = ("use", "strategy", "task_profiles", "escalation")
+PROJECT_KEYS = ("use", "strategy", "task_profiles", "escalation", "generated")
 STRATEGIES = ("auto", "escalate")
 # Personal settings: they live in models.yaml, never in the shared list.
 _PERSONAL_ONLY = ("api_key", "base_url", "activated")
