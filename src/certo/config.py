@@ -125,6 +125,10 @@ class Config:
     # message before the time budget ends (wrap_up.py). Only a `certo
     # bench` arm sets it (`wrap_up: false`), to measure what they change.
     wrap_up: bool = True
+    # False: a fix message doesn't point out the files created during the
+    # run that a failing check names (runner.created_files_named). Only a
+    # `certo bench` arm sets it (`created_note: false`).
+    created_note: bool = True
     skills_off: tuple[str, ...] = ()
 
     # Only consulted when execution == "docker" (see workspace.py).

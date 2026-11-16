@@ -104,6 +104,7 @@ _ARM_OPTIONS = (
     "root_prompt",
     "skills_dir",
     "wrap_up",
+    "created_note",
 )
 
 
@@ -220,6 +221,9 @@ def _arms(raw: Any, catalog: dict[str, ModelCatalogEntry], where: str) -> list[A
         wrap_up = item.get("wrap_up", True)
         if not isinstance(wrap_up, bool):
             raise BenchConfigError(f"{arm_where}: 'wrap_up' must be true or false.")
+        created_note = item.get("created_note", True)
+        if not isinstance(created_note, bool):
+            raise BenchConfigError(f"{arm_where}: 'created_note' must be true or false.")
         rest = {k: v for k, v in item.items() if k not in _ARM_OPTIONS}
         params = STRATEGIES[strategy].parse(rest, catalog, arm_where)
         if independent:
@@ -242,6 +246,8 @@ def _arms(raw: Any, catalog: dict[str, ModelCatalogEntry], where: str) -> list[A
             params["skills_dir"] = skills_dir
         if not wrap_up:
             params["wrap_up"] = False
+        if not created_note:
+            params["created_note"] = False
         arms.append(Arm(name=name, strategy=strategy, params=params))
     return arms
 

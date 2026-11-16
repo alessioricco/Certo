@@ -595,6 +595,15 @@ it off.
   path; before, only the end summary counted them. A `--resume` that
   starts on another model than the session it continues says so, and
   why (`--auto-model` chose again, or the model set for the run).
+- **A scratch file a check fails on is pointed out.** When a failing
+  check names a file the agent created in the run whose name says it is
+  scratch (`.m6-smoke.mjs`, `edit_tmp.py`, `ui.js.new`), the fix message
+  says so and asks the agent to delete it if it was only for trying
+  things out. Never a test, a file the task names or one an acceptance
+  check asks for. In a user's milestone run a model edited such a script
+  twice instead of deleting it. A replay of every recorded fix message
+  found no run whose message changes
+  ([the record](../benchmark/scratch-note-0.2.3.md)).
 - **Changed check files: the report shows the lines.** The run report
   shows each changed test or check setting as a short diff, and an edit
   an acceptance check asks for (a version bump a `file_contains` check

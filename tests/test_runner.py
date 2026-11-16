@@ -1887,6 +1887,81 @@ def test_verification_followup_calls_out_js_syntax_errors_specifically():
     assert "enclosing tag or fragment" in followup
 
 
+def test_created_files_named_by_relative_or_full_path(tmp_path):
+    root = str(tmp_path)
+    created = [".milestone6-smoke.mjs", "tools/try_dates.js", "notes.md"]
+    output = (
+        f"{root}/.milestone6-smoke.mjs\n  3:7  error  'x' is defined but never used\n"
+        "tools/try_dates.js:12:1 error Missing semicolon\nnotes.md:1 MD041\n"
+    )
+
+    assert runner.created_files_named(output, created, root) == [
+        ".milestone6-smoke.mjs",
+        "tools/try_dates.js",
+    ]
+
+
+def test_created_files_named_needs_the_whole_path():
+    # "smoke.js" at the top is not "src/smoke.js", nor "smoke.json".
+    output = "src/smoke.js:1 error\nconfig/smoke.json:2 error"
+    assert runner.created_files_named(output, ["smoke.js"], "/p") == []
+
+
+def test_created_files_named_leaves_out_real_work():
+    # In a new project the task's own module is created during the run too;
+    # a replay of the recorded benchmarks named it every time otherwise.
+    output = "ledger.py:3 E\nsrc/main.rs:1 error\ntests/test_tmp.py:3 F\nscratch.py:1 E999"
+    created = ["ledger.py", "src/main.rs", "tests/test_tmp.py", "scratch.py"]
+
+    assert runner.created_files_named(output, created, "/p") == ["scratch.py"]
+
+
+def test_created_files_named_leaves_out_files_the_task_or_checks_ask_for():
+    output = "demo_tmp.py:1 E\nprobe.js:2 E\nsmoke.sh:1 E"
+    created = ["demo_tmp.py", "probe.js", "smoke.sh"]
+
+    named = runner.created_files_named(
+        output, created, "/p", keep=["probe.js"], task="Also write `demo_tmp.py`."
+    )
+
+    assert named == ["smoke.sh"]
+
+
+def test_verification_followup_points_out_files_created_in_the_run():
+    lint = _check(
+        name="eslint",
+        command="npx eslint .",
+        status="failed",
+        exit_code=1,
+        summary="1 problem",
+        output="/p/.smoke.mjs  3:7 error",
+    )
+
+    followup = runner._verification_followup(_run(lint), {"eslint": [".smoke.mjs"]})
+
+    assert "created during this run: `.smoke.mjs`" in followup
+    assert "delete it instead of fixing it" in followup
+    assert "created during this run" not in runner._verification_followup(_run(lint))
+
+
+def test_created_named_compares_with_the_start_of_the_run(tmp_path):
+    (tmp_path / "app.py").write_text("x = 1\n")
+    start = runner.workspace_listing(str(tmp_path))
+    (tmp_path / "try_it.py").write_text("import nope\n")
+    (tmp_path / "helpers.py").write_text("import nope\n")
+    failing = _check(
+        status="failed",
+        exit_code=1,
+        summary="1 error",
+        output="try_it.py:1: ImportError\nhelpers.py:1: ImportError\napp.py",
+    )
+
+    named = runner._created_named(str(tmp_path), _run(failing), start, None)
+
+    assert named == {"pytest": ["try_it.py"]}
+    assert runner._created_named(str(tmp_path), _run(failing), None, None) == {}
+
+
 def test_verification_followup_omits_syntax_guidance_for_logic_failures():
     followup = runner._verification_followup(
         _run(

@@ -18,16 +18,6 @@ first item is the suggested next one.
   replay, docs/benchmark/open-items-replay-0.2.3.md, which found no run
   turned `verified`). Seen next on an `--escalate` milestone run: record
   it there. Not blocking the release.
-- **Tell the agent which failing files it created in this run**
-  (same run). A model that took over wrote a scratch script
-  (`.milestone6-smoke.mjs`) in the project root; the project's lint
-  failed on it, and the next model edited it twice instead of deleting
-  it. Lint passed without it. When a failing check's output names a file
-  created during this run (Certo already lists them in "Files changed"),
-  the failing-checks message says so: "created during this run; if it
-  was only for trying things out, delete it." Changes what the agent is
-  told: bench it (local + cloud). Done when a run that leaves a scratch
-  file failing a check removes it on the first fix attempt.
 - **A longer time budget from `certo init` for Ollama?** The mazeman
   sample took 41 minutes on `qwen3.8:27b` (2026-10-22), past the default
   30-minute `CERTO_MAX_TASK_SECONDS`; it ended `verified` only because the

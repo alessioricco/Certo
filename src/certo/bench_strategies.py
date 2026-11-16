@@ -140,6 +140,8 @@ def arm_config(entry: ModelCatalogEntry, ctx: RunContext, params: Mapping[str, A
         cfg = replace(cfg, root_prompt=False)
     if params.get("wrap_up") is False:
         cfg = replace(cfg, wrap_up=False)
+    if params.get("created_note") is False:
+        cfg = replace(cfg, created_note=False)
     return cfg
 
 

@@ -2002,3 +2002,12 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   follow-ups stay on the same model; the checks decide; a pass with
   items open is `verified` with a "may be unfinished" note and
   `cut_short` (bare --resume continues). Only failing checks escalate.
+- **The scratch-file note names only scratch-named files** (0.2.3,
+  2026-11-16). A fix message points out a file created in the run that a
+  failing check names only when its name says scratch (tmp, smoke, try,
+  .new ...), and never a test, a file the task names or one an
+  acceptance check asks for. "Any created file" was the first draft; a
+  replay of 62 recorded fix messages named the task's own module in 11
+  (a new project creates its real work in the run), which would tell a
+  model to delete its work. Shipped on the replay (no recorded message
+  changes) without a live bench where it fires: the Author's call.

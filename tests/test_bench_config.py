@@ -819,6 +819,40 @@ def test_a_bad_wrap_up_is_refused(tmp_path):
         load_bench_config(_write(tmp_path, bench))
 
 
+def test_created_note_is_an_arm_option(tmp_path):
+    bench = (
+        "arms:\n"
+        "  - {name: no-note, strategy: single, model: cloud, created_note: false}\n"
+        "  - {name: plain, strategy: single, model: cloud}\n"
+    )
+    cfg = load_bench_config(_write(tmp_path, bench))
+    no_note, plain = cfg.arms
+    assert no_note.params == {"model": "cloud", "created_note": False}
+    assert plain.params == {"model": "cloud"}
+    seen = []
+
+    def fake_stream(task, *, cfg, ladder=None):
+        seen.append(cfg.created_note)
+        return SimpleNamespace(
+            verification_state="verified",
+            retries_used=0,
+            run_summary=None,
+            rungs=(),
+            final_rung=None,
+        )
+
+    ctx = RunContext("do it", "/ws", cfg.catalog, "/iso", fake_stream, cfg.model_catalog)
+    for arm in cfg.arms:
+        STRATEGIES[arm.strategy].run(ctx, arm.params)
+    assert seen == [False, True]
+
+
+def test_a_bad_created_note_is_refused(tmp_path):
+    bench = "arms:\n  - {name: a, strategy: single, model: cloud, created_note: 1}\n"
+    with pytest.raises(BenchConfigError, match="'created_note' must be true or false"):
+        load_bench_config(_write(tmp_path, bench))
+
+
 def test_skills_dir_is_an_arm_option_and_each_run_gets_a_copy(tmp_path):
     skills = tmp_path / "trusted-skills" / ".certo" / "skills"
     (skills / ".trusted").mkdir(parents=True)

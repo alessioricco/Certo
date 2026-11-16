@@ -584,9 +584,72 @@ def _check_followup(check: CheckOutcome) -> str:
     return f"### {check.name} (`{check.command}`) — {check.summary}\n\n{check.output}\n\n{guidance}"
 
 
-def _verification_followup(run: VerificationRun) -> str:
+# Test files are left out of the "created during this run" note: telling
+# the agent to delete a failing test would weaken the checks.
+_TEST_FILE = re.compile(
+    r"(^|/)(tests?|__tests__|spec)/|(^|/)test_[^/]*$|_test\.[^/]+$|\.(test|spec)\.[^/]+$"
+)
+# Only a file that looks like scratch by its name is pointed out: in a new
+# project the real work is "created during this run" too (a replay of the
+# recorded benchmarks named the task's own module every time otherwise).
+_SCRATCH_NAME = re.compile(
+    r"(^|[._-])(tmp|temp|scratch|smoke|spot[-_]?check|try|trial|probe|playground"
+    r"|repro|experiment)([._-]|\d|$)"
+    r"|\.(new|bak|orig|old|tmp)$",
+    re.IGNORECASE,
+)
+_MAX_CREATED_NAMED = 5
+
+
+def created_files_named(
+    output: str,
+    created: Sequence[str],
+    workspace: str,
+    keep: Sequence[str] = (),
+    task: str = "",
+) -> list[str]:
+    """The scratch files created during this run that a check's output
+    names, by their path in the project or their full path. A scratch file
+    has a scratch-like name (`.m6-smoke.mjs`, `smoke_tmp.py`, `ui.js.new`); test
+    files, the files in `keep` (ones the acceptance checks ask for) and any
+    file the task names are left out."""
+    root = os.path.abspath(workspace)
+    named: list[str] = []
+    for path in created:
+        name = os.path.basename(path)
+        if (
+            path in keep
+            or _TEST_FILE.search(path)
+            or not _SCRATCH_NAME.search(name)
+            or (task and (path in task or name in task))
+        ):
+            continue
+        full = os.path.join(root, path)
+        pattern = rf"(?:(?<![\w./-]){re.escape(path)}|{re.escape(full)})(?![\w/-]|\.\w)"
+        if re.search(pattern, output):
+            named.append(path)
+    return named
+
+
+def _created_note(named: Sequence[str]) -> str:
+    shown = ", ".join(f"`{p}`" for p in named[:_MAX_CREATED_NAMED])
+    if len(named) > _MAX_CREATED_NAMED:
+        shown += f" and {len(named) - _MAX_CREATED_NAMED} more"
+    return (
+        f"\n\nThis output names file(s) created during this run: {shown}. If one "
+        "was only for trying things out (a scratch or smoke script the task "
+        "didn't ask for), delete it instead of fixing it; if the work needs it, "
+        "fix it."
+    )
+
+
+def _verification_followup(run: VerificationRun, named: dict[str, list[str]] | None = None) -> str:
     problem_checks = run.failing + run.timed_out_checks
-    sections = "\n\n---\n\n".join(_check_followup(c) for c in problem_checks)
+    named = named or {}
+    sections = "\n\n---\n\n".join(
+        _check_followup(c) + (_created_note(named[c.name]) if named.get(c.name) else "")
+        for c in problem_checks
+    )
     return (
         "Automated verification ran the project's checks after you "
         "finished, and the following are still failing:\n\n"
@@ -1181,6 +1244,33 @@ def _verify_after_budget(
     )
 
 
+def _created_named(
+    workspace: str,
+    run: VerificationRun,
+    run_start: dict[str, tuple[int, int]] | None,
+    acceptance_checks: Sequence[AcceptanceCheck] | None,
+    task: str = "",
+) -> dict[str, list[str]]:
+    """Per failing check, the scratch files created during this run its
+    output names (created_files_named)."""
+    if run_start is None:
+        return {}
+    created = [
+        p
+        for p in FileChanges.between(run_start, workspace_listing(workspace)).created
+        if p not in _CERTO_OWN_FILES
+    ]
+    if not created:
+        return {}
+    keep = [c.path for c in acceptance_checks or ()]
+    named = {}
+    for check in run.failing + run.timed_out_checks:
+        files = created_files_named(check.output, created, workspace, keep, task)
+        if files:
+            named[check.name] = files
+    return named
+
+
 def _created_by_certo(cfg: Config) -> bool:
     """Whether the run's folder is a project Certo created (worktree.py)."""
     try:
@@ -1217,6 +1307,8 @@ def _verify_and_report(
     runner: CommandRunner | None = None,
     on_verification: Callable[[VerificationRun], None] | None = None,
     before: dict[str, tuple[int, int]] | None = None,
+    run_start: dict[str, tuple[int, int]] | None = None,
+    acceptance_checks: Sequence[AcceptanceCheck] | None = None,
 ) -> TaskOutcome:
     """Post-hoc safety net for agent.py's `_VERIFY_BEFORE_FINISH_SUFFIX`: run
     the project's own checks ourselves instead of trusting the agent's
@@ -1309,7 +1401,14 @@ def _verify_and_report(
                 conversation.switch_llm(
                     llm_for_entry(cfg, next_entry, usage_id=f"certo:{next_entry.name}")
                 )
-        conversation.send_message(_verification_followup(run))
+        conversation.send_message(
+            _verification_followup(
+                run,
+                _created_named(cfg.workspace, run, run_start, acceptance_checks, task)
+                if cfg.created_note
+                else None,
+            )
+        )
         run_result = _run_with_confirmation(
             conversation, cfg, emit, on_confirm, deadline, model_chain
         )
@@ -2589,6 +2688,9 @@ def _run_stream_task_phases(
     the earlier session.
     """
     before = workspace_listing(cfg.workspace) if check_changes else None
+    # What was there when this session started: a failing check that names
+    # a file created since is pointed out in the fix message.
+    run_start = before if before is not None else workspace_listing(cfg.workspace)
     check_files_before = snapshot_check_files(cfg.workspace)
     # `first_message` is a resume's message; `task` stays the goal that
     # verification and the completion contract are judged against.
@@ -2652,6 +2754,8 @@ def _run_stream_task_phases(
             runner,
             on_verification,
             before,
+            run_start=run_start,
+            acceptance_checks=acceptance_checks,
         )
     if before is not None and outcome.verification_state == "verified":
         outcome = _require_a_change(
@@ -2768,6 +2872,7 @@ def _require_a_change(
         runner,
         on_verification,
         before,
+        run_start=before,
     )
     again = replace(again, retries_used=again.retries_used + retries_used)
     if again.verification_state != "verified" or _agent_changed_files(cfg.workspace, before):

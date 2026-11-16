@@ -94,6 +94,14 @@ listed under the verdict, so you know what wasn't checked.
 **A failure beats everything.** If any check fails, the result is a
 failure, even if another check timed out or passed.
 
+**A scratch file is pointed out.** When a failing check's output names a
+file the agent created in this run whose name says it is scratch (such as
+`.m6-smoke.mjs`, `edit_tmp.py` or `ui.js.new`), the fix message says so:
+if the file was only for trying things out, the agent should delete it
+instead of fixing it. Test files, files the task names and files the
+acceptance checks ask for are never pointed out this way, so the message
+can't push the agent to delete its tests or its work.
+
 **No progress means stop.** After each fix attempt, Certo compares the
 failing checks with the previous attempt: name, status, exit code and
 output, with timings like `in 3.85s` removed. If they are identical, the

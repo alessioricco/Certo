@@ -1,0 +1,17 @@
+# The created-files note (Certo 0.2.3): when a failing check's output names
+# a file the agent created in this run, the fix message says so and asks it
+# to delete the file if it was only for trying things out. The "no-note" arm
+# turns that off (created_note: false). One task made for it: its lint
+# script fails on any console.log, and the task asks the agent to try a few
+# dates in a quick script first, so a scratch script left behind fails the
+# lint. Run once as a pilot (1 repeat); the note didn't fire, see
+# scratch-note-0.2.3.md.
+#   certo bench --config docs/benchmark/bench-0.2.3-scratch-cloud.yaml --parallel 2 --max-cost 1
+models_file: docs/benchmark/models-0.2.2-effort.yaml
+models_list_file: docs/benchmark/models_list-0.2.2-effort.yaml
+tasks_dir: docs/benchmark/tasks-0.2.3-scratch
+tasks: [opening-hours]
+repeats: 1
+arms:
+  - {name: haiku-note, strategy: single, model: haiku-high}
+  - {name: haiku-no-note, strategy: single, model: haiku-high, created_note: false}
