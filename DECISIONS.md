@@ -2072,3 +2072,30 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   get SIGINT. A stopped run drops the waiting message and says so: Ctrl-C
   means "I want control back". The session sets no periodic progress
   line: the status line shows the same facts live.
+- **Ratings come from LMArena, Epoch AI and LiteLLM** (2026-11-16, the
+  Author: "leverage third-party" to keep upkeep low; supersedes the
+  hand-kept benchmark anchors). All three are free to fetch and
+  redistribute (CC-BY-4.0, CC-BY-4.0, MIT) and cover frontier and
+  open-weight models: LMArena for code, precision and writing, Epoch
+  for reasoning and a second code signal, LiteLLM for cost. Rejected:
+  Artificial Analysis (free tier forbids redistribution), OpenRouter
+  (passes AA's numbers on, terms forbid reuse), Aider and SWE-bench
+  boards (no longer updated), LiveBench, Vals, SEAL (no data feed).
+  Formulas: anchors with straight lines between them, one decimal, a
+  truly absolute scale (anchors fixed, capped at 5); own results shrink
+  in, capped at ±1. LMArena's Elo is relative, so its anchors are fixed
+  Elo points, checked each release.
+- **`speed` is only cloud or local** (2026-11-16, the Author: "we can't
+  measure speed"): cloud 4, local 2 (a model with no price). No
+  redistributable speed data exists, and measuring it isn't worth it;
+  `needs: {speed: 4}` means "any cloud model".
+- **Ratings and the generated files are separate steps, in one project
+  file** (2026-11-16, the Author). `certo models refresh` updates the
+  ratings any time and touches no project file; `certo models choose`
+  writes the ladder and profiles into `certo-models.yaml`, next to `use`
+  and `strategy`. One file, not separate `escalation.yaml` /
+  `task_profiles.yaml` in the project: the choice and what it generates
+  can't drift apart, and a third place for "which ladder wins" is
+  avoided. A fingerprint of the generated sections lets `choose` rewrite
+  them freely unless the author edited them.
+

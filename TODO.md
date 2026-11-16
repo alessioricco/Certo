@@ -264,20 +264,34 @@ file), B, C, then 5a and 5b. Steps 2 (`certo models choose`) and A
   `code` follows the rubric (now a test), `reasoning`/`precision` without
   benchmark numbers are marked estimates in the descriptions (Terra's
   3/3 is one) and wait for C's data. Left: the Author slims their copy.
-- **C. `certo models refresh`.** Ratings computed, not hand-written:
-  a model data file (raw benchmark scores, prices, published speed)
-  attached to each release and cached in `~/.cache/certo/` (from the
-  latest release tag, decided 2026-11-14), LiteLLM prices, the local
-  models' speed measured on the user's machine, and the user's own
-  results from `run_stats.csv`; fixed formulas give absolute 1-5 ratings,
-  own results adjust them, `ratings:` overrides in a user or project file
-  always win. Prints, for the folder (or `--project`), the models rated
-  and which fit each kind of task, and what changed since last time.
-  Called by `certo models choose` and `certo init models`; `certo check`
-  says when the data is old. A maintainer script (reviewed by a person)
-  keeps the data file current. Supersedes steps 3 and 4 of the earlier
-  plan. Done when a user's table is recomputed from current data for
-  their own models with no hand-written rating.
+- **C. `certo models refresh`.** Ratings computed from third-party
+  data, not hand-written (sources and formulas agreed 2026-11-16, see
+  DECISIONS.md). Two separate steps: `refresh` updates the ratings any
+  time and touches no project file; `certo models choose` generates the
+  ladder and profiles into `certo-models.yaml` when the author decides.
+  Parts, in order:
+  1. **Anchor table** per axis in the data file: fixed Elo points for
+     LMArena, fixed scores for Epoch's benchmarks, straight line
+     between anchors, one decimal, capped at 5.
+  2. **`rate()`**: a pure function, raw scores + prices + own results →
+     1-5 per axis; weighted mean of the sources a model has; −1 on the
+     capability axes for local models until own results exist; own
+     results shrink in as `computed + (observed − computed)·n/(n+5)`,
+     capped at ±1 (verified rate → code, fooled rate → precision, cost
+     per verified task → cost). Tested on fixed inputs, no network.
+  3. **Maintainer script** (reviewed by a person): fetches LMArena's
+     dataset, Epoch's ZIP and LiteLLM's prices, maps names through a
+     reviewed name→id table (flags every name it can't match), writes
+     the data file attached to each release with the attribution lines.
+  4. **`certo models refresh`**: reads the cached data file, applies
+     own results, prints the ratings for the folder (or `--project`),
+     what changed, and which projects' generated ladder no longer
+     matches them; `certo check` says when the data is old.
+  5. **`certo models choose`** stores a fingerprint of what it generated
+     in `certo-models.yaml`: next time it rewrites untouched sections and
+     shows the difference before replacing hand-edited ones.
+  Done when a user's table is recomputed from current data for their
+  own models with no hand-written rating.
 - **5a. A model drafts the profiles.** From the author's description in
   plain words ("cheap first, Opus only for architecture") and their
   models, a model writes the profiles once, for review; runs stay
