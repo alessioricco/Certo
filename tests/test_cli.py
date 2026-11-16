@@ -2632,7 +2632,7 @@ def test_make_milestones_saves_the_plan_and_runs_it_in_milestones(monkeypatch, t
     out = capsys.readouterr().out
     assert "Plan: 2 milestones, written by openai/gpt-4o" in out
     assert "  1. Record\n  2. Totals\n" in out
-    assert f"certo --milestones {plan}" in out
+    assert f"certo --milestones {shlex.quote(str(plan))}" in out
 
 
 def test_make_milestones_runs_a_small_task_as_one(monkeypatch, tmp_path, capsys):

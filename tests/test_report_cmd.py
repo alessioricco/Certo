@@ -53,7 +53,9 @@ def _project(tmp_path, *, errors=(), page="# Run report · failed\n\n## Task\n\n
             json.dump(event, f)
     if page is not None:
         os.makedirs(os.path.join(state, "reports"))
-        with open(os.path.join(state, "reports", "2026-11-16T10-00-00Z.md"), "w") as f:
+        with open(
+            os.path.join(state, "reports", "2026-11-16T10-00-00Z.md"), "w", encoding="utf-8"
+        ) as f:
             f.write(page)
     return project
 
@@ -81,7 +83,7 @@ def test_the_report_has_the_run_the_sdk_errors_the_page_and_the_note(tmp_path, c
     assert report_main([str(project), "--note", "It stopped at milestone 2."]) == 0
     path = project / ".certo" / "certo-report.md"
     assert f"Report: {path}" in capsys.readouterr().out
-    text = path.read_text()
+    text = path.read_text(encoding="utf-8")
     assert "> It stopped at milestone 2." in text
     assert "- Task: Build a ledger\n" in text
     assert "- How it ended: finished, verdict `failed`" in text
@@ -98,7 +100,7 @@ def test_a_run_with_no_error_says_none_and_output_goes_where_asked(tmp_path):
     project = _project(tmp_path)
     out = tmp_path / "shared" / "report.md"
     assert report_main([str(project), "--output", str(out)]) == 0
-    assert "## Errors the SDK recorded\n\nNone.\n" in out.read_text()
+    assert "## Errors the SDK recorded\n\nNone.\n" in out.read_text(encoding="utf-8")
 
 
 def test_keys_from_settings_models_yaml_and_key_shapes_are_hidden(tmp_path, monkeypatch, capsys):
@@ -121,7 +123,7 @@ def test_keys_from_settings_models_yaml_and_key_shapes_are_hidden(tmp_path, monk
     )
 
     assert report_main([str(project)]) == 0
-    text = (project / ".certo" / "certo-report.md").read_text()
+    text = (project / ".certo" / "certo-report.md").read_text(encoding="utf-8")
     for secret in (
         _FAKE_KEY,
         "abcdefghijkl-env-secret",
@@ -156,7 +158,9 @@ def test_hide_secrets_counts_what_it_replaced():
 
 def test_the_newest_report_page_is_used(tmp_path):
     project = _project(tmp_path, page="# Run report · old\n")
-    with open(project / ".certo" / "reports" / "2026-11-17T08-00-00Z.md", "w") as f:
+    with open(
+        project / ".certo" / "reports" / "2026-11-17T08-00-00Z.md", "w", encoding="utf-8"
+    ) as f:
         f.write("# Run report · new\n")
     text = report_cmd.render(str(project), now=datetime(2026, 11, 17, tzinfo=UTC))
     assert "Run report · new" in text and "Run report · old" not in text

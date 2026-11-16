@@ -4,6 +4,7 @@ connected in process. No LLM: runs, verify and check are fakes."""
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import time
 
@@ -590,7 +591,8 @@ def test_search_docs_finds_a_setting_by_name_with_its_link(tmp_path):
     assert not error
     first = result["sections"][0]
     assert first["page"].startswith("reference/")
-    assert first["link"].endswith(f"{first['page']}#{first['anchor']}")
+    page_path = os.path.join(*first["page"].split("/"))
+    assert first["link"].endswith(f"{page_path}#{first['anchor']}")
     assert "reference/configuration.md" in [s["page"] for s in result["sections"]]
 
 

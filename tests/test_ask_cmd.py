@@ -3,6 +3,8 @@ are given by a fake `complete`."""
 
 from __future__ import annotations
 
+import os
+
 from certo.ask_cmd import MAX_CONTEXT_CHARS, ask, ask_main, pick_sections, render
 from certo.docs_index import (
     keyword_hits,
@@ -104,7 +106,7 @@ def test_a_question_the_docs_dont_cover_says_so_with_the_closest_pages(tmp_path)
     assert not answer.covered and answer.text == ""
     lines = render(answer, Docs(str(tmp_path), "checkout", "0.2.4"))
     assert lines[0] == "The docs don't cover this."
-    assert lines[-1].endswith("guides/resume-a-run.md")
+    assert lines[-1].endswith(os.path.join("guides", "resume-a-run.md"))
 
 
 def test_no_section_picked_and_no_name_to_search_needs_no_second_call():

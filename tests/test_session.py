@@ -52,14 +52,16 @@ _RESULT = {
 }
 
 
-def test_the_header_shows_the_version_model_and_folder(monkeypatch):
-    monkeypatch.setenv("HOME", "/home/me")
-    lines = header(SessionState(folder="/home/me/certo", model="anthropic/claude-haiku-5-5"))
+def test_the_header_shows_the_version_model_and_folder():
+    home = os.path.expanduser("~")
+    lines = header(
+        SessionState(folder=os.path.join(home, "certo"), model="anthropic/claude-haiku-5-5")
+    )
     text = "\n".join(lines)
     assert lines[0].startswith("╭") and lines[-1].startswith("╰")
     assert f"✓ certo {__version__}" in text
     assert "model    anthropic/claude-haiku-5-5" in text
-    assert "folder   ~/certo" in text
+    assert f"folder   ~{os.sep}certo" in text
     assert len({len(line) for line in lines}) == 1  # a closed box
     assert "none yet: run certo init" in "\n".join(header(SessionState(folder="/x")))
 
