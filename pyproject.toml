@@ -110,6 +110,13 @@ exclude = [
     "**/*.sqlite3",
 ]
 
+# Certo's own model list and profiles have names the excludes and
+# .gitignore keep out (a user's copies); these two files are put back by
+# their exact paths.
+[tool.hatch.build.targets.wheel.force-include]
+"src/certo/data/models_list.yaml" = "certo/data/models_list.yaml"
+"src/certo/data/task_profiles.yaml" = "certo/data/task_profiles.yaml"
+
 [tool.hatch.build.targets.sdist]
 include = [
     "/src/certo",
@@ -138,6 +145,10 @@ exclude = [
     "**/third_party_skills",
     "**/third_party_skills.lock.json",
 ]
+
+[tool.hatch.build.targets.sdist.force-include]
+"src/certo/data/models_list.yaml" = "src/certo/data/models_list.yaml"
+"src/certo/data/task_profiles.yaml" = "src/certo/data/task_profiles.yaml"
 
 [tool.ruff]
 line-length = 100

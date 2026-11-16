@@ -370,15 +370,15 @@ _BUNDLED_TASKS = Path(__file__).resolve().parent.parent / "src" / "certo"
 def test_shipped_profiles_classify_the_bundled_tasks(tmp_path, task_file, expected):
     # Until 2026-10-19, whole-text matching sent 12 of 14 real tasks to
     # `debugging` ("raise ValueError", "fix all failures" in the spec).
-    examples = _BUNDLED_TASKS / "examples"
-    example = examples / "models_list.yaml.example"
+    data = _BUNDLED_TASKS / "data"
+    example = data / "models_list.yaml"
     names = [m["name"] for m in yaml.safe_load(example.read_text(encoding="utf-8"))["models"]]
     models = tmp_path / "models.yaml"
     models.write_text(yaml.safe_dump({"models": [{"name": n} for n in names]}))
     catalog = load_model_catalog(
         str(example),
         str(models),
-        profiles_path=str(examples / "task_profiles.yaml.example"),
+        profiles_path=str(data / "task_profiles.yaml"),
         strict=False,
     )
 
@@ -648,6 +648,7 @@ def test_escalation_section_shape_errors(tmp_path, section, message):
 def test_the_commented_ladders_in_the_escalation_example_parse(tmp_path):
     # Uncommenting the example's ladders must give a valid escalation.yaml.
     examples = Path(__file__).resolve().parent.parent / "src/certo/examples"
+    data = Path(__file__).resolve().parent.parent / "src/certo/data"
     text = (examples / "escalation.yaml.example").read_text()
     lines = []
     for line in text[text.index("escalation:") :].splitlines():
@@ -657,15 +658,12 @@ def test_the_commented_ladders_in_the_escalation_example_parse(tmp_path):
             lines.append(line)
     escalation = tmp_path / "escalation.yaml"
     escalation.write_text("\n".join(lines) + "\n")
-    names = [
-        m["name"]
-        for m in yaml.safe_load((examples / "models_list.yaml.example").read_text())["models"]
-    ]
+    names = [m["name"] for m in yaml.safe_load((data / "models_list.yaml").read_text())["models"]]
     models = tmp_path / "models.yaml"
     models.write_text(yaml.safe_dump({"models": [{"name": n} for n in names]}))
 
     catalog = load_model_catalog(
-        str(examples / "models_list.yaml.example"), str(models), escalation_path=str(escalation)
+        str(data / "models_list.yaml"), str(models), escalation_path=str(escalation)
     )
 
     assert list(catalog.escalation.ladders) == ["default", "local-only"]
@@ -794,10 +792,11 @@ def test_the_shipped_examples_load_together():
     from certo.catalog_check import check_catalog
 
     examples = Path(__file__).resolve().parent.parent / "src/certo/examples"
+    data = Path(__file__).resolve().parent.parent / "src/certo/data"
     catalog = load_model_catalog(
-        str(examples / "models_list.yaml.example"),
+        str(data / "models_list.yaml"),
         str(examples / "models.yaml.example"),
-        profiles_path=str(examples / "task_profiles.yaml.example"),
+        profiles_path=str(data / "task_profiles.yaml"),
         escalation_path=str(examples / "escalation.yaml.example"),
         # The example names its keys as variables of the settings file.
         environ={"OPENAI_API_KEY": "sk-test", "ANTHROPIC_API_KEY": "sk-test"},
@@ -972,7 +971,7 @@ _PRICE = re.compile(r"\$([0-9.]+) in\s*/\s*\$([0-9.]+) out")
 
 
 def _cost_from_price(text: str) -> float:
-    """The rubric in models_list.yaml.example: the blended price p per 1M
+    """The rubric in data/models_list.yaml: the blended price p per 1M
     tokens (3 input to 1 output), cost = 4 - log2(p) / 2, one decimal, kept
     between 1 and 4.9."""
     found = _PRICE.search(" ".join(text.split()))
@@ -983,7 +982,7 @@ def _cost_from_price(text: str) -> float:
 
 
 def test_every_cloud_models_cost_follows_its_price():
-    example = _BUNDLED_TASKS / "examples" / "models_list.yaml.example"
+    example = _BUNDLED_TASKS / "data" / "models_list.yaml"
     wrong = []
     for model in yaml.safe_load(example.read_text(encoding="utf-8"))["models"]:
         cost = model["ratings"]["cost"]
@@ -998,7 +997,7 @@ def test_every_cloud_models_cost_follows_its_price():
 
 
 def _code_from_benchmarks(text: str) -> int | None:
-    """The `code` rubric in models_list.yaml.example, where a description
+    """The `code` rubric in data/models_list.yaml, where a description
     gives Terminal-Bench 4.0 or SWE-Bench Pro; None when it gives neither."""
     text = " ".join(text.split())
 
@@ -1026,7 +1025,7 @@ def test_every_code_rating_follows_its_benchmarks():
     # Certo's own list is the lowest layer for every user (DECISIONS.md,
     # 2026-11-14): its ratings follow the rubric wherever a description
     # gives the numbers.
-    example = _BUNDLED_TASKS / "examples" / "models_list.yaml.example"
+    example = _BUNDLED_TASKS / "data" / "models_list.yaml"
     wrong = []
     for model in yaml.safe_load(example.read_text(encoding="utf-8"))["models"]:
         expected = _code_from_benchmarks(str(model.get("description", "")))
@@ -1038,7 +1037,7 @@ def test_every_code_rating_follows_its_benchmarks():
 
 
 def test_every_model_rates_writing_and_speed():
-    example = _BUNDLED_TASKS / "examples" / "models_list.yaml.example"
+    example = _BUNDLED_TASKS / "data" / "models_list.yaml"
     missing = [
         m["name"]
         for m in yaml.safe_load(example.read_text(encoding="utf-8"))["models"]

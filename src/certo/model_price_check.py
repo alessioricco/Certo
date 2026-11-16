@@ -8,11 +8,11 @@ For each model it reports what a person should look at:
   or retired id, or a model newer than the installed LiteLLM);
 - a price in the description that differs from LiteLLM's;
 - a `cost` rating that isn't what its price gives (the rubric in
-  `models_list.yaml.example`: `model_pricing.cost_rating`).
+  `data/models_list.yaml`: `model_pricing.cost_rating`).
 
 The other ratings (reasoning, precision, code) come from benchmarks and
-judgment, so they are not checked here: see CONTRIBUTING.md, "Check the
-example model list".
+judgment, so they are not checked here: see CONTRIBUTING.md, "Check Certo's
+model list".
 """
 
 from __future__ import annotations

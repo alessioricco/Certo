@@ -246,7 +246,7 @@ certo init models [--profiles] [--timeout SECONDS]
 
 | Flag | Default | Effect |
 |---|---|---|
-| `--profiles` | off | Only choose the model that goes first for each kind of task (`task_profiles.yaml`), for `--auto-model`, from the models already set up. Writes the example profiles first when there are none. Needs `models_list.yaml` and `models.yaml`. |
+| `--profiles` | off | Only choose the model that goes first for each kind of task (`task_profiles.yaml`), for `--auto-model`, from the models already set up. Your choices go to your own `task_profiles.yaml`, on top of Certo's profiles. Needs `models.yaml`. |
 | `--timeout SECONDS` | `120` | How long to wait for each model's test answer. A local model may need time to load. |
 
 It starts from the model `certo init` saved, and offers the models this
@@ -274,8 +274,9 @@ user settings folder (`~/.config/certo/`):
   and Linux; inherited folder permissions on Windows). An
   existing one is replaced only if you say so, and kept as
   `models.yaml.bak`;
-- `models_list.yaml` and `task_profiles.yaml`, copied from the examples
-  when missing; a model you rated is added at the end of the list;
+- `models_list.yaml`, only for a model you rated: it is added at the
+  end of your own list, on top of Certo's (which is read from the
+  package and never copied);
 - a key you typed, in the user settings file as the provider's variable
   (`DEEPSEEK_API_KEY='...'`). `models.yaml` names it (`${DEEPSEEK_API_KEY}`)
   and never holds a key.
@@ -294,9 +295,7 @@ Testing each model with one small request:
 
 Written to /home/you/.config/certo:
   models.yaml  3 models
-  models_list.yaml  the example list
   models_list.yaml  1 model(s) rated by you, added
-  task_profiles.yaml  the example profiles
 ```
 
 **Choosing the model for each kind of task.** After `--auto-model` is
@@ -388,7 +387,7 @@ when there are enough, else a guess from the price. You tick at least
 two. Then it shows:
 
 - the order `--auto-model` would try them for each kind of task: the
-  example task profiles, where each kind of task says what it needs, and
+  Certo's task profiles, where each kind of task says what it needs, and
   the least costly model that meets it goes first, then stronger ones;
 - the ladder `--escalate` would climb: cheapest first, leaving out a
   model when another is at least as capable and costs no more;
@@ -458,8 +457,9 @@ For each cloud model it reports:
 The `reasoning`, `precision` and `code` ratings come from benchmarks and
 aren't checked. A price that differs needs a person: the provider's
 pricing page says which is right, since LiteLLM's list can lag and a
-description can be out of date. On the example list of Certo 0.2.3, on
-7 November 2026, a price rise and a promotion showed up:
+description can be out of date. On Certo's list in 0.2.3 (then
+`src/certo/examples/models_list.yaml.example`), on 7 November 2026, a
+price rise and a promotion showed up:
 
 ```text
 src/certo/examples/models_list.yaml.example: 39 models, against LiteLLM's price list.

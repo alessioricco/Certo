@@ -166,13 +166,7 @@ def test_the_shipped_example_has_only_known_ids():
     # usually means a typo or a retired model. Uses the installed LiteLLM.
     from pathlib import Path
 
-    example = (
-        Path(__file__).resolve().parent.parent
-        / "src"
-        / "certo"
-        / "examples"
-        / "models_list.yaml.example"
-    )
+    example = Path(__file__).resolve().parent.parent / "src" / "certo" / "data" / "models_list.yaml"
     rows = read_prices(example.read_text())
     unknown = [r.name for r in rows if not r.local and r.litellm is None]
 

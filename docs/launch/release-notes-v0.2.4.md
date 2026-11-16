@@ -37,3 +37,12 @@ See [Share a run's problems](../guides/run-records-and-costs.md#share-a-runs-pro
   section (a blocked action, a limit coming up, failing checks sent
   back), and the JSON result a `notices` list. They used to be only on
   the screen.
+- **Certo's own model list is no longer called an example.** Since
+  0.2.3 every run reads it, with Certo's task profiles, as the lowest
+  layer; they now live in the package as `certo/data/models_list.yaml`
+  and `certo/data/task_profiles.yaml`. Nothing changes for you: your
+  own files still hold only your exceptions. `models.yaml.example`,
+  `escalation.yaml.example` and `bench.yaml.example` stay examples to
+  copy. Pages that still said `certo init models` copies the list and
+  the profiles are corrected: it hasn't since 0.2.3.
+

@@ -263,8 +263,9 @@ given design was chosen.
   run by `.advance()`) moves past candidates that can't be reached, keeping
   the last one.
 - **Certo's own layer** (`model_files.BUILT_IN`, `built_in_path`,
-  `with_built_in`): `models_list.yaml.example` and
-  `task_profiles.yaml.example` are inserted as the lowest layer by
+  `with_built_in`, `certo_file`): `data/models_list.yaml` and
+  `data/task_profiles.yaml` (not `examples/`, since 0.2.4) are inserted
+  as the lowest layer by
   `find_layers` (never for an explicit setting path). `init models` no
   longer copies them; profile choices go to the user's own file
   (`set_profile_model` creates it / adds a `name: {model:}` block).
@@ -320,7 +321,7 @@ given design was chosen.
   no setting names them, and its `strategy` as the model selection when
   no flag or `CERTO_MODEL_SELECTION` chose. `model_catalog` allows the
   file's extra keys (`PROJECT_KEYS`) and turns off models outside `use:`
-  (`_restrict_to`). `models_choose.propose` builds the example profiles
+  (`_restrict_to`). `models_choose.propose` builds Certo's profiles
   with `cost_first` weights and `derive_ladder` on the chosen models;
   `certo models choose` reads only the user's files.
 - **`models_secure.py`** — `certo models secure`: plans which settings

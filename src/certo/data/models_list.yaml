@@ -4,10 +4,11 @@
 # and the escalation ladders (--escalate) in escalation.yaml; both are
 # optional.
 #
-# Certo ships this file only as an example and never reads the example.
-# Copy it to models_list.yaml (in your project folder, or in
-# ~/.config/certo/) and edit it: add models, change ratings. A new Certo
-# release updates this example, never your copy.
+# This is Certo's own list: every run reads it as the lowest layer, from
+# the installed package, and a new Certo release updates it. Don't copy
+# it. To add a model or change a rating, write a models_list.yaml (in your
+# project folder, or in ~/.config/certo/) with only those models: it is
+# read on top of this one, by name.
 #
 # Read by --auto-model, --escalate, certo bench and certo check, together
 # with models.yaml. With the default (manual) model selection, no model

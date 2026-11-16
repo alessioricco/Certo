@@ -2,7 +2,7 @@
 `--escalate`, without editing a file.
 
 It starts from the model `certo init` already saved, offers the models of
-the example list that this computer can reach (the Ollama models
+Certo's list that this computer can reach (the Ollama models
 installed on the server, the cloud models whose key is in the settings or
 the environment), and lets the user add a key for another provider or
 type any other LiteLLM model id. Every chosen model is tested with the
@@ -52,10 +52,10 @@ from .model_catalog import (
     _parse_list,
     load_model_catalog,
 )
-from .model_files import example_path, find, resolve, with_built_in
+from .model_files import certo_file, find, resolve, with_built_in
 from .profile_choice import choose_profiles
 
-# The rating axes the example list uses, asked in this order for a model
+# The rating axes Certo's list uses, asked in this order for a model
 # the list doesn't have.
 _AXES = ("reasoning", "precision", "code", "cost")
 _MODES = (
@@ -100,8 +100,8 @@ def build_parser() -> argparse.ArgumentParser:
         description=(
             "Set up more than one model, for --auto-model and --escalate. Starts from "
             "the model certo init saved, offers the models this computer can reach, "
-            "tests each one with a small real request, writes models.yaml (and the "
-            "example models_list.yaml and task_profiles.yaml when missing) to the user "
+            "tests each one with a small real request, writes models.yaml (and a "
+            "models_list.yaml with the models you rate) to the user "
             "settings folder, and asks which mode to use for every run. Keys go only "
             "to the user settings file. Needs a terminal."
         ),
@@ -463,7 +463,7 @@ def _unlisted_yaml(candidates: list[Candidate]) -> str:
 def _append_unlisted(list_path: str, unlisted: list[Candidate], fresh: bool = False) -> None:
     """Append the user-rated models at the end of the list, keeping its
     comments. The end of the file must be the `models:` list (true for the
-    example and since 0.1.20); when it isn't, the file is left as it was."""
+    files Certo writes, since 0.1.20); when it isn't, the file is left as it was."""
     with open(list_path, encoding="utf-8") as f:
         before = f.read()
     after = before.rstrip("\n") + "\n" + _unlisted_yaml(unlisted)
@@ -557,7 +557,7 @@ def _preview(prompter: Prompter, paths: tuple[str, str, str], env: Mapping[str, 
 
 def _profiles_only(prompter: Prompter, folder: str, env: Mapping[str, str]) -> int:
     """`certo init models --profiles`: the profile choice alone, on the
-    model files already there (the example profiles first, if none)."""
+    model files already there, on top of Certo's profiles."""
     try:
         list_path, models_path = resolve(
             env.get("CERTO_MODELS_FILE", ""), env.get("CERTO_MODELS_LIST_FILE", "")
@@ -597,7 +597,7 @@ def init_models_main(
     folder = os.path.dirname(settings_path)
     if args.profiles:
         return _profiles_only(prompter, folder, env)
-    list_source = find(LIST_FILE) or example_path(LIST_FILE)
+    list_source = find(LIST_FILE) or certo_file(LIST_FILE)
     try:
         listed = _parse_list(list_source)
     except ModelCatalogError as exc:

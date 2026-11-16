@@ -20,7 +20,7 @@ import yaml
 from . import __version__
 from .init_cmd import Cancelled, Prompter
 from .model_catalog import LIST_FILE, MODELS_FILE, PROJECT_FILE
-from .model_files import example_path, find, find_layers, user_dir
+from .model_files import certo_file, find, find_layers, user_dir
 
 BASE_FILE = ".models_list.base.yaml"
 
@@ -492,7 +492,7 @@ def update_main(
             "package, so you don't need one. Nothing to do."
         )
         return 0
-    example = example or example_path(LIST_FILE)
+    example = example or certo_file(LIST_FILE)
     base_file = os.path.join(os.path.dirname(os.path.abspath(list_path)), BASE_FILE)
     try:
         user = (yaml.safe_load(open(list_path, encoding="utf-8")) or {}).get("models") or []

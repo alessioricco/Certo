@@ -7,7 +7,7 @@ the pages that explain each one in full.
 
 ### Do I have to rate the models myself?
 
-No, there is a default to start from. Certo's example model list,
+No, there is a default to start from. Certo's own model list,
 `models_list.yaml`, rates each model from 1 to 5 on reasoning,
 precision, code and cost (on every rating, higher is better, so `cost: 5`
 means cheapest). The ratings are based on public benchmarks that compare

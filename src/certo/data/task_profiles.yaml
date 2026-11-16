@@ -2,9 +2,11 @@
 # Optional: without it, --auto-model ranks every enabled model with no
 # weights, so the order of models_list.yaml decides.
 #
-# Certo ships this file only as an example and never reads the example.
-# Copy it to task_profiles.yaml (in your project folder, or in
-# ~/.config/certo/, or set CERTO_TASK_PROFILES_FILE) and edit it. Every
+# These are Certo's own profiles: every run reads them as the lowest
+# layer, from the installed package, and a new Certo release updates
+# them. Don't copy the file. To change a profile, write a
+# task_profiles.yaml (in your project folder, or in ~/.config/certo/)
+# with only that profile: it is read on top of this one, by name. Every
 # `model:` here names a model from models_list.yaml. See
 # docs/guides/pick-models-automatically.md.
 #

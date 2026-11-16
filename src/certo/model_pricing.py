@@ -70,7 +70,7 @@ def guess_run_cost(model: str) -> float | None:
     return total if total > 0 else None
 
 
-# --- the `cost` rating from a price (models_list.yaml.example's rubric) --------
+# --- the `cost` rating from a price (the rubric in data/models_list.yaml) --------
 
 # The price a catalog entry is rated at: the first "$X in / $Y out" of its
 # description (per 1M tokens).

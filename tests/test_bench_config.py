@@ -244,7 +244,7 @@ def test_the_shipped_example_is_valid_against_the_shipped_models_example(tmp_pat
     # in the settings.
     monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
     text = (_REPO / "src/certo/examples/bench.yaml.example").read_text()
-    list_path = _REPO / "src/certo/examples/models_list.yaml.example"
+    list_path = _REPO / "src/certo/data/models_list.yaml"
     models_path = _REPO / "src/certo/examples/models.yaml.example"
     path = tmp_path / "bench.yaml"
     path.write_text(f"models_file: {models_path}\nmodels_list_file: {list_path}\n" + text)
@@ -281,7 +281,7 @@ def test_the_published_benchmark_files_load_against_the_shipped_catalog(
         monkeypatch.chdir(tmp_path)
         assert load_bench_config(str(tmp_path / "docs" / "benchmark" / bench_file.name)).arms
         return
-    list_path = _REPO / "src/certo/examples/models_list.yaml.example"
+    list_path = _REPO / "src/certo/data/models_list.yaml"
     catalog = yaml.safe_load(list_path.read_text())
     models = [
         {"name": m["name"], "base_url": "http://localhost:11434"}
@@ -508,7 +508,7 @@ def test_escalate_strategy_derives_a_ladder_per_task(tmp_path):
 def test_an_arm_on_a_model_whose_key_variable_is_unset_says_which(tmp_path, monkeypatch):
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     text = (_REPO / "src/certo/examples/bench.yaml.example").read_text()
-    list_path = _REPO / "src/certo/examples/models_list.yaml.example"
+    list_path = _REPO / "src/certo/data/models_list.yaml"
     models_path = _REPO / "src/certo/examples/models.yaml.example"
     path = tmp_path / "bench.yaml"
     path.write_text(f"models_file: {models_path}\nmodels_list_file: {list_path}\n" + text)

@@ -131,13 +131,20 @@ def test_wheel_ships_the_builtin_skill_catalog(built):
     assert any(n.startswith("lifecycle/") for n in shipped)
 
 
-def test_wheel_ships_the_model_file_examples(built):
-    # Certo ships the model files only as examples, inside the package, so
-    # an installed Certo can tell users what to copy.
+def test_wheel_ships_certos_model_list_and_the_examples(built):
+    # Certo's own list and profiles are read from the package; the other
+    # model files ship as examples, so an installed Certo can tell users
+    # what to copy.
     names = set(_wheel_names(built["wheel"]))
-    assert "certo/examples/models_list.yaml.example" in names
+    assert "certo/data/models_list.yaml" in names
+    assert "certo/data/task_profiles.yaml" in names
+    # Put back by their exact paths: the excludes and .gitignore keep out
+    # every other copy (a user's).
+    sdist = set(_sdist_names(built["sdist"]))
+    assert {"src/certo/data/models_list.yaml", "src/certo/data/task_profiles.yaml"} <= sdist
+    for name in ("models_list.yaml", "task_profiles.yaml"):
+        assert [n for n in names if n.endswith(name)] == [f"certo/data/{name}"]
     assert "certo/examples/models.yaml.example" in names
-    assert "certo/examples/task_profiles.yaml.example" in names
     assert "certo/examples/escalation.yaml.example" in names
     assert "certo/examples/bench.yaml.example" in names
 

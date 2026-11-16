@@ -1,7 +1,7 @@
 """`certo models choose`: pick the models a project may use, and get both
 strategies proposed for them, with a recommendation.
 
-- **Auto-model:** the example task profiles (their trigger words), with
+- **Auto-model:** Certo's task profiles (their trigger words), with
   each profile's `cost` weight raised above the sum of its other weights,
   so the cheaper of the chosen models go first and the expensive ones come
   last as fallbacks (the rule agreed 2026-11-14).
@@ -33,7 +33,7 @@ from .model_catalog import (
     _read_section_file,
     rank_for_profile,
 )
-from .model_files import example_path
+from .model_files import certo_file
 from .model_pricing import is_local
 from .run_stats import estimate_for
 
@@ -60,7 +60,7 @@ def restrict(catalog: ModelCatalog, names: Iterable[str]) -> ModelCatalog:
 
 
 def example_profiles() -> list[TaskProfile]:
-    path = example_path(PROFILES_FILE)
+    path = certo_file(PROFILES_FILE)
     return _parse_profiles(_read_section_file(path, "task_profiles"), path)
 
 

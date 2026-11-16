@@ -96,13 +96,13 @@ profiles are Certo's alone.
 
 ## Where Certo's own list lives
 
-In the Certo package, as `certo/examples/models_list.yaml.example` and
-`certo/examples/task_profiles.yaml.example` (in the repository:
-[src/certo/examples/](../../src/certo/examples/models_list.yaml.example)).
+In the Certo package, as `certo/data/models_list.yaml` and
+`certo/data/task_profiles.yaml` (in the repository:
+[src/certo/data/](../../src/certo/data/models_list.yaml)).
 Don't edit the installed copy: the next release replaces it. Put your
 changes in your own `models_list.yaml` instead. How the list is kept up to
 date for a release is in
-[CONTRIBUTING.md](../../CONTRIBUTING.md#check-the-example-model-list).
+[CONTRIBUTING.md](../../CONTRIBUTING.md#check-certos-model-list).
 
 ## Related
 

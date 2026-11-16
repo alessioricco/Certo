@@ -2020,4 +2020,10 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   `models.yaml`) and by shape, never by trusting that none got in. No
   MCP tool: a file for a person to read first. The reports aren't read
   by any run: they improve Certo releases, not a project.
+- **Certo's own model list lives in `certo/data/`** (0.2.4, 2026-11-16).
+  Since 0.2.3 it is every user's lowest layer, so "example" misled. The
+  file keeps its plain name (`models_list.yaml`, `task_profiles.yaml`):
+  the packaging excludes and `.gitignore` that keep a user's copies out
+  of a release stay as they are, and these two files are put back by
+  exact path (`force-include`), checked by tests/test_packaging.py.
 

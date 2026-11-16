@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 import pytest
 
 from certo.model_catalog import ModelCatalogError
@@ -13,7 +15,7 @@ def test_the_optional_files_are_none_when_absent(tmp_path, monkeypatch):
 
     # Certo's own task profiles are always there; no ladder file.
     profiles, escalation = resolve_optional()
-    assert profiles.endswith("task_profiles.yaml.example")
+    assert profiles.endswith(os.path.join("data", "task_profiles.yaml"))
     assert escalation is None
 
 

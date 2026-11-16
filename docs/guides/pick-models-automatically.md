@@ -241,7 +241,7 @@ The first model runs the task. The next one takes over if its provider fails, or
 ```
 
 For a task file written in milestones, it also gives each milestone's
-profile and first model. With the example profiles, `tasks/sky-hopper.md`
+profile and first model. With Certo's profiles, `tasks/sky-hopper.md`
 ends with:
 
 ```text

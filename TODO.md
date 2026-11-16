@@ -288,14 +288,6 @@ file), B, C, then 5a and 5b. Steps 2 (`certo models choose`) and A
   `code` follows the rubric (now a test), `reasoning`/`precision` without
   benchmark numbers are marked estimates in the descriptions (Terra's
   3/3 is one) and wait for C's data. Left: the Author slims their copy.
-- **Rename Certo's own list out of `examples/`** (2026-11-14). Since
-  0.2.3 Certo reads `examples/models_list.yaml.example` and
-  `examples/task_profiles.yaml.example` as its own layer, so "example"
-  misleads (the Author asked where the official list is). Move them to a
-  name such as `certo/data/models_list.yaml`, keep `models.yaml.example`
-  and `escalation.yaml.example` as examples, and update the docs,
-  CONTRIBUTING, tests and packaging. Done when no doc calls the official
-  list an example.
 - **C. `certo models refresh`.** Ratings computed, not hand-written:
   a model data file (raw benchmark scores, prices, published speed)
   attached to each release and cached in `~/.cache/certo/` (from the

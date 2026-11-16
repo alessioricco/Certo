@@ -34,6 +34,8 @@ from .model_catalog import (
 )
 
 EXAMPLES_DIR = Path(__file__).resolve().parent / "examples"
+# Certo's own model list and task profiles, read as the lowest layer.
+DATA_DIR = Path(__file__).resolve().parent / "data"
 
 
 def user_dir() -> str:
@@ -78,12 +80,17 @@ def find(name: str, explicit: str = "", project_dir: str = "") -> str | None:
 BUILT_IN = (LIST_FILE, PROFILES_FILE)
 
 
+def certo_file(name: str) -> str:
+    """Certo's own file for `name` (one of `BUILT_IN`), in the package."""
+    return str(DATA_DIR / name)
+
+
 def built_in_path(name: str) -> str | None:
-    return example_path(name) if name in BUILT_IN else None
+    return certo_file(name) if name in BUILT_IN else None
 
 
 def is_built_in(path: str) -> bool:
-    return any(os.path.abspath(path) == os.path.abspath(example_path(n)) for n in BUILT_IN)
+    return any(os.path.abspath(path) == os.path.abspath(certo_file(n)) for n in BUILT_IN)
 
 
 def with_built_in(name: str, path: str | None) -> str | None:

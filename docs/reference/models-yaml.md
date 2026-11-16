@@ -56,10 +56,10 @@ compares a list's prices and cost ratings with LiteLLM's (see
 [Commands](commands.md#certo-models-check)).
 
 Certo's own files are in the package, and in the repository in
-[src/certo/examples/](../../src/certo/examples/models_list.yaml.example)
-(`models_list.yaml.example`, `task_profiles.yaml.example`), next to
-`models.yaml.example` and `escalation.yaml.example`, which are examples
-to copy.
+[src/certo/data/](../../src/certo/data/models_list.yaml)
+(`models_list.yaml`, `task_profiles.yaml`). The examples to copy,
+`models.yaml.example` and `escalation.yaml.example`, are in
+[src/certo/examples/](../../src/certo/examples/models.yaml.example).
 
 ## Where Certo looks
 
@@ -137,7 +137,7 @@ models:          # required, a non-empty list
 | `timeout_seconds` | no | As `CERTO_LLM_TIMEOUT_SECONDS`: how long one call to this model may take, a whole number of seconds. Default `300`; `0` means no limit. |
 | `context_tokens` | no | As `CERTO_LLM_CONTEXT_TOKENS`: the model's context window, in tokens. Default `0`: what the provider reports, or for Ollama what the server gives the model. For Ollama, a set value is asked from the server. |
 | `description` | no | Shown when `--interactive` asks you to pick a model. |
-| `ratings` | no | A map of axis name to number, usually 1 to 5. Decimals are allowed: the example list's `cost` has one, worked out from the price (the formula is at the top of the example). |
+| `ratings` | no | A map of axis name to number, usually 1 to 5. Decimals are allowed: Certo's list gives `cost` one, worked out from the price (the formula is at the top of the list). |
 
 `api_key`, `base_url` and `activated` are not allowed here: they are
 personal and go in `models.yaml`.
@@ -195,7 +195,7 @@ what to move where.
 
 ## Ratings: higher is always better
 
-The axis names are yours. The example list uses `reasoning`, `precision`,
+The axis names are yours. Certo's list uses `reasoning`, `precision`,
 `code`, `writing`, `speed` and `cost`, but you can add any name, such as
 `latency`. Its `writing` and `speed` ratings are estimates for now (the
 comments at its top say how they were set); rate your own local models'
@@ -205,7 +205,7 @@ example in an escalation ladder).
 
 On every axis, a higher number must mean "more of what I want". For `cost`
 this means **cost-effectiveness**: `cost: 5` is a cheap (or free, local)
-model, `cost: 1` an expensive one. The example list explains the scale
+model, `cost: 1` an expensive one. Certo's list explains the scale
 behind its numbers in its comments.
 
 ## `task_profiles.yaml`
@@ -350,7 +350,7 @@ escalation:
 |---|---|
 | `use` | The models runs in this project may use, by name. Every other model is left out. A name that isn't enabled in your `models.yaml` is left out with a warning. Without `use`, every enabled model. |
 | `strategy` | `auto` (as `--auto-model`) or `escalate` (as `--escalate`). It applies to every run in the project, unless a flag (`--auto-model`, `--escalate`, `--model`) or `CERTO_MODEL_SELECTION` chooses. |
-| `task_profiles` | As in [`task_profiles.yaml`](#task_profilesyaml). `certo models choose` writes the example profiles, each with what its kind of task needs. |
+| `task_profiles` | As in [`task_profiles.yaml`](#task_profilesyaml). `certo models choose` writes Certo's profiles, each with what its kind of task needs. |
 | `escalation` | As in [`escalation.yaml`](#escalationyaml). `certo models choose` writes the ladder Certo derives from the chosen models, as `default`. |
 
 `certo check`, run in the project folder, says it uses the file.

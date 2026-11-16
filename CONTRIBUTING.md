@@ -132,9 +132,9 @@ are exported and expects `Verification: verified`. The script needs `uv`
 and network access. Run it directly, not through `uv run`. The release
 workflow runs the non-LLM part against the exact wheel it publishes.
 
-## Check the example model list
+## Check Certo's model list
 
-`src/certo/examples/models_list.yaml.example` goes stale: prices change,
+`src/certo/data/models_list.yaml` goes stale: prices change,
 models retire, new ones ship. Since 0.2.3 it is every user's lowest layer
 (Certo reads it from the package), so its ratings follow the rubric at its
 top; `tests/test_model_catalog.py` checks `cost` against the price and
@@ -143,7 +143,7 @@ release. The last full check was 2026-11-07.
 
 1. **Prices and ids, by command.** Upgrade LiteLLM to the version the
    release will pin, then run
-   `certo models check --file src/certo/examples/models_list.yaml.example`.
+   `certo models check --file src/certo/data/models_list.yaml`.
    For every flag, the provider's pricing page decides: fix the
    description, or note why it differs (a promotion, a price change on a
    known date). `--fix` then sets each `cost` from its price.

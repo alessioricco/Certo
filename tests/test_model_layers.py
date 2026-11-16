@@ -78,7 +78,7 @@ def test_certos_own_list_and_profiles_are_the_lowest_layer(folders):
     for name in ("models_list.yaml", "task_profiles.yaml"):
         path = find_layers(name)
         lowest = Path(path.layers[0])
-        assert (lowest.parent.name, lowest.name) == ("examples", f"{name}.example")
+        assert (lowest.parent.name, lowest.name) == ("data", name)
         assert path.layers[-1] == str(user / name)
     assert find_layers("escalation.yaml") is None
 
