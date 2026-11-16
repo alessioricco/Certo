@@ -530,6 +530,14 @@ given design was chosen.
   `CERTO_CONFIRM_MODE` in the session's own environment. Limitation:
   `cli._asker` and that variable are process-wide, which is fine for
   one run at a time.
+- **`ratings.py`** — computed ratings (TODO C). `rate(ModelData,
+  anchors, own)` is pure: one source per axis through an `Anchor`
+  (straight line, capped 1-5), local −1 on capability axes, cost from
+  `task_cost_rating` (per agent task) else `model_pricing.cost_rating`
+  (list price), speed cloud 4 / local 2, own results shrunk in with
+  `n/(n+5)` capped at ±1. Returns where each rating came from and which
+  axes no source rates. Not wired to any command yet; the data file and
+  `certo models refresh` will feed it.
 - **`milestone_planner.py`** — `--make-milestones`. `cli._make_milestones`
   runs before `plan_run`: refusals, `choose_planner` (setting, else the
   `planning` profile via `rank_for_profile` with local models probed,

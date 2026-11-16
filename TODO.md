@@ -270,21 +270,23 @@ file), B, C, then 5a and 5b. Steps 2 (`certo models choose`) and A
   time and touches no project file; `certo models choose` generates the
   ladder and profiles into `certo-models.yaml` when the author decides.
   Parts, in order:
-  1. **Anchor table** per axis in the data file: fixed Elo points for
-     LMArena, fixed scores for Epoch's benchmarks, straight line
-     between anchors, one decimal, capped at 5.
-  2. **`rate()`**: a pure function, raw scores + prices + own results →
-     1-5 per axis; weighted mean of the sources a model has; −1 on the
-     capability axes for local models until own results exist; own
-     results shrink in as `computed + (observed − computed)·n/(n+5)`,
-     capped at ±1 (verified rate → code, fooled rate → precision, cost
-     per verified task → cost). Tested on fixed inputs, no network.
+  1. ~~Anchors~~ and 2. ~~`rate()`~~: done (`ratings.py`,
+     `DEFAULT_ANCHORS`). Left for refresh: turning own results into
+     the observed rating per axis (verified rate → code, fooled rate →
+     precision, cost per verified task → cost).
   3. **Maintainer script** (reviewed by a person): fetches LMArena's
      dataset, Epoch's ZIP and LiteLLM's prices, maps names through a
      reviewed name→id table (flags every name it can't match), writes
      the data file attached to each release with the attribution lines.
-  4. **`certo models refresh`**: reads the cached data file, applies
-     own results, prints the ratings for the folder (or `--project`),
+     Every model the sources rate, not only Certo's list, keyed by
+     LiteLLM id, with input/output $ per 1M tokens. Start from the
+     comparison script of 2026-11-16 (36 of 39 matched; qwen3-coder
+     30B, devstral-small-2, flint 40B have no data: marked "no data",
+     hand ratings kept).
+  4. **`certo models refresh`**: reads the cached data file, fetches
+     current list prices ($ per 1M tokens in and out) from LiteLLM's
+     price list (else the data file's, else the installed LiteLLM's),
+     applies own results, prints the ratings for the folder (or `--project`),
      what changed, and which projects' generated ladder no longer
      matches them; `certo check` says when the data is old.
   5. **`certo models choose`** stores a fingerprint of what it generated

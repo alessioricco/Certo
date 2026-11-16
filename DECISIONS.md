@@ -2098,4 +2098,18 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   can't drift apart, and a third place for "which ladder wins" is
   avoided. A fingerprint of the generated sections lets `choose` rewrite
   them freely unless the author edited them.
+- **The anchors, the cost rule and the scale** (2026-11-16, the Author,
+  from today's data against the hand ratings). 1-5 with one decimal
+  stays: 0-10 adds steps the data's noise (about ±0.2) can't fill, and
+  would break every `needs:` and override. One source per axis, fixed
+  anchors with straight lines: code from LMArena webdev Elo (1350-1750,
+  100 per point), reasoning from Epoch's ECI (135, 145, 155, 162, 168;
+  GPQA no longer separates models), precision from LMArena factuality
+  Elo, low confidence, the fooled rate corrects it (1350-1510), writing
+  from LMArena creative writing (1350-1550). Cost from the median $ per
+  agent task (LMArena) where known, `3 − log2($)/2`, since token use
+  differs up to 4× between models of similar list price; else the list
+  price formula. Models no source rates are marked "no data" and keep
+  their hand ratings. The data file covers every model the sources
+  rate, not only Certo's list: users run others.
 
