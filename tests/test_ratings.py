@@ -82,11 +82,15 @@ def test_own_results_shrink_in_and_move_a_rating_at_most_one_point():
     haiku = ModelData(scores={"lmarena_webdev": 1593}, cost_per_task=0.08)
     computed = rate(haiku, DEFAULT_ANCHORS).ratings["code"]
     assert computed == 3.4
-    # 13 verified runs pointing at 5: 3.43 + 1.57 * 13/18 = 4.6, capped at +1.
+    # 13 verified runs pointing at 5: 3.43 + 1.57 * 13/33.
     rated = rate(haiku, DEFAULT_ANCHORS, own={"code": (5.0, 13)})
-    assert rated.ratings["code"] == 4.4
+    assert rated.ratings["code"] == 4.0
     assert rated.sources["code"] == "lmarena_webdev, own results (13 runs)"
-    # Two runs move it little: 3.43 + 1.57 * 2/7.
-    assert rate(haiku, DEFAULT_ANCHORS, own={"code": (5.0, 2)}).ratings["code"] == 3.9
+    # 150 runs: 3.43 + 1.57 * 150/170 = 4.8, capped at one point up.
+    assert rate(haiku, DEFAULT_ANCHORS, own={"code": (5.0, 150)}).ratings["code"] == 4.4
+    # One or two runs move it little: 3.43 + 1.57 * 2/22; 3.43 − 2.43 / 21.
+    assert rate(haiku, DEFAULT_ANCHORS, own={"code": (5.0, 2)}).ratings["code"] == 3.6
+    one = rate(haiku, DEFAULT_ANCHORS, own={"code": (1.0, 1)})
+    assert one.ratings["code"] == 3.3 and one.sources["code"].endswith("(1 run)")
     # Own results for an axis with no computed rating are ignored.
     assert "precision" not in rate(haiku, DEFAULT_ANCHORS, own={"precision": (4.0, 9)}).ratings

@@ -76,7 +76,7 @@ def test_every_model_is_rated_with_its_price_and_a_model_no_source_has_says_so()
     )
     haiku, qwen, flint = rows
     assert haiku.price == (0.1, 0.5)  # the current list, $ per 1M tokens
-    assert haiku.rated.ratings["code"] == 4.4  # 3.4 from the arena, lifted by 13 own runs
+    assert haiku.rated.ratings["code"] == 4.0  # 3.4 from the arena, lifted by 13 own runs
     assert haiku.rated.ratings["cost"] == 4.8  # from the cost per agent task
     assert qwen.local and qwen.price is None and qwen.rated.ratings["code"] == 2.4
     assert flint.rated.no_data and flint.rated.ratings == {"cost": 5.0, "speed": 2.0}

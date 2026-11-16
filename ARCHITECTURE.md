@@ -548,7 +548,7 @@ given design was chosen.
   their `DERIVED` mean of reasoning and precision; local −1 on capability axes, cost from
   `task_cost_rating` (per agent task) else `model_pricing.cost_rating`
   (list price), speed cloud 4 / local 2, own results shrunk in with
-  `n/(n+5)` capped at ±1. Returns where each rating came from and which
+  `n/(n+20)` capped at ±1. Returns where each rating came from and which
   axes no source rates.
 - **`computed_ratings.py`** — `certo models refresh` (`models_cmd.refresh_main`).
   `newest_data` (latest Release asset → `~/.cache/certo/model_data.json`,

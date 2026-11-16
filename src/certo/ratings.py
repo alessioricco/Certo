@@ -9,7 +9,7 @@ Cost comes from the real cost per agent task where a model has one, else
 from its list price; speed is only cloud (4) or local (2). A local model
 loses a point on the capability axes, as it runs quantized with a short
 context window, until the user's own results say otherwise. Own results
-shrink in: `computed + (observed - computed) * n / (n + 5)`, moved by at
+shrink in: `computed + (observed - computed) * n / (n + 20)`, moved by at
 most one point.
 
 Pure: no network, no files. The data (raw scores, anchors) comes from the
@@ -30,7 +30,7 @@ LOCAL_PENALTY = 1.0
 LOCAL_SPEED = 2.0
 CLOUD_SPEED = 4.0
 LOCAL_COST = 5.0
-SHRINK_RUNS = 5  # own runs that count as much as the computed rating
+SHRINK_RUNS = 20  # own runs that count as much as the computed rating
 MAX_ADJUSTMENT = 1.0
 
 

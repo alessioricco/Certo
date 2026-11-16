@@ -2131,4 +2131,12 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   checks, and Certo's tasks are a different size from LMArena's for
   cost. The data comes from the latest Release's `model_data.json` when
   newer than the package's.
+- **Own results shrink in as `n / (n + 20)`, and count only verdicts
+  that judge the work** (2026-11-16, the Author; supersedes `n/(n+5)` in
+  the formulas above). On the Author's machine `n/(n+5)` let one
+  `no_progress` run take Sonnet 5.5's code from 5 to 4.3 and five easy
+  milestones lift GPT-6 Luna into `build`; with 20, one run moves 0.2
+  and 150 Haiku runs still reach the one-point cap. Hitting the time or
+  cost limit, an interrupt or `inconclusive` say nothing about the
+  model's code, so they don't count at all.
 
