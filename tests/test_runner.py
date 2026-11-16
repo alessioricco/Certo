@@ -1901,6 +1901,15 @@ def test_created_files_named_by_relative_or_full_path(tmp_path):
     ]
 
 
+def test_created_files_named_with_windows_separators(tmp_path):
+    root = str(tmp_path)
+    output = root.replace("/", "\\") + "\\.m6-smoke.mjs\n  error\ntools\\try_dates.js:1 error"
+
+    named = runner.created_files_named(output, [".m6-smoke.mjs", "tools/try_dates.js"], root)
+
+    assert named == [".m6-smoke.mjs", "tools/try_dates.js"]
+
+
 def test_created_files_named_needs_the_whole_path():
     # "smoke.js" at the top is not "src/smoke.js", nor "smoke.json".
     output = "src/smoke.js:1 error\nconfig/smoke.json:2 error"

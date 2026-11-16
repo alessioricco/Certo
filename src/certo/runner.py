@@ -613,10 +613,13 @@ def created_files_named(
     has a scratch-like name (`.m6-smoke.mjs`, `smoke_tmp.py`, `ui.js.new`); test
     files, the files in `keep` (ones the acceptance checks ask for) and any
     file the task names are left out."""
-    root = os.path.abspath(workspace)
+    # Compared with forward slashes: on Windows a tool may print either.
+    root = os.path.abspath(workspace).replace("\\", "/").rstrip("/")
+    output = output.replace("\\", "/")
     named: list[str] = []
     for path in created:
-        name = os.path.basename(path)
+        path = path.replace("\\", "/")
+        name = path.rsplit("/", 1)[-1]
         if (
             path in keep
             or _TEST_FILE.search(path)
@@ -624,7 +627,7 @@ def created_files_named(
             or (task and (path in task or name in task))
         ):
             continue
-        full = os.path.join(root, path)
+        full = f"{root}/{path}"
         pattern = rf"(?:(?<![\w./-]){re.escape(path)}|{re.escape(full)})(?![\w/-]|\.\w)"
         if re.search(pattern, output):
             named.append(path)
