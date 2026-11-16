@@ -2011,3 +2011,13 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   (a new project creates its real work in the run), which would tell a
   model to delete its work. Shipped on the replay (no recorded message
   changes) without a live bench where it fires: the Author's call.
+- **`certo report` gathers, it records nothing new** (0.2.4, 2026-11-16).
+  The file is built from `.certo/` after the run (run.json, the report
+  page, the SDK's saved error events); the only new record is the
+  result's `notices`, which the report page shows too. It writes a local
+  file and never sends it: the user reads it before sharing (it holds
+  the task and check output). Keys are hidden by value (settings files,
+  `models.yaml`) and by shape, never by trusting that none got in. No
+  MCP tool: a file for a person to read first. The reports aren't read
+  by any run: they improve Certo releases, not a project.
+

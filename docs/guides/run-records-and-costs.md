@@ -263,6 +263,10 @@ Time 22.3s · tokens 131,548 in / 3,121 out · cost $0.0053
   | 1. Count the words | verified | `anthropic/claude-haiku-5-5` | repository-discovery, testing-and-verification, python-environment, pytest-conventions, pin-dependencies | 182,358 / 6,003 | $0.0080 |
   | 2. Fix the empty file case | verified | `anthropic/claude-haiku-5-5` | debugging-and-failure-repair, documentation-and-operational-readiness, repository-discovery, testing-and-verification, python-environment, pytest-conventions | 212,266 / 5,273 | $0.0070 |
   ```
+- Since 0.2.4, a **Certo's notices** section at the end lists Certo's
+  own messages during the run, in order, as the terminal showed them: an
+  action blocked outside the project root, a limit coming up, failing
+  checks sent back to the agent. It is left out when there were none.
 - A run stopped by Ctrl-C or an error gets its report too, with the
   reason, and says what isn't known yet.
 - The page is built from the same facts as [`certo --json`](../reference/json-result.md).
@@ -273,6 +277,43 @@ Time 22.3s · tokens 131,548 in / 3,121 out · cost $0.0053
 - Like `RUNS.md`, it's written by `certo` and by runs started over MCP,
   and `CERTO_SAVE_STATE=false` turns it off. Server mode and `certo bench`
   never write it.
+
+## Share a run's problems
+
+When a run went wrong in a way you think Certo should handle better, run
+`certo report` in the project folder (or give the folder:
+`certo report projects/ledger`). It writes one Markdown file with
+everything Certo recorded about the last run, for Certo's maintainers:
+attach it to a [GitHub issue](https://github.com/alessioricco/certo/issues).
+`--note` adds your own words at the top.
+
+```text
+$ certo report projects/ledger --note "It stopped halfway; the model server was busy."
+Report: /home/me/certo-projects/projects/ledger/.certo/certo-report.md
+Read it before you share it: it holds the task and the checks' output.
+```
+
+The file has your Certo, Python and system; the run's task, model,
+effort, time budget, step limit and how it ended; the errors the SDK
+recorded, such as a provider timeout:
+
+```markdown
+## Errors the SDK recorded
+
+- 2026-11-16 10:12:48 · ConversationErrorEvent · LLMTimeoutError: litellm.Timeout: Connection timed out after 300 seconds.
+```
+
+and, last, the run's own [report](#the-report-of-each-run): why the
+verdict, the checks with the end of their output, the files changed, the
+check files the agent edited, the models, the cost and Certo's notices.
+With `--milestones`, that report covers every milestone of the run.
+
+Keys never go in it: every value that looks like one (the keys in your
+settings files and in `models.yaml`, and the usual key shapes such as
+`sk-...`) is replaced with `[hidden]`, and the terminal says how many
+were. The task and the checks' output stay, so read the file before you
+share it. Nothing is sent anywhere, and no model is called. See
+[`certo report`](../reference/commands.md#certo-report).
 
 ## Model decisions
 

@@ -508,6 +508,16 @@ given design was chosen.
   write. `tests/test_cli.py` stubs `write_report` (autouse
   `written_reports`), as it does `append_run`: its workspace is the
   checkout.
+- **`report_cmd.py`** — `certo report`: reads `run.json`, the newest
+  page in `.certo/reports/` (embedded, headings one level down) and the
+  error events of the run's saved conversation (`events/*.json` read as
+  JSON by `kind`, no SDK import: `ConversationErrorEvent`,
+  `AgentErrorEvent`, `UserRejectObservation`). Certo's notices reach it
+  through the report page: `cli.py` and `runs.py` collect them into the
+  result's `notices`. Values are hidden by name (settings whose names say
+  KEY/TOKEN/SECRET..., 12+ chars with a letter), by `models.yaml`'s
+  written-out `api_key`s (every layer), and by key shapes. Writes
+  `.certo/certo-report.md`.
 - **`run_history.py`** — stdlib only. `.certo/RUNS.md`, appended by
   `cli.py` (not the runner) once per run when state saving is on: after
   the outcome, or from the `KeyboardInterrupt`/error branches. Models come

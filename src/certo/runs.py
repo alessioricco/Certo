@@ -190,12 +190,15 @@ class RunManager:
         from .runner import TaskResult, is_notice
 
         messages: list[Any] = []
+        notices: list[str] = []  # Certo's, for the result and the report
 
         def on_message(message: Any) -> None:
             messages.append(message)
             text = _message_text(message)
             if text:
                 kind = "notice" if is_notice(message) else "message"
+                if kind == "notice":
+                    notices.append(text)
                 self._add_event(run, kind, str(getattr(message, "role", "")), text)
 
         started = datetime.now(UTC)
@@ -244,6 +247,7 @@ class RunManager:
                 project=run.project,
                 milestones=milestones(),
                 error=error,
+                notices=notices,
             )
             try:
                 write_report(run.workspace, result, started)

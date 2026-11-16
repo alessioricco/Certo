@@ -23,6 +23,7 @@ from certo import (
     init_cmd,
     init_models,
     models_cmd,
+    report_cmd,
     server,
     skills_cmd,
 )
@@ -115,6 +116,7 @@ def _all_parsers() -> list[argparse.ArgumentParser]:
         bench.build_bench_parser(),
         checkpoints_cmd.build_checkpoints_parser(),
         checkpoints_cmd.build_rollback_parser(),
+        report_cmd.build_report_parser(),
         admin_cli.build_parser(),
         _server_parser(),
     ]

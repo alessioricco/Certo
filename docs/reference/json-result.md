@@ -86,6 +86,7 @@ shortened):
   "model_decisions": null,
   "skills": ["testing-and-verification", "pytest-conventions"],
   "milestones": null,
+  "notices": [],
   "error": null
 }
 ```
@@ -113,6 +114,7 @@ shortened):
 | `model_decisions` | With `--escalate` or `--auto-model`: how each model was chosen, as `MODEL_DECISIONS.md` in the project tells it. Each decision has `kind`, `timestamp`, `task_profile` and `weights` (with `--auto-model`), `candidates` (each `name` and `score`), `scored_by` (`score`, a weighted rating, with `--auto-model`; `capability` on a ladder), `chosen` and `reason`. Otherwise `null`. An example follows the table. |
 | `skills` | The skills the run had, by name: the always-on ones first, then those its task's words, a file the agent touched, or the agent itself brought in. Empty when none (and when the run stopped with an error). For milestones, the last milestone's; each milestone's own are under `milestones`. |
 | `milestones` | With `--milestones`: each milestone's `number`, `title`, `verdict` (`null` if it didn't start), `label` (the verdict in words, as the terminal and the report show it: `not started`, `skipped (--from-milestone)`, or `verified (a later try: budget_exhausted)`), `skipped` (true for one skipped with `--from-milestone`), `later_try` (a verified milestone run again whose later try didn't pass keeps `verified`; this is how that try ended, else `null`), `skills` and `usage` (the time, tokens, cost and models of the run that gave its verdict, in the same form as the top-level `usage`, kept across sessions; both `null` when it never ran). Otherwise `null`. |
+| `notices` | Certo's own messages during the run, in order, as the terminal showed them (for example a blocked action, a step limit coming up, or a failing check sent back to the agent). Empty when there were none. Not in results from before Certo 0.2.4. |
 | `error` | Why the run stopped without a verdict (`interrupted`, or the error), or `null`. |
 
 The result never holds an API key.

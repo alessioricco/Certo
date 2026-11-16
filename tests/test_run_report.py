@@ -222,3 +222,9 @@ def test_a_changed_check_file_shows_its_changed_lines():
         "- The agent changed `tests/test_a.py`, a file the checks rely on:\n\n"
         "  ```diff\n  -     assert x\n  +     pass\n  ```"
     ) in text
+
+
+def test_the_report_lists_certos_notices_and_leaves_the_section_out_without_any():
+    page = _report(_outcome(), notices=["Certo: blocked /etc/x", "Line one\nline two"])
+    assert "## Certo's notices\n\n- Certo: blocked /etc/x\n- Line one\n  line two\n" in page
+    assert "## Certo's notices" not in _report(_outcome())

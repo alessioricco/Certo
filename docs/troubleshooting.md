@@ -7,6 +7,11 @@ for a few words of your error message.
 For model problems, `certo check` is the fastest test: it shows where each
 setting comes from and makes one small call to the model.
 
+If nothing here fits, run `certo report` in the project folder: it writes
+the last run's problems to one file, with keys hidden, that you can attach
+to a [GitHub issue](https://github.com/alessioricco/certo/issues). See
+[Share a run's problems](guides/run-records-and-costs.md#share-a-runs-problems).
+
 **Contents**
 
 - Setup: [`certo init` runs an agent](#certo-init-runs-an-agent-instead-of-asking-questions),

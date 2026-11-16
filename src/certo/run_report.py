@@ -24,6 +24,9 @@ VERDICTS_URL = "https://github.com/alessioricco/certo/blob/main/docs/reference/v
 # A list of files, or a check's output, is cut to this many lines.
 _MAX_FILES = 50
 _MAX_OUTPUT_LINES = 40
+# Certo's notices: the last ones, each cut to this many lines.
+_MAX_NOTICES = 100
+_MAX_NOTICE_LINES = 12
 
 
 def report_relpath(started_at: datetime) -> str:
@@ -201,6 +204,22 @@ def _models(result: dict[str, Any]) -> list[str]:
     return lines or ["Not known: the run stopped before it used a model.", ""]
 
 
+def _notices(result: dict[str, Any]) -> list[str]:
+    """Certo's own messages during the run, one bullet each, in order."""
+    notices = [n for n in result.get("notices") or [] if n.strip()]
+    lines: list[str] = []
+    if len(notices) > _MAX_NOTICES:
+        lines += [f"The first {len(notices) - _MAX_NOTICES} are left out.", ""]
+        notices = notices[-_MAX_NOTICES:]
+    for notice in notices:
+        text = notice.strip().splitlines()
+        if len(text) > _MAX_NOTICE_LINES:
+            text = text[:_MAX_NOTICE_LINES] + ["…"]
+        lines.append("- " + text[0])
+        lines += [f"  {line}".rstrip() for line in text[1:]]
+    return lines + [""]
+
+
 def render_report(result: dict[str, Any], started_at: datetime) -> str:
     verdict = result.get("verdict") or "no verdict"
     when = started_at.astimezone(UTC).strftime("%Y-%m-%d %H:%M UTC")
@@ -273,6 +292,8 @@ def render_report(result: dict[str, Any], started_at: datetime) -> str:
     lines += ["## Skills", "", *_skills(result)]
     lines += ["## Files changed", "", *_files(result)]
     lines += ["## Models, time and cost", "", *_models(result)]
+    if any(n.strip() for n in result.get("notices") or []):
+        lines += ["## Certo's notices", "", *_notices(result)]
     return "\n".join(lines).rstrip() + "\n"
 
 

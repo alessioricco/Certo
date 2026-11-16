@@ -2245,7 +2245,7 @@ def test_escalate_prints_progress_and_asks_only_when_interactive(monkeypatch, tm
     # Escalation lines are Certo's notices, printed once through on_notice
     # (live 2026-10-22: with on_progress too, each line printed twice).
     assert "on_progress" not in calls[0]
-    assert calls[0]["on_notice"] is cli._print_progress
+    assert callable(calls[0]["on_notice"])
     assert calls[0]["on_escalate"] is None
     assert calls[1]["on_escalate"] is cli._confirm_escalation
 
@@ -2411,6 +2411,20 @@ def test_a_run_writes_its_report_and_runs_md_links_it(
     (entry,) = recorded_runs
     assert entry.report.startswith("reports/") and path.endswith(entry.report)
     assert f"Report: {os.path.relpath(path)}" in capsys.readouterr().out
+
+
+def test_certos_notices_are_printed_and_kept_in_the_result(monkeypatch, capsys, written_reports):
+    def _run(*a, on_notice, **k):
+        on_notice("Certo: the step limit is near.")
+        return _fake_result()
+
+    monkeypatch.setattr(cli, "load_config", lambda: _cfg())
+    monkeypatch.setattr(cli, "run_task", _run)
+
+    assert cli.main(["do something"]) == 0
+    assert "Certo: the step limit is near." in capsys.readouterr().out
+    ((result, _path),) = written_reports
+    assert result["notices"] == ["Certo: the step limit is near."]
 
 
 def test_an_interrupted_run_still_gets_its_report(monkeypatch, written_reports):

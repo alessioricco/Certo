@@ -167,7 +167,7 @@ def checks_from_outcomes(checks) -> list[CheckRecord]:
     return records
 
 
-def _status_line(record: RunRecord) -> str:
+def status_line(record: RunRecord) -> str:
     if record.status == "running":
         return "running, or stopped before Certo could record how it ended"
     if record.status == "interrupted":
@@ -189,7 +189,7 @@ def render_status(record: RunRecord, milestones: list[str] | None = None) -> str
             "`certo --resume` continues from here."
         ),
         "",
-        f"- Status: {_status_line(record)}",
+        f"- Status: {status_line(record)}",
         f"- Model: {model_label(record.model, record.reasoning_effort)}",
         f"- Started: {record.started_at}",
         f"- Updated: {record.updated_at}",

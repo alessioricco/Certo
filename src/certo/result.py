@@ -118,9 +118,11 @@ def run_result(
     project: str | None = None,
     milestones: Sequence[dict[str, Any]] | None = None,
     error: str | None = None,
+    notices: Sequence[str] = (),
 ) -> dict[str, Any]:
     """The JSON result of one run. `outcome` is None when the run stopped
-    with an error or was interrupted; `error` then says why."""
+    with an error or was interrupted; `error` then says why. `notices` are
+    Certo's own messages during the run, as the terminal showed them."""
     result: dict[str, Any] = {
         "result_version": RESULT_VERSION,
         "certo_version": __version__,
@@ -141,6 +143,7 @@ def run_result(
         "model_decisions": None,
         "skills": [],
         "milestones": list(milestones) if milestones is not None else None,
+        "notices": list(notices),
         "error": error,
     }
     if outcome is None:

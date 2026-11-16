@@ -6,7 +6,7 @@ things up; for a walk-through, see [Getting started](../getting-started.md).
 Certo installs three commands: `certo`, `certo-server` and `certo-admin`.
 `certo` also has these subcommands: `certo verify`, `certo init`,
 `certo check`, `certo models`, `certo skills`, `certo bench`,
-`certo checkpoints`, `certo rollback` and `certo mcp`. Every command and
+`certo checkpoints`, `certo rollback`, `certo report` and `certo mcp`. Every command and
 subcommand accepts `-h` / `--help`; `certo --help` lists the subcommands
 under `commands:`, after the options.
 
@@ -891,6 +891,33 @@ undone with another `certo rollback`. Files a checkpoint leaves out
 never touched. Your own git repository is never touched either. Exit
 code: 0 when done or when nothing needed changing; 1 when declined, for a
 number that doesn't exist, or without `--yes` and no terminal.
+
+## `certo report`
+
+Write the last run's problems to one Markdown file, to share with Certo's
+maintainers (attach it to a GitHub issue).
+
+```text
+certo report [PATH] [--note TEXT] [--output FILE]
+```
+
+| Argument or flag | Default | Effect |
+|---|---|---|
+| `PATH` | `.` | The project folder. |
+| `--note TEXT` | none | Your own words, at the top of the file. |
+| `--output FILE` | `.certo/certo-report.md` | Where to write it. |
+
+It puts together what the project's `.certo/` folder already holds: your
+Certo, Python and system; the run's task, model, effort, time budget and
+step limit, and how it ended; the errors the SDK recorded (the provider's
+and the tools'); and the run's report, with the checks' output, the files
+changed, the check files the agent edited, the cost and Certo's notices.
+It calls no model. Every value that looks like a key (the keys in your
+settings files and `models.yaml`, and the usual key shapes) is replaced
+with `[hidden]`, and the terminal says how many. The file still holds
+the task and the checks' output: read it before you share it. Exit code:
+0, or 1 if `PATH` is not a folder or has no recorded run. Guide:
+[Share a run's problems](../guides/run-records-and-costs.md#share-a-runs-problems).
 
 ## `certo mcp`
 

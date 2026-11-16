@@ -247,6 +247,10 @@ _COMMANDS: tuple[tuple[str, str], ...] = (
     ("bench", "Compare models and strategies on tasks graded by hidden tests."),
     ("checkpoints [PATH]", "List the snapshots Certo took of a project during its runs."),
     ("rollback N [PATH]", "Put a project's files back as they were at checkpoint N."),
+    (
+        "report [PATH]",
+        "Write the last run's problems to one file, to share with Certo's maintainers.",
+    ),
     ("skills", "See, add and remove the skills a run gets."),
     ("models", "Manage your model files: update or check the list, secure the keys."),
     ("mcp", "Run Certo as an MCP server, for an editor or an agent."),
@@ -623,7 +627,7 @@ def _start_update_check() -> update_check.UpdateCheck | None:
 
 def _main(argv: list[str]) -> int:
     # `verify`, `init`, `check`, `models`, `skills`, `bench`, `checkpoints`,
-    # `mcp` and `rollback` are
+    # `mcp`, `rollback` and `report` are
     # subcommands only as the exact, whole first argument. A task is always
     # one argument (quoted), so "verify the login flow" or "init a repo" can
     # never match, and `certo -- verify` still runs the one-word task.
@@ -657,6 +661,10 @@ def _main(argv: list[str]) -> int:
         from .checkpoints_cmd import rollback_main
 
         return rollback_main(argv[1:])
+    if argv and argv[0] == "report":
+        from .report_cmd import report_main
+
+        return report_main(argv[1:])
     parser = _build_parser()
     args = parser.parse_args(argv)
     if not args.json:
@@ -889,6 +897,13 @@ def _run_task_command(
     started_at = datetime.now(UTC)
     history = {"task": resume_from.task if resume_from is not None else (task or "")}
     report: dict[str, str] = {}
+    # Certo's notices, shown as they happen and kept for the result and the
+    # run's report (what `certo report` reads afterwards).
+    notices: list[str] = []
+
+    def on_notice(text: str) -> None:
+        notices.append(text)
+        _print_progress(text)
 
     recorded = {"runs": 0}
 
@@ -932,7 +947,7 @@ def _run_task_command(
             resume_instruction=instruction,
             ladder=ladder,
             on_escalate=_confirm_escalation if cfg.interactive else None,
-            on_notice=_print_progress,
+            on_notice=on_notice,
             run_progress=progress,
         )
         summary = result.outcome.run_summary
@@ -957,6 +972,7 @@ def _run_task_command(
             project=args.project,
             milestones=milestones,
             error=error,
+            notices=notices,
         )
         if holder is not None:
             holder["result"] = result
