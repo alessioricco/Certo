@@ -6,6 +6,7 @@ import argparse
 import contextlib
 import json
 import os
+import re
 import shlex
 import shutil
 import sys
@@ -170,6 +171,17 @@ def _prompt_for_continuation(narrative: str) -> str | None:
     return reply or None
 
 
+_DESCRIBED_CANDIDATES = 3
+
+
+def _first_sentence(text: str, limit: int = 110) -> str:
+    """The first sentence of `text`, on one line, cut to `limit` characters."""
+    text = " ".join(text.split())
+    match = re.search(r"(?<=[.!?])\s", text)
+    sentence = text[: match.start()] if match else text
+    return sentence if len(sentence) <= limit else sentence[: limit - 1] + "…"
+
+
 def _prompt_for_model_choice(
     candidates: list[ModelCatalogEntry], recommended_index: int, reason: str
 ) -> int:
@@ -179,11 +191,13 @@ def _prompt_for_model_choice(
     """
     print(f"\n{reason}")
     for i, entry in enumerate(candidates):
-        ratings = ", ".join(f"{axis}={value}" for axis, value in entry.ratings.items())
+        ratings = ", ".join(f"{axis}={value:g}" for axis, value in entry.ratings.items())
         marker = " (recommended)" if i == recommended_index else ""
         print(f"  [{i}] {entry.name}{marker} — {ratings}")
-        if entry.description:
-            print(f"      {entry.description}")
+        # A description can be a paragraph: its first sentence, for the
+        # first few candidates only, so the list fits on a screen.
+        if entry.description and (i < _DESCRIBED_CANDIDATES or i == recommended_index):
+            print(f"      {_first_sentence(entry.description)}")
     answer = _ask_line(
         f"Use recommended model [{candidates[recommended_index].name}]? [Y/n or a number]: "
     ).strip()

@@ -173,8 +173,24 @@ project folder or registry entry. An existing project folder is kept.
 When every model has been tried, the task ends as it would without
 automatic selection.
 
-With `--interactive` as well, Certo shows the ranked list and asks which
-model to use, with the best one as the default.
+With `--interactive` as well (or in the [interactive session](interactive-mode.md#the-interactive-session)),
+Certo shows the ranked list with each model's ratings, and the first
+sentence of the description for the first three, and asks which model
+to use, with the best one as the default. Enter takes it; a number
+takes another:
+
+```text
+  [0] qwen3.8-27b-local (recommended) — reasoning=1.8, precision=1.7, code=3.4, writing=1.7, speed=2, cost=5
+      Alibaba Qwen3.8-27B dense (18GB, 256K context, text and image, thinking on by default; August 2026).
+  [1] gpt-6-luna — reasoning=3.2, precision=3.5, code=3.6, writing=3.4, speed=4, cost=4.8
+      OpenAI's cheapest current tier: $0.10 in / $0.50 out per 1M (Sept 2026, half of GPT-5.6 Luna).
+  [2] claude-haiku-5-5 — reasoning=3.8, precision=2.4, code=4.4, writing=3.1, speed=4, cost=4.8
+      $0.10 in / $0.50 out per 1M for prompts up to 100K tokens; 5x that ($0.50 / $2.50) above 100K.
+  [3] gpt-6.1-terra — reasoning=4.9, precision=3, code=4.4, writing=3, speed=4, cost=4.3
+  [4] claude-sonnet-5-5 — reasoning=4.8, precision=3.7, code=4.8, writing=4.3, speed=4, cost=3.1
+  ...
+Use recommended model [qwen3.8-27b-local]? [Y/n or a number]:
+```
 
 ## Always use one model for a kind of task
 

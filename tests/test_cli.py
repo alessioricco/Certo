@@ -1523,6 +1523,36 @@ def test_prompt_for_model_choice_accepts_the_recommendation_on_enter(monkeypatch
     assert "Fast." in out
 
 
+def test_prompt_for_model_choice_describes_only_the_first_few(monkeypatch, capsys):
+    from certo.model_catalog import ModelCatalogEntry
+
+    long = "First sentence here. " + "More detail. " * 40
+    candidates = [
+        ModelCatalogEntry(
+            name=f"m{i}",
+            model="a",
+            ratings={"code": 4.0, "cost": 3.5},
+            description=f"Model {i}. {long}",
+        )
+        for i in range(6)
+    ]
+    monkeypatch.setattr("builtins.input", lambda _prompt: "")
+
+    cli._prompt_for_model_choice(candidates, 4, "reason")
+
+    out = capsys.readouterr().out
+    assert "  [0] m0 — code=4, cost=3.5" in out
+    assert [n for n in range(6) if f"Model {n}." in out] == [0, 1, 2, 4]  # + the recommended
+    assert "More detail" not in out
+    assert "  [4] m4 (recommended) — code=4, cost=3.5" in out
+
+
+def test_first_sentence_is_cut_to_one_short_line():
+    assert cli._first_sentence("Fast.  Cheap and\nlocal.") == "Fast."
+    assert cli._first_sentence("v1.5 is good. Next.") == "v1.5 is good."
+    assert cli._first_sentence("x" * 200, limit=10) == "x" * 9 + "…"
+
+
 def test_prompt_for_model_choice_accepts_a_typed_index(monkeypatch):
     from certo.model_catalog import ModelCatalogEntry
 
