@@ -338,8 +338,10 @@ given design was chosen.
 - **`model_reachability.py`** — `unreachable_reason(entry)`: asks a local
   model's server (Ollama `/api/tags`, else a TCP connect to `base_url`)
   with a 5 s timeout, cached 30 s per server; cloud models are never asked.
-  The runner passes it to `ModelChain` in local execution only; tests turn
-  it off in `conftest.py`.
+  The runner passes it to `ModelChain` in local execution only, and to
+  `escalation.without_unreachable` (every local rung asked once, before
+  the first rung; the last rung kept if none answers); tests turn it off
+  in `conftest.py`.
 - **`artifacts.py`** — pure file-writing for `CERTO_ARTIFACTS_DIR`:
   `<artifacts_dir>/<project-or-"_unscoped">/<run_id>/`, own path-containment
   check. No SDK dependency. A sibling top-level directory (mirrors

@@ -17,6 +17,7 @@ from certo.escalation import (
     ladder_from_models,
     resolve_ladder,
     spread_indices,
+    without_unreachable,
 )
 from certo.model_catalog import load_model_catalog
 
@@ -378,3 +379,35 @@ def os_path(path: str) -> str:
     import os
 
     return path.replace("/", os.sep)
+
+
+def _down(*names):
+    return lambda entry: "the server didn't answer" if entry.name in names else None
+
+
+def test_unreachable_rungs_are_left_out_and_named(tmp_path):
+    ladder = ladder_from_models(_catalog(tmp_path), ["tiny", "local", "mid", "strong"])
+    kept, dropped = without_unreachable(ladder, _down("tiny", "local"))
+
+    assert _names(kept) == ["mid", "strong"]
+    assert [(r.name, why) for r, why in dropped] == [
+        ("tiny", "the server didn't answer"),
+        ("local", "the server didn't answer"),
+    ]
+    assert kept.skipped[-2:] == (
+        "tiny (the server didn't answer)",
+        "local (the server didn't answer)",
+    )
+
+
+def test_a_ladder_that_all_answers_is_unchanged(tmp_path):
+    ladder = ladder_from_models(_catalog(tmp_path), ["local", "mid"])
+    assert without_unreachable(ladder, _down()) == (ladder, [])
+
+
+def test_when_no_rung_answers_the_last_one_is_kept(tmp_path):
+    ladder = ladder_from_models(_catalog(tmp_path), ["tiny", "local"])
+    kept, dropped = without_unreachable(ladder, _down("tiny", "local"))
+
+    assert _names(kept) == ["local"]
+    assert [r.name for r, _ in dropped] == ["tiny"]

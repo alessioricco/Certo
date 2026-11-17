@@ -905,3 +905,31 @@ def test_restart_without_git_continues_and_says_so(tmp_path, fake_run, monkeypat
 
     assert any("can't restart from the original files" in line for line in progress)
     assert (tmp_path / "app.py").read_text() == "rung one's attempt\n"
+
+
+def test_a_local_rung_that_cant_be_reached_is_skipped(tmp_path, fake_run, monkeypatch):
+    monkeypatch.setattr(
+        runner,
+        "unreachable_reason",
+        lambda entry: (
+            "the Ollama server at localhost:11434 didn't answer" if entry.name == "local" else None
+        ),
+    )
+    fake_run.script[:] = [("verified", 0.01, {})]
+    outcome, progress = _run(tmp_path, _ladder(tmp_path))
+
+    assert [r.name for r in outcome.rungs] == ["mid"]
+    assert progress[0].startswith("Escalation: explicit ladder 'default', 2 rung(s):")
+    ladder_reason = outcome.model_decisions[0].reason
+    assert "Skipped: local (the Ollama server at localhost:11434 didn't answer)." in ladder_reason
+
+
+def test_rungs_are_not_asked_about_under_docker(tmp_path, fake_run, monkeypatch):
+    # A container sees another network (model_reachability.py).
+    asked: list[str] = []
+    monkeypatch.setattr(runner, "unreachable_reason", lambda entry: asked.append(entry.name))
+    fake_run.script[:] = [("verified", 0.0, {})]
+    outcome, _ = _run(tmp_path, _ladder(tmp_path), cfg=_cfg(tmp_path, execution="docker"))
+
+    assert asked == []
+    assert [r.name for r in outcome.rungs] == ["local"]

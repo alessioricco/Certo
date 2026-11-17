@@ -258,6 +258,25 @@ they are. Whether restart beats continue hasn't been measured yet, which
 is why it is off by default; a benchmark arm can compare them
 (`handoff: restart`, see [the benchmark file](../reference/bench-yaml.md#strategy-escalate)).
 
+## A local rung that can't be reached
+
+Before the first rung, Certo asks the server of every local model in
+the ladder (Ollama, or another server on this machine or network), in a
+few seconds each, whether it is up and has the model. A rung that can't
+be reached is left out, and the ladder goes on without it:
+
+```text
+Certo: skipping qwen3.8-27b-local: the Ollama server at localhost:11999 didn't answer. The ladder goes on without it.
+Escalation: explicit ladder 'default', 1 rung(s):
+  1. claude-haiku-5-5 (effort high)
+  Skipped: qwen3.8-27b-local (the Ollama server at localhost:11999 didn't answer)
+```
+
+`MODEL_DECISIONS.md` names it too. Cloud models aren't asked (that would
+be a paid call). When no rung can be reached, the last one is kept and
+the run fails as it would have without the check. Under Docker nothing
+is asked: the container sees another network.
+
 ## Limits
 
 - **Time.** `CERTO_MAX_TASK_SECONDS` covers every rung together, as it

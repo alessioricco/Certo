@@ -2160,3 +2160,10 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   Author kept it: listing a local model means wanting it used; leaving
   it out of `models.yaml`/`use`, or `speed: 4` in a profile, keeps it
   off. No speed need added to `default`.
+
+- **`--escalate` asks local rungs once, before the first rung**
+  (2026-11-17). Not before each rung: the independent-test writer and
+  the ladder printed at the start use the first rung, so the ladder must
+  be final before it; a server that goes down mid-run fails as before.
+  The last rung is kept when none answers, as `--auto-model` keeps its
+  last candidate. Local execution only.

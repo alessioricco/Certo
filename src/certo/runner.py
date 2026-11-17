@@ -105,6 +105,7 @@ from .escalation import (
     handoff_message,
     load_ladder,
     rung_dicts,
+    without_unreachable,
     workspace_listing,
 )
 from .model_catalog import (
@@ -2134,6 +2135,13 @@ def _stream_task(
             on_warning=lambda w: _emit_notice(emit, f"Certo: models.yaml: {w}"),
             project_dir=cfg.workspace,
         )
+    if ladder is not None and cfg.execution == "local":
+        # Only where Certo's own process calls the model, as for --auto-model.
+        ladder, dropped = without_unreachable(ladder, unreachable_reason)
+        for rung, why in dropped:
+            _emit_notice(
+                emit, f"Certo: skipping {rung.name}: {why}. The ladder goes on without it."
+            )
     if ladder is not None:
         return _stream_escalation(
             task,

@@ -133,6 +133,12 @@ See [Share a run's problems](../guides/run-records-and-costs.md#share-a-runs-pro
 
 ## Also
 
+- **`--escalate` skips a local rung that can't be reached.** Before the
+  first rung, Certo asks each local model's server whether it is up, as
+  `--auto-model` does since 0.2.3. A switched-off Ollama machine no
+  longer costs the provider's retries: its rung is left out with a
+  notice, and named in `MODEL_DECISIONS.md`. See
+  [Escalate between models](../guides/escalate-between-models.md#a-local-rung-that-cant-be-reached).
 - **Certo's notices are kept.** The run report gets a "Certo's notices"
   section (a blocked action, a limit coming up, failing checks sent
   back), and the JSON result a `notices` list. They used to be only on

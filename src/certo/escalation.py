@@ -188,6 +188,32 @@ def explicit_ladder(catalog: ModelCatalog, ladder: Ladder) -> ResolvedLadder:
     )
 
 
+def without_unreachable(
+    ladder: ResolvedLadder,
+    probe: Callable[[ModelCatalogEntry], str | None],
+) -> tuple[ResolvedLadder, list[tuple[Rung, str]]]:
+    """The ladder without the rungs `probe` says can't be reached now (a
+    switched-off Ollama server), and those rungs with the reason. Asked
+    once, before the first rung, as `--auto-model` does. At least one rung
+    is kept: when none answers, the last one stays and the run fails as
+    it would have without the check."""
+    kept: list[Rung] = []
+    dropped: list[tuple[Rung, str]] = []
+    for rung in ladder.rungs:
+        why = probe(rung.entry)
+        if why is None:
+            kept.append(rung)
+        else:
+            dropped.append((rung, why))
+    if not kept:
+        kept.append(ladder.rungs[-1])
+        dropped.pop()
+    if not dropped:
+        return ladder, []
+    notes = tuple(f"{rung.name} ({why})" for rung, why in dropped)
+    return replace(ladder, rungs=tuple(kept), skipped=ladder.skipped + notes), dropped
+
+
 def ladder_from_models(
     catalog: ModelCatalog, names: Sequence[str], *, name: str = "models"
 ) -> ResolvedLadder:
