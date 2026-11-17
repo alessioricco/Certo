@@ -44,7 +44,7 @@ from .bench_report import (
     write_report,
 )
 from .independent_tests import failing_tests
-from .bench_strategies import STRATEGIES, AttemptResult, RunContext, auto_catalog
+from .bench_strategies import STRATEGIES, AttemptResult, RunContext, auto_catalog, run_config
 from .bench_tasks import (
     BUILTIN_TASKS_DIR,
     BenchTask,
@@ -56,6 +56,7 @@ from .bench_tasks import (
     task_set_hash,
     task_set_version,
 )
+from .milestone_planner import plan_milestones
 from .milestones import (
     MilestoneError,
     MilestonePlan,
@@ -63,6 +64,7 @@ from .milestones import (
     handover,
     milestone_task,
     parse_milestones,
+    plain_task,
     whole_task,
 )
 from .run_stats import MeasuredEstimate, measured_estimate, read_rows, short_duration
@@ -244,15 +246,22 @@ def execute_run(
 
     A task written in milestones runs in them when the arm has
     `milestones: true`: the strategy once per milestone, in the same
-    folder, until one isn't `verified` (as `certo --milestones`). Any other
-    arm gets the whole task at once, without its acceptance blocks, and
-    all of their checks."""
+    folder, until one isn't `verified` (as `certo --milestones`). An arm
+    with `make_milestones: true` first has its planner split the task, its
+    own milestones taken out (as `certo --make-milestones`), then runs the
+    planned ones the same way; the task's acceptance checks apply to the
+    last planned milestone, and a task the planner keeps whole runs as one.
+    Any other arm gets the whole task at once, without its acceptance
+    blocks, and all of their checks."""
     workspace = tempfile.mkdtemp(prefix="certo-bench-")
     isolation = tempfile.mkdtemp(prefix="certo-bench-iso-")
     messages: list[Any] = []
     seconds: list[float] = []
     plan = _milestone_plan(planned.task)
-    in_milestones = plan is not None and bool(planned.arm.params.get("milestones"))
+    params = planned.arm.params
+    making = bool(params.get("make_milestones"))
+    in_milestones = plan is not None and bool(params.get("milestones"))
+    planning: dict[str, Any] | None = None
     checks: dict[str, Any] = {"now": None}
     milestone_records: list[dict[str, Any]] = []
 
@@ -283,13 +292,39 @@ def execute_run(
         attempt, error, failed_summary = None, None, None
         attempts: list[AttemptResult] = []
         try:
+            run_plan = plan
+
+            def checks_for(number: int) -> list:
+                return checks_up_to(plan, number)
+
+            one_go = whole_task(plan) if plan is not None else planned.task.prompt
+            if making:
+                one_go = plain_task(plan) if plan is not None else planned.task.prompt
+                made = plan_milestones(
+                    one_go, run_config(cfg.catalog[params["planner"]], workspace, isolation)
+                )
+                planning = {
+                    "planner": params["planner"],
+                    "titles": list(made.titles),
+                    "reason": made.reason or None,
+                    "seconds": round(made.seconds, 1),
+                    "cost": round(made.cost, 6),
+                }
+                every_check = checks_up_to(plan, len(plan)) if plan is not None else []
+                run_plan = parse_milestones(made.text) if made.text else None
+                last = len(run_plan) if run_plan is not None else 0
+
+                def checks_for(number: int) -> list:
+                    return every_check if number == last else []
+
+                in_milestones = run_plan is not None
             if in_milestones:
                 left = None
-                for milestone in plan.milestones:
-                    checks["now"] = checks_up_to(plan, milestone.number)
+                for milestone in run_plan.milestones:
+                    checks["now"] = checks_for(milestone.number)
                     first_message = len(messages)
                     one = strategy.run(
-                        context(milestone_task(plan, milestone.number, left)),
+                        context(milestone_task(run_plan, milestone.number, left)),
                         planned.arm.params,
                     )
                     attempts.append(one)
@@ -306,11 +341,9 @@ def execute_run(
                         break
                 attempt = _combined_attempt(attempts)
             else:
-                text = planned.task.prompt
                 if plan is not None:
-                    text = whole_task(plan)
                     checks["now"] = checks_up_to(plan, len(plan))
-                attempt = strategy.run(context(text), planned.arm.params)
+                attempt = strategy.run(context(one_go), planned.arm.params)
         except Exception as exc:  # noqa: BLE001 - recorded; the benchmark goes on
             error = f"{type(exc).__name__}: {exc}"
             # runner.stream_task puts the usage recorded up to the error on
@@ -371,7 +404,10 @@ def execute_run(
         "tokens_in": summary.prompt_tokens if summary else 0,
         "tokens_out": summary.completion_tokens if summary else 0,
         "tokens_cached": summary.cache_read_tokens if summary else 0,
-        "cost": round(summary.total_cost, 6) if summary else 0.0,
+        # With make_milestones, the planner's call counts too.
+        "cost": round(
+            (summary.total_cost if summary else 0.0) + (planning["cost"] if planning else 0.0), 6
+        ),
         "cost_known": summary.cost_complete if summary else True,
         "retries_used": attempt.retries_used if attempt else 0,
         # How often the agent wrote a tool call as text instead of making it,
@@ -392,6 +428,8 @@ def execute_run(
         "independent_tests": _independent_record(attempt.independent_tests if attempt else None),
         # Arms with milestones: true: each milestone that ran, in order.
         "milestones": milestone_records if in_milestones else None,
+        # Arms with make_milestones: true: the planner and what it wrote.
+        "planned_milestones": planning,
         "error": error,
         "started_at": started_at,
         "finished_at": _now(),
@@ -629,6 +667,11 @@ def _print_plan(
             note += f" (time budget {_duration(arm.params['max_task_seconds'])} per run)"
         if arm.params.get("milestones"):
             note += " (in milestones: the time budget and limits apply to each one)"
+        if arm.params.get("make_milestones"):
+            note += (
+                f" (milestones planned by {arm.params['planner']} first: the time budget and "
+                "limits apply to each one)"
+            )
         if arm.params.get("handoff") == "restart":
             note += " (each rung restarts from the original files)"
         print(f"  {arm.name}: {arm.strategy}, {'; '.join(parts)}, {runs} run(s){note}")

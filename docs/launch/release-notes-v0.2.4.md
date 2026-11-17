@@ -133,6 +133,11 @@ See [Share a run's problems](../guides/run-records-and-costs.md#share-a-runs-pro
 
 ## Also
 
+- **`certo bench` can plan milestones first.** An arm with
+  `make_milestones: true` has a planner split each task before the run
+  (its own milestones taken out), then runs the planned milestones, so
+  hand-written milestones, planned ones and one go can be compared. See
+  [the benchmark file](../reference/bench-yaml.md).
 - **`--escalate` skips a local rung that can't be reached.** Before the
   first rung, Certo asks each local model's server whether it is up, as
   `--auto-model` does since 0.2.3. A switched-off Ollama machine no

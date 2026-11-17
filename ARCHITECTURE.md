@@ -591,6 +591,9 @@ given design was chosen.
   `clear_state`; `args.task` becomes the plan's absolute path, so
   `plan_run(milestones_file=...)` and `--resume` treat it as any
   milestone file. `plan_milestones(complete=...)` takes a fake in tests.
+  `certo bench` (`make_milestones: true`) calls `plan_milestones` in
+  `bench.execute_run` with `run_config` of the arm's `planner` (no
+  `choose_planner`, nothing saved), on `milestones.plain_task(plan)`.
 - **`docs_source.py`, `docs_index.py`, `ask_cmd.py`** — `certo ask`.
   `docs_source.find_docs`: `checkout_docs()` (a `pyproject.toml` and
   `docs/README.md` two folders above the module), else the cache, else

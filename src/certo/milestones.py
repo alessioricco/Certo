@@ -350,6 +350,15 @@ def whole_task(plan: MilestonePlan) -> str:
     return "\n\n".join(parts)
 
 
+def plain_task(plan: MilestonePlan) -> str:
+    """The task with its milestones taken out: the context and each
+    milestone's text in order, with no milestone heading and no acceptance
+    block, for a planner to split again (`certo bench`, `make_milestones`)."""
+    parts = [plan.context] if plan.context else []
+    parts.extend(m.text for m in plan.milestones if m.text)
+    return "\n\n".join(parts)
+
+
 def checks_up_to(plan: MilestonePlan, number: int) -> list[AcceptanceCheck]:
     """The acceptance checks of milestones 1 to `number`: an earlier
     milestone's check that stops passing is a regression."""

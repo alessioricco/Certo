@@ -18,7 +18,7 @@ from typing import Any
 import yaml
 
 from .context_window import MIN_CONTEXT_TOKENS
-from .bench_strategies import STRATEGIES, BenchConfigError
+from .bench_strategies import STRATEGIES, BenchConfigError, model_name
 from .bench_tasks import BUILTIN_TASKS_DIR, BenchTask, BenchTaskError, load_tasks
 from .catalog_check import load_checked_catalog
 from .model_catalog import (
@@ -101,6 +101,8 @@ _ARM_OPTIONS = (
     "tool_call_reminders",
     "skills_off",
     "milestones",
+    "make_milestones",
+    "planner",
     "root_prompt",
     "skills_dir",
     "wrap_up",
@@ -214,6 +216,19 @@ def _arms(raw: Any, catalog: dict[str, ModelCatalogEntry], where: str) -> list[A
         milestones = item.get("milestones", False)
         if not isinstance(milestones, bool):
             raise BenchConfigError(f"{arm_where}: 'milestones' must be true or false.")
+        make_milestones = item.get("make_milestones", False)
+        if not isinstance(make_milestones, bool):
+            raise BenchConfigError(f"{arm_where}: 'make_milestones' must be true or false.")
+        if make_milestones and milestones:
+            raise BenchConfigError(
+                f"{arm_where}: 'make_milestones' and 'milestones' can't both be true: one arm "
+                "runs the task's own milestones, the other has them planned again."
+            )
+        if "planner" in item and not make_milestones:
+            raise BenchConfigError(
+                f"{arm_where}: 'planner' works with 'make_milestones: true' only."
+            )
+        planner = model_name(item, "planner", catalog, arm_where) if "planner" in item else None
         root_prompt = item.get("root_prompt", True)
         if not isinstance(root_prompt, bool):
             raise BenchConfigError(f"{arm_where}: 'root_prompt' must be true or false.")
@@ -240,6 +255,10 @@ def _arms(raw: Any, catalog: dict[str, ModelCatalogEntry], where: str) -> list[A
             params["skills_off"] = skills_off
         if milestones:
             params["milestones"] = True
+        if make_milestones:
+            params["make_milestones"] = True
+            # Without 'planner', the arm's first model plans.
+            params["planner"] = planner or STRATEGIES[strategy].models(params)[0]
         if not root_prompt:
             params["root_prompt"] = False
         if skills_dir:

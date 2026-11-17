@@ -1125,6 +1125,84 @@ def test_milestones_must_be_true_or_false(tmp_path):
         load_bench_config(_bench_file(tmp_path, arms))
 
 
+_PLANNED = """## Milestone 1: add first
+Write add.
+
+## Milestone 2: then sub
+Write sub.
+"""
+
+
+def _fake_planner(monkeypatch, reply=_PLANNED, cost=0.02):
+    from certo import milestone_planner
+
+    asked: list[tuple[str, str]] = []
+
+    def complete(cfg, prompt):
+        asked.append((cfg.model, prompt))
+        return reply, cost
+
+    monkeypatch.setattr(milestone_planner, "_complete", complete)
+    return asked
+
+
+def test_a_make_milestones_arm_plans_then_runs_the_planned_milestones(
+    tmp_path, project_venv, monkeypatch, capsys
+):
+    asked = _fake_planner(monkeypatch)
+    arms = "  - {name: p, strategy: single, model: cloud-a, make_milestones: true}\n"
+    out = tmp_path / "out"
+    model = FakeMilestoneModel(project_venv, tmp_path)
+    assert _run(_milestone_bench(tmp_path, arms), out, model) == 0
+
+    assert "milestones planned by cloud-a first" in capsys.readouterr().out
+    (planner_model, prompt) = asked[0]
+    # The planner sees the task with its own milestones taken out.
+    assert (
+        "Write add(a, b) in calc.py." in prompt and "## Milestone" not in prompt.split("<task>")[1]
+    )
+    assert "acceptance" not in prompt.split("<task>")[1]
+    assert len(model.calls) == 2
+    assert "milestone 1 of 2: add first" in model.calls[0].task
+    # The task's acceptance checks apply to the last planned milestone only.
+    assert model.calls[0].checks is None
+    assert [c.path for c in model.calls[1].checks] == ["calc.py", "calc.py"]
+    (record,) = _records(out)
+    assert record["planned_milestones"]["planner"] == "cloud-a"
+    assert record["planned_milestones"]["titles"] == ["add first", "then sub"]
+    assert [m["title"] for m in record["milestones"]] == ["add first", "then sub"]
+    assert record["cost"] == pytest.approx(0.2 + 0.02)  # the planner counts
+
+
+def test_a_task_the_planner_keeps_whole_runs_as_one(tmp_path, project_venv, monkeypatch):
+    _fake_planner(monkeypatch, reply="ONE MILESTONE", cost=0.01)
+    arms = "  - {name: p, strategy: single, model: cloud-a, make_milestones: true}\n"
+    out = tmp_path / "out"
+    model = FakeMilestoneModel(project_venv, tmp_path)
+    _run(_milestone_bench(tmp_path, arms), out, model)
+
+    (call,) = model.calls
+    assert "## Milestone" not in call.task
+    assert [c.path for c in call.checks] == ["calc.py", "calc.py"]
+    (record,) = _records(out)
+    assert record["milestones"] is None
+    assert "one milestone" in record["planned_milestones"]["reason"]
+
+
+def test_make_milestones_and_milestones_cant_both_be_on(tmp_path):
+    arms = (
+        "  - {name: m, strategy: single, model: cloud-a, milestones: true, make_milestones: true}\n"
+    )
+    with pytest.raises(Exception, match="can't both be true"):
+        load_bench_config(_bench_file(tmp_path, arms))
+
+
+def test_planner_needs_make_milestones(tmp_path):
+    arms = "  - {name: m, strategy: single, model: cloud-a, planner: cloud-a}\n"
+    with pytest.raises(Exception, match="'planner' works with 'make_milestones: true' only"):
+        load_bench_config(_bench_file(tmp_path, arms))
+
+
 def test_the_real_stream_passes_acceptance_checks_on(monkeypatch):
     """A milestone task's checks reach runner.stream_task (seen failing live:
     the fakes took the argument, the real stream didn't)."""

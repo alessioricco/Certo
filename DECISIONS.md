@@ -2167,3 +2167,12 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   be final before it; a server that goes down mid-run fails as before.
   The last rung is kept when none answers, as `--auto-model` keeps its
   last candidate. Local execution only.
+
+- **Bench `make_milestones`: the planner gets the task without its
+  milestones; the acceptance checks go to the last planned milestone**
+  (2026-11-17). The hand-written split must not leak into the planned
+  one (headings and acceptance blocks out, the texts kept in order).
+  The planned milestones differ from the task's, so its per-milestone
+  checks can't be mapped; at the end they are all due, as for a one-go
+  arm. The planner's cost counts in the run's cost (its tokens aren't
+  recorded: `plan_milestones` returns only the cost).

@@ -76,7 +76,7 @@ first item is the suggested next one.
     milestones, the planned ones, one go), on qwen3.8 and Haiku. On the
     spreadsheet, milestones haven't helped qwen yet
     (`milestones-0.1.27.md`: stopped at milestone 2), so the gain isn't
-    a given. Needs a bench arm option that plans before the run. A
+    a given. The bench arm option is built (`make_milestones: true`). A
     default on (no flag) only after it shows no loss on either model.
   - *Planner-written acceptance checks:* left out for now (they can be
     wrong, as independent tests can); try them report-only once measured.
