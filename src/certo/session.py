@@ -192,7 +192,7 @@ def _short_model(model: str) -> str:
 
 
 def _duration(seconds: float) -> str:
-    minutes, rest = divmod(int(seconds), 60)
+    minutes, rest = divmod(round(seconds), 60)
     return f"{minutes}m {rest:02d}s" if minutes else f"{rest}s"
 
 
