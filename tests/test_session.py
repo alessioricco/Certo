@@ -372,3 +372,16 @@ def test_a_stopped_run_says_interrupted_with_the_sessions_time_and_its_folder():
     handle(state, "Build it", actions)
     facts = status_lines(state)[0]
     assert facts.startswith("haiku-5-5 · manual · /work/hello · interrupted · 0s")
+
+
+def test_a_question_mark_asks_the_docs_even_while_a_run_works():
+    state = _state()
+    actions, runs, commands, _ = _actions()
+    handle(state, "? what is a rung", actions)
+    handle(state, "?", actions)  # a bare ? is a message, a task
+    assert commands == [("ask", ["what is a rung"])]
+    assert runs == [["?"]]
+    state.live = session.LiveRun(mode="manual", model="m", refresh=lambda: None)
+    handle(state, "?why did it pick Opus", actions)
+    assert commands[-1] == ("ask", ["why did it pick Opus"])
+    assert state.queued == ""

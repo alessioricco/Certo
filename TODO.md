@@ -371,18 +371,12 @@ cut that first run's output from 2,949 lines to 1,021.)
   the table of contents plus keyword hits, answers that cite sections;
   DECISIONS.md "certo ask"). Left: (1) the question set on a local model
   (qwen3.8, at night) with `scripts/ask_eval.py`, recorded next to the
-  cloud run in `docs/benchmark/ask-0.2.4.md`; (2) `?` at the
-  `--interactive` and menu prompts; (3) `--mine`, opt-in: also send what
+  cloud run in `docs/benchmark/ask-0.2.4.md`; (2) `?` at the menu prompts
+  of `certo init` and `certo models` (menus.py; the run's prompts and the
+  session have it since 0.2.4); (3) `--mine`, opt-in: also send what
   `certo check` prints, `MODEL_DECISIONS.md` and the last run report
   (never keys), for "why did my run pick Opus?". Done when the question
   set passes on a local and a cloud model with no made-up answer.
-- **The interactive session: what's left** (built in 0.2.4,
-  docs/history/interactive-session.md). The model choice of
-  `--auto-model` and escalation confirmations aren't asked in the
-  session (`CERTO_INTERACTIVE` is off there; the prompt can now answer
-  them), and `?` there could call `certo ask`. The run's own
-  `Continue with: certo --resume` line shows in the session, where
-  typing a message is the way.
 - **A first run in minutes, with one model.** No catalog, no ladders:
   `certo init`, then a first verified project. Getting started shows only
   that path. Measured 2026-10-19 in an empty home folder: 88.5s from

@@ -36,7 +36,11 @@ the mouse wheel or PgUp/PgDn, and is printed to the terminal when you
 quit), and needs no new library. While a run works, the input box stays: the status line follows it live (the model working now,
 with the rung on a ladder or `--auto-model`'s choice, the steps, time,
 cost and last action), the run's questions are answered at the prompt,
-a message typed meanwhile waits for the run, and Ctrl-C stops it. Scripts are unaffected:
+a message typed meanwhile waits for the run, and Ctrl-C stops it. The
+model questions of `--interactive` are asked there too: which model
+`--auto-model` starts on, and whether `--escalate` tries the next one.
+`?` followed by a question asks Certo's docs, at the prompt or at any of
+Certo's questions (also with `certo --interactive`). Scripts are unaffected:
 without a terminal, or with `--json`, `certo` runs as before. See
 [The interactive session](../guides/interactive-mode.md#the-interactive-session).
 

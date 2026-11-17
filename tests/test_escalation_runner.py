@@ -496,9 +496,10 @@ def test_interactive_no_stops_with_the_current_verdict(tmp_path, fake_run):
     assert "you chose not to try the next model" in progress[-1]
 
 
-def test_without_interactive_the_question_is_never_asked(tmp_path, fake_run):
+def test_without_a_handler_the_climb_is_not_asked(tmp_path, fake_run):
+    # cli.py decides when to ask (--interactive, the session) by giving one.
     fake_run.script[:] = [("no_progress", 0, {}), ("verified", 0, {})]
-    outcome, _ = _run(tmp_path, _ladder(tmp_path), on_escalate=lambda q: pytest.fail("asked"))
+    outcome, _ = _run(tmp_path, _ladder(tmp_path), cfg=_cfg(tmp_path, interactive=True))
     assert len(outcome.rungs) == 2
 
 

@@ -85,12 +85,29 @@ agent's steps, the time, the cost so far and the last action:
 
 - **Questions come to the input box.** With asking before actions on,
   `Approve? [y/N]` replaces `>`: type the answer and press Enter. A
-  command that asks, such as `/rollback`, asks there too.
+  command that asks, such as `/rollback`, asks there too. So do the
+  questions `certo --interactive` asks about models: with
+  `--auto-model`, which model to start on (Enter takes the recommended
+  one, or type its number):
+
+  ```text
+  Use recommended model [qwen3.8-27b-local]? [Y/n or a number]:
+  ```
+
+  with `--escalate`, whether to try the next model before each climb;
+  with `/make-milestones`, whether to run the plan, edit it first, or
+  stop. The run waits for your answer. The agent itself still doesn't
+  stop to ask you (see [below](#why-the-agent-doesnt-ask-by-default)):
+  your next message continues the task.
+- **`?` asks Certo's docs**, as `/ask`: type `?how does auto-model pick
+  a model`. At the prompt, also while a run works; and at a run's
+  question, where the answer comes first and the question is asked
+  again. A `?` alone is an ordinary answer.
 - **A message you type waits** for the run to end, then continues it.
   The status line shows it (`queued: ...`); a second message replaces
   the first. If you stop the run, the waiting message isn't sent, and
   Certo says so.
-- **Commands:** `/help`, `/ask`, `/model`, `/mode`, `/effort`, `/clear`
+- **Commands:** `/help`, `/ask` (and `?`), `/model`, `/mode`, `/effort`, `/clear`
   and `/quit` work during a run. The others (`/verify`, `/new`,
   `/rollback`, ...) say they wait for the run to end. A command such as
   `/verify` works in the background too, with its name on the status
@@ -107,7 +124,7 @@ The commands:
 | `/milestones FILE` | Run a task file [milestone by milestone](run-in-milestones.md). |
 | `/make-milestones TASK` | Have a model [plan the milestones](run-in-milestones.md#let-certo-write-the-milestones), then run them. |
 | `/verify` | Check the project, with no agent (`certo verify`). |
-| `/ask QUESTION` | Answer from Certo's docs (`certo ask`). |
+| `/ask QUESTION` | Answer from Certo's docs (`certo ask`). `?QUESTION` does the same. |
 | `/report [NOTE]` | Write the last run's problems to a file (`certo report`). |
 | `/checkpoints` | List the checkpoints. |
 | `/rollback N` | Go back to checkpoint `N` (asks first). |
@@ -147,6 +164,9 @@ Or set `CERTO_INTERACTIVE=yes` in your settings.
   Type an answer to continue the same conversation, or press Enter to
   accept the work as done.
 - You can go back and forth as many times as you want.
+- At any of Certo's questions, an answer starting with `?` is a question
+  for [`certo ask`](../reference/commands.md#certo-ask): Certo answers it
+  from its docs and asks again.
 - Time spent waiting for you doesn't count against the task's time budget.
 
 **Only the first part of the task is interactive.** After you press Enter,

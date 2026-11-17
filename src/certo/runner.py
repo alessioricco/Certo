@@ -1980,9 +1980,10 @@ def stream_task(
     is only consulted when `cfg.interactive` is true, and only around the
     *initial* run — see the interactive loop below and DECISIONS.md
     for why task_tracker/verification retries stay fully
-    autonomous even in interactive mode. `on_model_choice` is only consulted
-    when both `cfg.model_selection == "auto"` and `cfg.interactive` are
-    true — see model_selection.py's `ModelChain` for the deterministic
+    autonomous even in interactive mode. `on_model_choice` is consulted
+    when `cfg.model_selection == "auto"` and it is given (cli.py gives it
+    under `--interactive` and in the interactive session, whose prompt
+    answers) — see model_selection.py's `ModelChain` for the deterministic
     scoring/fallback-chain design. `run_id` names this run's subfolder under
     `CERTO_ARTIFACTS_DIR` (see `artifacts.py`) — `server.py` passes its
     own `TaskRecord.id` so a task's artifacts folder matches `GET
@@ -2003,8 +2004,8 @@ def stream_task(
 
     `ladder` (or `cfg.model_selection == "escalate"`, which resolves one from
     the model files) runs the task as an escalation: see
-    `_stream_escalation`. `on_escalate` is asked before each climb when
-    `cfg.interactive` is set; `on_progress` receives the escalation lines
+    `_stream_escalation`. `on_escalate`, when given, is asked before each
+    climb (cli.py gives it as for `on_model_choice`); `on_progress` receives the escalation lines
     (the ladder, each climb) for a terminal.
 
     `cancel`, when set from another thread, stops the run at its next step
@@ -2206,7 +2207,7 @@ def _stream_task(
             )
             + f"Model order: {how}."
         )
-        if cfg.interactive and on_model_choice is not None:
+        if on_model_choice is not None:
             chosen_index = on_model_choice(ranked, 0, reason)
         model_chain = ModelChain(
             ranked,
@@ -3366,7 +3367,6 @@ def _stream_escalation(
                 if (
                     not stop
                     and nxt is not None
-                    and cfg.interactive
                     and io.on_escalate is not None
                     and not io.on_escalate(_escalation_question(result, nxt, rungs))
                 ):

@@ -2176,3 +2176,16 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   checks can't be mapped; at the end they are all due, as for a one-go
   arm. The planner's cost counts in the run's cost (its tokens aren't
   recorded: `plan_milestones` returns only the cost).
+
+- **The session asks the model questions of `--interactive`** (the
+  Author, 2026-11-17: "always in the session"). The auto-model choice,
+  each escalation climb and the `--make-milestones` plan are asked at the
+  session's prompt; the run waits for the answer. Not the continuation
+  question, and the agent's prompt keeps "nobody is available": in the
+  session the next message continues the task. The runner now asks
+  whenever cli.py passes a handler (no `cfg.interactive` check of its
+  own); cli.py passes one under `--interactive` or in the session.
+- **`?QUESTION` is `certo ask`, at any `_ask_line` prompt and in the
+  session** (2026-11-17). Answered, then the same question is asked
+  again; a bare `?` stays an answer. A failing ask prints one line and
+  never stops the run.

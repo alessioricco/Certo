@@ -106,7 +106,35 @@ _asker: Callable[[str], str] | None = None
 
 
 def _ask_line(prompt: str) -> str:
-    return (_asker or input)(prompt)
+    """Ask the user one line: at the terminal, or at the session's prompt.
+    An answer starting with `?` is a question for `certo ask`: it is
+    answered from Certo's docs, and the line is asked again."""
+    while True:
+        answer = (_asker or input)(prompt)
+        question = answer.strip()
+        if not (question.startswith("?") and question[1:].strip()):
+            return answer
+        _answer_from_docs(question[1:].strip())
+
+
+def _answer_from_docs(question: str) -> None:
+    """`certo ask QUESTION`, from a prompt; its failure never ends the run."""
+    try:
+        _main(["ask", question])
+    except SystemExit:
+        pass
+    except Exception as exc:  # noqa: BLE001 - a help question must not stop the run
+        print(f"certo ask failed: {exc}", file=sys.stderr)
+
+
+def _in_session() -> bool:
+    """True while a run works inside the interactive session, whose prompt
+    answers its questions."""
+    return _asker is not None
+
+
+def _continue_hint(resume_hint: str) -> str:
+    return "type a message to continue it" if _in_session() else resume_hint
 
 
 def _unproven_states() -> tuple[str, ...]:
@@ -839,7 +867,7 @@ def _make_milestones(
         for number, title in enumerate(planned.titles, start=1):
             print(f"  {number}. {title}")
         print(f"Edit it and run it again any time: certo --milestones {shlex.quote(path)}")
-        if not cfg.interactive:
+        if not (cfg.interactive or _in_session()):
             break
         answer = _ask_about_plan()
         if answer == "go":
@@ -1067,8 +1095,12 @@ def _run_task_command(
 
     on_confirm = _confirm_pending_actions if cfg.confirm_mode == "always" else None
     on_awaiting_input = _prompt_for_continuation if cfg.interactive else None
+    # Asked under --interactive and in the session, whose prompt answers;
+    # the continuation question stays --interactive only (in the session
+    # the next message continues the task).
+    asks_choices = cfg.interactive or _in_session()
     on_model_choice = (
-        _prompt_for_model_choice if (cfg.model_selection == "auto" and cfg.interactive) else None
+        _prompt_for_model_choice if (cfg.model_selection == "auto" and asks_choices) else None
     )
     save_state = cfg.save_state or resume_from is not None or milestone_state is not None
     resume_hint = "certo --resume" + (f" --project {args.project}" if args.project else "")
@@ -1128,7 +1160,7 @@ def _run_task_command(
             resume_from=resume,
             resume_instruction=instruction,
             ladder=ladder,
-            on_escalate=_confirm_escalation if cfg.interactive else None,
+            on_escalate=_confirm_escalation if asks_choices else None,
             on_notice=on_notice,
             run_progress=progress,
         )
@@ -1194,7 +1226,7 @@ def _run_task_command(
         keep_result(None, "interrupted")
         print("\nInterrupted.", file=sys.stderr)
         if save_state:
-            print(f"Continue with: {resume_hint}", file=sys.stderr)
+            print(f"Continue with: {_continue_hint(resume_hint)}", file=sys.stderr)
         return 130
     except Exception as exc:  # noqa: BLE001 - surfaced as a clean CLI error, not a traceback
         record_run(
@@ -1204,7 +1236,7 @@ def _run_task_command(
         keep_result(None, str(exc) or type(exc).__name__)
         print(f"Error: {exc}", file=sys.stderr)
         if save_state:
-            print(f"Continue with: {resume_hint}", file=sys.stderr)
+            print(f"Continue with: {_continue_hint(resume_hint)}", file=sys.stderr)
         return 1
 
     # The agent's last message is already on screen (the SDK's visualizer
@@ -1263,7 +1295,7 @@ def _run_task_command(
     )
     if failing and save_state:
         status = _short_path(status_path(cfg.workspace))
-        print(f"\nWhere it stopped: {status}. Continue with: {resume_hint}")
+        print(f"\nWhere it stopped: {status}. Continue with: {_continue_hint(resume_hint)}")
     if save_state and cfg.checkpoints:
         hint = _checkpoints_hint(cfg.workspace)
         if hint:

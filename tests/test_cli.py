@@ -1434,6 +1434,23 @@ def test_auto_model_only_passes_the_prompt_when_also_interactive(monkeypatch, tm
     assert calls["on_model_choice"] is cli._prompt_for_model_choice
 
 
+def test_in_the_session_auto_model_asks_but_never_the_continuation(monkeypatch, tmp_path):
+    calls = {}
+
+    def _fake_run_task(task, cfg=None, on_awaiting_input=None, on_model_choice=None, **_kw):
+        calls.update(on_model_choice=on_model_choice, on_awaiting_input=on_awaiting_input)
+        return _fake_result()
+
+    monkeypatch.setattr(cli, "load_config", lambda: _auto_model_cfg(tmp_path))
+    monkeypatch.setattr(cli, "run_task", _fake_run_task)
+    monkeypatch.setattr(cli, "_asker", lambda prompt: "")  # the session's prompt
+
+    cli.main(["do something", "--auto-model"])
+    assert calls["on_model_choice"] is cli._prompt_for_model_choice
+    # The next message in the session continues the task instead.
+    assert calls["on_awaiting_input"] is None
+
+
 def test_auto_model_without_a_catalog_prints_only_the_error(monkeypatch, tmp_path, capsys):
     """Missing model files must stop before the banner or any run record (#12)."""
     from certo import run_history
@@ -2221,6 +2238,45 @@ def test_model_flag_with_the_escalate_setting_is_an_error(monkeypatch, tmp_path,
 
     assert cli.main(["do it", "--model", "openai/x"]) == 1
     assert "--model can't be used while CERTO_MODEL_SELECTION=escalate" in capsys.readouterr().err
+
+
+def test_in_the_session_escalate_asks_before_each_climb(monkeypatch, tmp_path):
+    calls: list = []
+    monkeypatch.setattr(cli, "load_config", lambda: _escalation_cfg(tmp_path))
+    monkeypatch.setattr(cli, "run_task", _recording_run_task(calls))
+    monkeypatch.setattr(cli, "_asker", lambda prompt: "")
+
+    cli.main(["do it", "--escalate"])
+    assert calls[0]["on_escalate"] is cli._confirm_escalation
+
+
+def test_a_question_mark_at_a_prompt_asks_the_docs_then_asks_again(monkeypatch):
+    answers = iter(["?  what is a rung  ", "?", "y"])
+    asked: list[list[str]] = []
+    monkeypatch.setattr(cli, "_asker", lambda prompt: next(answers))
+    monkeypatch.setattr(cli, "_main", lambda argv: asked.append(argv) or 0)
+
+    assert cli._ask_line("Climb? ") == "?"  # a bare ? is an answer, not a question
+    assert asked == [["ask", "what is a rung"]]
+    assert cli._ask_line("Climb? ") == "y"
+
+
+def test_a_failing_docs_question_doesnt_stop_the_prompt(monkeypatch, capsys):
+    answers = iter(["?why", ""])
+    monkeypatch.setattr(cli, "_asker", lambda prompt: next(answers))
+
+    def broken(argv):
+        raise RuntimeError("no docs")
+
+    monkeypatch.setattr(cli, "_main", broken)
+    assert cli._ask_line("Climb? ") == ""
+    assert "certo ask failed: no docs" in capsys.readouterr().err
+
+
+def test_the_continue_hint_in_the_session_is_a_message(monkeypatch):
+    assert cli._continue_hint("certo --resume") == "certo --resume"
+    monkeypatch.setattr(cli, "_asker", lambda prompt: "")
+    assert cli._continue_hint("certo --resume") == "type a message to continue it"
 
 
 def test_escalate_without_a_catalog_says_what_to_do(monkeypatch, tmp_path, capsys):

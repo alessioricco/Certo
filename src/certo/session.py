@@ -300,6 +300,7 @@ def help_lines() -> list[str]:
     lines += [
         "",
         "A message is a task. The next ones continue it, until /new.",
+        "?QUESTION asks Certo's docs, as /ask; also at a run's questions.",
     ]
     return lines
 
@@ -327,6 +328,10 @@ def handle(state: SessionState, line: str, actions: Actions) -> bool:
     """Do what one input line asks. False when the session should end."""
     line = line.strip()
     if not line:
+        return True
+    if line.startswith("?") and line[1:].strip():
+        # A question about Certo, as /ask; also while a run works.
+        actions.command("ask", [line[1:].strip()])
         return True
     if not line.startswith("/"):
         if state.live is not None:

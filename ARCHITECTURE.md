@@ -528,7 +528,11 @@ given design was chosen.
   `cancel_token(live.cancel)`: Ctrl-C at the prompt sets it, and the
   runner raises `RunCancelled` between steps (cli treats it as Ctrl-C).
   The run's `input()` calls go through `cli._ask_line`, which the session
-  points at `LiveRun.ask` (a queue the prompt answers). The status line
+  points at `LiveRun.ask` (a queue the prompt answers); `cli._in_session()`
+  (`_asker` set) makes cli pass the model-choice and escalation handlers
+  and the plan question, as `--interactive` does, and `_continue_hint`
+  replaces the `certo --resume` hint. `_ask_line` answers a `?QUESTION`
+  with `certo ask` and asks again. The status line
   reads the run's `RunProgress` (steps and last action from the runner's
   `on_event`, `live_cost()`, `model`/`rung` from `attach_progress` and
   `model_changed`). The holder's JSON result gives the project, folder,
