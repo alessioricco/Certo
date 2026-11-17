@@ -671,7 +671,11 @@ given design was chosen.
   prompt_toolkit's `choice()` for one choice, and `checklist()`, an
   inline Application (prompt_toolkit's only multi-select is a full-screen
   dialog). Its state, `ChecklistState`, is plain Python and tested
-  without a terminal. `Prompter` uses the menus only with its default
+  without a terminal. `?` exits either one with `menus.ASK`; the menu
+  asks the question (`docs_question`), answers it with `ask_main` (a
+  `ConfigError` first gives the docs link instead), and draws itself
+  again. `Prompter._line` reads `?QUESTION` the same way for typed
+  answers (`docs_fn`, injectable); `secret` never does. `Prompter` uses the menus only with its default
   input and output on a real terminal (`menus.available()`: both ends a
   TTY, `TERM` not empty or `dumb`); tests and pipes get the numbered
   questions. Checked in a pseudo-terminal with real key presses.

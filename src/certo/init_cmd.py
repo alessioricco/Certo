@@ -183,8 +183,11 @@ class Prompter:
         secret_fn: Callable[[str], str] = getpass.getpass,
         out: TextIO | None = None,
         menus: bool | None = None,
+        docs_fn: Callable[[str], None] | None = None,
     ) -> None:
         self._input = input_fn
+        # An answer starting with "?" is a question for `certo ask`.
+        self._docs = docs_fn or _menus.answer_from_docs
         self._secret = secret_fn
         self.out = out or sys.stdout
         if menus is None:
@@ -200,9 +203,18 @@ class Prompter:
         except (EOFError, KeyboardInterrupt) as exc:
             raise Cancelled from exc
 
+    def _line(self, prompt: str) -> str:
+        """One typed answer; "?QUESTION" is answered from Certo's docs and
+        the prompt asked again. Never for secrets."""
+        while True:
+            answer = self._read(self._input, prompt)
+            if not (answer.startswith("?") and answer[1:].strip()):
+                return answer
+            self._docs(answer[1:].strip())
+
     def ask(self, question: str, default: str | None = None) -> str:
         suffix = f" [{default}]" if default else ""
-        answer = self._read(self._input, f"{question}{suffix}: ")
+        answer = self._line(f"{question}{suffix}: ")
         return answer or (default or "")
 
     def confirm(self, question: str) -> bool:
@@ -212,7 +224,7 @@ class Prompter:
             except (KeyboardInterrupt, EOFError) as exc:
                 raise Cancelled from exc
         while True:
-            answer = self._read(self._input, f"{question} [Y/n]: ").lower()
+            answer = self._line(f"{question} [Y/n]: ").lower()
             if answer in ("", "y", "yes"):
                 return True
             if answer in ("n", "no"):

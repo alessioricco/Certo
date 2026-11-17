@@ -135,3 +135,75 @@ def test_checklist_enter_on_an_action_returns_its_row_and_keeps_the_choice():
 def test_checklist_ctrl_c_raises_keyboard_interrupt():
     with pytest.raises(KeyboardInterrupt):
         _press(" " + CTRL_C, menus.checklist, "Models", ChecklistState(_rows()))
+
+
+# --- "?": a question for Certo's docs, then the menu again -------------------
+
+
+@pytest.fixture
+def asked(monkeypatch):
+    calls: list[str] = []
+    monkeypatch.setattr(menus, "docs_question", lambda: calls.append("asked"))
+    return calls
+
+
+def test_question_mark_in_a_menu_asks_the_docs_then_shows_it_again(asked):
+    assert _press("?" + DOWN + ENTER, menus.choose, "Pick", ["a", "b"]) == 1
+    assert asked == ["asked"]
+
+
+def test_question_mark_in_a_checklist_keeps_the_ticks(asked):
+    state = ChecklistState(_rows())
+    result = _press(DOWN + " " + "?" + ENTER, menus.checklist, "Models", state)
+    assert result is None and asked == ["asked"]
+    assert state.rows[2].checked is True
+
+
+def test_docs_question_answers_what_was_typed(monkeypatch):
+    answered: list[str] = []
+    monkeypatch.setattr(menus, "answer_from_docs", answered.append)
+    menus.docs_question(lambda _p: "  what is a rung ")
+    menus.docs_question(lambda _p: "")  # Enter: back to the menu
+    assert answered == ["what is a rung"]
+
+
+def test_a_failing_docs_answer_prints_one_line(monkeypatch, capsys):
+    def broken(argv):
+        raise RuntimeError("no model yet")
+
+    monkeypatch.setattr("certo.ask_cmd.ask_main", broken)
+    monkeypatch.setattr("certo.ask_cmd._ask_config", lambda: None)
+    menus.answer_from_docs("why")
+    assert "certo ask failed: no model yet" in capsys.readouterr().err
+
+
+def test_prompter_answers_question_marks_and_asks_again():
+    answers = iter(["?what is a profile", "?", "y", "?why", "my-api"])
+    docs: list[str] = []
+    prompter = Prompter(input_fn=lambda _p: next(answers), menus=False, docs_fn=docs.append)
+
+    # A bare ? is an answer (not y or n here, so the question comes back).
+    assert prompter.confirm("Go on?") is True
+    assert prompter.ask("Project name") == "my-api"
+    assert docs == ["what is a profile", "why"]
+
+
+def test_secrets_are_never_read_as_questions():
+    docs: list[str] = []
+    prompter = Prompter(secret_fn=lambda _p: "?not-a-question", menus=False, docs_fn=docs.append)
+    assert prompter.secret("API key") == "?not-a-question"
+    assert docs == []
+
+
+def test_with_no_model_yet_the_docs_link_is_given(monkeypatch, capsys):
+    from certo.config import ConfigError
+
+    def no_model():
+        raise ConfigError("CERTO_LLM_API_KEY is required")
+
+    monkeypatch.setattr("certo.ask_cmd._ask_config", no_model)
+    monkeypatch.setattr("certo.ask_cmd.ask_main", lambda argv: pytest.fail("asked"))
+    menus.answer_from_docs("which provider")
+    out = capsys.readouterr().out
+    assert "certo ask needs a model, and none is set up yet" in out
+    assert menus.DOCS_URL in out

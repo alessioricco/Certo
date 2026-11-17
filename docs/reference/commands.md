@@ -1079,6 +1079,17 @@ no copy kept), no model is configured, or the model fails. On 30 test
 questions, Haiku answered all right, and said "not covered" for each of
 the 6 the docs don't answer ([the record](../benchmark/ask-0.2.4.md)).
 
+**Without leaving what you are doing.** In the menus of `certo init`,
+`certo models` and the other setup commands, press `?`, type the
+question and press Enter: the answer comes, then the menu again. At a
+question you answer by typing (a run's questions under `--interactive`,
+a numbered question, a name), an answer starting with `?` is a question
+(`?how do I give it longer`); a `?` alone is an ordinary answer. A key
+is never read as a question. In the
+[interactive session](../guides/interactive-mode.md#the-interactive-session),
+`?QUESTION` works at the prompt too. While no model is set up (the
+first `certo init`), it says so and gives the link to the docs.
+
 ## `certo mcp`
 
 Run Certo as an MCP server over stdio, for an editor or an agent. The

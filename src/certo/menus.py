@@ -14,9 +14,44 @@ from __future__ import annotations
 
 import os
 import sys
+from collections.abc import Callable
 from dataclasses import dataclass, field
 
-HELP = "↑↓ move · Space select · Enter done, or open a line under More"
+HELP = "↑↓ move · Space select · Enter done, or open a line under More · ? ask Certo's docs"
+DOCS_HINT = "? ask Certo's docs"
+DOCS_URL = "https://github.com/alessioricco/certo/blob/main/docs/README.md"
+# What a menu returns when "?" is pressed: never a valid index.
+ASK = "?"
+
+
+def answer_from_docs(question: str) -> None:
+    """`certo ask QUESTION`, from a menu or a question; a failure prints one
+    line (no model set up yet, say) and the menu goes on."""
+    from .ask_cmd import _ask_config, ask_main
+    from .config import ConfigError
+
+    try:
+        _ask_config()
+    except ConfigError:
+        # The usual case during the first `certo init`: no model yet.
+        print(f"certo ask needs a model, and none is set up yet. The docs: {DOCS_URL}")
+        return
+    try:
+        ask_main([question])
+    except SystemExit:
+        pass
+    except Exception as exc:  # noqa: BLE001 - a help question must not end the setup
+        print(f"certo ask failed: {exc}", file=sys.stderr)
+
+
+def docs_question(read: Callable[[str], str] = input) -> None:
+    """After "?" in a menu: ask for the question, then answer it."""
+    try:
+        question = read("Your question about Certo (Enter to go back): ").strip()
+    except (EOFError, KeyboardInterrupt):
+        return
+    if question:
+        answer_from_docs(question)
 
 
 def available() -> bool:
@@ -30,15 +65,29 @@ def available() -> bool:
 
 
 def choose(question: str, options: list[str], default: int = 0) -> int:
-    """One of `options`, by index. Ctrl-C raises KeyboardInterrupt."""
+    """One of `options`, by index. "?" asks Certo's docs, then shows the
+    menu again. Ctrl-C raises KeyboardInterrupt."""
+    from prompt_toolkit.key_binding import KeyBindings
     from prompt_toolkit.shortcuts import choice
 
-    return choice(
-        message=question,
-        options=[(i, option) for i, option in enumerate(options)],
-        default=default,
-        symbol="▸",
-    )
+    keys = KeyBindings()
+
+    @keys.add("?")
+    def _question(event) -> None:
+        event.app.exit(result=ASK)
+
+    while True:
+        picked = choice(
+            message=question,
+            options=[(i, option) for i, option in enumerate(options)],
+            default=default,
+            symbol="▸",
+            bottom_toolbar=DOCS_HINT,
+            key_bindings=keys,
+        )
+        if picked != ASK:
+            return picked
+        docs_question()
 
 
 def confirm(question: str, default: bool = True) -> bool:
@@ -103,7 +152,16 @@ class ChecklistState:
 def checklist(question: str, state: ChecklistState) -> int | None:
     """Draw `state` until Enter. Returns the action row to run, or None
     when the list is done; `state.rows[i].checked` holds the choice.
-    Ctrl-C raises KeyboardInterrupt."""
+    "?" asks Certo's docs, then draws it again. Ctrl-C raises
+    KeyboardInterrupt."""
+    while True:
+        picked = _checklist_once(question, state)
+        if picked != ASK:
+            return picked
+        docs_question()
+
+
+def _checklist_once(question: str, state: ChecklistState) -> int | str | None:
     from prompt_toolkit.application import Application
     from prompt_toolkit.key_binding import KeyBindings
     from prompt_toolkit.layout import HSplit, Layout, Window
@@ -126,6 +184,10 @@ def checklist(question: str, state: ChecklistState) -> int | None:
     @keys.add("enter")
     def _enter(event) -> None:
         event.app.exit(result=state.enter())
+
+    @keys.add("?")
+    def _question(event) -> None:
+        event.app.exit(result=ASK)
 
     @keys.add("c-c")
     def _cancel(event) -> None:

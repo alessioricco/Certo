@@ -52,7 +52,9 @@ certo init
 ```
 
 `certo init` asks a few questions. Choose with ↑↓ and Enter, or type an
-answer; Enter alone accepts the default shown in `[brackets]`:
+answer; Enter alone accepts the default shown in `[brackets]`. Press `?`
+in a menu to ask a question about Certo (it needs a model, so it works
+once one is set up):
 
 ```console
 $ certo init

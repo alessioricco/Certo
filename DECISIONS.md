@@ -2189,3 +2189,10 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   session** (2026-11-17). Answered, then the same question is asked
   again; a bare `?` stays an answer. A failing ask prints one line and
   never stops the run.
+
+- **`?` in the setup menus is a key, then a typed question** (2026-11-17).
+  Arrow menus have nothing to type into, so `?` leaves the menu, asks
+  for the question, answers it, and draws the menu again with its
+  cursor and ticks. A secret prompt never reads `?` as a question (a key
+  could start with one). With no model set up (the first `certo init`),
+  the docs link instead of a configuration error.
