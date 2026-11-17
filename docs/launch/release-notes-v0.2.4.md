@@ -55,6 +55,14 @@ fit each kind of task; your own ratings still win. See
 `certo models choose` then makes a project's ladder and task profiles
 again from the new ratings, and asks before replacing ones you edited.
 
+With the computed ratings a local model you list may start more tasks
+than before. On Certo's 13 bundled tasks, `qwen3.8:27b` started 11 of
+them instead of Claude Haiku: it solved 12 of 13, for a third of the
+cost, but runs took about seven times longer
+([the benchmark](../benchmark/ratings-0.2.4.md)). To keep a local model
+for some tasks only, add `speed: 4` to the other profiles' needs, or
+leave it out of a project's `use`.
+
 ## New: Certo writes the milestones
 
 Milestone mode runs a big task one checked piece at a time, but you had

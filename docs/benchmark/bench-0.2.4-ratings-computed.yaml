@@ -1,0 +1,13 @@
+# Auto-model on computed ratings (Certo 0.2.4, TODO C): which model each
+# bundled task starts on, and how it ends, with the same five models.
+# Compare with bench-0.2.4-ratings-hand.yaml.
+# Run from the repository root (a local model may take part: a night slot,
+# under caffeinate -i, with the fan on turing):
+#   caffeinate -i certo bench --config docs/benchmark/bench-0.2.4-ratings-computed.yaml --pause-between 180 --yes
+models_file: docs/benchmark/models-0.2.4-ratings.yaml
+models_list_file: docs/benchmark/models_list-0.2.4-computed.yaml
+task_profiles_file: src/certo/data/task_profiles.yaml
+tasks: all
+repeats: 1
+arms:
+  - {name: auto-computed, strategy: auto}

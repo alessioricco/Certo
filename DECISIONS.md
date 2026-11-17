@@ -2152,3 +2152,11 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   so the scrollback keeps it; the mouse is captured (wheel scrolls;
   selecting text needs Shift/Option).
 
+- **A listed local model takes the tasks it fits, computed ratings
+  included** (2026-11-17). The ratings benchmark
+  (docs/benchmark/ratings-0.2.4.md) moved 11 of 13 bundled tasks from
+  Haiku to `qwen3.8` (code 3.4 fits `default`'s 3; free goes first):
+  12/13 instead of 13/13, a third of the cost, about 7x slower. The
+  Author kept it: listing a local model means wanting it used; leaving
+  it out of `models.yaml`/`use`, or `speed: 4` in a profile, keeps it
+  off. No speed need added to `default`.

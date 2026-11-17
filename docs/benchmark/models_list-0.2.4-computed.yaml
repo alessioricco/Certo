@@ -1,0 +1,30 @@
+# Computed ratings (Certo 0.2.4): the five models of the ratings benchmark,
+# copied from Certo's list on 2026-11-16,
+# with the ratings `certo models refresh` computed on the Author's machine
+# (model data of 2026-11-16, LMArena and Epoch AI, CC-BY-4.0; own runs). A bench reads a list as written.
+models:
+- name: qwen3.8-27b-local
+  model: ollama/qwen3.8:27b
+  reasoning_effort: ''
+  timeout_seconds: 1200
+  ratings: {reasoning: 1.8, precision: 1.7, code: 3.4, writing: 1.7, speed: 2.0, cost: 5.0}
+- name: gpt-6-luna
+  model: openai/gpt-6-luna
+  reasoning_effort: high
+  timeout_seconds: 300
+  ratings: {reasoning: 3.2, precision: 3.5, code: 3.6, writing: 3.4, speed: 4.0, cost: 4.8}
+- name: gpt-6.1-terra
+  model: openai/gpt-6.1-terra
+  reasoning_effort: high
+  timeout_seconds: 600
+  ratings: {reasoning: 4.9, precision: 3, code: 4.4, writing: 3, speed: 4.0, cost: 4.3}
+- name: claude-haiku-5-5
+  model: anthropic/claude-haiku-5-5
+  reasoning_effort: high
+  timeout_seconds: 300
+  ratings: {reasoning: 3.8, precision: 2.4, code: 4.4, writing: 3.1, speed: 4.0, cost: 4.8}
+- name: claude-sonnet-5-5
+  model: anthropic/claude-sonnet-5-5
+  reasoning_effort: high
+  timeout_seconds: 600
+  ratings: {reasoning: 4.8, precision: 3.7, code: 4.8, writing: 4.3, speed: 4.0, cost: 3.1}

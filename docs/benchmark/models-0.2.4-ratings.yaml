@@ -1,0 +1,14 @@
+# Which models the ratings benchmark (Certo 0.2.4) uses. Keys are read
+# from the environment, never written here. The Ollama server is the one
+# on another machine on the local network.
+models:
+  - name: qwen3.8-27b-local
+    base_url: http://turing.local:11434
+  - name: claude-haiku-5-5
+    api_key: "${ANTHROPIC_API_KEY}"
+  - name: claude-sonnet-5-5
+    api_key: "${ANTHROPIC_API_KEY}"
+  - name: gpt-6-luna
+    api_key: "${OPENAI_API_KEY}"
+  - name: gpt-6.1-terra
+    api_key: "${OPENAI_API_KEY}"
