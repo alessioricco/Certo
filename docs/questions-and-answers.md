@@ -127,8 +127,10 @@ a provider failure, moves the task.
 
 ### Can Certo tell a stuck model from a slow one, on local models?
 
-Certo never switches because a model is slow. A slow local model is
-handled with limits you set:
+With `--auto-model`, Certo never switches because a model is slow. With
+`--escalate`, each rung but the last gets half of the time left, and a
+rung that uses up its share hands the task on, slow or stuck. A slow
+local model is otherwise handled with limits you set:
 
 - **One model call.** `timeout_seconds` in the model files, or
   `CERTO_LLM_TIMEOUT_SECONDS`, sets how long one call may take
@@ -137,7 +139,8 @@ handled with limits you set:
   count as a provider failure ("the provider didn't answer in time"), and
   the task moves on.
 - **The whole task.** `CERTO_MAX_TASK_SECONDS` and `CERTO_MAX_TASK_COST`
-  cover every model together. When one runs out, Certo stops with
+  cover every model together. When one runs out (for the time, the whole
+  budget, not a rung's share), Certo stops with
   `budget_exhausted` or `cost_exhausted` instead of moving on: these are
   your limits, not a sign that the model was too weak.
 - **Steps.** A model that uses all its steps (`CERTO_MAX_ITERATIONS`) is

@@ -197,8 +197,8 @@ limitation below.
   when it exits successfully. `node --test`, Jest, Vitest, pytest, Go and
   Cargo are recognised. See
   [Verification by language](reference/verification-by-language.md#node-in-detail).
-- **Escalation climbs only on a verification signal or a provider
-  failure.** In a project with nothing to check, each rung ends
+- **Escalation climbs only on a verification signal, a provider
+  failure, or a rung using up its share of the time.** In a project with nothing to check, each rung ends
   `inconclusive`: the task moves to one more model, then the climb stops.
   In Docker mode a provider failure can't be told apart from another run
   error. See [Escalate between models](guides/escalate-between-models.md).

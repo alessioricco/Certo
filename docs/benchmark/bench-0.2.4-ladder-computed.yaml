@@ -1,0 +1,15 @@
+# The ladder Certo derives from the computed ratings (Certo 0.2.4, TODO C):
+# the bundled tasks with the same five models as
+# bench-0.2.4-ratings-computed.yaml, but escalating instead of picking
+# one model. The auto-model arm of 2026-11-16 left the Go and Rust tasks
+# on qwen3.8 until the budget ran out; a ladder hands them on. 60 minutes
+# for the ladder: each rung but the last gets half of the time left
+# (qwen3.8 30 minutes, then 15, then the rest), as since 74278ad.
+# A night slot, under caffeinate -i, with the fan on turing:
+#   caffeinate -i certo bench --config docs/benchmark/bench-0.2.4-ladder-computed.yaml --pause-between 600 --yes
+models_file: docs/benchmark/models-0.2.4-ratings.yaml
+models_list_file: docs/benchmark/models_list-0.2.4-computed.yaml
+tasks: all
+repeats: 1
+arms:
+  - {name: ladder-computed, strategy: escalate, max_task_seconds: 3600}

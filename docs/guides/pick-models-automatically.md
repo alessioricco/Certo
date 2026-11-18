@@ -341,8 +341,6 @@ removes those of the milestones after it.
 - Under `--execution docker`, the first choice works, but Certo can't
   switch models in the middle of a task, and doesn't check whether a
   local model can be reached.
-- Only `--auto-model` checks whether a local model can be reached;
-  `--escalate` doesn't yet.
 
 ## Automatic choice or escalation?
 

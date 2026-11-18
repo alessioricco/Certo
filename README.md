@@ -118,7 +118,7 @@ certo "Fix the failing test in payments.py" --escalate other-provider
 
 When the first provider fails (an outage, a rate limit, a rejected key), the task climbs to the next model, and Certo records it as a provider failure, not as a model that couldn't do the work. This ladder hasn't been benchmarked yet.
 
-On every ladder, your own limits stop the climb instead: a task that runs out of time (`budget_exhausted`), or reaches `CERTO_MAX_TASK_COST`, keeps the verdict it has. What makes Certo climb, rung by rung: [Escalate between models](https://github.com/alessioricco/certo/blob/main/docs/guides/escalate-between-models.md).
+Each rung but the last gets half of the time left, so a slow model hands on while there is time for the next. Your own limits stop the climb: a task that uses up its whole time budget (`budget_exhausted`), or reaches `CERTO_MAX_TASK_COST`, keeps the verdict it has. What makes Certo climb, rung by rung: [Escalate between models](https://github.com/alessioricco/certo/blob/main/docs/guides/escalate-between-models.md).
 
 ## Any model, and the right one for each task
 
