@@ -2780,7 +2780,7 @@ def test_interactive_make_milestones_can_stop_before_the_first(monkeypatch, tmp_
 def test_interactive_make_milestones_runs_the_plan_as_the_user_edited_it(monkeypatch, tmp_path):
     calls: list = []
     plan = tmp_path / "project" / ".certo" / "milestones.md"
-    answers = iter(["2", "edited", "1"])
+    answers = iter(["2", "edited", "1", "", ""])  # then Enter between milestones
 
     def answer(prompt=""):
         reply = next(answers)
@@ -3494,3 +3494,59 @@ def test_milestones_and_no_milestones_together_are_refused(capsys):
     with pytest.raises(SystemExit):
         cli.main(["--milestones", "--no-milestones", "task.md"])
     assert "not allowed with argument" in capsys.readouterr().err
+
+
+def test_interactive_asks_between_milestones_and_passes_a_note_on(monkeypatch, tmp_path, capsys):
+    calls: list = []
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path, interactive=True))
+    monkeypatch.setattr(cli, "run_task", _milestone_run_task(calls, ["verified", "verified"]))
+    prompts: list[str] = []
+    monkeypatch.setattr(
+        "builtins.input", lambda prompt="": prompts.append(prompt) or "keep dates as text"
+    )
+
+    assert cli.main(["--milestones", _milestone_file(tmp_path)]) == 0
+
+    assert len(prompts) == 1  # after milestone 1 only: nothing follows milestone 2
+    assert "Milestone 1 of 2 is verified. Next: milestone 2, due dates." in prompts[0]
+    assert "A note from the user for this milestone:\nkeep dates as text" in calls[1]["task"]
+    assert "A note from the user" not in calls[0]["task"]
+
+
+def test_interactive_enter_goes_on_without_a_note(monkeypatch, tmp_path):
+    calls: list = []
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path, interactive=True))
+    monkeypatch.setattr(cli, "run_task", _milestone_run_task(calls, ["verified", "verified"]))
+    monkeypatch.setattr("builtins.input", lambda prompt="": "")
+
+    assert cli.main(["--milestones", _milestone_file(tmp_path)]) == 0
+    assert len(calls) == 2
+    assert "A note from the user" not in calls[1]["task"]
+
+
+def test_interactive_s_stops_between_milestones_and_keeps_the_rest(monkeypatch, tmp_path, capsys):
+    from certo.milestones import load_state
+
+    calls: list = []
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path, interactive=True))
+    monkeypatch.setattr(cli, "run_task", _milestone_run_task(calls, ["verified", "verified"]))
+    monkeypatch.setattr("builtins.input", lambda prompt="": "s")
+
+    assert cli.main(["--milestones", _milestone_file(tmp_path)]) == 0
+
+    assert len(calls) == 1
+    out = capsys.readouterr().out
+    assert "Stopped before milestone 2 of 2, as you asked." in out
+    assert "1. storage: verified\n  2. due dates: not started" in out
+    assert "The next milestones are kept. Continue with: certo --resume" in out
+    assert load_state(str(tmp_path / "project")).next_number() == 2
+
+
+def test_without_interactive_milestones_never_ask(monkeypatch, tmp_path):
+    calls: list = []
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))
+    monkeypatch.setattr(cli, "run_task", _milestone_run_task(calls, ["verified", "verified"]))
+    monkeypatch.setattr("builtins.input", lambda prompt="": pytest.fail("asked"))
+
+    assert cli.main(["--milestones", _milestone_file(tmp_path)]) == 0
+    assert len(calls) == 2

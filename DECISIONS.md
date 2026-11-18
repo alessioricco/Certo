@@ -2220,3 +2220,12 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   running out still stops. Half, not an equal split: the first rung is
   the cheap one and should get the most time. Supersedes the "one budget
   for every rung" part of the escalation entries.
+
+- **`--interactive` asks between milestones** (2026-11-18; a user's task
+  of 2026-11-10 said "STOP and wait for my approval"). After each
+  verified milestone with another after it: Enter goes on, text is a
+  note added to the next milestone's task, `s` stops with the plan kept
+  for `--resume`. Asked under `--interactive` and in the session (the
+  "always in the session" rule for `--interactive` questions); never in
+  a plain run, over MCP or in `certo bench`. A stop leaves the last
+  verdict (`verified`) and exit 0, with the continue hint.

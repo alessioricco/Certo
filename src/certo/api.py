@@ -518,6 +518,7 @@ def run_milestones(
     acceptance_checks: Any,
     history: dict,
     record_run: Callable[..., None],
+    between: Callable[[int, Any, int], tuple[bool, str]] | None = None,
 ) -> Any:
     """Milestone mode: run each milestone not yet verified, in order, each
     in its own conversation, and stop at the first that isn't `verified`.
@@ -525,7 +526,10 @@ def run_milestones(
     rungs of all of them. `.certo/milestones.json` records each verdict as it comes.
     `say` gets each line to show (a terminal prints them; the MCP server keeps
     them as notices). `run_one(text, resume, instruction, checks)` runs one
-    milestone and returns what `run_task` returns."""
+    milestone and returns what `run_task` returns. `between(done, next_milestone,
+    total)`, when given, is asked after each verified milestone that has
+    another after it: (False, _) stops there, (True, note) goes on, with the
+    note (if any) added to the next milestone's task."""
     from .escalation import format_rung_lines
     from .milestones import checks_up_to, handover, milestone_task, summary_lines
     from .milestones import save_state as save_milestones
@@ -620,8 +624,18 @@ def run_milestones(
             break
         time_retries = 0
         left = handover(workspace, result, number)
-        number = state.next_number()
+        done, number = number, state.next_number()
         first = False
+        if number is not None and between is not None:
+            go_on, note = between(done, state.plan.get(number), total)
+            if not go_on:
+                say(
+                    f"Stopped before milestone {number} of {total}, as you asked. The plan "
+                    "is kept: resuming starts there."
+                )
+                break
+            if note.strip():
+                carry_on = f"\n\nA note from the user for this milestone:\n{note.strip()}"
     say("\nMilestones:")
     for line in summary_lines(state):
         say(f"  {line}")

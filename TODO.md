@@ -86,13 +86,6 @@ first item is the suggested next one.
     ahead", and the whole plan ran as one task on one budget of 50
     steps. Certo could spot such a plan file and offer to run it
     milestone by milestone, or the planner could rewrite it.
-  - *Stop for approval:* a task file written for a person who approves
-    each milestone ("STOP and wait for my approval", a user's task,
-    2026-11-10). `--interactive` doesn't pause between milestones; it
-    could show each verified milestone's summary and ask before the
-    next. A milestone with nothing to check (a plan only) ends
-    `inconclusive` and stops the run, which works as a pause, by
-    accident: `certo --resume "approved"` continues it.
   - *Level-1 headings after the milestones* (`# Definition of done`,
     `# Begin`) belong to the last milestone's text; they could go to
     every milestone, as context.

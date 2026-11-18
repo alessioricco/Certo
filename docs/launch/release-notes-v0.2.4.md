@@ -148,6 +148,10 @@ See [Share a run's problems](../guides/run-records-and-costs.md#share-a-runs-pro
 - **`certo bench --resume` needs no `--config`.** It reads the benchmark
   file the results folder was made from, so the "continue with" line
   printed after Ctrl-C works as written.
+- **Milestones can wait for you.** With `--interactive` or in the
+  session, after each verified milestone Certo asks: Enter goes on, a
+  note goes to the next milestone, `s` stops and keeps the plan for
+  `certo --resume`.
 - **Each escalation rung gets a share of the time budget.** Every rung
   but the last gets half of the time left when it starts; one that runs
   out of it hands the task to the next model instead of ending the run

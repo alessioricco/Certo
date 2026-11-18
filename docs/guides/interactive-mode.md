@@ -96,7 +96,10 @@ agent's steps, the time, the cost so far and the last action:
 
   with `--escalate`, whether to try the next model before each climb;
   with `/make-milestones`, whether to run the plan, edit it first, or
-  stop. The run waits for your answer. The agent itself still doesn't
+  stop; in milestone mode, after each verified milestone, whether to go
+  on, with a note for the next one, or stop
+  ([Run in milestones](run-in-milestones.md#run-it)). The run waits for
+  your answer. The agent itself still doesn't
   stop to ask you (see [below](#why-the-agent-doesnt-ask-by-default)):
   your next message continues the task.
 - **`?` asks Certo's docs**, as `/ask`: type `?how does auto-model pick

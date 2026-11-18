@@ -904,6 +904,18 @@ def _make_milestones(
         return f.read()
 
 
+def _between_milestones(done: int, nxt, total: int) -> tuple[bool, str]:
+    """`--interactive` and the session: after a verified milestone, go on,
+    go on with a note for the next one, or stop (the plan is kept)."""
+    answer = _ask_line(
+        f"\nMilestone {done} of {total} is verified. Next: milestone {nxt.number}, {nxt.label}.\n"
+        "Press Enter to go on, type a note for the next milestone, or s to stop: "
+    ).strip()
+    if answer.lower() in ("s", "stop"):
+        return False, ""
+    return True, answer
+
+
 def _ask_about_plan() -> str:
     """`--interactive`: run the plan, edit it first, or stop."""
     print("\n  1. Run it\n  2. Let me edit the file first\n  3. Stop")
@@ -1232,6 +1244,7 @@ def _run_task_command(
                 acceptance_checks=acceptance_checks,
                 history=history,
                 record_run=record_run,
+                between=_between_milestones if asks_choices else None,
             )
     except (KeyboardInterrupt, RunCancelled) as exc:
         # Ctrl-C, or the session's Ctrl-C while the run works in its thread.
@@ -1310,6 +1323,9 @@ def _run_task_command(
     if failing and save_state:
         status = _short_path(status_path(cfg.workspace))
         print(f"\nWhere it stopped: {status}. Continue with: {_continue_hint(resume_hint)}")
+    elif milestone_state is not None and milestone_state.next_number() is not None:
+        # Stopped between milestones, as the user asked: the rest is kept.
+        print(f"\nThe next milestones are kept. Continue with: {_continue_hint(resume_hint)}")
     if save_state and cfg.checkpoints:
         hint = _checkpoints_hint(cfg.workspace)
         if hint:

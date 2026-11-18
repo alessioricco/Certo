@@ -152,6 +152,23 @@ For each milestone, Certo:
    is a failure);
 4. starts the next milestone only when the verdict is `verified`.
 
+**To check each milestone yourself**, run with `--interactive` (or in
+the [interactive session](interactive-mode.md#the-interactive-session)).
+After each verified milestone that has another after it, Certo asks
+before going on:
+
+```text
+Milestone 1 of 2 is verified. Next: milestone 2, due dates.
+Press Enter to go on, type a note for the next milestone, or s to stop:
+```
+
+Enter starts the next milestone. A note you type is added to the next
+milestone's task, as "A note from the user for this milestone". `s`
+stops there and keeps the plan, so `certo --resume` starts at the next
+milestone. Use it for a task written for someone who approves each step
+("stop and wait for my approval"). `?` followed by a question asks
+Certo's docs, as at any of its questions.
+
 A milestone that runs out of time (`budget_exhausted`) after changing
 files goes on once more, in a new conversation, told that its earlier
 try ran out of time, how it ended (the unfinished items on the agent's
