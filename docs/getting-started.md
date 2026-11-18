@@ -304,6 +304,12 @@ export CERTO_LLM_API_KEY=sk-...
 
 ## Next steps
 
+- Work in one terminal window: `certo` alone opens the interactive
+  session, where each message is a task and the next ones continue it
+  ([The interactive session](guides/interactive-mode.md#the-interactive-session)).
+- Ask about Certo in your own words: `certo ask "how do I give a run
+  more time?"` answers from these docs, with links
+  ([`certo ask`](reference/commands.md#certo-ask)).
 - Use more than one model: `certo init models` sets them up and tests
   them. Then let Certo pick one per task
   ([Pick models automatically](guides/pick-models-automatically.md)), or

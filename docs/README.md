@@ -80,6 +80,7 @@ takes you from install to your first verified project.
 | Use a model on my own machine | [Ollama and local models](guides/ollama-and-local-models.md) |
 | Pick which local model to use | [Choose a local model](guides/choose-a-local-model.md) |
 | Let the agent work on a project I already have | [Work on an existing project](guides/work-on-an-existing-project.md) |
+| Work with Certo in one terminal window, a message at a time | [The interactive session](guides/interactive-mode.md#the-interactive-session) |
 | Answer the agent's questions, or approve each action | [Interactive and confirm mode](guides/interactive-mode.md) |
 | Let Certo choose the model for each task | [Pick models automatically](guides/pick-models-automatically.md) |
 | Hand a task to the next model when one can't finish, or its provider fails | [Escalate between models](guides/escalate-between-models.md) |
@@ -206,8 +207,10 @@ limitation below.
   conversation. See [Resume an interrupted run](guides/resume-a-run.md#when-the-conversation-cant-be-resumed).
 - **A task that is exactly the name of an existing file** in the current
   folder is read from that file.
-- **Interactive mode covers only the first part of a task**, and neither it
-  nor confirm mode works in server mode. See
+- **The agent's questions (`CERTO_INTERACTIVE`) cover only its part of a
+  task**: Certo's checks and the fix attempts after them ask nothing
+  (in milestones, the pause after each milestone does). Neither it nor
+  confirm mode works in server mode. See
   [Interactive and confirm mode](guides/interactive-mode.md).
 - **The OpenAI-compatible endpoint** is experimental: it returns no
   verdict and doesn't replay chat history. See [Run as a server](guides/run-as-a-server.md#use-it-from-an-openai-compatible-client).

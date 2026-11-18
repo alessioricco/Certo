@@ -2245,3 +2245,11 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   holds the task and checks' output; Certo lists what it sends before
   the answer. Not in the menus' `?` or the session's `?QUESTION` yet:
   those ask about Certo, mostly before a run exists.
+- **In a terminal, `-i` is the session; "Your reply" is
+  `CERTO_INTERACTIVE`** (2026-11-18, the Author: docs follow the code).
+  Since 6934e48, `certo -i "task"` in a terminal opens the session and
+  drops `-i` from the run, so the flag no longer lets the agent ask.
+  `CERTO_INTERACTIVE=yes` still does, in a plain run and in the session
+  (where the question comes at the session's prompt), which widens the
+  "not the continuation question" entry above. Without a terminal or
+  with `--json`, `-i` is the setting.

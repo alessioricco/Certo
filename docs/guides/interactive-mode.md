@@ -43,7 +43,8 @@ a status line at the bottom:
   stopped first. When the session ends, the whole transcript is printed
   to the terminal, so it stays in its scrollback.
 - **Scroll the transcript** with the mouse wheel or PgUp/PgDn; pressing
-  Enter goes back to the end. Up and Down in the input box bring back
+  Enter goes back to the end. The window keeps the last 5,000 lines; the
+  transcript printed when the session ends has all of them. Up and Down in the input box bring back
   what you typed before. The session takes the mouse, so to select text
   for copying, hold Shift (Option in macOS Terminal) while you drag.
 - **Under the prompt**, a status line shows the model, the mode, the
@@ -99,9 +100,9 @@ agent's steps, the time, the cost so far and the last action:
   stop; in milestone mode, after each verified milestone, whether to go
   on, with a note for the next one, or stop
   ([Run in milestones](run-in-milestones.md#run-it)). The run waits for
-  your answer. The agent itself still doesn't
-  stop to ask you (see [below](#why-the-agent-doesnt-ask-by-default)):
-  your next message continues the task.
+  your answer. The agent itself doesn't stop to ask you (see
+  [below](#why-the-agent-doesnt-ask-by-default)), unless you set
+  `CERTO_INTERACTIVE=yes`: your next message continues the task.
 - **`?` asks Certo's docs**, as `/ask`: type `?how does auto-model pick
   a model`. At the prompt, also while a run works; and at a run's
   question, where the answer comes first and the question is asked
@@ -151,11 +152,16 @@ or Postgres?" would look exactly like an agent that finished.
 
 ## Interactive mode: answer the agent
 
+Set `CERTO_INTERACTIVE=yes` in your settings, then run the task:
+
 ```bash
-certo "Scaffold a FastAPI service" --project my-api --interactive
+certo "Scaffold a FastAPI service" --project my-api
 ```
 
-Or set `CERTO_INTERACTIVE=yes` in your settings.
+In a terminal, the `--interactive` flag opens the
+[interactive session](#the-interactive-session) instead, where your next
+message continues the task. Without a terminal, or with `--json`,
+`--interactive` is the same as `CERTO_INTERACTIVE=yes`.
 
 - The agent may stop and ask instead of guessing.
 - When it stops, Certo shows its last message and asks you:
@@ -175,7 +181,7 @@ Or set `CERTO_INTERACTIVE=yes` in your settings.
   from its docs and asks again.
 - Time spent waiting for you doesn't count against the task's time budget.
 
-**Only the first part of the task is interactive.** After you press Enter,
+**Only the agent's part of the task is interactive.** After you press Enter,
 Certo's own checks run as usual: if a test fails, Certo sends the failure
 back to the agent and lets it retry with no further questions to you.
 

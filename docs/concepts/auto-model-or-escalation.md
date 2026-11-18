@@ -181,7 +181,7 @@ strategy and reports how many it solved and what it cost. See
 certo --auto-model "Fix the crash when the input file is empty"
 ```
 
-With `--interactive` as well, Certo shows the ranked models and lets you
+With `--interactive` as well (or in the interactive session), Certo shows the ranked models and lets you
 confirm or change the choice before it starts. Every choice and the reason
 for it is written to `MODEL_DECISIONS.md` in the project folder.
 

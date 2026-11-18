@@ -45,6 +45,11 @@ of `certo init` and `certo models`). Scripts are unaffected:
 without a terminal, or with `--json`, `certo` runs as before. See
 [The interactive session](../guides/interactive-mode.md#the-interactive-session).
 
+**Changed:** in a terminal, `certo "task" --interactive` now opens the
+session with the task, and the agent no longer stops to ask "Your
+reply". To keep that question, set `CERTO_INTERACTIVE=yes` in your
+settings: it works in the session and in a plain run.
+
 ## New: ratings from current benchmark data
 
 Certo's model ratings were set by hand. `certo models refresh` now

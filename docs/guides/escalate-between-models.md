@@ -365,8 +365,8 @@ there are 3 or more (`roughly $0.05 for a run, the median of your last
 12`), else the rough price above. See
 [Measured runs](run-records-and-costs.md#measured-runs).
 
-Enter climbs; `n` stops with the current verdict. Without `--interactive`
-escalation is automatic, and in server mode it is always automatic.
+Enter climbs; `n` stops with the current verdict. Without `--interactive`,
+and outside the interactive session, escalation is automatic, and in server mode it is always automatic.
 
 ## Docker
 

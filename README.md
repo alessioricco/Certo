@@ -180,6 +180,8 @@ certo tasks/wordle.md --project wordle
 
 `certo init` asks which provider you use (OpenAI, Anthropic, Gemini, a local Ollama, or any LiteLLM model), takes your API key at a hidden prompt, saves the settings, and makes one real call to check the model works. It also leaves five sample tasks in `tasks/`: Wordle and the Tower of Hanoi in the terminal, in Python, and three browser games (a space-rocks shooter, a maze chase and an alien-fleet shooter), which need Node 18+. With a cloud model a run uses your credits, and Certo prints the cost at the end. The generated project lands in `projects/wordle`.
 
+In a terminal, `certo` alone opens the [interactive session](https://github.com/alessioricco/certo/blob/main/docs/guides/interactive-mode.md#the-interactive-session): each message is a task, and the next ones continue it.
+
 ### More than one model
 
 `--escalate` and `--auto-model` read the model files. The first time, Certo prints the `cp` commands that copy the examples it ships:
@@ -288,8 +290,9 @@ certo "Fix the failing test in payments.py" --project my-api --auto-model
 # Take the task from a file or URL
 certo ./tasks/spec.md --project my-api
 
-# Pause and ask you questions instead of guessing
-certo "Scaffold a FastAPI service" --project my-api --interactive
+# Open the interactive session with this task (in a terminal):
+# your next messages continue it
+certo -i "Scaffold a FastAPI service" --project my-api
 
 # Check a project with Certo's verification only: no agent, no model
 certo verify ./projects/my-api

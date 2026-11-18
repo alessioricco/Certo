@@ -88,11 +88,12 @@ Plan: 4 milestones, written by anthropic/claude-haiku-5-5 in 8s, $0.0008. Saved 
 Edit it and run it again any time: certo --milestones /home/me/certo-projects/projects/ledger/.certo/milestones.md
 ```
 
-- With `--interactive`, Certo asks before the first milestone: run the
+- With `--interactive` (or in the interactive session), Certo asks before the first milestone: run the
   plan, edit the file first (it reads it again and shows the new
   plan), or stop. The plan is kept when you stop.
 - A task small enough to build in one go stays one task: when the model
-  answers with one milestone, or with a plan Certo can't read, or fails,
+  answers with one milestone, with more than 8, with a plan Certo can't
+read, or fails,
   Certo says so and runs the task as it is.
 - The plan has no acceptance blocks: if the model writes one, Certo
   takes it out. Add your own when you edit the file.
@@ -109,8 +110,10 @@ Edit it and run it again any time: certo --milestones /home/me/certo-projects/pr
 The model that writes the plan is `CERTO_PLANNER_MODEL` (a model's name
 in your `models.yaml`) when you set it. Otherwise, with `--auto-model` or
 `--escalate`, it is the first model of Certo's `planning` task profile
-(models with `reasoning` 4 or more, the least costly first). Otherwise it
-is the run's own model. The plan's cost is shown on its line; it isn't
+(models with `reasoning` 4 or more, the least costly first) that can be
+reached: a local model whose server is off is passed over. Otherwise,
+or when no model of that profile can be reached, it is the run's own
+model. The plan's cost is shown on its line; it isn't
 counted in the run's cost or in `CERTO_MAX_TASK_COST`.
 
 ## Run it
@@ -164,9 +167,9 @@ Press Enter to go on, type a note for the next milestone, or s to stop:
 
 Enter starts the next milestone. A note you type is added to the next
 milestone's task, as "A note from the user for this milestone". This is
-the only question between milestones: the agent's "Your reply" question
-of `--interactive` comes only on the last milestone, so you decide after
-Certo's checks, not before. `s`
+the only question between milestones: with `CERTO_INTERACTIVE=yes`, the
+agent's "Your reply" question comes only on the last milestone, so you
+decide after Certo's checks, not before. `s`
 stops there and keeps the plan, so `certo --resume` starts at the next
 milestone. Use it for a task written for someone who approves each step
 ("stop and wait for my approval"). `?` followed by a question asks

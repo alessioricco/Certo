@@ -524,9 +524,10 @@ given design was chosen.
   `-i [...]` without `--json`. Logic is plain functions on
   `SessionState` (`handle`, `task_argv`, `status_lines`, `header`) with an
   `Actions` object for runs and commands, so tests need no terminal;
-  `run_loop` is the prompt_toolkit `PromptSession` (bottom toolbar,
-  slash completer, `s-tab`/`c-t`/`c-o` bindings, `refresh_interval`
-  0.25s) inside `patch_stdout(raw=True)`. A run is
+  `run_loop` hands over to `session_screen.run_screen`: one
+  prompt_toolkit `Application(full_screen=True)` (transcript pane, input
+  box, status line, slash completer, `s-tab`/`c-t`/`c-o` bindings,
+  `refresh_interval` 0.25s). A run is
   `_run_task_command(args, parser, holder, on_progress=live.watch)` in a
   daemon thread (`Actions.start`; tests pass `lambda w: w()`), inside
   `cancel_token(live.cancel)`: Ctrl-C at the prompt sets it, and the
