@@ -226,10 +226,6 @@ VERIFICATION_STATES = (
     "stuck",
 )
 
-# Final verdicts that prove nothing either way: not a failure, but not
-# `verified` either. `--require-verification` (CLI) and
-# `require_verification` (server) make them count as a failure.
-UNPROVEN_STATES = ("inconclusive", "unchanged")
 
 # VerificationRun states that mean "something needs fixing, worth retrying" —
 # as opposed to "inconclusive" (nothing to retry toward) or "verified".

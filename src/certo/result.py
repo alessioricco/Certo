@@ -16,6 +16,38 @@ from typing import TYPE_CHECKING, Any
 from . import __version__
 from .escalation import rung_dicts
 
+# Final verdicts that exit nonzero, for an agent run and for `certo verify`
+# alike. "failed" can only be final for `certo verify`, which never retries.
+FAILING_STATES = (
+    "failed",
+    "retry_exhausted",
+    "no_progress",
+    "timed_out",
+    "incomplete",
+    "confirmation_required",
+    "budget_exhausted",
+    "cost_exhausted",
+    "acceptance_failed",
+    "independent_failed",
+    "stuck",
+)
+# Final verdicts that prove nothing either way: not a failure, but not
+# `verified` either. `--require-verification` (CLI) and
+# `require_verification` (server, MCP) make them count as a failure.
+UNPROVEN_STATES = ("inconclusive", "unchanged")
+
+
+def passes(verdict: str | None, require_verification: bool = False) -> bool | None:
+    """Whether a verdict passes, as the CLI's exit code 0 says: None with no
+    verdict yet, False for a failing one, and for an unproven one when
+    verification is required."""
+    if verdict is None:
+        return None
+    if verdict in FAILING_STATES:
+        return False
+    return not (require_verification and verdict in UNPROVEN_STATES)
+
+
 if TYPE_CHECKING:  # the SDK loads with runner; `certo --help` mustn't wait for it
     from .run_summary import RunSummary
     from .runner import TaskOutcome

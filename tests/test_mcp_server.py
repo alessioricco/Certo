@@ -611,3 +611,217 @@ def test_read_docs_gives_a_section_or_a_page(tmp_path):
 def test_read_docs_names_the_pages_when_one_is_wrong(tmp_path):
     error, text = _call(_server(tmp_path), "read_docs", {"page": "guides/nope.md"})
     assert error and "reference/commands.md" in text
+
+
+# --- every run flag has a parameter, or a reason --------------------------
+
+
+def test_every_run_flag_has_a_parameter_or_says_why_not(tmp_path):
+    from certo.cli import _build_parser
+    from certo.mcp_server import RUN_FLAGS
+
+    flags = set()
+    for action in _build_parser()._actions:
+        flags.add(action.option_strings[0] if action.option_strings else action.dest)
+    assert flags == set(RUN_FLAGS)
+    tools = {t.name: t for t in _tools(_server(tmp_path))}
+    for flag, where in RUN_FLAGS.items():
+        if isinstance(where, str):
+            assert where, flag  # the reason there is no parameter
+            continue
+        for entry in where:
+            tool, param = entry.split(".")
+            assert param in tools[tool].input_schema["properties"], (flag, entry)
+
+
+def _run(server, args):
+    error, started = _call(server, "run_task", args)
+    assert not error, started
+    return _wait_done(server, started["run_id"]), started
+
+
+def test_run_task_passes_the_run_options_to_the_config(tmp_path):
+    seen = {}
+
+    def stream(task, *, cfg, **_kwargs):
+        seen.update(
+            steps=cfg.max_iterations,
+            seconds=cfg.max_task_seconds,
+            effort=cfg.reasoning_effort,
+        )
+        return _outcome()
+
+    status, _ = _run(
+        _server(tmp_path, stream=stream),
+        {
+            "task": "x",
+            "project": "demo",
+            "max_steps": 7,
+            "max_minutes": 3,
+            "reasoning_effort": "low",
+            "agents_md": "Use tabs.",
+        },
+    )
+    assert status["verdict"] == "verified", status["result"]["error"]
+    assert seen == {"steps": 7, "seconds": 180, "effort": "low"}
+    assert "Use tabs." in (tmp_path / "projects" / "demo" / "AGENTS.md").read_text()
+
+
+def test_a_task_file_is_read_and_one_in_milestones_runs_as_milestones(tmp_path):
+    folder = tmp_path / "projects"
+    folder.mkdir()
+    plain = folder / "task.md"
+    plain.write_text("Build a thing.\n")
+    staged = folder / "staged.md"
+    staged.write_text("# App\n\n## Milestone 1: a\nDo a.\n\n## Milestone 2: b\nDo b.\n")
+    tasks = []
+
+    def stream(task, **_kwargs):
+        tasks.append(task)
+        return _outcome()
+
+    server = _server(tmp_path, stream=stream)
+    _run(server, {"task_file": str(plain), "project": "one"})
+    assert tasks == ["Build a thing."]
+    status, _ = _run(server, {"task_file": str(staged), "project": "two"})
+    assert len(status["result"]["milestones"]) == 2 and len(tasks) == 3
+    _run(server, {"task_file": str(staged), "project": "three", "no_milestones": True})
+    assert "## Milestone 1: a" in tasks[-1] and len(tasks) == 4
+
+
+def test_a_task_file_outside_the_folders_is_refused(tmp_path):
+    outside = tmp_path / "task.md"
+    outside.write_text("x")
+    error, text = _call(
+        _server(tmp_path), "run_task", {"task_file": str(outside), "project": "demo"}
+    )
+    assert error and "outside the folders" in text
+
+
+@pytest.mark.parametrize(
+    "args",
+    [
+        {"project": "demo"},
+        {"task": "x", "task_file": "/a.md", "project": "demo"},
+        {"task": "x", "project": "demo", "no_milestones": True, "from_milestone": 2},
+    ],
+)
+def test_run_task_refuses_a_wrong_mix_of_task_parameters(tmp_path, args):
+    error, _text = _call(_server(tmp_path), "run_task", args)
+    assert error
+
+
+def test_from_milestone_starts_there(tmp_path):
+    plan = tmp_path / "projects" / "plan.md"
+    plan.parent.mkdir(parents=True)
+    plan.write_text("## Milestone 1: a\nDo a.\n\n## Milestone 2: b\nDo b.\n")
+    tasks = []
+
+    def stream(task, **_kwargs):
+        tasks.append(task)
+        return _outcome()
+
+    status, _ = _run(
+        _server(tmp_path, stream=stream),
+        {"project": "demo", "milestones_file": str(plan), "from_milestone": 2},
+    )
+    assert len(tasks) == 1 and "Do b." in tasks[0]
+    assert status["result"]["milestones"][0]["skipped"] is True
+
+
+def test_make_milestones_plans_then_runs_the_plan(tmp_path, monkeypatch):
+    from certo.milestone_planner import PlannedTask
+
+    text = "# App\n\n## Milestone 1: a\nDo a.\n\n## Milestone 2: b\nDo b.\n"
+    monkeypatch.setattr(
+        "certo.milestone_planner.choose_planner", lambda cfg: (cfg, "the run's model")
+    )
+    monkeypatch.setattr(
+        "certo.milestone_planner.plan_milestones",
+        lambda task, cfg: PlannedTask(text, "", cfg.model, 2.0, 0.0, ("a", "b")),
+    )
+    tasks = []
+
+    def stream(task, **_kwargs):
+        tasks.append(task)
+        return _outcome()
+
+    server = _server(tmp_path, stream=stream)
+    status, started = _run(
+        server, {"task": "Build an app", "project": "demo", "make_milestones": True}
+    )
+    assert len(tasks) == 2 and status["verdict"] == "verified"
+    assert (tmp_path / "projects" / "demo" / ".certo" / "milestones.md").read_text() == text
+    _, events = _call(server, "run_events", {"run_id": started["run_id"]})
+    texts = "\n".join(e["text"] for e in events["events"])
+    assert "Planning milestones with openai/gpt-4o" in texts and "Plan: 2 milestones" in texts
+
+
+def test_make_milestones_keeps_one_task_when_the_planner_does(tmp_path, monkeypatch):
+    from certo.milestone_planner import PlannedTask
+
+    monkeypatch.setattr(
+        "certo.milestone_planner.choose_planner", lambda cfg: (cfg, "the run's model")
+    )
+    monkeypatch.setattr(
+        "certo.milestone_planner.plan_milestones",
+        lambda task, cfg: PlannedTask(None, "small enough", cfg.model, 1.0, 0.0, ()),
+    )
+    tasks = []
+
+    def stream(task, **_kwargs):
+        tasks.append(task)
+        return _outcome()
+
+    _run(
+        _server(tmp_path, stream=stream),
+        {"task": "Fix a typo", "project": "demo", "make_milestones": True},
+    )
+    assert tasks == ["Fix a typo"]
+
+
+def test_passed_follows_require_verification(tmp_path):
+    contract = CompletionContract(
+        goal="", acceptance_criteria=[], verification_checks=[], limitations=[]
+    )
+    unproven = TaskOutcome(verification_state="inconclusive", completion_contract=contract)
+    server = _server(tmp_path, stream=lambda task, **_k: unproven)
+    status, _ = _run(server, {"task": "x", "project": "a"})
+    assert status["verdict"] == "inconclusive" and status["passed"] is True
+    status, _ = _run(server, {"task": "x", "project": "b", "require_verification": True})
+    assert status["passed"] is False
+
+
+@pytest.mark.parametrize(("given", "expected"), [({}, 3600), ({"max_minutes": 5}, 300)])
+def test_run_resume_keeps_the_budget_of_the_run_it_continues(
+    tmp_path, monkeypatch, given, expected
+):
+    from certo.project_state import RunRecord, save_record
+
+    monkeypatch.delenv("CERTO_MAX_TASK_SECONDS", raising=False)
+    workspace = tmp_path / "projects" / "demo"
+    workspace.mkdir(parents=True)
+    save_record(
+        str(workspace),
+        RunRecord(
+            task="t",
+            conversation_id="c",
+            model="m",
+            execution="local",
+            started_at="",
+            updated_at="",
+            status="interrupted",
+            max_task_seconds=3600,
+        ),
+    )
+    seen = {}
+
+    def stream(task, *, cfg, **_kwargs):
+        seen["seconds"] = cfg.max_task_seconds
+        return _outcome()
+
+    server = _server(tmp_path, stream=stream)
+    error, started = _call(server, "run_resume", {"project": "demo", **given})
+    assert not error, started
+    _wait_done(server, started["run_id"])
+    assert seen["seconds"] == expected

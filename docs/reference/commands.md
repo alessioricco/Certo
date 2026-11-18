@@ -1172,7 +1172,8 @@ certo mcp [--root DIR]...
 | `--root DIR` | none | A folder the tools may work in, with every folder inside it, besides the projects under `CERTO_PROJECTS_DIR`. Repeat it for more than one. A `DIR` that isn't a folder is an error (exit 1). |
 
 It reads the settings as a run does, but needs no model to start: a tool
-can name one. The tools: `run_task` (also with a milestones task file),
+can name one. The tools: `run_task` (every option of a run but `--api-key`,
+`--base-url` and `--verbose`, also with a task file or a milestones task file),
 `run_status`, `run_events`, `run_cancel`, `run_resume`, `list_runs`,
 `verify` (as a run), `checkpoints`, `rollback`, `check_model`,
 `list_projects`, `list_models`, `list_skills`, and `search_docs` and

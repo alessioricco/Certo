@@ -36,7 +36,7 @@ from .api import (
     run_milestones,
 )
 from .config import Config
-from .result import run_result
+from .result import passes, run_result
 from .run_history import append_run, run_entry
 from .run_report import report_relpath, write_report
 
@@ -75,6 +75,8 @@ class Run:
     result: dict[str, Any] | None = None
     events: list[RunEvent] = field(default_factory=list)
     cancel_event: threading.Event = field(default_factory=threading.Event)
+    # `inconclusive` and `unchanged` count as not passing (--require-verification).
+    require_verification: bool = False
 
     def status(self) -> dict[str, Any]:
         return {
@@ -84,11 +86,40 @@ class Run:
             "workspace": self.workspace,
             "state": self.state,
             "verdict": self.result["verdict"] if self.result else None,
+            # As `certo`'s exit code 0 says; None until there is a verdict.
+            "passed": passes(
+                self.result["verdict"] if self.result else None, self.require_verification
+            ),
             "started_at": self.started_at,
             "ended_at": self.ended_at,
             "events": len(self.events),
             "result": self.result,
         }
+
+
+def _continue(cfg: Config, plan: RunPlan, options: RunOptions) -> tuple[Config, list[str]]:
+    """A resume, or a milestone file run again, keeps how the run it
+    continues chose its models and its budget, as `certo --resume` does,
+    unless `options` choose now. Returns the config and Certo's notes."""
+    from .api import continue_budgets, continue_model_selection
+
+    continued = plan.resume_from
+    if continued is None and plan.milestones is not None:
+        from .project_state import load_record
+
+        continued = load_record(cfg.workspace)
+    cfg, mode_note = continue_model_selection(
+        cfg,
+        continued,
+        model_flag=bool(options.model or options.escalate is not None or options.auto_model),
+    )
+    cfg, budget_note = continue_budgets(
+        cfg,
+        continued,
+        time_flag=options.max_minutes is not None,
+        steps_flag=options.max_steps is not None,
+    )
+    return cfg, [n for n in (mode_note, budget_note) if n]
 
 
 def _message_text(message: Any) -> str:
@@ -126,14 +157,23 @@ class RunManager:
         acceptance_checks: Sequence[Any] | None = None,
         resume: bool = False,
         milestones_file: str | None = None,
+        from_milestone: int | None = None,
+        make_milestones: bool = False,
+        require_verification: bool = False,
     ) -> Run:
         """Prepare and start a run; raises `ConfigError` or `UsageError`
         before anything runs, and `NothingToDo` when there's nothing left to
         run. With `resume`, the run continues the project's last run (or its
         milestones), and `task` is an optional extra instruction. With
-        `milestones_file`, the task is that file's milestones."""
+        `milestones_file`, the task is that file's milestones, from
+        milestone `from_milestone` when given. With `make_milestones`, a
+        model first splits `task` into milestones, in the run's thread (it
+        takes a model call), as `certo --make-milestones` does."""
         cfg = resolve_config(options, load=self._load)
         workspace = os.path.abspath(cfg.workspace)
+        planner = None
+        if make_milestones:
+            planner = self._planner(cfg, options, task, resume, milestones_file, from_milestone)
         with self._lock:
             other = self._busy.get(workspace)
             if other is not None:
@@ -146,28 +186,72 @@ class RunManager:
                 resume=resume,
                 milestones_file=milestones_file,
                 from_project=options.project is not None,
+                from_milestone=from_milestone,
             )
+            cfg, notes = _continue(cfg, plan, options)
             ladder = load_run_ladder(cfg)
             prepare_workspace(cfg, options)
-            if plan.resume_from is not None and plan.milestones is None:
+            if planner is not None:
+                shown = f"{task} (milestones planned first)"
+            elif plan.resume_from is not None and plan.milestones is None:
                 shown = plan.resume_from.task
             elif plan.milestones is not None:
                 shown = f"{len(plan.milestones.plan)} milestones from {plan.milestones.source}"
             else:
                 shown = task or ""
             run = Run(
-                id=uuid.uuid4().hex[:12], task=shown, project=options.project, workspace=workspace
+                id=uuid.uuid4().hex[:12],
+                task=shown,
+                project=options.project,
+                workspace=workspace,
+                require_verification=require_verification,
             )
             self._runs[run.id] = run
             self._busy[workspace] = run.id
+        for note in notes:
+            self._add_event(run, "notice", "certo", note)
         thread = threading.Thread(
             target=self._work,
-            args=(run, cfg, ladder, acceptance_checks, plan, task if resume else None, task),
+            args=(
+                run,
+                cfg,
+                ladder,
+                acceptance_checks,
+                plan,
+                task if resume else None,
+                task,
+                planner,
+            ),
             name=f"certo-run-{run.id}",
             daemon=True,
         )
         thread.start()
         return run
+
+    @staticmethod
+    def _planner(
+        cfg: Config,
+        options: RunOptions,
+        task: str | None,
+        resume: bool,
+        milestones_file: str | None,
+        from_milestone: int | None,
+    ) -> tuple[Config, str]:
+        """`make_milestones`' checks, as the CLI's: the planner's config and
+        how it was chosen. Raises `UsageError` or `ConfigError`."""
+        from .milestone_planner import choose_planner
+        from .milestones import written_in_milestones
+
+        if resume or from_milestone is not None or milestones_file is not None:
+            raise UsageError(
+                "make_milestones writes a new plan: not with a resume, from_milestone or "
+                "a milestones file. To continue a plan it wrote, use run_resume"
+            )
+        if not task:
+            raise UsageError("make_milestones needs a task")
+        if written_in_milestones(task):
+            raise UsageError("the task is already written in milestones; run it as it is")
+        return choose_planner(cfg)
 
     def _add_event(self, run: Run, kind: str, role: str, text: str) -> None:
         with self._lock:
@@ -184,6 +268,7 @@ class RunManager:
         plan: RunPlan,
         instruction: str | None,
         task: str | None,
+        planner: tuple[Config, str] | None = None,
     ) -> None:
         from .cancel import RunCancelled
         from .milestones import clear_state
@@ -230,6 +315,15 @@ class RunManager:
             )
             return TaskResult(list(messages), outcome)
 
+        def say(line: str) -> None:
+            self._add_event(run, "notice", "certo", line.strip())
+
+        if planner is not None:
+            try:
+                plan, task = self._plan_milestones(run, cfg, planner, task or "", say)
+            except Exception as exc:  # noqa: BLE001 - kept in the run's result, not raised
+                plan = RunPlan()
+                say(f"Planning failed ({exc}). The task runs as one, as it is.")
         state = plan.milestones
 
         def milestones() -> list[dict[str, Any]] | None:
@@ -275,7 +369,7 @@ class RunManager:
                     state,
                     cfg,
                     run_one,
-                    say=lambda line: self._add_event(run, "notice", "certo", line.strip()),
+                    say=say,
                     resume_from=plan.resume_from,
                     restart=plan.restart,
                     instruction=instruction,
@@ -299,8 +393,45 @@ class RunManager:
         else:
             finish("finished", outcome)
 
+    def _plan_milestones(
+        self,
+        run: Run,
+        cfg: Config,
+        planner: tuple[Config, str],
+        task: str,
+        say: Callable[[str], None],
+    ) -> tuple[RunPlan, str]:
+        """`make_milestones`: the planner's plan, saved as the project's
+        `.certo/milestones.md` and read as a milestones file; or no plan
+        (the task runs as one) when the planner kept it as one."""
+        from .milestone_planner import plan_milestones, save_plan
+        from .milestones import clear_state
+
+        planner_cfg, how = planner
+        say(f"Planning milestones with {planner_cfg.model} ({how})...")
+        planned = plan_milestones(task, planner_cfg)
+        if planned.text is None:
+            say(f"Certo: {planned.reason}. The task runs as one, as it is.")
+            return RunPlan(), task
+        path = save_plan(cfg.workspace, planned.text)
+        cost = f", ${planned.cost:.4f}" if planned.cost else ""
+        titles = "\n".join(f"  {n}. {t}" for n, t in enumerate(planned.titles, start=1))
+        say(
+            f"Plan: {len(planned.titles)} milestones, written by {planned.model} in "
+            f"{planned.seconds:.0f}s{cost}. Saved as {path}\n{titles}"
+        )
+        clear_state(cfg.workspace)  # a new plan: its milestones start from 1
+        plan = plan_run(cfg, task=planned.text, milestones_file=path)
+        with self._lock:
+            run.task = f"{len(planned.titles)} milestones from {path}"
+        return plan, planned.text
+
     def start_verify(
-        self, options: RunOptions, *, verify: Callable[[str], Any] | None = None
+        self,
+        options: RunOptions,
+        *,
+        verify: Callable[[str], Any] | None = None,
+        require_verification: bool = False,
     ) -> Run:
         """Run Certo's checks on a folder without an agent, as `certo verify`
         does, as a run: its result has the verdict and the checks. It can't be
@@ -320,6 +451,7 @@ class RunManager:
                 task="certo verify",
                 project=options.project,
                 workspace=workspace,
+                require_verification=require_verification,
             )
             self._runs[run.id] = run
             self._busy[workspace] = run.id

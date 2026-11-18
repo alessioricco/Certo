@@ -2261,3 +2261,16 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   model call** (f03da86, recorded 2026-11-18). Supersedes "No MCP tool"
   in the `certo ask` entry: the editor's agent searches and reads the
   same docs and answers itself, so no tool calls a model.
+- **Over MCP, a run takes every `certo` flag but the key, the address and
+  `--verbose`** (2026-11-18, the Author: align the MCP server with all the
+  options). `mcp_server.RUN_FLAGS` maps each flag to its tool parameters
+  or says why there is none, and a test fails on a new flag missing
+  from it. `--api-key` and `--base-url` stay out: the editor's agent
+  could send the user's key to an address of its choosing. `task_file`
+  reads a file inside the allowed folders, or a URL, as `TASK` does.
+  `make_milestones` plans in the run's thread (a model call), so
+  `run_task` still returns at once; the plan is in `run_events`, and
+  nobody is asked about it. `run_resume` now keeps the earlier run's
+  model choice and budget, as `certo --resume` does. `run_status`'s
+  `passed` is the CLI's exit code as a boolean; the verdict lists moved
+  to `result.py` so both read the same ones.

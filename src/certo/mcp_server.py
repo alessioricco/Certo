@@ -39,6 +39,47 @@ COMMAND_TOOLS: dict[str, tuple[str, ...]] = {
     "certo ask": ("search_docs", "read_docs"),
 }
 
+# Every flag of a `certo` run, and the tool parameter that does its work over
+# MCP, or why there is none (tests/test_mcp_server.py checks that the list is
+# complete, so a new flag gets a parameter or a reason).
+RUN_FLAGS: dict[str, tuple[str, ...] | str] = {
+    "task": ("run_task.task", "run_task.task_file"),
+    "--resume": ("run_resume.project",),
+    "--milestones": ("run_task.milestones_file",),
+    "--from-milestone": ("run_task.from_milestone",),
+    "--no-milestones": ("run_task.no_milestones",),
+    "--make-milestones": ("run_task.make_milestones",),
+    "--execution": ("run_task.execution", "run_resume.execution"),
+    "--max-steps": ("run_task.max_steps", "run_resume.max_steps"),
+    "--max-time": ("run_task.max_minutes", "run_resume.max_minutes"),
+    "--model": ("run_task.model", "run_resume.model"),
+    "--reasoning-effort": ("run_task.reasoning_effort", "run_resume.reasoning_effort"),
+    "--project": ("run_task.project", "run_task.folder", "run_resume.project"),
+    "--agents-md": ("run_task.agents_md", "run_resume.agents_md"),
+    "--independent-tests": ("run_task.independent_tests",),
+    "--independent-tests-strict": ("run_task.independent_tests_strict",),
+    "--auto-model": ("run_task.auto_model", "run_resume.auto_model"),
+    "--escalate": ("run_task.escalate", "run_resume.escalate"),
+    "--require-verification": (
+        "run_task.require_verification",
+        "run_resume.require_verification",
+        "verify.require_verification",
+    ),
+    # The checks themselves, as a list, not a file.
+    "--acceptance-checks": ("run_task.acceptance_checks",),
+    # No parameter, and why:
+    "--api-key": "a key never passes through the editor's agent; it stays in your settings",
+    "--base-url": (
+        "it says where the model calls, and so where your key is sent: it stays in your "
+        "settings, or a model's base_url in models.yaml"
+    ),
+    "-i": "a run over MCP never waits for a person",
+    "--verbose": "it prints more to a terminal; run_events has the run's messages",
+    "--json": "run_status returns the JSON result",
+    "--version": "not a run",
+    "-h": "not a run",
+}
+
 # The commands with no tool, and why. Those that say "on request" get a
 # tool when someone asks (TODO.md); the others never do (DECISIONS.md).
 NO_TOOL: dict[str, str] = {
@@ -140,12 +181,12 @@ class Folders:
             )
         return {"workspace": path}
 
-    def file(self, path: str) -> str:
-        """A file a tool reads (a milestones task file): a full path inside
-        the same folders."""
+    def file(self, path: str, what: str = "milestones_file") -> str:
+        """A file a tool reads (a task file): a full path inside the same
+        folders. `what` names the parameter, for the error."""
         real = os.path.realpath(path)
         if not os.path.isabs(path) or not os.path.isfile(real):
-            raise UsageError(f"milestones_file must be the full path of an existing file: {path!r}")
+            raise UsageError(f"{what} must be the full path of an existing file: {path!r}")
         allowed = [self.projects_dir, *self.roots]
         if not any(_inside(real, root) for root in allowed):
             raise UsageError(
@@ -180,43 +221,98 @@ def build_server(
     )
     @_user_errors
     def run_task(
-        task: str,
+        task: str = "",
         project: str | None = None,
         folder: str | None = None,
+        task_file: str | None = None,
         model: str | None = None,
+        auto_model: bool = False,
         escalate: str | None = None,
+        reasoning_effort: str | None = None,
         acceptance_checks: list[dict[str, Any]] | None = None,
         milestones_file: str | None = None,
+        no_milestones: bool = False,
+        from_milestone: int | None = None,
+        make_milestones: bool = False,
         independent_tests: bool = False,
         independent_tests_strict: bool = False,
+        max_steps: int | None = None,
+        max_minutes: int | None = None,
+        agents_md: str | None = None,
+        execution: str | None = None,
+        require_verification: bool = False,
     ) -> dict[str, Any]:
         """Start a coding task: an agent works in the project, then Certo runs the
         project's checks and gives a verdict. Returns at once with a run_id; follow it
-        with run_status and run_events. `project` is a project name (created if new)
-        under Certo's projects folder; `folder` is the full path of a folder inside one
-        the server allows. `model` overrides the configured model; `escalate` climbs a
-        ladder of models ("" for the default ladder). `acceptance_checks` are extra file
-        checks, as in `certo --acceptance-checks`. `milestones_file` is the full path of
-        a task file split by `## Milestone N: title` headings, as in `certo --milestones`:
-        each milestone runs and is verified before the next starts, and `task` is then
-        ignored. `independent_tests` first has tests written from the task alone, by a
-        separate conversation, and runs them on the result: they report whether the
-        agent's own tests could have fooled Certo; with `independent_tests_strict`, a
-        `verified` run whose independent tests mostly fail ends `independent_failed`.
-        The agent can change any file in the folder and run commands there."""
+        with run_status and run_events. The task is `task` (text), or `task_file`: the
+        full path of a file inside a folder this server may use, or an http(s) URL. A
+        task file written in milestones (`## Milestone N: title` headings) runs
+        milestone by milestone unless `no_milestones`; `milestones_file` always does,
+        and `from_milestone` starts at that milestone. `make_milestones` first has a
+        model split the task into milestones (shown in run_events), then runs them.
+        `project` is a project name (created if new) under Certo's projects folder;
+        `folder` is the full path of a folder inside one the server allows. `model`
+        overrides the configured model; `auto_model` picks one per task from the model
+        files; `escalate` climbs a ladder of models ("" for the default ladder);
+        `reasoning_effort` is low, medium, high, xhigh, max or none. `acceptance_checks`
+        are extra file checks, as in `certo --acceptance-checks`. `independent_tests`
+        first has tests written from the task alone, by a separate conversation, and
+        runs them on the result; with `independent_tests_strict`, a `verified` run whose
+        independent tests mostly fail ends `independent_failed`. `max_steps` and
+        `max_minutes` limit the agent's steps and the task's time; `agents_md` is extra
+        guidance for the agent; `execution` is local or docker. run_status's `passed`
+        says whether the verdict passes as `certo`'s exit code does; with
+        `require_verification`, `inconclusive` and `unchanged` don't. The agent can
+        change any file in the folder and run commands there."""
         from .acceptance import parse_acceptance_checks
 
+        given = [n for n, v in (("task", task), ("task_file", task_file)) if v]
+        if milestones_file is not None:
+            given.append("milestones_file")
+        if len(given) != 1:
+            raise UsageError("give one of task, task_file or milestones_file")
+        if no_milestones and (milestones_file is not None or from_milestone is not None):
+            raise UsageError("no_milestones can't go with milestones_file or from_milestone")
+        if task_file is not None:
+            task, milestones_file = _read_task_file(task_file, no_milestones)
         options = RunOptions(
             model=model,
+            auto_model=auto_model,
             escalate=escalate,
+            reasoning_effort=reasoning_effort,
             independent_tests=True if independent_tests else None,
             independent_tests_strict=independent_tests_strict,
+            max_steps=max_steps,
+            max_minutes=max_minutes,
+            agents_md=agents_md,
+            execution=execution,
             **folders.options(project, folder),
         )
         checks = parse_acceptance_checks(acceptance_checks) if acceptance_checks else None
         source = folders.file(milestones_file) if milestones_file is not None else None
-        run = manager.start(task, options, acceptance_checks=checks, milestones_file=source)
+        run = manager.start(
+            task,
+            options,
+            acceptance_checks=checks,
+            milestones_file=source,
+            from_milestone=from_milestone,
+            make_milestones=make_milestones,
+            require_verification=require_verification,
+        )
         return _started(run)
+
+    def _read_task_file(value: str, no_milestones: bool) -> tuple[str, str | None]:
+        """`task_file`'s text, and the file itself when it runs in milestones
+        (written in milestones, and not `no_milestones`)."""
+        from .cli import _looks_like_url, resolve_task_source
+        from .milestones import written_in_milestones
+
+        is_url = _looks_like_url(value)
+        path = value if is_url else folders.file(value, "task_file")
+        text = resolve_task_source(path)
+        if not is_url and not no_milestones and written_in_milestones(text):
+            return "", path
+        return text, None
 
     @server.tool(
         annotations=ToolAnnotations(
@@ -232,19 +328,40 @@ def build_server(
         folder: str | None = None,
         instruction: str | None = None,
         model: str | None = None,
+        auto_model: bool = False,
         escalate: str | None = None,
+        reasoning_effort: str | None = None,
+        max_steps: int | None = None,
+        max_minutes: int | None = None,
+        agents_md: str | None = None,
+        execution: str | None = None,
+        require_verification: bool = False,
     ) -> dict[str, Any]:
         """Continue the last run in a project or folder, as `certo --resume` does: one
         that was cancelled, stopped with an error, or ended without `verified`, from
         where it stopped. After a milestones run, it continues the first milestone not
         verified, then the rest. `instruction` is sent to the agent as an extra message.
-        Returns a run_id like run_task, or state `nothing_to_do` when everything there
-        is already verified."""
+        It keeps how the run chose its models and its budgets unless `model`,
+        `auto_model`, `escalate`, `max_steps` or `max_minutes` say otherwise; the other
+        parameters are as in run_task. Returns a run_id like run_task, or state
+        `nothing_to_do` when everything there is already verified."""
         from .api import NothingToDo
 
-        options = RunOptions(model=model, escalate=escalate, **folders.options(project, folder))
+        options = RunOptions(
+            model=model,
+            auto_model=auto_model,
+            escalate=escalate,
+            reasoning_effort=reasoning_effort,
+            max_steps=max_steps,
+            max_minutes=max_minutes,
+            agents_md=agents_md,
+            execution=execution,
+            **folders.options(project, folder),
+        )
         try:
-            run = manager.start(instruction, options, resume=True)
+            run = manager.start(
+                instruction, options, resume=True, require_verification=require_verification
+            )
         except NothingToDo as exc:
             return {"run_id": None, "state": "nothing_to_do", "message": str(exc)}
         return _started(run)
@@ -297,12 +414,19 @@ def build_server(
         )
     )
     @_user_errors
-    def verify(project: str | None = None, folder: str | None = None) -> dict[str, Any]:
+    def verify(
+        project: str | None = None, folder: str | None = None, require_verification: bool = False
+    ) -> dict[str, Any]:
         """Run Certo's checks on a project without an agent, as `certo verify` does:
         its tests, build and linters where they are set up. It may create the
         project's own environment (.venv) to run them. Returns a run_id at once, like
-        run_task; run_status then gives the verdict and each check."""
-        run = manager.start_verify(RunOptions(**folders.options(project, folder)), verify=verify_fn)
+        run_task; run_status then gives the verdict, each check, and `passed` (with
+        `require_verification`, `inconclusive` doesn't pass)."""
+        run = manager.start_verify(
+            RunOptions(**folders.options(project, folder)),
+            verify=verify_fn,
+            require_verification=require_verification,
+        )
         return _started(run)
 
     def _checkpoint_folder(project: str | None, folder: str | None) -> str:

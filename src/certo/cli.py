@@ -49,7 +49,7 @@ from .milestones import (
 from .project_state import (
     status_path,
 )
-from .result import run_result
+from .result import FAILING_STATES, run_result
 from .run_history import append_run, note_models_in_readme, run_entry
 from .cancel import RunCancelled
 from .run_progress import RunProgress
@@ -139,7 +139,7 @@ def _continue_hint(resume_hint: str) -> str:
 
 
 def _unproven_states() -> tuple[str, ...]:
-    from .runner import UNPROVEN_STATES
+    from .result import UNPROVEN_STATES
 
     return UNPROVEN_STATES
 
@@ -594,21 +594,8 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-# Final verdicts that exit nonzero, for an agent run and for `certo verify`
-# alike. "failed" can only be final for `certo verify`, which never retries.
-_FAILING_STATES = (
-    "failed",
-    "retry_exhausted",
-    "no_progress",
-    "timed_out",
-    "incomplete",
-    "confirmation_required",
-    "budget_exhausted",
-    "cost_exhausted",
-    "acceptance_failed",
-    "independent_failed",
-    "stuck",
-)
+# Final verdicts that exit nonzero (result.py, shared with the MCP server).
+_FAILING_STATES = FAILING_STATES
 
 
 def _build_verify_parser() -> argparse.ArgumentParser:

@@ -79,7 +79,6 @@ first item is the suggested next one.
     default on only after it shows no loss on either model.
   - *Planner-written acceptance checks:* left out for now (they can be
     wrong, as independent tests can); try them report-only once measured.
-  - *Over MCP:* `run_task` has `milestones_file` but no way to plan.
   - *A plan the agent wrote:* live 2026-11-10 (a user's milestone
     project), the agent wrote a `PLAN.md` in milestones (`## 1. ...`
     headings, not `## Milestone N:`), the user approved it with "go

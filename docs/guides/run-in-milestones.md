@@ -317,9 +317,9 @@ milestones.
 
 ## Not yet
 
-- `--make-milestones` is only on the command line, not over MCP.
 - Not in server mode (`certo-server`) yet. Over MCP, `run_task` takes a
-  `milestones_file` and `run_resume` continues it (see
+  `milestones_file` (or a `task_file` written in milestones, or
+  `make_milestones`) and `run_resume` continues it (see
   [Use Certo over MCP](use-certo-over-mcp.md)). In `certo bench`, an arm with
   `milestones: true` runs tasks this way; see
   [the benchmark file reference](../reference/bench-yaml.md#arms).

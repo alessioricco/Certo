@@ -23,7 +23,8 @@ from .api import RunOptions, load_run_ladder, prepare_workspace, resolve_config
 from .config import Config, ConfigError, load_config
 from .escalation import rung_dicts
 from .result import run_result
-from .runner import UNPROVEN_STATES, run_task, stream_task
+from .result import UNPROVEN_STATES
+from .runner import run_task, stream_task
 from .task_store import TaskRecord, TaskStore, build_task_store
 
 # How often the background purge loop checks for expired records — not
