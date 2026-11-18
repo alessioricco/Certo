@@ -934,7 +934,7 @@ certo bench [--config FILE] [--out DIR] [--resume] [--parallel N]
 
 | Flag | Default | Effect |
 |---|---|---|
-| `--config FILE` | `bench.yaml` | The benchmark file. See [bench.yaml](bench-yaml.md). |
+| `--config FILE` | `bench.yaml`; with `--resume`, the file the results folder was made from | The benchmark file. See [bench.yaml](bench-yaml.md). |
 | `--out DIR` | `./bench-results/<date-time>` | The results folder. A folder that already has results is refused unless `--resume` is given. |
 | `--resume` | off | Continue an interrupted benchmark in `--out` (default: the latest folder in `./bench-results`), skipping runs already recorded, except runs that couldn't reach the model server or whose project folder was deleted during the run: those run again. A `--out` folder with no results yet is started, so a restart script can always pass `--resume`. Refused if the tasks, arms, repeats, models or task set changed. |
 | `--parallel N` | `1` | Run N at a time. Refused when any arm uses a local model (Ollama, or a server on this machine or network). |

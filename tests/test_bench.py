@@ -430,6 +430,32 @@ def test_interrupt_keeps_finished_runs_and_resume_continues(tmp_path, project_ve
     assert len(_records(out)) == 4
 
 
+def test_resume_without_config_uses_the_file_the_results_came_from(
+    tmp_path, project_venv, monkeypatch
+):
+    path = _bench_file(tmp_path, TWO_ARMS, repeats=2)
+    out = tmp_path / "out"
+    assert _run(path, out, FakeModel(project_venv, raise_on={2: KeyboardInterrupt()})) == 130
+    monkeypatch.chdir(tmp_path)  # no bench.yaml here
+
+    model = FakeModel(project_venv)
+    argv = ["--resume", "--out", str(out), "--yes"]
+    assert bench.bench_main(argv, stream=model, interactive=False) == 0
+    assert len(model.calls) == 3
+    assert len(_records(out)) == 4
+
+
+def test_resume_without_config_says_when_that_file_is_gone(tmp_path, project_venv, capsys):
+    path = _bench_file(tmp_path, TWO_ARMS, repeats=2)
+    out = tmp_path / "out"
+    assert _run(path, out, FakeModel(project_venv, raise_on={2: KeyboardInterrupt()})) == 130
+    Path(path).unlink()
+
+    argv = ["--resume", "--out", str(out), "--yes"]
+    assert bench.bench_main(argv, stream=FakeModel(project_venv), interactive=False) == 1
+    assert "isn't there any more; pass --config FILE" in capsys.readouterr().err
+
+
 def test_resume_refuses_a_different_benchmark(tmp_path, project_venv, capsys):
     out = tmp_path / "out"
     _run(_bench_file(tmp_path, ONE_ARM), out, FakeModel(project_venv))

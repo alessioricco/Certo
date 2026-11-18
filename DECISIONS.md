@@ -2203,3 +2203,9 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   with planned ones (two spreadsheet runs fooled thin checks); qwen3.8
   was 3/3 planned, 3/3 whole, 1/3 hand-written, too few runs to tell
   apart. No loss-free gain, so no default on (working agreement 2).
+
+- **`certo bench --resume` reads the benchmark file from `meta.json`**
+  (2026-11-18). With no `--config`, `--resume` takes `bench_file` from
+  the results folder, so the "continue with" hint is right as printed
+  (it sent the Author to a missing `bench.yaml`). A moved or deleted file
+  is an error asking for `--config`, never a silent fallback.

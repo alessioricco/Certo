@@ -145,6 +145,9 @@ See [Share a run's problems](../guides/run-records-and-costs.md#share-a-runs-pro
   (its own milestones taken out), then runs the planned milestones, so
   hand-written milestones, planned ones and one go can be compared. See
   [the benchmark file](../reference/bench-yaml.md).
+- **`certo bench --resume` needs no `--config`.** It reads the benchmark
+  file the results folder was made from, so the "continue with" line
+  printed after Ctrl-C works as written.
 - **`--escalate` skips a local rung that can't be reached.** Before the
   first rung, Certo asks each local model's server whether it is up, as
   `--auto-model` does since 0.2.3. A switched-off Ollama machine no

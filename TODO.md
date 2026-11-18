@@ -14,12 +14,6 @@ first item is the suggested next one.
 
 ## Before the next release
 
-- **`certo bench --resume` hint leaves out `--config`.** After Ctrl-C,
-  bench prints "continue with: certo bench --resume --out DIR", but
-  without `--config` it looks for `bench.yaml` and stops (seen
-  2026-11-17). Done when the hint includes the config path, or
-  `--resume` reads it from the results folder's `meta.json`.
-
 - **A live run where an open to-do item stays open** (after 0.2.3's
   replay, docs/benchmark/open-items-replay-0.2.3.md, which found no run
   turned `verified`). Seen next on an `--escalate` milestone run: record

@@ -169,8 +169,9 @@ certo bench --resume            # the latest results folder
 certo bench --resume --out bench-results/20261016-101500
 ```
 
-`--resume` refuses a folder made with different tasks, arms, repeats or
-models.
+It reads the benchmark file the folder was made from, so `--config` isn't
+needed. `--resume` refuses a folder made with different tasks, arms,
+repeats or models.
 With `--out`, it starts a folder that has no results yet, so a script
 that restarts a benchmark can always pass `--resume`.
 

@@ -741,6 +741,27 @@ def _resolve_out_dir(args: argparse.Namespace) -> Path:
     return Path(DEFAULT_RESULTS_DIR) / stamp
 
 
+def _config_path(args: argparse.Namespace, out_dir: Path) -> str:
+    """The benchmark file: --config, else, with --resume, the one the
+    results folder was made from (its meta.json), else bench.yaml."""
+    if args.config:
+        return args.config
+    if args.resume:
+        try:
+            meta = json.loads((out_dir / "meta.json").read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            meta = {}
+        saved = meta.get("bench_file")
+        if isinstance(saved, str) and saved:
+            if not Path(saved).is_file():
+                raise BenchConfigError(
+                    f"--resume: {out_dir} was made from {saved}, which isn't there any more; "
+                    "pass --config FILE."
+                )
+            return saved
+    return DEFAULT_BENCH_FILE
+
+
 def _meta(cfg: BenchConfig) -> dict[str, Any]:
     builtin = Path(cfg.tasks_dir) == BUILTIN_TASKS_DIR
     return {
@@ -926,8 +947,11 @@ def build_bench_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--config",
-        default=DEFAULT_BENCH_FILE,
-        help=f"The benchmark file (default: {DEFAULT_BENCH_FILE}).",
+        default=None,
+        help=(
+            f"The benchmark file (default: {DEFAULT_BENCH_FILE}; with --resume, the "
+            "file the results were made from)."
+        ),
     )
     parser.add_argument(
         "--out",
@@ -1049,15 +1073,16 @@ def bench_main(
     on_terminal = sys.stdin.isatty() if interactive is None else interactive
     try:
         if args.list_tasks:
-            return _list_tasks(_tasks_dir_from(args.config))
+            return _list_tasks(_tasks_dir_from(args.config or DEFAULT_BENCH_FILE))
         if args.check_tasks:
-            return _check_tasks(_tasks_dir_from(args.config))
+            return _check_tasks(_tasks_dir_from(args.config or DEFAULT_BENCH_FILE))
         if args.parallel < 1:
             raise BenchConfigError("--parallel must be at least 1.")
         if args.max_cost is not None and args.max_cost <= 0:
             raise BenchConfigError("--max-cost must be greater than 0.")
         stop_at = parse_stop_at(args.stop_at, _local_now()) if args.stop_at else None
-        cfg = load_bench_config(args.config)
+        out_dir = _resolve_out_dir(args)
+        cfg = load_bench_config(_config_path(args, out_dir))
         local = sorted({n for a in cfg.arms for n in a.models if is_local(cfg.catalog[n])})
         if args.pause_between < 0:
             raise BenchConfigError("--pause-between must be 0 or more seconds.")
@@ -1068,7 +1093,6 @@ def bench_main(
                 f"--parallel needs cloud models only; {', '.join(local)} runs locally, and "
                 "a local server serves one model at a time. Run without --parallel."
             )
-        out_dir = _resolve_out_dir(args)
         planned = plan_runs(cfg)
         # A run that couldn't reach the model server is run again.
         recorded = {r["run_id"] for r in counted(load_records(out_dir))} if args.resume else set()
