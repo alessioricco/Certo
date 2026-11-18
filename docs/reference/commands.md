@@ -135,8 +135,9 @@ every other verdict, for a configuration error (`Configuration error: ...`)
 and for a run-time error (`Error: ...`); 130 when you stop it with Ctrl-C.
 With `--require-verification`, `inconclusive` and `unchanged` exit 1. See [Verdicts](verdicts.md).
 
-`verify`, `init`, `check` and `bench` are subcommands only when they are
-the whole first argument. `certo "verify the login flow"` runs a task. To
+The subcommands (`verify`, `init`, `check`, `models`, `skills`, `bench`,
+`checkpoints`, `rollback`, `report`, `ask`, `mcp`) count only when they
+are the whole first argument. `certo "verify the login flow"` runs a task. To
 run the one-word task `verify`, write `certo -- verify`.
 
 ## `certo verify`
@@ -1068,7 +1069,7 @@ certo ask QUESTION [--mine [--project NAME]]
 
 It reads the docs of your Certo's own version: from a source checkout,
 the `docs/` folder; installed, the `docs.zip` of that version's GitHub
-Release, downloaded the first time and kept in `~/.cache/certo/docs/`
+Release, downloaded the first time and kept in `~/.cache/certo/docs/<version>/` (under `XDG_CACHE_HOME` when set)
 (offline afterwards; GitHub sees only the version, never the question).
 Two calls to the model: the first picks the sections from the docs'
 headings, the second answers from those sections only. The model is
@@ -1095,13 +1096,14 @@ When the docs don't answer it, it says `The docs don't cover this.` and
 lists the closest pages. An answer that names no section comes with a
 note that it can't be checked against the docs. Exit code: 0, or 1 when
 there are no docs to read (a version with no `docs.zip`, or offline with
-no copy kept), no model is configured, or the model fails. On 30 test
+no copy kept), no model is configured, or the model fails; 2 for a
+wrong flag (such as `--project` without `--mine`). On 30 test
 questions, Haiku answered all right, and said "not covered" for each of
 the 6 the docs don't answer ([the record](../benchmark/ask-0.2.4.md)).
 
 ### Questions about your setup
 
-Without `--mine`, only the question goes to the model. With `--mine`,
+Without `--mine`, the model gets only your question and the docs. With `--mine`,
 three more things go with it, each only when it exists:
 
 - what [`certo check`](#certo-check) prints, without its model call:

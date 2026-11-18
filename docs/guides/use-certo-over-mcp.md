@@ -81,23 +81,24 @@ so Certo doesn't use it.
 | `verify` | Run Certo's checks on a project or folder without an agent, as `certo verify` does. Returns a `run_id` at once, like `run_task`, so a long test suite doesn't hit the client's time limit; `run_status` then gives the verdict and the checks. It can't be cancelled: each check has its own time limit. |
 | `checkpoints` | The snapshots Certo took of a project during its runs, as `certo checkpoints` lists them. See [Go back to an earlier point](checkpoints.md). |
 | `rollback` | Put a project's files back as they were at a checkpoint `number`, as `certo rollback` does. Without `confirm: true` it only lists what would be restored, added back or deleted. With it, the files are rolled back, and the answer's `undo_with` is the checkpoint that undoes it. Refused while a run works in that folder. |
-| `check_model` | One small call to the configured model, as `certo check` does. |
+| `check_model` | One small call to the configured model, or to `model` (a name from `list_models`), as `certo check` does. |
 | `list_projects` | The projects under `CERTO_PROJECTS_DIR`, each with its last run (task, status, verdict, model, time) and the `run_id` of a run working there now. |
 | `list_models` | The configured model and, when you have [model files](../reference/models-yaml.md), each model with its id, whether it is active, its ratings and description, the ladders `escalate` takes by name, and the files' problems. Never a key. `run_task`'s `model` takes a model id from it. |
 | `list_skills` | The skills a run gets, as `certo skills list` shows them: official and yours, and with `project` or `folder` that project's too. Each says how it fires, its size in tokens, and whether it is on. With `task`, which skills would go into a run of that task. |
-| `search_docs` | Certo's own docs, for this version (the ones `certo ask` reads), searched with no model call: the best sections for a query, each with its page, heading, anchor and link. Exact names (a `--flag`, a `CERTO_` setting, a command) count most. |
+| `search_docs` | Certo's own docs, for this version (the ones `certo ask` reads), searched with no model call: the best sections for a query (`limit`, 8 by default, at most 20), each with its page, heading, anchor and link. Exact names (a `--flag`, a `CERTO_` setting, a command) count most. |
 | `read_docs` | One page of those docs (such as `reference/commands.md`), or one section of it by `anchor`. A wrong page gets the list of pages. |
 
 Some commands have no tool: those that ask you questions (`certo init`,
-`certo models update`, `certo models choose`), `certo bench`, which runs for hours, and the
+`certo models update`, `certo models choose`), `certo bench`, which runs for hours,
+`certo report`, which writes a file you read before sharing it, and the
 commands of `certo-server` and `certo-admin`. Run them in a terminal.
 `certo models secure` never gets a tool either: it handles your API
 keys, so you run it yourself. Nor does `certo models refresh`: it
 changes the ratings every run uses. The skills commands that download or turn on code (`certo skills add`
-from git, `update`, `sync` and `enable`) never get a tool: accepting a
+from git, `update`, `sync`, `enable` and `assess`) never get a tool: accepting a
 skill's license, or running code someone else wrote, is for you to
 decide, not an agent. `certo skills add` with a file or folder of your
-own, `remove` and `disable`, and `certo models check`, have no tool yet;
+own, `remove`, `disable` and `suggest`, and `certo models check`, have no tool yet;
 ask if you need one.
 
 Each project also has two resources, which a client can show or read:
@@ -167,7 +168,7 @@ undone: True files now: ['.certo', '.pytest_cache', '.venv', 'README.md', '__pyc
 
 **What there is to work with.** The `mcp` package's client listed the
 projects, the models and a project's skills for a task, with the
-Author's settings:
+Author's settings (before `search_docs` and `read_docs` were added):
 
 ```text
 tools: 13

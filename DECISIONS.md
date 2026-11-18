@@ -2257,3 +2257,7 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   (2026-11-18, recording what the code does since 4ec3100). The anchors
   entry's "keep their hand ratings" holds for code, reasoning, precision
   and writing only: price and cloud/local are known for every model.
+- **`certo ask`'s docs reach MCP as `search_docs`/`read_docs`, with no
+  model call** (f03da86, recorded 2026-11-18). Supersedes "No MCP tool"
+  in the `certo ask` entry: the editor's agent searches and reads the
+  same docs and answers itself, so no tool calls a model.

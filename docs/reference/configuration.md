@@ -178,7 +178,7 @@ store except `memory` is [experimental](../README.md#experimental-features).
 | Variable | Meaning |
 |---|---|
 | `XDG_CONFIG_HOME` | Changes where the user settings file is (see the table at the top). |
-| `XDG_CACHE_HOME` | Changes where the [update check](#update-check) keeps its answer. |
+| `XDG_CACHE_HOME` | Changes where the [update check](#update-check) keeps its answer, and where [`certo ask`](commands.md#certo-ask) keeps the docs it downloads. |
 | `CI` | When set, there is no [update check](#update-check). |
 | `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, `DEEPSEEK_API_KEY`, `MOONSHOT_API_KEY` | Read only by `certo init`, which offers to reuse them (and then writes `CERTO_LLM_API_KEY=${...}`). |
 | `OPENHANDS_SUPPRESS_BANNER` | Certo sets it to `1` unless you set it, to hide the OpenHands start-up banner. |

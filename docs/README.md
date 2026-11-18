@@ -47,8 +47,9 @@ The stories behind each of these checks are in
 - Work with almost any model: OpenAI, Anthropic, Google Gemini, DeepSeek, Kimi, Ollama on
   your own machine, or any model that [LiteLLM](https://docs.litellm.ai/docs/providers)
   supports. Switching is one setting.
-- Pick the best model for each task from a list you write, and fall back to
-  the next one when a provider fails: `--auto-model`.
+- Pick a model for each task from the ones you use, by what the task
+  needs, and fall back to the next one when a provider fails:
+  `--auto-model`.
 - Move a task to the next model of a ladder when Certo's verification
   shows the model couldn't finish, or when its provider fails:
   `--escalate`.
@@ -63,6 +64,11 @@ The stories behind each of these checks are in
 - Go back to an earlier point of a run, before the agent or after any fix
   attempt: `certo rollback`.
 - Benchmark models on bundled tasks graded by hidden tests: `certo bench`.
+- Work in one terminal window, a message at a time: `certo` alone opens
+  the interactive session.
+- Answer questions about Certo from these docs, with links: `certo ask`.
+- Hand a run's problems to Certo's maintainers, keys hidden: `certo report`.
+- Give an editor's agent Certo's runs, checks and docs: `certo mcp`.
 
 ## Where to go next
 
@@ -81,6 +87,8 @@ takes you from install to your first verified project.
 | Pick which local model to use | [Choose a local model](guides/choose-a-local-model.md) |
 | Let the agent work on a project I already have | [Work on an existing project](guides/work-on-an-existing-project.md) |
 | Work with Certo in one terminal window, a message at a time | [The interactive session](guides/interactive-mode.md#the-interactive-session) |
+| Send a run's problems to Certo's maintainers | [`certo report`](reference/commands.md#certo-report) |
+| Update the model ratings from current benchmark data | [`certo models refresh`](reference/commands.md#certo-models-refresh) |
 | Answer the agent's questions, or approve each action | [Interactive and confirm mode](guides/interactive-mode.md) |
 | Let Certo choose the model for each task | [Pick models automatically](guides/pick-models-automatically.md) |
 | Hand a task to the next model when one can't finish, or its provider fails | [Escalate between models](guides/escalate-between-models.md) |
@@ -154,7 +162,7 @@ between minor versions. Fixes to the core come first.
 | [Server task stores](guides/run-as-a-server.md#keep-task-records) other than `memory` (`sqlite`, `mysql`, `postgres`, `redis`) | `sqlite` is tested on a real file. `mysql` and `postgres` share its code and were checked live once, not in the test suite. `redis` is tested only where `redis-server` is installed. |
 | [The OpenAI-compatible endpoint](guides/run-as-a-server.md#use-it-from-an-openai-compatible-client) (`/v1/chat/completions`) | The answer has no verdict, and earlier messages aren't replayed. |
 | [Milestone mode](guides/run-in-milestones.md) (`--milestones`) | Benchmarked on two app tasks only ([the spreadsheet](benchmark/milestones-60min-0.1.27.md), [the expense ledger](benchmark/expenses-0.1.27.md)). Not in server mode (`certo-server`). Milestones Certo writes itself ([`--make-milestones`](guides/run-in-milestones.md#let-certo-write-the-milestones)) were benchmarked once, on two app tasks: no gain over hand-written ones or one go, and two runs lost on Haiku ([the benchmark](benchmark/make-milestones-0.2.4.md)). A climb inside a milestone has been seen live once, not in a benchmark. |
-| [The MCP server](guides/use-certo-over-mcp.md) (`certo mcp`) | Checked live from Claude Code and from the `mcp` Python package's client, over stdio; not yet from other editors. Only the core tools and the project resources so far; the other commands come in later 0.2 versions. Runs are kept in memory and stop when the client closes. |
+| [The MCP server](guides/use-certo-over-mcp.md) (`certo mcp`) | Checked live from Claude Code and from the `mcp` Python package's client, over stdio; not yet from other editors. Only the core tools, Certo's docs (`search_docs`, `read_docs`) and the project resources so far; the other commands come in later 0.2 versions. Runs are kept in memory and stop when the client closes. |
 | [Skills downloaded from git](guides/manage-skills.md#download-a-skill-from-git) (`certo skills add github:...`) | Licenses are detected with a text match, only `SKILL.md` folders can be installed, and no third-party skill has been benchmarked. |
 | [Trusted skill repositories](guides/manage-skills.md#trust-a-whole-repository) (`certo skills assess`, `certo skills suggest`) | Classification and matching are word rules on each skill's name, description and triggers. No benchmark yet shows whether the skills a run adds help; `CERTO_TRUSTED_SKILLS_TOKENS=0` turns them off. |
 

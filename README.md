@@ -251,7 +251,7 @@ The exit code is nonzero for every failure state, so Certo works in scripts and 
 
 **Model choice and escalation**
 
-- **Picks the best model per task.** Rate your models in `models_list.yaml`, enable the ones you have keys for in `models.yaml`, describe your kinds of task in `task_profiles.yaml`, and Certo routes each task to the best fit, with fallback when a provider fails. No extra LLM call to decide. Add `--auto-model`.
+- **Picks a model per task.** Enable the models you have keys for in `models.yaml`; Certo's own list rates them and its task profiles say what each kind of task needs, so each task goes to the least costly model that fits, with fallback when a provider fails. No extra LLM call to decide. Add `--auto-model`.
 - **Hands over when a model fails.** Give Certo a ladder of models. Each task starts on the first, and moves to the next when verification shows the model couldn't finish, or its provider fails. Add `--escalate`. See [Escalate between models](https://github.com/alessioricco/certo/blob/main/docs/guides/escalate-between-models.md).
 - **A benchmark.** `certo bench` compares models and strategies on tasks graded by hidden tests, and counts how often Certo itself was fooled. See [Benchmark models and strategies](https://github.com/alessioricco/certo/blob/main/docs/guides/benchmark.md).
 - **Compare models on your own task.** A small script runs one task on a list of models, each in its own folder, and ends with a table of verdicts, times and costs. See [Compare models on one task](https://github.com/alessioricco/certo/blob/main/docs/guides/compare-models-on-a-task.md), and a real example with screenshots: [five models build an Asteroids-style game](https://github.com/alessioricco/certo/blob/main/docs/benchmark/compare-asteroids-0.1.19.md), where the cheapest cloud model, GPT-5.6 Luna, built a verified game for $0.07.
@@ -266,7 +266,10 @@ The exit code is nonzero for every failure state, so Certo works in scripts and 
 **Fits how you work**
 
 - **Resume.** `certo --resume "hint"` continues a run with its earlier conversation, or with a stronger `--model`.
-- **Run records.** Full transcript, token counts and cost per run, plus a log of which model was picked and why.
+- **Run records.** Full transcript, token counts and cost per run, plus a log of which model was picked and why. `certo report` puts a run's problems in one file, keys hidden, to send to Certo's maintainers.
+- **An interactive session.** `certo` alone in a terminal: each message is a task, the next ones continue it, with `/` commands. See [The interactive session](https://github.com/alessioricco/certo/blob/main/docs/guides/interactive-mode.md#the-interactive-session).
+- **Answers from the docs.** `certo ask "how do I give a run more time?"` answers from Certo's docs for your version, with links. See [`certo ask`](https://github.com/alessioricco/certo/blob/main/docs/reference/commands.md#certo-ask).
+- **Over MCP.** `certo mcp` gives an editor's agent Certo's runs, checks and docs. See [Use Certo over MCP](https://github.com/alessioricco/certo/blob/main/docs/guides/use-certo-over-mcp.md).
 - **Sandboxed runs** ([experimental](https://github.com/alessioricco/certo/blob/main/docs/README.md#experimental-features)). Add `--execution docker` to run the agent in a container.
 - **Server mode.** REST and WebSocket streaming. The OpenAI-compatible `/v1/chat/completions` endpoint and the SQL and Redis task stores are [experimental](https://github.com/alessioricco/certo/blob/main/docs/README.md#experimental-features).
 - **Skills and custom tools.** `certo skills add` gives the agent your conventions, for every project or one, kept out of git; `certo skills list --task "..."` shows what a task would get. Downloading skills from git is [experimental](https://github.com/alessioricco/certo/blob/main/docs/README.md#experimental-features). See [Manage skills](https://github.com/alessioricco/certo/blob/main/docs/guides/manage-skills.md).
@@ -305,7 +308,7 @@ Certo is built on the [OpenHands Software Agent SDK](https://docs.openhands.dev/
 
 - Server mode has no authentication. Run it on localhost or behind your own gateway.
 - Java projects are detected, but verification needs Maven or Gradle installed.
-- Docker execution, the OpenAI-compatible endpoint, the SQL and Redis task stores and skills downloaded from git are [experimental](https://github.com/alessioricco/certo/blob/main/docs/README.md#experimental-features): tested, not yet proven in real use. Under Docker, automatic model selection makes the initial pick but does not fall back mid-task.
+- Docker execution, the OpenAI-compatible endpoint, the SQL and Redis task stores, milestone mode, the MCP server, skills downloaded from git and trusted skill repositories are [experimental](https://github.com/alessioricco/certo/blob/main/docs/README.md#experimental-features): tested, not yet proven in real use. Under Docker, automatic model selection makes the initial pick but does not fall back mid-task.
 - Some local models, on some Ollama setups, write their tool calls as plain text and end the run with no work done. `certo check` tests for it; with `--escalate`, such a task goes to the next model. Which models worked in Certo's benchmark: [Choose a local model](https://github.com/alessioricco/certo/blob/main/docs/guides/choose-a-local-model.md).
 - `verified` proves what the project's tests test, and nothing more. Read the tests: [Write a task Certo can check](https://github.com/alessioricco/certo/blob/main/docs/guides/write-a-good-task.md).
 
