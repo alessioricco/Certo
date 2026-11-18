@@ -163,7 +163,10 @@ Press Enter to go on, type a note for the next milestone, or s to stop:
 ```
 
 Enter starts the next milestone. A note you type is added to the next
-milestone's task, as "A note from the user for this milestone". `s`
+milestone's task, as "A note from the user for this milestone". This is
+the only question between milestones: the agent's "Your reply" question
+of `--interactive` comes only on the last milestone, so you decide after
+Certo's checks, not before. `s`
 stops there and keeps the plan, so `certo --resume` starts at the next
 milestone. Use it for a task written for someone who approves each step
 ("stop and wait for my approval"). `?` followed by a question asks

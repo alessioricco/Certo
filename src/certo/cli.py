@@ -1174,12 +1174,21 @@ def _run_task_command(
             total = len(milestone_state.plan.milestones)
             progress.where = f"milestone {milestone_state.current} of {total}"
             progress.checks = ""
+        awaiting = on_awaiting_input
+        if (
+            asks_choices
+            and milestone_state is not None
+            and (milestone_state.current or 0) < len(milestone_state.plan.milestones)
+        ):
+            # The pause after the milestone asks instead, once the checks
+            # have run (_between_milestones): no "Your reply" before them.
+            awaiting = None
         result = run_task(
             text,
             cfg=cfg,
             on_confirm=on_confirm,
             acceptance_checks=checks,
-            on_awaiting_input=on_awaiting_input,
+            on_awaiting_input=awaiting,
             on_model_choice=on_model_choice,
             project=args.project,
             save_state=save_state,

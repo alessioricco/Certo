@@ -167,6 +167,9 @@ Or set `CERTO_INTERACTIVE=yes` in your settings.
   Type an answer to continue the same conversation, or press Enter to
   accept the work as done.
 - You can go back and forth as many times as you want.
+- In milestone mode, only the last milestone asks this. Every other
+  milestone asks once, after its checks: go on, add a note for the next
+  milestone, or stop ([Run in milestones](run-in-milestones.md#run-it)).
 - At any of Certo's questions, an answer starting with `?` is a question
   for [`certo ask`](../reference/commands.md#certo-ask): Certo answers it
   from its docs and asks again.

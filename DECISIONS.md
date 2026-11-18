@@ -2229,3 +2229,10 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   "always in the session" rule for `--interactive` questions); never in
   a plain run, over MCP or in `certo bench`. A stop leaves the last
   verdict (`verified`) and exit 0, with the continue hint.
+
+- **Between milestones only the pause asks** (the Author, 2026-11-18).
+  Under `--interactive` the agent's "Your reply" question came right
+  before the milestone pause, and before the checks. Now a milestone
+  with another after it gets no continuation handler; the pause, after
+  the checks, takes a note for the next milestone instead. The last
+  milestone keeps "Your reply".

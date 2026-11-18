@@ -3550,3 +3550,15 @@ def test_without_interactive_milestones_never_ask(monkeypatch, tmp_path):
 
     assert cli.main(["--milestones", _milestone_file(tmp_path)]) == 0
     assert len(calls) == 2
+
+
+def test_interactive_milestones_ask_for_a_reply_only_on_the_last_milestone(monkeypatch, tmp_path):
+    calls: list = []
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path, interactive=True))
+    monkeypatch.setattr(cli, "run_task", _milestone_run_task(calls, ["verified", "verified"]))
+    monkeypatch.setattr("builtins.input", lambda prompt="": "")
+
+    assert cli.main(["--milestones", _milestone_file(tmp_path)]) == 0
+
+    assert calls[0]["on_awaiting_input"] is None  # the pause after it asks instead
+    assert calls[1]["on_awaiting_input"] is not None  # nothing follows the last one
