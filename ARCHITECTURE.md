@@ -397,7 +397,11 @@ given design was chosen.
   warnings as plain sentences); `load_checked_catalog` is how
   `--auto-model`, `--escalate` and `certo bench` load the file.
   `escalation.py` (pure) resolves a `ResolvedLadder` (explicit, or derived
-  from the ratings), defines `ESCALATING_VERDICTS`, `RungResult` (with
+  from the ratings), defines `ESCALATING_VERDICTS`, the time share
+  (`rung_deadline`: half of the time left for every rung but the last;
+  `out_of_share`: a `budget_exhausted` rung with run time left climbs;
+  the runner passes the rung's deadline to the phases, and keeps the run's
+  for `_escalation_stop_reason`), `RungResult` (with
   `did_no_work`: `unchanged`, or `inconclusive` with no file changed, which
   also climbs, 0.1.16), the before/after `workspace_listing`/`FileChanges`
   and `handoff_message`.

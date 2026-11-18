@@ -103,7 +103,9 @@ Two things follow from how it works:
    same folder, with the files as they are, the failing checks, and a note
    from Certo on what the previous model did.
 4. **It stops** at `verified`, at a verdict that gives no reason to climb
-   (`budget_exhausted`, `cost_exhausted`, `confirmation_required`), when
+   (`cost_exhausted`, `confirmation_required`, or `budget_exhausted` when
+   the whole time budget is spent: a rung that only used up its own share
+   of it climbs), when
    `CERTO_MAX_TASK_COST` is reached, when two rungs in a row change no
    file or both end `inconclusive`, or after the last rung.
 

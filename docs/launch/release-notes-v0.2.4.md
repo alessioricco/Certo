@@ -148,6 +148,11 @@ See [Share a run's problems](../guides/run-records-and-costs.md#share-a-runs-pro
 - **`certo bench --resume` needs no `--config`.** It reads the benchmark
   file the results folder was made from, so the "continue with" line
   printed after Ctrl-C works as written.
+- **Each escalation rung gets a share of the time budget.** Every rung
+  but the last gets half of the time left when it starts; one that runs
+  out of it hands the task to the next model instead of ending the run
+  `budget_exhausted`. A slow local first rung can no longer use the
+  whole budget on a task it can't finish.
 - **`--escalate` skips a local rung that can't be reached.** Before the
   first rung, Certo asks each local model's server whether it is up, as
   `--auto-model` does since 0.2.3. A switched-off Ollama machine no

@@ -209,9 +209,7 @@ def test_these_verdicts_climb_to_the_next_rung(tmp_path, fake_run, verdict):
     )
 
 
-@pytest.mark.parametrize(
-    "verdict", ["budget_exhausted", "confirmation_required", "acceptance_failed"]
-)
+@pytest.mark.parametrize("verdict", ["confirmation_required", "acceptance_failed"])
 def test_these_verdicts_stop_the_climb(tmp_path, fake_run, verdict):
     fake_run.script[:] = [(verdict, 0.0, {"app.py": "x"})]
     outcome, _ = _run(tmp_path, _ladder(tmp_path))
@@ -306,10 +304,39 @@ def test_each_rung_with_a_small_window_is_warned_about(tmp_path, fake_run, monke
     assert len(warned) == 1 and warned[0].startswith("Certo: ollama/qwen3-coder:30b has")
 
 
-def test_the_time_budget_is_shared_by_every_rung(tmp_path, fake_run):
-    fake_run.script[:] = [("no_progress", 0, {}), ("verified", 0, {})]
-    _run(tmp_path, _ladder(tmp_path))
-    assert fake_run.calls[0]["deadline"] == fake_run.calls[1]["deadline"]
+def test_each_rung_but_the_last_gets_half_the_time_left(tmp_path, fake_run, monkeypatch):
+    monkeypatch.setattr(runner.time, "monotonic", lambda: 1000.0)  # time stands still
+    fake_run.script[:] = [("no_progress", 0, {}), ("no_progress", 0, {}), ("verified", 0, {})]
+    outcome, progress = _run(tmp_path, _ladder(tmp_path), cfg=_cfg(tmp_path, max_task_seconds=3600))
+
+    assert [c["deadline"] for c in fake_run.calls] == [1000 + 1800, 1000 + 1800, 1000 + 3600]
+    assert outcome.verification_state == "verified"
+    assert (
+        "Certo: local gets 30m 00s of the 1h 00m 00s left; if it runs out, mid goes on." in progress
+    )
+
+
+def test_a_rung_that_runs_out_of_its_share_hands_the_task_on(tmp_path, fake_run):
+    fake_run.script[:] = [("budget_exhausted", 0.0, {"app.py": "x"}), ("verified", 0.0, {})]
+    outcome, progress = _run(tmp_path, _ladder(tmp_path))
+
+    assert outcome.verification_state == "verified"
+    assert outcome.final_rung == 2
+    assert any(
+        "local used up its share of the time budget without finishing; escalating to mid" in line
+        for line in progress
+    )
+
+
+def test_budget_exhausted_on_the_last_rung_ends_the_run(tmp_path, fake_run):
+    fake_run.script[:] = [("no_progress", 0.0, {"app.py": "x"}), ("budget_exhausted", 0.0, {})]
+    ladder = ladder_from_models(
+        load_model_catalog(**write_split_model_files(tmp_path, _CATALOG)), ["local", "mid"]
+    )
+    outcome, _ = _run(tmp_path, ladder)
+
+    assert outcome.verification_state == "budget_exhausted"
+    assert len(outcome.rungs) == 2
 
 
 def test_a_spent_time_budget_stops_the_climb(tmp_path, fake_run):

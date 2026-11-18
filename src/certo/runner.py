@@ -104,6 +104,8 @@ from .escalation import (
     failure_reason,
     handoff_message,
     load_ladder,
+    out_of_share,
+    rung_deadline,
     rung_dicts,
     without_unreachable,
     workspace_listing,
@@ -148,7 +150,7 @@ from .project_state import (
     save_record,
 )
 from .run_stats import measured_estimate, record_run
-from .run_summary import RunSummary, summarize_run
+from .run_summary import RunSummary, format_duration, summarize_run
 from .text_tool_calls import NEXT_STEP_REMINDER
 from .text_tool_calls import REMINDER as TOOL_CALL_REMINDER
 from .text_tool_calls import announces_next_step, looks_like_tool_call
@@ -3182,10 +3184,19 @@ def _stream_escalation(
         with build_workspace(cfg) as workspace:
             runner = _command_runner(cfg, workspace)
             project_env = _prepare_agent_env(task, cfg, runner, io.emit)
-            # One budget for every rung together, as for every retry.
+            # One budget for every rung together, as for every retry; each
+            # rung but the last gets a share of what is left (escalation.py).
             deadline = time.monotonic() + cfg.max_task_seconds
             for number, rung in enumerate(ladder.rungs, start=1):
                 rung_cfg = _rung_config(cfg, rung)
+                now = time.monotonic()
+                rung_stop = rung_deadline(now, deadline, number, total)
+                if number < total:
+                    io.notify(
+                        f"Certo: {rung.name} gets {format_duration(rung_stop - now)} of the "
+                        f"{format_duration(deadline - now)} left; if it runs out, "
+                        f"{ladder.rungs[number].name} goes on."
+                    )
                 usage_id = f"certo:rung{number}:{rung.name}"
                 efforts[usage_id] = rung_cfg.reasoning_effort
                 _warn_small_window(rung_cfg, io.emit)
@@ -3269,7 +3280,7 @@ def _stream_escalation(
                         task,
                         io.on_confirm,
                         io.on_awaiting_input,
-                        deadline,
+                        rung_stop,
                         None,
                         io.checkpoint_buffer,
                         runner,
@@ -3351,7 +3362,14 @@ def _stream_escalation(
                         f"{rung.name} and {previous.name} both ended inconclusive.",
                     )
                     break
-                if outcome is not None and not ladder.escalates_on(outcome.verification_state):
+                ran_out = outcome is not None and out_of_share(
+                    outcome.verification_state, number, total, time.monotonic(), deadline
+                )
+                if (
+                    outcome is not None
+                    and not ran_out
+                    and not ladder.escalates_on(outcome.verification_state)
+                ):
                     decide(
                         "escalation_stop",
                         rung.label,

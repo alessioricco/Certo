@@ -2209,3 +2209,14 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   the results folder, so the "continue with" hint is right as printed
   (it sent the Author to a missing `bench.yaml`). A moved or deleted file
   is an error asking for `--config`, never a silent fallback.
+
+- **Each escalation rung gets half of the time left; running out of it
+  climbs** (the Author, 2026-11-18). One budget for the whole ladder let
+  a slow local first rung spend all of it (qwen3.8 on Go/Rust in
+  `ratings-0.2.4.md`), and `budget_exhausted` never climbed, so a ladder
+  couldn't help exactly where it should. Now every rung but the last
+  stops at half of the time left (`RUNG_TIME_SHARE`), and a
+  `budget_exhausted` rung with run time left climbs; the whole budget
+  running out still stops. Half, not an equal split: the first rung is
+  the cheap one and should get the most time. Supersedes the "one budget
+  for every rung" part of the escalation entries.

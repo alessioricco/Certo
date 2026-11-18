@@ -411,3 +411,28 @@ def test_when_no_rung_answers_the_last_one_is_kept(tmp_path):
 
     assert _names(kept) == ["local"]
     assert [r.name for r, _ in dropped] == ["tiny"]
+
+
+def test_rung_deadline_gives_half_the_time_left_but_all_of_it_to_the_last_rung():
+    from certo.escalation import rung_deadline
+
+    assert rung_deadline(100.0, 3700.0, 1, 3) == 1900.0
+    assert rung_deadline(1900.0, 3700.0, 2, 3) == 2800.0
+    assert rung_deadline(2800.0, 3700.0, 3, 3) == 3700.0
+    assert rung_deadline(4000.0, 3700.0, 1, 2) == 4000.0  # nothing left: no time at all
+
+
+@pytest.mark.parametrize(
+    ("verdict", "number", "now", "wanted"),
+    [
+        ("budget_exhausted", 1, 100.0, True),
+        ("budget_exhausted", 2, 100.0, False),  # the last rung
+        ("budget_exhausted", 1, 500.0, False),  # the whole budget is spent
+        ("no_progress", 1, 100.0, False),
+        (None, 1, 100.0, False),
+    ],
+)
+def test_out_of_share_only_when_time_is_left_and_a_rung_follows(verdict, number, now, wanted):
+    from certo.escalation import out_of_share
+
+    assert out_of_share(verdict, number, 2, now, 400.0) is wanted

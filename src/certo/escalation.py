@@ -43,8 +43,9 @@ from .model_catalog import (
 from .run_summary import RunSummary, effort_label, format_duration
 
 # Final verdicts that mean "this model couldn't finish the job": the next
-# rung gets the task. Never `budget_exhausted`, `cost_exhausted` or
-# `confirmation_required` (the user's own limits). `acceptance_failed` only when the ladder opts in.
+# rung gets the task. Never `cost_exhausted` or `confirmation_required`
+# (the user's own limits); `budget_exhausted` only through out_of_share
+# (a rung that used up its share of the time, with time left). `acceptance_failed` only when the ladder opts in.
 # `inconclusive` climbs too (0.1.22): a model that wrote code but no tests
 # leaves the next one something to finish, and the handoff asks it for the
 # missing checks. Two rungs in a row that did no work, or that both ended
@@ -186,6 +187,28 @@ def explicit_ladder(catalog: ModelCatalog, ladder: Ladder) -> ResolvedLadder:
         escalate_on_acceptance_failed=ladder.escalate_on_acceptance_failed,
         skipped=skipped,
     )
+
+
+# Each rung but the last gets this share of the time left when it starts;
+# the last rung gets all that is left. A rung that runs out of its share
+# hands the task on; only the whole budget running out stops the climb.
+RUNG_TIME_SHARE = 0.5
+
+
+def rung_deadline(now: float, run_deadline: float, number: int, total: int) -> float:
+    """When rung `number` of `total` must stop: its share of the time left
+    (RUNG_TIME_SHARE), or the run's own deadline on the last rung."""
+    if number >= total:
+        return run_deadline
+    return now + max(0.0, run_deadline - now) * RUNG_TIME_SHARE
+
+
+def out_of_share(
+    verdict: str | None, number: int, total: int, now: float, run_deadline: float
+) -> bool:
+    """A rung that isn't the last ended `budget_exhausted` with time still
+    left in the run: it used up its share, so the next rung gets the task."""
+    return verdict == "budget_exhausted" and number < total and now < run_deadline
 
 
 def without_unreachable(
@@ -588,6 +611,8 @@ def climb_line(previous: RungResult, nxt: Rung, number: int, total: int) -> str:
         why = "ended inconclusive without changing a file"
     elif previous.verdict == "inconclusive":
         why = "ended inconclusive: it changed files, but nothing could be checked"
+    elif previous.verdict == "budget_exhausted":
+        why = "used up its share of the time budget without finishing"
     else:
         why = f"ended {previous.verdict} after {_attempts(previous.retries_used)}"
     # One model on two rungs, at two efforts: the names alone would read

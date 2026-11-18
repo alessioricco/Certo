@@ -165,7 +165,8 @@ model), write an explicit ladder.
 | `acceptance_failed` | Stop, unless the ladder sets `escalate_on_acceptance_failed: true`. |
 | `inconclusive` | Climb, unless the rung before also ended `inconclusive`, or both changed no file: then stop. |
 | `unchanged` | Climb, unless the rung before also changed no file: then stop. |
-| `budget_exhausted`, `cost_exhausted`, `confirmation_required` | Stop: these are your own limits. |
+| `budget_exhausted` | Climb when the rung used up its share of the time budget and time is left (see below). Stop when the whole budget is spent, or on the last rung. |
+| `cost_exhausted`, `confirmation_required` | Stop: these are your own limits. |
 | `independent_failed` | Never seen by the ladder: with `--independent-tests-strict`, the tests run once, after the last rung, and can turn its `verified` into `independent_failed`. |
 | A provider failure (outage, rate limit, rejected key) | Climb, recorded as a provider failure rather than a quality failure. |
 
@@ -187,6 +188,24 @@ tool calls as text and the run ends at once. A model that stops too early
 is replaced by a stronger one. If that one also changes nothing, two
 models agree that the task needs no change, and Certo stops instead of
 climbing to the most expensive model.
+
+**Each rung gets a share of the time budget.** `CERTO_MAX_TASK_SECONDS`
+is one budget for the whole ladder, but no rung may use all of it: each
+rung except the last gets half of the time left when it starts, and the
+last rung gets everything that is left. With 60 minutes and three rungs,
+the first gets 30 minutes, the second 15 and the last 15 (plus anything
+the earlier rungs didn't use). A slow local model that would spend the
+whole hour on a task it can't finish hands it on after its half. From a
+real run, a ladder of Haiku then Sonnet with a 60-second budget, on a
+task that needs about three minutes:
+
+```text
+Certo: claude-haiku-5-5 gets 30.0s of the 1m 00s left; if it runs out, claude-sonnet-5-5 goes on.
+Certo: claude-haiku-5-5 used up its share of the time budget without finishing; escalating to claude-sonnet-5-5 (rung 2 of 2).
+```
+
+Give a ladder that starts on a slow local model a longer budget
+(`--max-time 60`), so each rung's share is long enough to finish a task.
 
 The final verdict is the verdict of the last rung that ran.
 
