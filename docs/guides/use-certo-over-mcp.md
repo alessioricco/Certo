@@ -88,6 +88,9 @@ so Certo doesn't use it.
 | `search_docs` | Certo's own docs, for this version (the ones `certo ask` reads), searched with no model call: the best sections for a query (`limit`, 8 by default, at most 20), each with its page, heading, anchor and link. Exact names (a `--flag`, a `CERTO_` setting, a command) count most. |
 | `read_docs` | One page of those docs (such as `reference/commands.md`), or one section of it by `anchor`. A wrong page gets the list of pages. |
 
+Two live runs on Haiku, one planned into five milestones, are recorded
+in [every run option over MCP](../benchmark/mcp-options-0.2.4.md).
+
 Three flags of a run have no parameter: `--api-key` and `--base-url`
 (a key, and where it is sent, never pass through the editor's agent:
 they stay in your settings or `models.yaml`), and `--verbose` (it prints
