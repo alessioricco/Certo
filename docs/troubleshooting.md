@@ -10,6 +10,9 @@ setting comes from and makes one small call to the model.
 To find something in all of Certo's docs, ask in your own words:
 `certo ask "why did my run end inconclusive?"` answers from them, with a
 link to each section it used (see [`certo ask`](reference/commands.md#certo-ask)).
+In a project folder, `--mine` also sends your settings, its
+`MODEL_DECISIONS.md` and its last run report, keys hidden, so the answer
+can be about your run.
 
 If nothing here fits, run `certo report` in the project folder: it writes
 the last run's problems to one file, with keys hidden, that you can attach

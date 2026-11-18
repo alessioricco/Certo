@@ -2236,3 +2236,12 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   with another after it gets no continuation handler; the pause, after
   the checks, takes a note for the next milestone instead. The last
   milestone keeps "Your reply".
+- **`certo ask --mine` sends the user's setup as cited sections, not a
+  separate tool** (0.2.4, 2026-11-18). What `certo check` prints without
+  its model call, the project's `MODEL_DECISIONS.md` and the last run
+  report go to both calls as `[Y1]`..`[Y3]`, each cut to 8,000
+  characters (three of them keep both calls inside a 32K window), keys
+  hidden with `certo report`'s `hide_secrets`. Opt-in because the report
+  holds the task and checks' output; Certo lists what it sends before
+  the answer. Not in the menus' `?` or the session's `?QUESTION` yet:
+  those ask about Certo, mostly before a run exists.

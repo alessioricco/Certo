@@ -295,7 +295,10 @@ Model used: claude-sonnet (effort default) (see MODEL_DECISIONS.md for the full 
 ```
 
 `MODEL_DECISIONS.md` in the project folder records every decision, even
-when the task failed. For the task and file above:
+when the task failed. To have it explained, run
+`certo ask --mine "why did my run pick this model?"` in the project folder
+([questions about your setup](../reference/commands.md#questions-about-your-setup)).
+For the task and file above:
 
 ```markdown
 # Model Decisions

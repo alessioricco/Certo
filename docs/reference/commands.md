@@ -1039,12 +1039,14 @@ Answer a question about Certo from its own docs, with a link to each
 section the answer uses.
 
 ```text
-certo ask QUESTION
+certo ask QUESTION [--mine [--project NAME]]
 ```
 
-| Argument | Effect |
+| Argument or flag | Effect |
 |---|---|
 | `QUESTION` | The question, in your own words; quotes are optional. |
+| `--mine` | Also send your own setup, for questions about it ("why did my run pick this model?"). See [Questions about your setup](#questions-about-your-setup). Off by default. |
+| `--project NAME` | With `--mine`: read the project `NAME` (under `CERTO_PROJECTS_DIR`, as a run with `--project NAME` uses it) instead of the current folder. |
 
 It reads the docs of your Certo's own version: from a source checkout,
 the `docs/` folder; installed, the `docs.zip` of that version's GitHub
@@ -1078,6 +1080,52 @@ there are no docs to read (a version with no `docs.zip`, or offline with
 no copy kept), no model is configured, or the model fails. On 30 test
 questions, Haiku answered all right, and said "not covered" for each of
 the 6 the docs don't answer ([the record](../benchmark/ask-0.2.4.md)).
+
+### Questions about your setup
+
+Without `--mine`, only the question goes to the model. With `--mine`,
+three more things go with it, each only when it exists:
+
+- what [`certo check`](#certo-check) prints, without its model call:
+  your settings and where they come from, and the model files' report;
+- the project's `MODEL_DECISIONS.md` (how `--auto-model` or `--escalate`
+  chose each model);
+- the project's last run report (`.certo/reports/`).
+
+The project is the current folder, or `--project NAME`. A key is never
+sent: each value that looks like one is replaced with `[hidden]`, as
+[`certo report`](#certo-report) does. Before the answer, Certo lists what
+it sent. The answer cites your files as it cites the docs. From a real
+run on `anthropic/claude-haiku-5-5`, in a benchmark project that ran
+with `--auto-model` (paths shortened):
+
+```text
+$ certo ask --mine "Why did my run pick this model?"
+Also sending, with keys hidden:
+  [Y1] Your settings and model files (certo check): certo check
+  [Y2] Your project's MODEL_DECISIONS.md: /home/me/durations/MODEL_DECISIONS.md
+
+Your run used `qwen3.8-27b-local` because the task matched no profile's trigger words, so the `default` profile applied [1][2]. The title "Durations" contains no trigger word, and when none matches, Certo uses `default` [2][3].
+
+The `default` profile needs a code rating of at least 3. qwen3.8-27b-local meets that with no shortfall [1][4]. Among the models that fit, the cheapest (highest cost rating) runs first, and qwen3.8-27b-local has cost 5 [2][4].
+
+Sources:
+  [1] Yours › Your project's MODEL_DECISIONS.md
+      /home/me/durations/MODEL_DECISIONS.md
+  [2] guides/pick-models-automatically.md › How a model is chosen
+      /home/me/certo/docs/guides/pick-models-automatically.md#how-a-model-is-chosen
+  [3] concepts/auto-model-or-escalation.md › How --auto-model decides
+      /home/me/certo/docs/concepts/auto-model-or-escalation.md#how---auto-model-decides
+  [4] Yours › Your settings and model files (certo check)
+      certo check
+
+(Answered by anthropic/claude-haiku-5-5 from 8 section(s) in 7s.)
+```
+
+Read what it sends if you use a cloud model: the run report holds the
+task and the end of the checks' output.
+
+### Asking from other commands
 
 **Without leaving what you are doing.** In the menus of `certo init`,
 `certo models` and the other setup commands, press `?`, type the

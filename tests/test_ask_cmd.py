@@ -205,3 +205,121 @@ def test_search_ranks_exact_names_then_heading_words():
     assert [s.id for s in search("CERTO_MAX_TASK_COST", _sections())] == ["S5"]
     assert search("continue", _sections())[0].title == "Continue"
     assert search("zzzz qqqq", _sections()) == []
+
+
+# --mine: the user's own setup goes with the question, keys hidden.
+
+_FAKE_KEY = "sk-ant-" + "x" * 30
+
+
+def _mine(tmp_path, monkeypatch):
+    from certo.ask_cmd import gather_mine
+
+    project = tmp_path / "project"
+    (project / ".certo" / "reports").mkdir(parents=True)
+    (project / "MODEL_DECISIONS.md").write_text(
+        "# Model Decisions\n\nTask profile: `architecture`\n\nChosen: **claude-opus**\n"
+    )
+    (project / ".certo" / "reports" / "2026-11-17T08-00-00Z.md").write_text("old run\n")
+    (project / ".certo" / "reports" / "2026-11-18T08-00-00Z.md").write_text(
+        f"Verdict: verified\nA key in an error: {_FAKE_KEY}\n"
+    )
+    monkeypatch.setenv("CERTO_LLM_API_KEY", "a-settings-secret-value-123")
+
+    def check_text(folder):
+        assert folder == str(project)
+        return "Settings:\n  CERTO_LLM_MODEL  anthropic/claude-opus\n  leaked a-settings-secret-value-123\n"
+
+    return gather_mine(str(project), check_text=check_text), project
+
+
+def test_mine_gathers_check_decisions_and_the_last_report_with_keys_hidden(tmp_path, monkeypatch):
+    mine, project = _mine(tmp_path, monkeypatch)
+    assert [s.id for s in mine] == ["Y1", "Y2", "Y3"]
+    assert mine[0].page == "certo check" and "anthropic/claude-opus" in mine[0].text
+    assert mine[1].page == str(project / "MODEL_DECISIONS.md")
+    assert mine[2].page.endswith("2026-11-18T08-00-00Z.md")
+    text = "\n".join(s.text for s in mine)
+    assert _FAKE_KEY not in text and "a-settings-secret-value-123" not in text
+    assert text.count("[hidden]") == 2
+
+
+def test_mine_without_runs_sends_only_the_check(tmp_path, monkeypatch):
+    from certo.ask_cmd import gather_mine
+
+    mine = gather_mine(str(tmp_path), check_text=lambda folder: "Settings: none")
+    assert [(s.id, s.page) for s in mine] == [("Y1", "certo check")]
+
+
+def test_mine_goes_to_both_calls_and_its_citations_show_the_file(tmp_path, monkeypatch):
+    mine, project = _mine(tmp_path, monkeypatch)
+    complete, prompts = _complete(
+        "S2", "Your profile was architecture [Y2], so Opus was chosen [Y2, S2]."
+    )
+    answer = ask("Why did my run pick Opus?", _sections(), complete, mine=mine)
+
+    assert "own setup" in prompts[0] and "[Y2] Your project's MODEL_DECISIONS.md" in prompts[0]
+    assert "ids such as Y1" in prompts[1] and "Chosen: **claude-opus**" in prompts[1]
+    assert [s.id for s in answer.cited] == ["Y2", "S2"] and not answer.unknown_citations
+    lines = "\n".join(render(answer, Docs(str(tmp_path), "cache", "0.2.4")))
+    assert lines.startswith("Your profile was architecture [1], so Opus was chosen [1, 2].")
+    assert f"[1] Yours › Your project's MODEL_DECISIONS.md\n      {project}" in lines
+    assert "[2] guides/resume-a-run.md › Continue" in lines
+
+
+def test_without_mine_the_prompts_say_nothing_of_the_users_setup():
+    complete, prompts = _complete("S2", "Run it [S2].")
+    ask("How do I continue?", _sections(), complete)
+    assert "own setup" not in prompts[0] and "Y1" not in prompts[1]
+
+
+def test_mine_answers_even_when_no_docs_section_is_picked(tmp_path, monkeypatch):
+    mine, _ = _mine(tmp_path, monkeypatch)
+    complete, prompts = _complete("NONE", "Opus [Y2].")
+    answer = ask("Which model did my run use?", _sections(), complete, mine=mine)
+    assert answer.covered and [s.id for s in answer.cited] == ["Y2"] and len(prompts) == 2
+    lines = render(
+        ask("Unrelated?", _sections(), _complete("NONE", "NOT COVERED")[0], mine=mine),
+        Docs(str(tmp_path), "cache", "0.2.4"),
+    )
+    assert lines == ["The docs don't cover this."]
+
+
+def test_ask_main_with_mine_says_what_it_sends(tmp_path, monkeypatch, capsys):
+    mine, _ = _mine(tmp_path, monkeypatch)
+    docs = tmp_path / "docs"
+    for page, text in _PAGES:
+        (docs / page).parent.mkdir(parents=True, exist_ok=True)
+        (docs / page).write_text(text)
+    complete, _ = _complete("S2", "Opus [Y2].")
+    code = ask_main(
+        ["--mine", "why", "Opus?"],
+        complete=complete,
+        docs=Docs(str(docs), "checkout", "0.2.4"),
+        mine=mine,
+    )
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "Also sending, with keys hidden:" in out
+    assert "[Y1] Your settings and model files (certo check): certo check" in out
+
+
+def test_project_without_mine_is_refused(capsys):
+    import pytest
+
+    with pytest.raises(SystemExit):
+        ask_main(["--project", "demo", "why?"], complete=lambda p: ("", 0.0))
+    assert "--project needs --mine" in capsys.readouterr().err
+
+
+def test_the_check_text_calls_no_model(tmp_path, monkeypatch):
+    from certo.ask_cmd import _check_text
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("CERTO_LLM_MODEL", "anthropic/claude-haiku-5-5")
+    monkeypatch.setattr(
+        "certo.llm_check.check_tool_calling",
+        lambda *a, **k: (_ for _ in ()).throw(AssertionError("called a model")),
+    )
+    text = _check_text(str(tmp_path))
+    assert "CERTO_LLM_MODEL" in text and "anthropic/claude-haiku-5-5" in text
