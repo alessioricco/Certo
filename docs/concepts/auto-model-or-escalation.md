@@ -167,8 +167,8 @@ strategy and reports how many it solved and what it cost. See
 |---|---|---|
 | A local model on your machine, a cloud key for hard cases | `--escalate` | Free when the local model succeeds; the cloud model only for what it can't finish |
 | Fixing bugs in a project with a good test suite | `--escalate` | Failing tests are exactly the signal escalation climbs on |
-| Generating boilerplate or a new project skeleton | `--auto-model` with a `scaffolding` profile that weighs cost, or `--escalate` | Either keeps it on a cheap model; escalation also checks the result |
-| An architecture or design task | `--auto-model` with a profile that weighs reasoning | A cheap first rung would likely fail and cost time |
+| Generating boilerplate or a new project skeleton | `--auto-model` with a `scaffolding` profile, whose needs are low (`code: 3`), or `--escalate` | Either keeps it on a cheap model; escalation also checks the result |
+| An architecture or design task | `--auto-model` with a profile that needs high reasoning (`reasoning: 5`) | A cheap first rung would likely fail and cost time |
 | Writing documentation, nothing to test | `--auto-model` | No verdict for escalation to act on |
 | Many tasks overnight, cost matters | `--escalate`, with `CERTO_MAX_TASK_COST` | Climbs only when needed, with a cap per task |
 | A provider that is often rate-limited | `--auto-model` | Moves to the next model when the provider fails |

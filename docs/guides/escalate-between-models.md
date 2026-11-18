@@ -108,8 +108,9 @@ the ladder from your ratings. It is the same for every task, and printed
 before the run starts.
 
 1. **Capability.** A model's capability is the sum of its ratings on
-   every axis **except the cost axis** (`cost`, or `escalation.cost_axis`).
-   With the usual axes that is `reasoning + precision + code`. Task
+   every axis **except the cost axis** (`cost`, or `escalation.cost_axis`)
+   **and `speed`**, which says how a model runs, not how well. With
+   Certo's axes that is `reasoning + precision + code + writing`. Task
    profiles are not used: they only steer `--auto-model`. If your cost
    rating has another name, set `escalation.cost_axis` to it, or it counts
    as capability.

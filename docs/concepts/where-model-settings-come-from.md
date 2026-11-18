@@ -15,7 +15,7 @@ From the bottom up:
 
 | Layer | Where | What it holds | Who changes it |
 |---|---|---|---|
-| 1. Certo's own | Inside the Certo package | Every model Certo knows, with its id, description and ratings (`models_list.yaml`), and the kinds of task with what each needs (`task_profiles.yaml`) | Each Certo release |
+| 1. Certo's own | Inside the Certo package | Every model Certo knows, with its id, description and ratings (`models_list.yaml`), and the kinds of task with what each needs (`task_profiles.yaml`). After [`certo models refresh`](../reference/commands.md#certo-models-refresh), its computed ratings (`ratings.yaml`, in your settings folder) replace Certo's hand-written ones here, below your own files | Each Certo release, and `certo models refresh` |
 | 2. Yours | `~/.config/certo/` (or `$XDG_CONFIG_HOME/certo/`) | Which models you use and their keys (`models.yaml`), the keys themselves (`.env`), and anything you want different from Certo's | You |
 | 3. The current folder | The folder you run `certo` in | Changes for everything run from that folder | You |
 | 4. The project | The `--project` folder | Changes for one project, and its own choice of models (`certo-models.yaml`) | You, or `certo models choose` |
@@ -52,7 +52,9 @@ the value is in `.env`. `certo models secure` moves a key written out in
 
 - **You get Certo's updates.** When a release adds a model or corrects a
   rating, you have it at once: your files hold only your own changes, so
-  nothing old hides the new values.
+  nothing old hides the new values. After `certo models refresh`, its
+  computed ratings win over a release's until you refresh again (`certo
+  check` says when the release ships newer data) or delete `ratings.yaml`.
 - **A project changes only what is different.** A game project can turn
   off Opus, or rate a model higher, in two lines, without copying your
   keys or your other models.
@@ -85,7 +87,8 @@ profiles are Certo's alone.
   the layers for that file. Benchmarks use this, so their results don't
   change when Certo's list does.
 - **`replace: true`** at the top of a file hides the layers below it,
-  Certo's own included.
+  Certo's own included. Computed ratings go only on Certo's own list, so
+  a list a setting names, or one with `replace: true`, gets none.
 - **A full copy from before 0.2.3.** Before 0.2.3, Certo copied its whole
   list into `~/.config/certo/`. That copy still works, but it hides
   Certo's newer values. `certo models update` reduces it to your own

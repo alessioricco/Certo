@@ -148,7 +148,7 @@ def check_catalog(catalog: ModelCatalog, *, mode: str | None = None) -> CatalogR
         elif not by_name[profile.model].activated:
             warnings.append(
                 f"{where}: {profile.model} isn't enabled in models.yaml, so tasks of this "
-                "profile use the model the weights rank first."
+                "profile use the model its needs (or weights) rank first."
             )
 
     unused, note = _UNUSED_BY_MODE.get(mode, (None, ""))

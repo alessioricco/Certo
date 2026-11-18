@@ -697,9 +697,10 @@ once.
 | `... has 'activated: false', so this rung is skipped` | The ladder names a model you turned off. Activate it, or remove the rung. |
 | `... has only one usable rung (...), so it can't escalate` | Only one model in the ladder can be used. Enable another. |
 | `Model '...' has no rating for ..., which task profile(s) ... weigh: it counts as 0` | Add the missing ratings, or the model ranks lower than it should. |
+| `Model '...' has no rating for ..., which task profile(s) ... need: it never fits them` | Rate the model on that axis in `models_list.yaml` (or in `models.yaml`, for you only), or it is never chosen first for those profiles. |
 | `Model '...' has no api_key and no base_url` | It works only if the provider's own key variable (such as `OPENAI_API_KEY`) is set. Add `api_key` in `models.yaml` otherwise. |
 | `... (capability ...) comes after ... but is rated less capable` | Your explicit ladder climbs to a weaker model. Allowed, if that's what you meant. |
-| `Task profile '...': ... isn't enabled in models.yaml` | The profile's `model:` can't run, so the weights pick the model. Enable it, or remove `model:`. |
+| `Task profile '...': ... isn't enabled in models.yaml` | The profile's `model:` can't run, so its needs (or weights) pick the model. Enable it, or remove `model:`. |
 
 ### `--escalate` refuses to start
 

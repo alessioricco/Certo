@@ -91,7 +91,7 @@ def test_a_profile_naming_a_disabled_model_is_a_warning(tmp_path):
     assert report.ok
     assert (
         "Task profile 'debugging': parked isn't enabled in models.yaml, so tasks of this "
-        "profile use the model the weights rank first." in report.warnings
+        "profile use the model its needs (or weights) rank first." in report.warnings
     )
 
 

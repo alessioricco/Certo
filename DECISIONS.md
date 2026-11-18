@@ -2253,3 +2253,7 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   (where the question comes at the session's prompt), which widens the
   "not the continuation question" entry above. Without a terminal or
   with `--json`, `-i` is the setting.
+- **A `no data` model still gets computed `cost` and `speed`**
+  (2026-11-18, recording what the code does since 4ec3100). The anchors
+  entry's "keep their hand ratings" holds for code, reasoning, precision
+  and writing only: price and cloud/local are known for every model.

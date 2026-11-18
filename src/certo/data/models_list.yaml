@@ -17,36 +17,37 @@
 # docs/guides/escalate-between-models.md.
 #
 # =============================================================================
-# HOW RATINGS/WEIGHTS WORK — read this before scoring your own models
+# HOW RATINGS ARE USED — read this before scoring your own models
 # =============================================================================
 #
 # Each model gets a `ratings` map (numbers 1-5; `cost` has one decimal,
-# worked out from the price, see below). Each task profile
-# (in task_profiles.yaml) gets a `weights` map over the same axis names. For
-# auto-selection a model's score for a task is:
+# worked out from the price, see below). Each task profile (in
+# task_profiles.yaml) says what its kind of task `needs`: a minimum per
+# axis. For --auto-model, Certo keeps the active models that meet every
+# need and starts with the least costly of them; the fallbacks climb to
+# the next more capable model that fits, then to those below the needs
+# (rank_for_profile() in model_catalog.py). A profile with only `weights` (an
+# older form) is ranked by the weighted sum of the ratings instead.
 #
-#     score = sum( rating[axis] * weight[axis] for axis in weights )
-#
-# computed for every active model, then sorted descending into a ranked
-# fallback chain — see rank_candidates()/score_entry() in model_catalog.py.
-#
-# `--escalate` without an explicit ladder builds a "derived" ladder from
-# capability = reasoning + precision + code, climbing from the least to the
-# most capable model; `cost` is only used to break ties there.
+# `--escalate` without an explicit ladder builds a "derived" ladder: the
+# cheapest models first, each rung more capable than the one before
+# (capability = the sum of every rating except `cost` and `speed`), and a
+# model that another beats at the same price or less left out
+# (derive_ladder() in escalation.py).
 #
 # CONVENTION — on every axis, HIGHER = MORE DESIRABLE. This includes `cost`:
 #   reasoning / precision / code   5 = excellent, 1 = weak
 #   cost                           5 = cheapest (local = free), 1 = most expensive
 #                                   (NOT "how much it costs" — the opposite!)
 #
-# Why `cost` is inverted: every weight in this file is positive and scoring
-# is a plain weighted sum, so a positive weight always rewards a HIGHER
-# rating. Rating cost as cost-*effectiveness* keeps every axis on the same
-# arithmetic. If you add a custom axis, rate it the same way.
+# Why `cost` is inverted: a need is a minimum, and a weight is positive,
+# so a HIGHER rating must always be the better one. Rating cost as
+# cost-*effectiveness* keeps every axis the same way round. If you add a
+# custom axis, rate it the same way.
 #
 # Axis names are open-ended — add your own (e.g. `latency`) with zero code
-# changes. A model that doesn't rate itself on an axis a profile weights
-# contributes 0 for that axis, not an error.
+# changes. A model with no rating on an axis a profile needs never fits
+# that profile; on an axis a profile weighs, it counts as 0.
 #
 # =============================================================================
 # RATING SCALE — the anchors behind the numbers in this file
@@ -77,9 +78,9 @@
 #              factuality evals, long-context retrieval (MRCR), tool-use
 #              evals (tau2, Toolathlon), instruction following (IFBench).
 #              The least certain axis everywhere — treat +/-1 as noise.
-#   writing    Prose: docs, READMEs, messages. ESTIMATED for now as the
-#              mean of reasoning and precision, rounded half up, until
-#              benchmark data replaces it (`certo models refresh`, TODO).
+#   writing    Prose: docs, READMEs, messages. The mean of reasoning and
+#              precision, rounded half up (`certo models refresh` computes
+#              it the same way, from its own reasoning and precision).
 #   speed      How fast answers come, not how good they are (never counted
 #              as capability). ESTIMATED by tier for now: 5 small cloud
 #              models, 4 mid-tier cloud, 3 flagship or heavy-reasoning

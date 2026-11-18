@@ -9,9 +9,9 @@ The format of the files behind automatic model selection
 
 | File | Holds | Needed |
 |---|---|---|
-| `models_list.yaml` | The catalog: which models exist, their LiteLLM ids, descriptions and ratings. No keys, no addresses. | Always |
+| `models_list.yaml` | The catalog: which models exist, their LiteLLM ids, descriptions and ratings. No keys, no addresses. | Optional: Certo has its own |
 | `models.yaml` | Your personal settings: which models of the list you use, each with its API key or server address, whether it is activated, and any overrides. It holds keys: keep it out of git. | Always |
-| `task_profiles.yaml` | The task profiles `--auto-model` chooses with. | Optional |
+| `task_profiles.yaml` | The task profiles `--auto-model` chooses with. | Optional: Certo has its own |
 | `escalation.yaml` | The ladders `--escalate` climbs, and the settings for a derived ladder. Also read by `certo bench`. | Optional |
 
 Certo reads them for `--auto-model` and `--escalate` (or
@@ -285,7 +285,7 @@ is [Escalate between models](../guides/escalate-between-models.md).
 
 | Field | Default | Meaning |
 |---|---|---|
-| `cost_axis` | `cost` | The rating axis that means cost-effectiveness. A model's capability, for escalation, is the sum of its ratings on every other axis (usually `reasoning + precision + code`). A derived ladder uses the cost axis to start from the cheapest models and to leave out a model that another one beats at the same price or less. |
+| `cost_axis` | `cost` | The rating axis that means cost-effectiveness. A model's capability, for escalation, is the sum of its ratings on every other axis except `speed` (with Certo's axes, `reasoning + precision + code + writing`). A derived ladder uses the cost axis to start from the cheapest models and to leave out a model that another one beats at the same price or less. |
 | `max_rungs` | `3` | The longest ladder Certo builds from the ratings. A whole number, at least 2. |
 | `ladders` | none | Ladders you write yourself, by name. |
 
@@ -415,17 +415,19 @@ as errors.
 
 Warnings:
 
-- a task profile's `model` isn't enabled in `models.yaml`: the weights
-  pick the model instead;
+- a task profile's `model` isn't enabled in `models.yaml`: the profile's
+  needs (or weights) pick the model instead;
 - a rung names a model that isn't in `models.yaml`, or has
   `activated: false`: the rung is skipped;
 - a ladder has a single usable rung, so it can't escalate;
 - an enabled model has no rating on an axis that a task profile weighs: it
   counts as 0;
+- an enabled model has no rating on an axis that a task profile needs: it
+  never fits that profile;
 - an enabled model has no `api_key` and no `base_url`: it works only if
   the provider's own key variable (such as `OPENAI_API_KEY`) is set;
 - an `api_key` or `base_url` uses `${NAME}`, and that variable isn't set:
   the model is left out;
 - a ladder goes from a more capable model to a less capable one
-  (capability: the sum of the ratings except the cost axis). Allowed,
+  (capability: the sum of the ratings except the cost axis and `speed`). Allowed,
   since you may know better, but check the order.

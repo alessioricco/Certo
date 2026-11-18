@@ -126,11 +126,11 @@ Certo isn't tied to any provider: the model is one setting, and the same task ru
 
 | | What Certo does | Add |
 | --- | --- | --- |
-| **Best model per task** | Reads the task, matches it to a profile you write (in the shipped example, "debugging" weighs reasoning and precision, "scaffolding" favours cheap models), and picks the best-rated model you enabled. One choice per task, not per step, with no extra model call to decide. Falls back to the next model when a provider fails or a fix attempt still fails the checks. | `--auto-model` |
+| **Best model per task** | Reads the task, matches it to one of Certo's task profiles (each says what its kind of task needs: "debugging" needs reasoning and code 4 or more, "scaffolding" only code 3), and runs the least costly model you enabled that meets those needs. One choice per task, not per step, with no extra model call to decide. Falls back to the next model when a provider fails or a fix attempt still fails the checks. | `--auto-model` |
 | **Escalation** | Runs the task on the first model of your ladder, and moves to the next one when the verdict shows the model couldn't finish, or its provider fails (see above). The next model is told what the last one left. | `--escalate` |
 | **Measure it** | Runs the same tasks on your models and strategies, graded by hidden tests, so you choose from your own numbers. | `certo bench` |
 
-`--auto-model` and `--escalate` are two ways to choose, and can't be combined in one run. You describe your models once, in `models_list.yaml` (ids and ratings) and `models.yaml` (the ones you enabled, with keys), and your choices in one file per mode: `task_profiles.yaml` for `--auto-model`, `escalation.yaml` for `--escalate`. Every choice is written down: `MODEL_DECISIONS.md` says why each model was picked, and `.certo/RUNS.md` which models worked on the project. Of the ladders, only local first, cloud when needed has been measured; auto-model has no benchmark yet. Guides: [Escalate between models](https://github.com/alessioricco/certo/blob/main/docs/guides/escalate-between-models.md), [Pick models automatically](https://github.com/alessioricco/certo/blob/main/docs/guides/pick-models-automatically.md), [Auto-model or escalation](https://github.com/alessioricco/certo/blob/main/docs/concepts/auto-model-or-escalation.md).
+`--auto-model` and `--escalate` are two ways to choose, and can't be combined in one run. Certo has its own model list (ids and ratings, which `certo models refresh` can compute from current benchmark data) and task profiles; you write `models.yaml` (the models you enabled, with keys), and other files only for what is different for you. Every choice is written down: `MODEL_DECISIONS.md` says why each model was picked, and `.certo/RUNS.md` which models worked on the project. Of the ladders, only local first, cloud when needed has been measured; auto-model has been measured on hand-written and computed ratings ([benchmark](https://github.com/alessioricco/certo/blob/main/docs/benchmark/ratings-0.2.4.md)). Guides: [Escalate between models](https://github.com/alessioricco/certo/blob/main/docs/guides/escalate-between-models.md), [Pick models automatically](https://github.com/alessioricco/certo/blob/main/docs/guides/pick-models-automatically.md), [Auto-model or escalation](https://github.com/alessioricco/certo/blob/main/docs/concepts/auto-model-or-escalation.md).
 
 ### Measured
 
@@ -184,12 +184,11 @@ In a terminal, `certo` alone opens the [interactive session](https://github.com/
 
 ### More than one model
 
-`--escalate` and `--auto-model` read the model files. The first time, Certo prints the `cp` commands that copy the examples it ships:
+`--escalate` and `--auto-model` read the model files. You need one, `models.yaml`: the models you use, with their key or server address (`certo init models` writes it). Certo has its own model list and task profiles; write these only for what is different for you:
 
-- `models_list.yaml`, the catalog: every model's id and ratings.
-- `models.yaml`, your settings: the models you enabled, with their key or server address.
-- `escalation.yaml`, your ladders, for `--escalate`; optional: without it, Certo builds a ladder from the ratings.
-- `task_profiles.yaml`, the kinds of task and what matters for each, for `--auto-model`, which needs it (`certo init models --profiles` writes it and asks which model you want for each).
+- `models_list.yaml`: models Certo's list lacks, or ratings you know better.
+- `task_profiles.yaml`: kinds of task and what each needs, for `--auto-model`.
+- `escalation.yaml`: your ladders, for `--escalate`; without it, Certo builds a ladder from the ratings.
 
 Then add `--escalate` (with a ladder from [One task, more than one model](https://github.com/alessioricco/certo#one-task-more-than-one-model)) or `--auto-model` to a run. `certo check --models` tests every model you enabled before you rely on it.
 

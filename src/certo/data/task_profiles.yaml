@@ -1,6 +1,6 @@
 # task_profiles.yaml: the task profiles --auto-model chooses a model with.
-# Optional: without it, --auto-model ranks every enabled model with no
-# weights, so the order of models_list.yaml decides.
+# Each profile says what its kind of task needs (a minimum per axis);
+# --auto-model starts with the least costly enabled model that meets them.
 #
 # These are Certo's own profiles: every run reads them as the lowest
 # layer, from the installed package, and a new Certo release updates

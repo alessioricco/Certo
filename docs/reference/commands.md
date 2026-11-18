@@ -417,6 +417,8 @@ say) writes the file again, with your earlier models ticked. The ladder
 and task profiles are made again from the current ratings, unless you
 edited them: the file remembers what `choose` wrote (`generated:`), so
 it shows the difference and asks whether to keep yours or replace them.
+A file written by an older Certo, with no `generated:` line, counts as
+edited.
 The models and the strategy change either way. With `--yes` your edits
 are kept; `--replace-edits` replaces them. Exit code 0 when the file was
 written, 1 when not, 130 on Ctrl-C.
@@ -479,7 +481,8 @@ The `reasoning`, `precision` and `code` ratings come from benchmarks and
 aren't checked. A price that differs needs a person: the provider's
 pricing page says which is right, since LiteLLM's list can lag and a
 description can be out of date. On Certo's list in 0.2.3 (then
-`src/certo/examples/models_list.yaml.example`), on 7 November 2026, a
+`src/certo/examples/models_list.yaml.example`, now
+`certo/data/models_list.yaml`), on 7 November 2026, a
 price rise and a promotion showed up:
 
 ```text
@@ -530,15 +533,17 @@ Where each number comes from:
 
 The model data comes from Certo's latest release when there is newer
 data online, else from the one this version ships. Prices come from
-LiteLLM's current list. A model no source rates says `no data` and keeps
-the ratings in Certo's list. Your own ratings, in `models_list.yaml` or
+LiteLLM's current list. A model no source rates says `no data`: it keeps
+Certo's `code`, `reasoning`, `precision` and `writing`, but its `cost`
+and `speed` are computed like any other model's. Your own ratings, in `models_list.yaml` or
 `models.yaml`, always win over the computed ones. Delete `ratings.yaml`
 to go back to the ratings in Certo's list.
 
 [`certo check`](#certo-check) then says where each model's ratings come
 from, and when the data gets old. It prints the ratings of your enabled
 models, with prices in $ per 1M tokens, what changed by half a point or more, and which models fit each
-kind of task:
+kind of task. From a real run, cut short (some models and lines left
+out):
 
 ```text
 Model data of 2026-11-16, from this Certo version.
@@ -814,7 +819,8 @@ with the date of its data; Certo's own, set by hand; or as written in a
 list a setting names), with a note when that data is more than 60 days
 old or this Certo version ships newer data, the active and inactive models, how
 many listed models aren't used, for each task profile the first three
-models `--auto-model` would try (with their scores), each ladder with its usable rungs, the
+models `--auto-model` would try (whether each fits the profile's needs,
+and its cost rating), each ladder with its usable rungs, the
 ladder Certo would build from the ratings (and the models it leaves out
 of it, with the model that beats each one), and every error and warning
 (see [Checks](models-yaml.md#checks)). After a refresh, one more line per
@@ -823,27 +829,32 @@ of your runs moved `code`; `Certo's` for an axis no source rates, or for
 a model with no data; `yours` for an axis you rated yourself. A missing file is an error with the
 command that copies its example. Keys are never printed. For example:
 
+For example, with three models in `models.yaml` and Certo's own list
+and profiles (a real run, cut short; `...` marks what was left out):
+
 ```text
 Model files:
-  List: .../models_list.yaml
-  Personal settings: .../models.yaml
-  Task profiles: .../task_profiles.yaml
-  Escalation: .../escalation.yaml
-  Active models: qwen-local, gpt-luna, claude-sonnet
-  Inactive models: gemma-local
+  List: built into Certo 0.2.4
+  Ratings: Certo's, set by hand (certo models refresh computes them from current benchmark data)
+  Personal settings: /home/me/work/models.yaml
+  Task profiles: built into Certo 0.2.4
+  Escalation: none (optional, for --escalate)
+  Active models: qwen3.8-27b-local, gpt-6-luna, claude-sonnet-5-5
+  36 other model(s) in models_list.yaml, not used (not in models.yaml)
   Task profiles (--auto-model), checked in this order:
-    debugging, title has: fix, bug
-      gpt-luna (named by the profile, score 13), claude-sonnet (score 20), qwen-local (score 9)
-    scaffolding, title has: scaffold
-      qwen-local (score 10), gpt-luna (score 8), claude-sonnet (score 4)
+    debugging, title has: fix, bug, crash, failing test, race condition, debug, debugging, error, exception, regression
+      claude-sonnet-5-5 (fits, cost 3), gpt-6-luna (below: reasoning 3 < 4, code 3 < 4, cost 4.9), qwen3.8-27b-local (below: reasoning 3 < 4, code 2 < 4, cost 5)
+    docs, title has: document, documentation, docs, readme, changelog, write-up, tutorial, guide
+      qwen3.8-27b-local (fits, cost 5), gpt-6-luna (fits, cost 4.9), claude-sonnet-5-5 (fits, cost 3)
+    ...
     default, when no other profile matches
-      claude-sonnet (score 12), gpt-luna (score 11), qwen-local (score 10)
-  Ladder 'default': qwen-local -> gpt-luna -> claude-sonnet
-  Ladder 'local-only': qwen-local (1 rung(s) skipped)
-  Derived ladder: qwen-local (capability 5, cost rating 5; effort default) -> gpt-luna (capability 7, cost rating 4; effort default) -> claude-sonnet (capability 10, cost rating 2; effort default)
-  Warning: Ladder 'local-only', rung 2: gemma-local has 'activated: false', so this rung is skipped.
-  Warning: Ladder 'local-only' has only one usable rung (qwen-local), so it can't escalate.
+      gpt-6-luna (fits, cost 4.9), claude-sonnet-5-5 (fits, cost 3), qwen3.8-27b-local (below: code 2 < 3, cost 5)
+  Derived ladder: qwen3.8-27b-local (capability 11, cost rating 5; effort default) -> gpt-6-luna (capability 14, cost rating 4.9; effort high) -> claude-sonnet-5-5 (capability 17, cost rating 3; effort high)
 ```
+
+`fits` means the model meets every need of the profile; `below` names
+the needs it misses. Ladders you wrote in `escalation.yaml` get a line
+each (`Ladder 'default': ...`), and errors and warnings come last.
 
 After `certo models refresh`, the ratings lines read like this (a real
 run, cut short):
@@ -875,13 +886,18 @@ It makes no model call and doesn't check the main model:
 ```text
 Task title: Fix the bugs in the parser
 Profile: debugging ("fix" is in the title)
-Models, in the order --auto-model tries them (the profile names gpt-luna; fallbacks ranked by weights):
-  1. gpt-luna (named by the profile, score 13)
-  2. claude-sonnet (score 20)
-  3. qwen-local (score 9)
+Models, in the order --auto-model tries them (the least costly of the models that meet the needs (reasoning 4+, code 4+); fallbacks climb):
+  1. claude-sonnet-5-5 (fits, cost 3)
+  2. gpt-6-luna (below: reasoning 3 < 4, code 3 < 4, cost 4.9)
+  3. qwen3.8-27b-local (below: reasoning 3 < 4, code 2 < 4, cost 5)
 The first model runs the task. The next one takes over if its provider fails, or makes the fix attempt when the current model's work fails Certo's checks.
-Measured for gpt-luna: ~$0.02 per run ($0.01-$0.05), ~1m 00s (30s-1m 30s), from your last 3 task runs with profile debugging.
+Measured: fewer than 3 task runs of claude-sonnet-5-5 recorded, so cost estimates are a fixed guess.
 ```
+
+With 3 or more recorded runs, the `Measured` line gives what they cost
+and took instead, such as `Measured for gpt-6-luna: ~$0.02 per run
+($0.01-$0.05), ~1m 00s (30s-1m 30s), from your last 3 task runs with
+profile debugging.`
 
 With fewer than 3 recorded runs, the line says so: `Measured: fewer
 than 3 task runs of gpt-luna recorded, so cost estimates are a fixed

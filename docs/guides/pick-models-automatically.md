@@ -282,6 +282,13 @@ them again as often as you like:
   [`certo models refresh`](../reference/commands.md#certo-models-refresh):
   it rates every model from current benchmark data, list prices and how
   your own runs ended, and shows which models now fit each kind of task.
+  With computed ratings, a local model you listed may fit most tasks and,
+  being free, go first: on Certo's benchmark tasks `qwen3.8` then started
+  11 of 13, solved 12 of 13 instead of 13, for a third of the cost and
+  about 7 times slower
+  ([the benchmark](../benchmark/ratings-0.2.4.md)). To keep it for
+  patient work, add `speed: 4` to a profile's needs, or leave it out of
+  `models.yaml`.
 - **A model rated wrong for your use?** Change its rating for yourself in
   `models.yaml` (`ratings: {code: 4}`). Your ratings always win over the
   computed ones.

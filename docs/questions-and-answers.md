@@ -9,11 +9,14 @@ the pages that explain each one in full.
 
 No, there is a default to start from. Certo's own model list,
 `models_list.yaml`, rates each model from 1 to 5 on reasoning,
-precision, code and cost (on every rating, higher is better, so `cost: 5`
-means cheapest). The ratings are based on public benchmarks that compare
-providers; `cost` comes from the list price by a formula, to one decimal,
-so a model twice as expensive is always rated lower. They are not measured on your projects. `certo init models`
-uses them as they are.
+precision, code, writing, speed and cost (on every rating, higher is
+better, so `cost: 5` means cheapest). The ratings are based on public
+benchmarks that compare providers; `cost` comes from the list price by a
+formula, to one decimal, so a model twice as expensive is always rated
+lower. `certo models refresh` computes them again from current data
+(LMArena, Epoch AI and LiteLLM's prices), and there your own runs move
+`code` a little, at most one point. `certo init models` uses them as
+they are.
 
 You rate a model only when it isn't in the list: `certo init models`
 asks for its ratings and shows the ratings of your other models next to
