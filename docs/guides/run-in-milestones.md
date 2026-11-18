@@ -64,8 +64,7 @@ certo --milestones tasks/team-board.md --project team-board
 ## Let Certo write the milestones
 
 For a task you wrote in one piece, `--make-milestones` has a model split
-it before the run ([experimental](../README.md#experimental-features),
-not benchmarked yet):
+it before the run ([experimental](../README.md#experimental-features)):
 
 ```bash
 certo --make-milestones task.md --project ledger
@@ -101,6 +100,11 @@ Edit it and run it again any time: certo --milestones /home/me/certo-projects/pr
   it again after editing it: `certo --milestones .certo/milestones.md`.
 - Not with `--milestones`, `--no-milestones`, `--resume`,
   `--from-milestone`, or a task already written in milestones.
+- Measured on two app tasks
+  ([the benchmark](../benchmark/make-milestones-0.2.4.md)): on Haiku, one
+  go solved every run, faster and cheaper, and the planned milestones
+  lost two of six; on `qwen3.8:27b` the three ways did about the same.
+  On tasks of that size, try one go first.
 
 The model that writes the plan is `CERTO_PLANNER_MODEL` (a model's name
 in your `models.yaml`) when you set it. Otherwise, with `--auto-model` or

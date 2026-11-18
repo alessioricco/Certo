@@ -2196,3 +2196,10 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   cursor and ticks. A secret prompt never reads `?` as a question (a key
   could start with one). With no model set up (the first `certo init`),
   the docs link instead of a configuration error.
+
+- **`--make-milestones` stays opt-in after its first benchmark**
+  (2026-11-17, `docs/benchmark/make-milestones-0.2.4.md`). On the two app
+  tasks, Haiku solved 6/6 in one go and with its own milestones but 4/6
+  with planned ones (two spreadsheet runs fooled thin checks); qwen3.8
+  was 3/3 planned, 3/3 whole, 1/3 hand-written, too few runs to tell
+  apart. No loss-free gain, so no default on (working agreement 2).

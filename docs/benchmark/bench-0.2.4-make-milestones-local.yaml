@@ -1,0 +1,14 @@
+# The local half of bench-0.2.4-make-milestones-cloud.yaml: the expenses
+# app task on qwen3.8 (it took ~29 min in milestones in 0.1.27), the
+# same three arms. qwen3.8 is also the planner of the "planned" arm.
+# A night slot, under caffeinate -i, with the fan on turing:
+#   caffeinate -i certo bench --config docs/benchmark/bench-0.2.4-make-milestones-local.yaml --pause-between 180 --yes
+models_file: docs/benchmark/models-0.2.4-ratings.yaml
+models_list_file: docs/benchmark/models_list-0.2.4-hand.yaml
+tasks_dir: app-tasks
+tasks: [expenses]
+repeats: 3
+arms:
+  - {name: qwen-hand, strategy: single, model: qwen3.8-27b-local, milestones: true, max_task_seconds: 900}
+  - {name: qwen-planned, strategy: single, model: qwen3.8-27b-local, make_milestones: true, max_task_seconds: 900}
+  - {name: qwen-whole, strategy: single, model: qwen3.8-27b-local, max_task_seconds: 3600}

@@ -14,6 +14,12 @@ first item is the suggested next one.
 
 ## Before the next release
 
+- **`certo bench --resume` hint leaves out `--config`.** After Ctrl-C,
+  bench prints "continue with: certo bench --resume --out DIR", but
+  without `--config` it looks for `bench.yaml` and stops (seen
+  2026-11-17). Done when the hint includes the config path, or
+  `--resume` reads it from the results folder's `meta.json`.
+
 - **A live run where an open to-do item stays open** (after 0.2.3's
   replay, docs/benchmark/open-items-replay-0.2.3.md, which found no run
   turned `verified`). Seen next on an `--escalate` milestone run: record
@@ -71,13 +77,12 @@ first item is the suggested next one.
 - **`--make-milestones`: what's left** (built in 0.2.4, opt-in and
   experimental; DECISIONS.md "Certo writes the milestones: the task as
   context, the planner's milestones after it"). Left:
-  - *Measure* (working agreement 2): the app tasks and the milestone
-    samples with their milestones removed, three arms (the hand-written
-    milestones, the planned ones, one go), on qwen3.8 and Haiku. On the
-    spreadsheet, milestones haven't helped qwen yet
-    (`milestones-0.1.27.md`: stopped at milestone 2), so the gain isn't
-    a given. The bench arm option is built (`make_milestones: true`). A
-    default on (no flag) only after it shows no loss on either model.
+  - *Measured once* (`make-milestones-0.2.4.md`, 2026-11-17): no gain
+    over hand-written milestones or one go on `expenses`/`spreadsheet`;
+    two of six Haiku spreadsheet runs lost (thin acceptance checks).
+    Next measure on a task too big for one go (the milestone samples
+    with their milestones removed), where splitting should pay. A
+    default on only after it shows no loss on either model.
   - *Planner-written acceptance checks:* left out for now (they can be
     wrong, as independent tests can); try them report-only once measured.
   - *Over MCP:* `run_task` has `milestones_file` but no way to plan.

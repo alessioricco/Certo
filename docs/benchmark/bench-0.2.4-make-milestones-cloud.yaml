@@ -1,0 +1,16 @@
+# Certo writes the milestones (Certo 0.2.4, --make-milestones): three arms
+# on the app tasks, which are written in milestones. "hand" runs the
+# task's own milestones; "planned" gives the planner the task with its
+# milestones taken out and runs the milestones it writes; "whole" runs
+# the task in one go. 900 s per milestone, 3600 s for one go.
+# The local half is bench-0.2.4-make-milestones-local.yaml.
+#   certo bench --config docs/benchmark/bench-0.2.4-make-milestones-cloud.yaml --parallel 3 --max-cost 5 --yes
+models_file: docs/benchmark/models-0.2.4-ratings.yaml
+models_list_file: docs/benchmark/models_list-0.2.4-hand.yaml
+tasks_dir: app-tasks
+tasks: [expenses, spreadsheet]
+repeats: 3
+arms:
+  - {name: haiku-hand, strategy: single, model: claude-haiku-5-5, milestones: true, max_task_seconds: 900}
+  - {name: haiku-planned, strategy: single, model: claude-haiku-5-5, make_milestones: true, max_task_seconds: 900}
+  - {name: haiku-whole, strategy: single, model: claude-haiku-5-5, max_task_seconds: 3600}

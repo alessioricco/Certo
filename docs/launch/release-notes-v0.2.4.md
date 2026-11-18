@@ -91,7 +91,9 @@ edit the file first, or stop. A task small enough for one go stays one
 task. The model is `CERTO_PLANNER_MODEL` when set; with `--auto-model`
 or `--escalate`, the first model of a new `planning` task profile
 (`reasoning` 4 or more, least costly first); else the run's own.
-Experimental: not yet benchmarked against hand-written milestones. See
+Experimental: [benchmarked](../benchmark/make-milestones-0.2.4.md) on two
+app tasks, it did no better than hand-written milestones or one go, and
+lost two of six runs on Haiku. See
 [Let Certo write the milestones](../guides/run-in-milestones.md#let-certo-write-the-milestones).
 
 ## New: `certo ask`
