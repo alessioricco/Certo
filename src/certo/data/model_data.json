@@ -58,6 +58,8 @@
  },
  "aliases": {
   "deepseekflash": "deepseekv41flash",
+  "deepseekv41flash1017": "deepseekv41flash",
+  "deepseekv4flash0731": "deepseekv4flash",
   "llama3": "llama38binstruct",
   "nemotron35lightning30b": "nvidianemotron35lightning30ba3b",
   "qwen3": "qwen38b"
@@ -686,11 +688,12 @@
   "deepseekv41flash": {
    "names": [
     "DeepSeek V4.1 Flash",
+    "DeepSeek V4.1 Flash 1017",
     "DeepSeek-V4.1-Flash-20260910 (Max)",
     "DeepSeek-V4.1-Flash-20261017 (Max)"
    ],
    "scores": {
-    "epoch_eci": 157.0,
+    "epoch_eci": 159.4,
     "lmarena_text_factuality": 1467.77,
     "lmarena_webdev": 1658.67
    },
@@ -699,26 +702,15 @@
    "price_in": 0.3,
    "price_out": 1.2
   },
-  "deepseekv41flash1017": {
-   "names": [
-    "DeepSeek V4.1 Flash 1017"
-   ],
-   "scores": {
-    "epoch_eci": 159.4
-   },
-   "cost_per_task": null,
-   "litellm": "sarvam/deepseekv4.1-flash-1017",
-   "price_in": 0.1489,
-   "price_out": 0.5851
-  },
   "deepseekv4flash": {
    "names": [
+    "DeepSeek V4 Flash 0731",
     "DeepSeek-V4-Flash",
     "DeepSeek-V4-Flash (High)",
     "DeepSeek-V4-Flash Preview (High)"
    ],
    "scores": {
-    "epoch_eci": 146.84,
+    "epoch_eci": 154.43,
     "lmarena_text_factuality": 1439.14,
     "lmarena_webdev": 1581.47
    },
@@ -726,18 +718,6 @@
    "litellm": "deepseek-v4-flash",
    "price_in": 0.3,
    "price_out": 1.2
-  },
-  "deepseekv4flash0731": {
-   "names": [
-    "DeepSeek V4 Flash 0731"
-   ],
-   "scores": {
-    "epoch_eci": 154.43
-   },
-   "cost_per_task": null,
-   "litellm": "wally/deepseek-v4-flash-0731",
-   "price_in": 0.44,
-   "price_out": 1.32
   },
   "deepseekv4pro": {
    "names": [
