@@ -1,14 +1,16 @@
 # Certo v0.2.4
 
-Not released yet.
-
-This release lets Certo split a big task into milestones itself,
-answers questions about Certo from its own docs, and makes it easier to
-tell Certo's maintainers what went wrong:
+This release opens an interactive session, computes model ratings
+from current benchmark data, lets Certo split a big task into milestones
+itself, answers questions about Certo from its own docs, and makes it
+easier to tell Certo's maintainers what went wrong:
 
 - **An interactive session**: `certo` alone opens it, laid out as
   coding-agent terminals are, with a header, `/` commands, follow-up
   messages that continue the task, and a status line with switches.
+- **`certo models refresh`** computes the model ratings from public
+  benchmark data, prices and your own runs, so the least costly model
+  that fits a task is picked from current numbers.
 - **`--make-milestones`**: a model splits a task written in one piece
   into milestones, saved in the project for you to read and edit, and
   Certo runs them one at a time, each checked before the next.
@@ -48,6 +50,8 @@ Certo's questions (also with `certo --interactive`, and `?` in the menus
 of `certo init` and `certo models`). Scripts are unaffected:
 without a terminal, or with `--json`, `certo` runs as before. See
 [The interactive session](../guides/interactive-mode.md#the-interactive-session).
+It has been tried by hand only on macOS so far; if you use Windows,
+[tell us how it went](https://github.com/alessioricco/certo/issues/43).
 
 **Changed:** in a terminal, `certo "task" --interactive` now opens the
 session with the task, and the agent no longer stops to ask "Your
