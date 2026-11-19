@@ -4359,3 +4359,18 @@ def test_a_resume_on_another_model_says_so():
     assert "MODEL_DECISIONS.md" in runner._resume_switch_note(record, "openai/b", "auto")
     assert runner._resume_switch_note(record, "openai/a", "manual") is None
     assert runner._resume_switch_note(None, "openai/b", "manual") is None
+
+
+def test_the_scratch_folder_follows_the_run_state_unless_an_arm_sets_it(monkeypatch, tmp_path):
+    # Without saved state (the library default, the benchmark): none.
+    _independent_tests_run(monkeypatch, tmp_path / "default")
+    assert not (tmp_path / "default" / ".certo").exists()
+    # A benchmark arm can ask for it.
+    _independent_tests_run(monkeypatch, tmp_path / "arm", scratch_folder=True)
+    assert (tmp_path / "arm" / ".certo" / "scratch").is_dir()
+
+
+def test_a_run_that_saves_its_state_makes_the_scratch_folder(monkeypatch, tmp_path):
+    _stub_for_state_tests(monkeypatch)
+    runner.stream_task("do it", cfg=_cfg(workspace=str(tmp_path)), save_state=True)
+    assert (tmp_path / ".certo" / "scratch").is_dir()

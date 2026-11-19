@@ -168,3 +168,14 @@ def test_status_says_a_run_was_stopped_at_a_limit():
     text = project_state.render_status(record)
     assert "stopped at a limit before the agent said it was done, verdict `verified`" in text
     assert RunRecord.from_dict(json.loads(json.dumps(record.__dict__ | {"checks": []}))).cut_short
+
+
+def test_the_scratch_folder_is_inside_the_ignored_state_folder(tmp_path):
+    from certo.project_state import ensure_scratch_dir
+
+    path = ensure_scratch_dir(str(tmp_path))
+    assert (
+        path == str(tmp_path / ".certo" / "scratch") and (tmp_path / ".certo" / "scratch").is_dir()
+    )
+    assert (tmp_path / ".certo" / ".gitignore").read_text().splitlines()[-1] == "*"
+    assert ensure_scratch_dir(str(tmp_path)) == path  # again: no error

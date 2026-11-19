@@ -264,3 +264,13 @@ def test_a_bench_arm_can_leave_the_root_sentence_out(tmp_path):
 
     assert "The project root is" not in suffix
     assert _README_SUFFIX in suffix
+
+
+def test_the_agent_is_told_where_scratch_output_goes_unless_an_arm_turns_it_off():
+    from certo.agent import _SCRATCH_SUFFIX
+
+    on = build_agent(_cfg(scratch_folder=True)).agent_context.system_message_suffix
+    assert _SCRATCH_SUFFIX in on
+    assert ".certo/scratch/" in _SCRATCH_SUFFIX
+    off = build_agent(_cfg(scratch_folder=False)).agent_context.system_message_suffix
+    assert _SCRATCH_SUFFIX not in off

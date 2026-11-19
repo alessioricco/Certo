@@ -109,6 +109,7 @@ _ARM_OPTIONS = (
     "skills_dir",
     "wrap_up",
     "created_note",
+    "scratch_folder",
 )
 
 
@@ -267,6 +268,9 @@ def _arms(raw: Any, catalog: dict[str, ModelCatalogEntry], where: str) -> list[A
         created_note = item.get("created_note", True)
         if not isinstance(created_note, bool):
             raise BenchConfigError(f"{arm_where}: 'created_note' must be true or false.")
+        scratch_folder = item.get("scratch_folder")
+        if scratch_folder is not None and not isinstance(scratch_folder, bool):
+            raise BenchConfigError(f"{arm_where}: 'scratch_folder' must be true or false.")
         rest = {k: v for k, v in item.items() if k not in _ARM_OPTIONS}
         params = STRATEGIES[strategy].parse(rest, catalog, arm_where)
         if independent:
@@ -299,6 +303,8 @@ def _arms(raw: Any, catalog: dict[str, ModelCatalogEntry], where: str) -> list[A
             params["wrap_up"] = False
         if not created_note:
             params["created_note"] = False
+        if scratch_folder is not None:
+            params["scratch_folder"] = scratch_folder
         arms.append(Arm(name=name, strategy=strategy, params=params))
     return arms
 

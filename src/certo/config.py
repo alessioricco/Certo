@@ -130,6 +130,12 @@ class Config:
     # run that a failing check names (runner.created_files_named). Only a
     # `certo bench` arm sets it (`created_note: false`).
     created_note: bool = True
+    # Whether the agent is told to keep logs and throwaway scripts in
+    # `.certo/scratch/`, which Certo then makes. None: yes when the run
+    # keeps its state in `.certo/` (the CLI, the session, MCP), no
+    # otherwise (the library default, the benchmark), as with checkpoints.
+    # Only a `certo bench` arm sets it (`scratch_folder: true` or `false`).
+    scratch_folder: bool | None = None
     skills_off: tuple[str, ...] = ()
 
     # Only consulted when execution == "docker" (see workspace.py).

@@ -1325,3 +1325,19 @@ def test_milestone_count_needs_make_milestones_and_a_range(tmp_path):
         _bench_file(tmp_path, arm % "make_milestones: true, milestone_count: 4")
     )
     assert config.arms[0].params["milestone_count"] == 4
+
+
+def test_scratch_folder_false_reaches_the_run_config(tmp_path):
+    from certo.bench_strategies import RunContext, arm_config
+
+    arms = "  - {name: m, strategy: single, model: cloud-a, scratch_folder: false}\n"
+    config = load_bench_config(_bench_file(tmp_path, arms))
+    (arm,) = config.arms
+    ctx = RunContext("t", str(tmp_path / "ws"), config.catalog, str(tmp_path / "iso"), print)
+    assert arm_config(config.catalog["cloud-a"], ctx, arm.params).scratch_folder is False
+    with pytest.raises(Exception, match="'scratch_folder' must be true or false"):
+        load_bench_config(
+            _bench_file(
+                tmp_path, "  - {name: m, strategy: single, model: cloud-a, scratch_folder: 1}\n"
+            )
+        )

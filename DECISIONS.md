@@ -2310,3 +2310,15 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   stays with the one before it and no milestone loses text. An
   acceptance block in the closing part is refused: its milestone would
   be a guess.
+- **Logs and throwaway scripts go in `.certo/scratch/`** (2026-11-19,
+  0.2.5). Live, an agent left 38 logs such as `m5-e2e.log` at a
+  project's top over five milestones, and a scratch script at the top
+  broke a project's ESLint run. The agent is told to use
+  `.certo/scratch/` (already git-ignored with `.certo/`, inside the root
+  guard's folder) and to delete throwaway scripts once used; Certo makes
+  the folder. Only in runs that keep their state in `.certo/`, as
+  checkpoints: a library or benchmark run leaves no `.certo/`. A
+  benchmark arm sets `scratch_folder` to measure it; on by default before
+  that measurement because it only says where files go. Not a folder
+  outside the project: the root guard blocks the agent there.
+

@@ -116,6 +116,17 @@ def ensure_state_dir(workspace: str) -> str:
     return path
 
 
+SCRATCH_DIR = "scratch"
+
+
+def ensure_scratch_dir(workspace: str) -> str:
+    """`.certo/scratch/`, where the agent keeps logs and throwaway scripts:
+    inside `.certo/`, so git ignores it with the rest."""
+    path = os.path.join(ensure_state_dir(workspace), SCRATCH_DIR)
+    os.makedirs(path, exist_ok=True)
+    return path
+
+
 def load_record(workspace: str) -> RunRecord | None:
     """The saved record, or None when there is none or it can't be read."""
     try:

@@ -144,6 +144,7 @@ from .project_state import (
     checks_from_outcomes,
     conversations_dir,
     drop_other_conversations,
+    ensure_scratch_dir,
     ensure_state_dir,
     has_saved_conversation,
     now,
@@ -2105,6 +2106,9 @@ def _stream_task(
         # Checkpoints live in `.certo/` too: a run that keeps no state
         # there (the library default, the benchmark) takes none.
         cfg = replace(cfg, checkpoints=False)
+    if cfg.scratch_folder is None:
+        # `.certo/scratch/` too, unless a benchmark arm asked for it.
+        cfg = replace(cfg, scratch_folder=save_state or resume_from is not None)
 
     condensed = [0]
     blocked: list[str] = []  # the root guard's notices (root_guard.py)
@@ -2236,6 +2240,7 @@ def _stream_task(
         task, independent_tests_writer(cfg, agent_cfg), cfg, emit, resuming=resume_from is not None
     )
     _checkpoint(cfg, "before the resumed run" if resume_from is not None else "before the agent")
+    _make_scratch(cfg, emit)
 
     trusted = _trusted_skills(cfg, task, emit)
     with build_workspace(cfg) as workspace:
@@ -2625,6 +2630,17 @@ def _usage_efforts(
         for entry in model_chain.candidates:
             efforts[f"certo:{entry.name}"] = config_for_entry(cfg, entry).reasoning_effort
     return efforts
+
+
+def _make_scratch(cfg: Config, emit: Callable[[Message], None]) -> None:
+    """`.certo/scratch/`, which the agent is told to use for its logs and
+    throwaway scripts (agent._SCRATCH_SUFFIX)."""
+    if not cfg.scratch_folder:
+        return
+    try:
+        ensure_scratch_dir(cfg.workspace)
+    except OSError as exc:
+        _emit_notice(emit, f"Certo: can't make .certo/scratch/ ({exc}); continuing.")
 
 
 def _metrics_cost(written: Any) -> float:
@@ -3174,6 +3190,7 @@ def _stream_escalation(
     )
     if restart_from is None:
         _checkpoint(cfg, "before the agent")
+    _make_scratch(cfg, io.emit)
     if written is not None:
         per_model_metrics.update(written.metrics)
         efforts.update(dict.fromkeys(written.usage_ids, first_cfg.reasoning_effort))

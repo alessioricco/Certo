@@ -153,6 +153,8 @@ def arm_config(entry: ModelCatalogEntry, ctx: RunContext, params: Mapping[str, A
         cfg = replace(cfg, wrap_up=False)
     if params.get("created_note") is False:
         cfg = replace(cfg, created_note=False)
+    if "scratch_folder" in params:
+        cfg = replace(cfg, scratch_folder=params["scratch_folder"])
     return cfg
 
 

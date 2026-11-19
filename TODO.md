@@ -483,21 +483,12 @@ database).
   slow e2e suite. Done when a run with a slow suite spends less of its
   budget on repeated full runs and no milestone ends `budget_exhausted`
   for that reason in the bench.
-- **The agent scatters logs in the project root** (a user's milestone project, found
-  2026-11-14). Over milestones M3-M7 the agent left 38 files such as
-  `m5-e2e.log` and `m6-profile.log` at the project's top: output it
-  redirected from its own check commands. The project's `*.log` rule kept
-  them out of git, but they clutter the folder and a project without
-  that rule would commit them. Tell the agent where scratch output goes
-  (an ignored folder such as `.certo/logs/`, created and git-ignored by
-  Certo) in the system prompt or a built-in skill, and say it again in
-  the milestone handover. It changes agent behaviour, so bench it (local
-  + cloud). Done when a milestone run leaves no new file at the project's
-  top that the task didn't ask for. A second reason (alien-trekking
-  sample, 2026-11-15): a scratch script left at the top broke the
-  project's own lint (ESLint lints dot files and any folder not ignored,
-  so a scratch folder must be one the project's checks skip, or Certo
-  must say so).
+- **Measure the scratch folder** (0.2.5: the agent is told to keep logs
+  and throwaway scripts in `.certo/scratch/`, which Certo makes, in runs
+  that save their state). Bench it as two arms, `scratch_folder: true`
+  and unset, on a local and a cloud model, with milestone tasks (where
+  the 38 stray logs were seen, a user's project, 2026-11-14). Done when
+  it shows no loss and fewer files left at the project's top.
 - **`certo skills`: turn an official skill off**, globally or for one
   project (later, agreed 2026-10-22). Today a third-party skill can only
   replace one.

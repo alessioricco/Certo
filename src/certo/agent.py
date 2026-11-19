@@ -142,6 +142,19 @@ _CERTO_STATE_SUFFIX = (
     "project folder and remove the empty subfolder."
 )
 
+# Live (a user's milestone project, 2026-11-14): over five milestones the
+# agent left 38 files such as `m5-e2e.log` at the project's top, output it
+# redirected from its own checks; elsewhere a scratch script left at the
+# top broke the project's ESLint run. runner.py makes the folder.
+_SCRATCH_SUFFIX = (
+    "Keep logs and other output you save from commands (`... > out.log`), "
+    "and throwaway scripts, in `.certo/scratch/`: the one part of `.certo/` "
+    "that is yours, kept out of git. Never leave them at the project's top "
+    "or in its source folders. Delete a throwaway script there once it has "
+    "served, so the project's own checks never pick it up. Files the task "
+    "asks for go where the task says."
+)
+
 # A stronger, more direct completion gate than _AUTONOMOUS_SUFFIX's general
 # "don't declare early completion" rule above — confirmed live that wasn't
 # enough on its own. Asked to build a Tower of Hanoi game, the agent called
@@ -251,6 +264,8 @@ def build_agent(
             _LIFECYCLE_SKILLS_SUFFIX,
         ]
     )
+    if cfg.scratch_folder:
+        suffixes.append(_SCRATCH_SUFFIX)
     # project_env / terminal_env come from runner.py's environment setup:
     # the terminal session's extra variables, and the one policy line above.
     if project_env is not None:

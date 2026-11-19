@@ -133,6 +133,10 @@ Certo removes its own folder from the terminal's `PATH`.
 - Run records (`CERTO_ARTIFACTS_DIR`) contain the whole transcript: your
   task, the agent's commands and their output. They don't contain your API
   key, but they may contain anything the agent printed.
+- The agent is told to keep logs and throwaway scripts in
+  `.certo/scratch/`, never at the project's top: the folder is git-ignored
+  with the rest of `.certo/`, so they aren't committed or left in your
+  source folders.
 - The `.certo/` folder in each project holds the last run's conversation
   for `certo --resume`. Same as run records: no API key, but anything the
   agent printed. Git ignores it; delete it when you no longer need it.

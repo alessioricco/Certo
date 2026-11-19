@@ -55,6 +55,16 @@ to belong to the last milestone only. Now every milestone gets them,
 after its own text. A `#` heading between two milestones stays with the
 one before it. See [Run a task in milestones](../guides/run-in-milestones.md).
 
+## Changed: scratch output goes in `.certo/scratch/`
+
+The agent is now told to keep logs and other saved command output, and
+throwaway scripts, in `.certo/scratch/`, which Certo makes, never at the
+project's top. In one user's project the agent had left 38 log files at
+the top over five milestones; elsewhere a scratch script left there broke
+the project's lint. The folder is git-ignored with the rest of `.certo/`.
+Runs that keep no state in `.certo/` (the Python library's default, the
+benchmark) don't get it.
+
 ## Fixed
 
 - **The benchmark's cost per model** charged the model that writes
