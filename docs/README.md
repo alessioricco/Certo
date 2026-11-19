@@ -185,6 +185,10 @@ limitation below.
 - **Windows file permissions:** settings files inherit the folder's access
   permissions. Certo does not set Windows ACLs; Unix permission `600` applies
   only on macOS and Linux. See [Safety](concepts/safety.md#secrets).
+- **The interactive session hasn't been tried on Windows.** Its
+  full-screen view has been used by hand only on macOS; the tests run
+  on Windows too. A report from a Windows terminal is welcome:
+  [#43](https://github.com/alessioricco/certo/issues/43).
 - **Docker mode is experimental** (see above): it needs an image built
   from a source checkout, and automatic model selection can't switch
   models in the middle of a Docker run. See [Run in Docker](guides/run-in-docker.md).
