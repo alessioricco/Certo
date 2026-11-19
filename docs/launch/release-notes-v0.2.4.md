@@ -14,9 +14,13 @@ tell Certo's maintainers what went wrong:
   Certo runs them one at a time, each checked before the next.
 - **`certo ask "<question>"`** answers from the docs of your Certo's
   own version, with a link to each section it used, and says when the
-  docs don't cover something.
+  docs don't cover something. With `--mine`, it also reads your own
+  setup, for questions such as "why did my run pick this model?".
 - **`certo report`** writes the last run's problems to one file, with
   keys hidden, to attach to a GitHub issue.
+- **Every run option over MCP**: an editor's agent can start a run with
+  the same options as `certo` on the command line, from a task file to
+  `--make-milestones`.
 - **The run report lists Certo's notices**, and so does `certo --json`
   (a new `notices` field).
 
@@ -115,11 +119,39 @@ When the docs don't answer, it says so instead of guessing. Installed,
 it downloads the version's docs once (a new `docs.zip` on each GitHub
 Release) and works offline afterwards; only your question goes to the
 model (`CERTO_ASK_MODEL`, else your configured one). On 30 test
-questions Haiku answered all right, made nothing up, for $0.03 in all
+questions Haiku answered all right, made nothing up, for $0.03 in all;
+so did `qwen3.8:27b` on Ollama, in 17 minutes instead of 3
 ([the record](../benchmark/ask-0.2.4.md)).
+
+For a question about your own setup, add `--mine`:
+
+```text
+$ certo ask --mine "Why did my last run pick this model?"
+```
+
+Certo then also sends what `certo check` prints, the project's
+`MODEL_DECISIONS.md` and the last run's report, with keys hidden, and
+lists them before the answer; `--project NAME` reads another project.
+Nothing of yours is sent without `--mine`. See
+[Questions about your setup](../reference/commands.md#questions-about-your-setup).
 
 Over MCP, the new `search_docs` and `read_docs` tools give an editor's
 agent the same docs, with no model call by Certo.
+
+## New: every run option over MCP
+
+`run_task` used to take only some of a run's options. It now takes them
+all, each named as its `certo` flag: a `task_file` (a path or an http(s)
+URL; one written in milestones runs milestone by milestone),
+`make_milestones`, `from_milestone`, `auto_model`, `escalate`,
+`reasoning_effort`, `max_steps`, `max_minutes`, `independent_tests`,
+`agents_md`, `execution` and `require_verification`. `run_resume` keeps
+the earlier run's model choice and budget, as `certo --resume` does, and
+`run_status` has a `passed` field. Three flags stay off on purpose:
+`--api-key` and `--base-url` (a key never passes through the editor's
+agent), and `--verbose`. Checked live on Haiku
+([the record](../benchmark/mcp-options-0.2.4.md)). See
+[Use Certo over MCP](../guides/use-certo-over-mcp.md#the-tools).
 
 ## New: `certo report`
 
@@ -161,7 +193,15 @@ See [Share a run's problems](../guides/run-records-and-costs.md#share-a-runs-pro
   but the last gets half of the time left when it starts; one that runs
   out of it hands the task to the next model instead of ending the run
   `budget_exhausted`. A slow local first rung can no longer use the
-  whole budget on a task it can't finish.
+  whole budget on a task it can't finish. On the 13 bundled tasks, a
+  ladder from `qwen3.8` to GPT-6.1 Terra solved 12 for $0.51: qwen3.8
+  did 10 alone, and the three it ran out of time on went to Terra
+  ([the benchmark](../benchmark/ladder-computed-0.2.4.md)).
+- **`certo check` says where the ratings come from:** computed by
+  `certo models refresh` (and from data of which date, with a note when
+  it is old), Certo's own set by hand, or as written in your list. After
+  a refresh, one line per model says which ratings are computed and
+  which are yours.
 - **`--escalate` skips a local rung that can't be reached.** Before the
   first rung, Certo asks each local model's server whether it is up, as
   `--auto-model` does since 0.2.3. A switched-off Ollama machine no
