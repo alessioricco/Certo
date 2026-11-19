@@ -101,6 +101,23 @@ read, or fails,
   it again after editing it: `certo --milestones .certo/milestones.md`.
 - Not with `--milestones`, `--no-milestones`, `--resume`,
   `--from-milestone`, or a task already written in milestones.
+
+### Choose how many
+
+The model chooses how many milestones, from 2 to 8. To choose yourself,
+give the number:
+
+```bash
+certo --milestone-count 5 task.md --project ledger
+```
+
+`--milestone-count` turns on `--make-milestones` by itself. The model is
+told to write exactly that many, from 2 to 20, and can't keep the task
+as one. Models sometimes miss an exact count by one: Certo then asks
+once more, and if the plan still has another number, it runs as written,
+with a line saying so. In the interactive session:
+`/make-milestones 5 TASK`; over MCP: `milestone_count`.
+
 - Measured on two app tasks
   ([the benchmark](../benchmark/make-milestones-0.2.4.md)): on Haiku, one
   go solved every run, faster and cheaper, and the planned milestones

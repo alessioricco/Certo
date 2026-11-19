@@ -2694,10 +2694,14 @@ def _fake_planner(monkeypatch, answer=_PLANNED):
 
     real = milestone_planner.plan_milestones
 
-    def fake(task, cfg, complete=None):
-        return real(task, cfg, lambda c, p: (answer, 0.001))
+    def fake(task, cfg, complete=None, *, count=None):
+        asked.append(count)
+        return real(task, cfg, lambda c, p: (answer, 0.001), count=count)
+
+    asked: list = []
 
     monkeypatch.setattr(milestone_planner, "plan_milestones", fake)
+    return asked
 
 
 def test_make_milestones_saves_the_plan_and_runs_it_in_milestones(monkeypatch, tmp_path, capsys):
@@ -3562,3 +3566,27 @@ def test_interactive_milestones_ask_for_a_reply_only_on_the_last_milestone(monke
 
     assert calls[0]["on_awaiting_input"] is None  # the pause after it asks instead
     assert calls[1]["on_awaiting_input"] is not None  # nothing follows the last one
+
+
+def test_milestone_count_turns_on_make_milestones_and_reaches_the_planner(
+    monkeypatch, tmp_path, capsys
+):
+    calls: list = []
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))
+    monkeypatch.setattr(cli, "run_task", _milestone_run_task(calls, ["verified"] * 3))
+    asked = _fake_planner(monkeypatch)
+
+    assert cli.main(["--milestone-count", "3", "Build a ledger"]) == 0
+    assert asked == [3]
+    # The fake planner wrote 2, asked again, wrote 2: they run, with a note.
+    out = capsys.readouterr().out
+    assert "Certo: you asked for 3 milestones; the planner wrote 2" in out
+    assert len(calls) == 2
+
+
+@pytest.mark.parametrize("count", ["1", "21"])
+def test_a_milestone_count_out_of_range_is_refused(monkeypatch, tmp_path, capsys, count):
+    monkeypatch.setattr(cli, "load_config", lambda: _milestone_cfg(tmp_path))
+    with pytest.raises(SystemExit):
+        cli.main(["--milestone-count", count, "Build a ledger"])
+    assert "--milestone-count must be from 2 to 20" in capsys.readouterr().err

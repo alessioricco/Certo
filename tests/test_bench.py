@@ -1313,3 +1313,15 @@ def test_an_unknown_independent_tests_model_is_refused(tmp_path):
     )
     with pytest.raises(Exception, match="nowhere"):
         load_bench_config(_bench_file(tmp_path, arms))
+
+
+def test_milestone_count_needs_make_milestones_and_a_range(tmp_path):
+    arm = "  - {name: m, strategy: single, model: cloud-a, %s}\n"
+    with pytest.raises(Exception, match="'milestone_count' works with 'make_milestones: true'"):
+        load_bench_config(_bench_file(tmp_path, arm % "milestone_count: 4"))
+    with pytest.raises(Exception, match="from 2 to 20"):
+        load_bench_config(_bench_file(tmp_path, arm % "make_milestones: true, milestone_count: 40"))
+    config = load_bench_config(
+        _bench_file(tmp_path, arm % "make_milestones: true, milestone_count: 4")
+    )
+    assert config.arms[0].params["milestone_count"] == 4

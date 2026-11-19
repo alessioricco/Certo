@@ -155,7 +155,7 @@ def test_milestone_commands_and_switch_commands():
 def test_help_clear_and_quit():
     actions, _, _, said = _actions()
     assert handle(_state(), "/help", actions)
-    assert said[0] == "Commands:" and any("/make-milestones TASK" in line for line in said)
+    assert said[0] == "Commands:" and any("/make-milestones [N] TASK" in line for line in said)
     assert handle(_state(), "/clear", actions) and said[-1] == "CLEAR"
     assert handle(_state(), "/quit", actions) is False
     assert handle(_state(), "/exit", actions) is False
@@ -385,3 +385,14 @@ def test_a_question_mark_asks_the_docs_even_while_a_run_works():
     handle(state, "?why did it pick Opus", actions)
     assert commands[-1] == ("ask", ["why did it pick Opus"])
     assert state.queued == ""
+
+
+def test_make_milestones_takes_a_count_first():
+    actions, runs, _, _ = _actions()
+    handle(_state(), "/make-milestones 5 Build a ledger", actions)
+    # A number alone is a task, not a count.
+    handle(_state(), "/make-milestones 42", actions)
+    assert runs == [
+        ["--make-milestones", "--milestone-count", "5", "Build a ledger"],
+        ["--make-milestones", "42"],
+    ]

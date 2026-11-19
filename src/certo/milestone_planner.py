@@ -33,6 +33,9 @@ from .project_state import ensure_state_dir
 PLAN_FILE = "milestones.md"
 PLANNING_PROFILE = "planning"
 MAX_MILESTONES = 8
+# --milestone-count: how many milestones a user may ask for.
+MIN_MILESTONE_COUNT = 2
+MAX_MILESTONE_COUNT = 20
 ONE_MILESTONE = "ONE MILESTONE"
 
 PROMPT = """You plan software work for a coding agent. Split the task below \
@@ -49,8 +52,7 @@ leaves the project working and its tests passing.
 - Keep to the task: add no feature, tool, library or file it doesn't ask \
 for, and leave none of its requirements out. Each requirement belongs to \
 one milestone.
-- Between 2 and {max} milestones; fewer for a smaller task. If the task is \
-small enough to build and check in one go, answer only: {one}
+{size}
 - Write nothing before the first heading and nothing after the last \
 milestone. No code.
 
@@ -60,6 +62,16 @@ The task:
 {task}
 </task>
 """
+
+# How many milestones: the planner's choice, or the number the user asked for.
+SIZE_FREE = """- Between 2 and {max} milestones; fewer for a smaller task. If the task is \
+small enough to build and check in one go, answer only: {one}"""
+SIZE_EXACT = """- Exactly {count} milestones, no more and no fewer: the user chose \
+this number. Size each milestone so the task splits evenly into {count}."""
+RETRY = """
+
+Your previous plan had {got} milestones. Write the plan again with exactly \
+{count} milestones."""
 
 # A milestone heading, as the milestone parser reads it (milestones._HEADING).
 _FIRST_HEADING = re.compile(r"^##\s+(milestone\s+|m)\d+\b", re.IGNORECASE | re.MULTILINE)
@@ -76,6 +88,9 @@ class PlannedTask:
     seconds: float = 0.0
     cost: float = 0.0
     titles: tuple[str, ...] = ()
+    # Something to tell the user about a plan that runs anyway, such as a
+    # count other than the one asked for.
+    note: str = ""
 
 
 # (planner config, prompt) -> (reply text, cost in US dollars)
@@ -108,14 +123,41 @@ def assemble(task: str, sections: str) -> str:
     return f"{task.rstrip()}\n\n{sections.strip()}\n"
 
 
-def plan_milestones(task: str, cfg: Config, complete: Complete | None = None) -> PlannedTask:
-    """Ask `cfg`'s model for a milestone plan of `task`. Never raises for a
-    model's failure or a plan that can't be used: the result then says why
-    the task runs as one."""
+def planner_prompt(task: str, count: int | None = None) -> str:
+    """The planner's prompt: it chooses how many milestones, or writes
+    exactly `count`."""
+    size = (
+        SIZE_EXACT.format(count=count)
+        if count
+        else SIZE_FREE.format(max=MAX_MILESTONES, one=ONE_MILESTONE)
+    )
+    return PROMPT.format(task=task.strip(), size=size)
+
+
+def plan_milestones(
+    task: str,
+    cfg: Config,
+    complete: Complete | None = None,
+    *,
+    count: int | None = None,
+) -> PlannedTask:
+    """Ask `cfg`'s model for a milestone plan of `task`: as many milestones
+    as it chooses, or exactly `count` (asked again once when it writes
+    another number; a plan with another number then still runs, with a
+    note). Never raises for a model's failure or a plan that can't be used:
+    the result then says why the task runs as one."""
     started = time.monotonic()
-    prompt = PROMPT.format(task=task.strip(), max=MAX_MILESTONES, one=ONE_MILESTONE)
+    prompt = planner_prompt(task, count)
+    call = complete or _complete
     try:
-        reply, cost = (complete or _complete)(cfg, prompt)
+        reply, cost = call(cfg, prompt)
+        got = _count(task, reply)
+        if count and got != count:
+            again, more = call(cfg, prompt + RETRY.format(got=got, count=count))
+            cost += more
+            # The second answer, unless it can't be used and the first can.
+            if _count(task, again) or not got:
+                reply = again
     except Exception as exc:  # noqa: BLE001 - reported, the run goes on as one task
         reason = f"the planner ({cfg.model}) failed: {type(exc).__name__}: {exc}"
         return PlannedTask(None, _one_line(reason), cfg.model, time.monotonic() - started)
@@ -136,10 +178,28 @@ def plan_milestones(task: str, cfg: Config, complete: Complete | None = None) ->
         return one_task(f"the plan couldn't be read ({exc})")
     if len(plan) < 2:
         return one_task("the planner wrote one milestone: small enough to build in one go")
-    if len(plan) > MAX_MILESTONES:
-        return one_task(f"the planner wrote {len(plan)} milestones, more than {MAX_MILESTONES}")
+    limit = max(count or 0, MAX_MILESTONES)
+    if len(plan) > limit:
+        return one_task(f"the planner wrote {len(plan)} milestones, more than {limit}")
     titles = tuple(m.label for m in plan.milestones)
-    return PlannedTask(text, "", cfg.model, seconds, cost, titles)
+    note = ""
+    if count and len(plan) != count:
+        note = (
+            f"you asked for {count} milestones; the planner wrote {len(plan)}, which run as written"
+        )
+    return PlannedTask(text, "", cfg.model, seconds, cost, titles, note)
+
+
+def _count(task: str, reply: str) -> int:
+    """How many milestones a planner's reply holds; 0 when it holds no plan
+    that can be read."""
+    sections = milestone_sections(reply)
+    if sections is None:
+        return 0
+    try:
+        return len(parse_milestones(assemble(task, sections)))
+    except MilestoneError:
+        return 0
 
 
 def _one_line(text: str, limit: int = 300) -> str:

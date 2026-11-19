@@ -47,7 +47,11 @@ COMMANDS: tuple[Command, ...] = (
     Command("/new", "", "the next message is a new task"),
     Command("/resume", "", "continue the last run here"),
     Command("/milestones", "FILE", "run a task file milestone by milestone"),
-    Command("/make-milestones", "TASK", "plan the task in milestones, then run them"),
+    Command(
+        "/make-milestones",
+        "[N] TASK",
+        "plan the task in milestones (exactly N when given), then run them",
+    ),
     Command("/verify", "", "check the project, no agent"),
     Command("/ask", "QUESTION", "answer from Certo's docs"),
     Command("/report", "[NOTE]", "write the last run's problems to a file"),
@@ -370,11 +374,17 @@ def handle(state: SessionState, line: str, actions: Actions) -> bool:
             state.continuing = False
             _run(state, task_argv(state, rest, ["--milestones"]), actions)
     elif name == "/make-milestones":
+        count, _, task = rest.partition(" ")
+        flags = ["--make-milestones"]
+        if count.isdigit() and task.strip():
+            # `/make-milestones 5 TASK`: exactly 5 milestones.
+            flags += ["--milestone-count", count]
+            rest = task.strip()
         if not rest:
-            actions.say("Usage: /make-milestones TASK")
+            actions.say("Usage: /make-milestones [N] TASK")
         else:
             state.continuing = False
-            _run(state, task_argv(state, rest, ["--make-milestones"]), actions)
+            _run(state, task_argv(state, rest, flags), actions)
     elif name == "/verify":
         actions.command("verify", here)
     elif name == "/ask":

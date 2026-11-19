@@ -201,4 +201,55 @@ def test_the_prompt_asks_for_milestone_headings_and_nothing_else():
     prompt = milestone_planner.PROMPT
     assert "## Milestone N: short title" in prompt
     assert "ONE MILESTONE" not in prompt  # filled in at call time
-    assert "{one}" in prompt and "{task}" in prompt
+    assert "{size}" in prompt and "{task}" in prompt
+    assert "{one}" in milestone_planner.SIZE_FREE
+
+
+def _plan_of(n: int) -> str:
+    return "\n".join(f"## Milestone {k}: Part {k}\nBuild part {k}.\n" for k in range(1, n + 1))
+
+
+def test_a_count_asks_for_exactly_that_many_and_no_one_go():
+    complete, seen = _answer(_plan_of(12))
+    planned = plan_milestones(_TASK, _cfg(), complete, count=12)
+
+    assert "Exactly 12 milestones" in seen["prompt"]
+    assert "ONE MILESTONE" not in seen["prompt"]
+    # More than the usual 8: the user asked for it.
+    assert len(planned.titles) == 12 and planned.note == ""
+
+
+def test_without_a_count_the_planner_chooses():
+    complete, seen = _answer(_PLAN)
+    plan_milestones(_TASK, _cfg(), complete)
+    assert "Between 2 and 8 milestones" in seen["prompt"] and "ONE MILESTONE" in seen["prompt"]
+
+
+def test_a_wrong_count_is_asked_again_once():
+    answers = [_plan_of(3), _plan_of(4)]
+    prompts = []
+
+    def complete(cfg, prompt):
+        prompts.append(prompt)
+        return answers.pop(0), 0.001
+
+    planned = plan_milestones(_TASK, _cfg(), complete, count=4)
+
+    assert len(prompts) == 2
+    assert "Your previous plan had 3 milestones" in prompts[1] and "exactly 4" in prompts[1]
+    assert len(planned.titles) == 4 and planned.note == ""
+    assert planned.cost == pytest.approx(0.002)
+
+
+def test_a_count_still_wrong_runs_as_written_with_a_note():
+    complete, _ = _answer(_plan_of(5))
+    planned = plan_milestones(_TASK, _cfg(), complete, count=4)
+
+    assert len(planned.titles) == 5
+    assert planned.note == ("you asked for 4 milestones; the planner wrote 5, which run as written")
+
+
+def test_a_retry_that_cant_be_read_keeps_the_first_plan():
+    answers = [_plan_of(3), "Sorry, I can't."]
+    planned = plan_milestones(_TASK, _cfg(), lambda c, p: (answers.pop(0), 0.0), count=4)
+    assert len(planned.titles) == 3 and "you asked for 4" in planned.note

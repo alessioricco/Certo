@@ -2283,3 +2283,11 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   not a flag: it is a standing choice like the planner's. A wrong name
   refuses the run in `resolve_config`, before the build, since a
   report-only check silently missing would be worse than a stop.
+- **`--milestone-count N`: the user may fix the number of milestones**
+  (2026-11-19, 0.2.5, the Author). Without it the planner chooses (2 to
+  8, or one go). With it the prompt asks for exactly N (2 to 20, above
+  the usual 8 because the user asked) and no one-go answer. A plan with
+  another number is asked for once more, then runs as written with a
+  note (the Author chose this over stopping or running as one task). A
+  separate flag, not `--make-milestones N`, so `certo --make-milestones
+  task.md` can't read the task file as the number.

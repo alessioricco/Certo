@@ -104,6 +104,7 @@ _ARM_OPTIONS = (
     "milestones",
     "make_milestones",
     "planner",
+    "milestone_count",
     "root_prompt",
     "skills_dir",
     "wrap_up",
@@ -230,6 +231,23 @@ def _arms(raw: Any, catalog: dict[str, ModelCatalogEntry], where: str) -> list[A
                 f"{arm_where}: 'planner' works with 'make_milestones: true' only."
             )
         planner = model_name(item, "planner", catalog, arm_where) if "planner" in item else None
+        milestone_count = item.get("milestone_count")
+        if milestone_count is not None:
+            from .milestone_planner import MAX_MILESTONE_COUNT, MIN_MILESTONE_COUNT
+
+            if not make_milestones:
+                raise BenchConfigError(
+                    f"{arm_where}: 'milestone_count' works with 'make_milestones: true' only."
+                )
+            if (
+                isinstance(milestone_count, bool)
+                or not isinstance(milestone_count, int)
+                or not MIN_MILESTONE_COUNT <= milestone_count <= MAX_MILESTONE_COUNT
+            ):
+                raise BenchConfigError(
+                    f"{arm_where}: 'milestone_count' must be a whole number from "
+                    f"{MIN_MILESTONE_COUNT} to {MAX_MILESTONE_COUNT}."
+                )
         if "independent_tests_model" in item and not independent:
             raise BenchConfigError(
                 f"{arm_where}: 'independent_tests_model' works with 'independent_tests: true' only."
@@ -271,6 +289,8 @@ def _arms(raw: Any, catalog: dict[str, ModelCatalogEntry], where: str) -> list[A
             params["make_milestones"] = True
             # Without 'planner', the arm's first model plans.
             params["planner"] = planner or STRATEGIES[strategy].models(params)[0]
+            if milestone_count is not None:
+                params["milestone_count"] = milestone_count
         if not root_prompt:
             params["root_prompt"] = False
         if skills_dir:

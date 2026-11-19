@@ -738,7 +738,7 @@ def test_make_milestones_plans_then_runs_the_plan(tmp_path, monkeypatch):
     )
     monkeypatch.setattr(
         "certo.milestone_planner.plan_milestones",
-        lambda task, cfg: PlannedTask(text, "", cfg.model, 2.0, 0.0, ("a", "b")),
+        lambda task, cfg, count=None: PlannedTask(text, "", cfg.model, 2.0, 0.0, ("a", "b")),
     )
     tasks = []
 
@@ -765,7 +765,7 @@ def test_make_milestones_keeps_one_task_when_the_planner_does(tmp_path, monkeypa
     )
     monkeypatch.setattr(
         "certo.milestone_planner.plan_milestones",
-        lambda task, cfg: PlannedTask(None, "small enough", cfg.model, 1.0, 0.0, ()),
+        lambda task, cfg, count=None: PlannedTask(None, "small enough", cfg.model, 1.0, 0.0, ()),
     )
     tasks = []
 
@@ -825,3 +825,30 @@ def test_run_resume_keeps_the_budget_of_the_run_it_continues(
     assert not error, started
     _wait_done(server, started["run_id"])
     assert seen["seconds"] == expected
+
+
+def test_milestone_count_reaches_the_planner(tmp_path, monkeypatch):
+    from certo.milestone_planner import PlannedTask
+
+    asked = []
+    monkeypatch.setattr(
+        "certo.milestone_planner.choose_planner", lambda cfg: (cfg, "the run's model")
+    )
+
+    def plan(task, cfg, count=None):
+        asked.append(count)
+        return PlannedTask(None, "kept", cfg.model, 1.0, 0.0, ())
+
+    monkeypatch.setattr("certo.milestone_planner.plan_milestones", plan)
+    _run(
+        _server(tmp_path, stream=lambda task, **_k: _outcome()),
+        {"task": "Build an app", "project": "demo", "milestone_count": 4},
+    )
+    assert asked == [4]
+
+
+def test_a_milestone_count_out_of_range_is_refused(tmp_path):
+    error, text = _call(
+        _server(tmp_path), "run_task", {"task": "x", "project": "a", "milestone_count": 30}
+    )
+    assert error and "milestone_count must be from 2 to 20" in text

@@ -49,6 +49,7 @@ RUN_FLAGS: dict[str, tuple[str, ...] | str] = {
     "--from-milestone": ("run_task.from_milestone",),
     "--no-milestones": ("run_task.no_milestones",),
     "--make-milestones": ("run_task.make_milestones",),
+    "--milestone-count": ("run_task.milestone_count",),
     "--execution": ("run_task.execution", "run_resume.execution"),
     "--max-steps": ("run_task.max_steps", "run_resume.max_steps"),
     "--max-time": ("run_task.max_minutes", "run_resume.max_minutes"),
@@ -234,6 +235,7 @@ def build_server(
         no_milestones: bool = False,
         from_milestone: int | None = None,
         make_milestones: bool = False,
+        milestone_count: int | None = None,
         independent_tests: bool = False,
         independent_tests_strict: bool = False,
         max_steps: int | None = None,
@@ -249,7 +251,8 @@ def build_server(
         task file written in milestones (`## Milestone N: title` headings) runs
         milestone by milestone unless `no_milestones`; `milestones_file` always does,
         and `from_milestone` starts at that milestone. `make_milestones` first has a
-        model split the task into milestones (shown in run_events), then runs them.
+        model split the task into milestones (shown in run_events), then runs them;
+        `milestone_count` (2 to 20, turning it on) asks for exactly that many.
         `project` is a project name (created if new) under Certo's projects folder;
         `folder` is the full path of a folder inside one the server allows. `model`
         overrides the configured model; `auto_model` picks one per task from the model
@@ -297,6 +300,7 @@ def build_server(
             milestones_file=source,
             from_milestone=from_milestone,
             make_milestones=make_milestones,
+            milestone_count=milestone_count,
             require_verification=require_verification,
         )
         return _started(run)

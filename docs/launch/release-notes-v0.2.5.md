@@ -18,3 +18,20 @@ CERTO_INDEPENDENT_TESTS_MODEL=claude-haiku-5-5
 A wrong name stops the run before it starts. In the benchmark, an arm
 takes `independent_tests_model`. See
 [Choose the model that writes them](../guides/independent-tests.md#choose-the-model-that-writes-them).
+
+## New: choose how many milestones
+
+`--make-milestones` lets a model split a task into milestones, and the
+model chose how many. Now you can choose:
+
+```bash
+certo --milestone-count 5 task.md --project ledger
+```
+
+The model is told to write exactly that many, from 2 to 20.
+`--milestone-count` turns on `--make-milestones` by itself. A plan with
+another number is asked for once more; if it still has another number,
+it runs as written, and Certo says so. Also `/make-milestones 5 TASK` in
+the interactive session, `milestone_count` over MCP and in the
+benchmark. See
+[Choose how many](../guides/run-in-milestones.md#choose-how-many).

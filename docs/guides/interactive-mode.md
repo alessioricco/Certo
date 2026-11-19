@@ -126,7 +126,7 @@ The commands:
 | `/new` | The next message is a new task. |
 | `/resume` | Continue the last run here, as `certo --resume`. |
 | `/milestones FILE` | Run a task file [milestone by milestone](run-in-milestones.md). |
-| `/make-milestones TASK` | Have a model [plan the milestones](run-in-milestones.md#let-certo-write-the-milestones), then run them. |
+| `/make-milestones [N] TASK` | Have a model [plan the milestones](run-in-milestones.md#let-certo-write-the-milestones), exactly `N` of them when given, then run them. |
 | `/verify` | Check the project, with no agent (`certo verify`). |
 | `/ask QUESTION` | Answer from Certo's docs (`certo ask`). `?QUESTION` does the same. |
 | `/report [NOTE]` | Write the last run's problems to a file (`certo report`). |

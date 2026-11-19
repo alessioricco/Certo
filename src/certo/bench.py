@@ -302,7 +302,9 @@ def execute_run(
             if making:
                 one_go = plain_task(plan) if plan is not None else planned.task.prompt
                 made = plan_milestones(
-                    one_go, run_config(cfg.catalog[params["planner"]], workspace, isolation)
+                    one_go,
+                    run_config(cfg.catalog[params["planner"]], workspace, isolation),
+                    count=params.get("milestone_count"),
                 )
                 planning = {
                     "planner": params["planner"],

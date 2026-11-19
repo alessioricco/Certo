@@ -403,6 +403,17 @@ def _build_parser() -> argparse.ArgumentParser:
             "the planner keeps as one milestone runs as it is."
         ),
     )
+    milestones.add_argument(
+        "--milestone-count",
+        type=int,
+        metavar="N",
+        default=None,
+        help=(
+            "With --make-milestones (and turning it on): the planner splits the task "
+            "into exactly N milestones (2 to 20) instead of choosing how many. A plan "
+            "with another number, after one more try, runs as written, with a note."
+        ),
+    )
     parser.add_argument(
         "--execution",
         choices=("local", "docker"),
@@ -854,11 +865,13 @@ def _make_milestones(
         print(f"Error: {exc}", file=sys.stderr)
         return 1
     print(f"Planning milestones with {planner.model} ({how})...", flush=True)
-    planned = plan_milestones(task, planner)
+    planned = plan_milestones(task, planner, count=args.milestone_count)
     cost = f", ${planned.cost:.4f}" if planned.cost else ""
     if planned.text is None:
         print(f"Certo: {planned.reason}. The task runs as one, as it is.")
         return task
+    if planned.note:
+        print(f"Certo: {planned.note}.")
     while True:
         path = save_plan(cfg.workspace, planned.text)
         print(
@@ -948,6 +961,14 @@ def _run_task_command(
         args.task, args.escalate = args.escalate, ""
     if args.task is None and not args.resume:
         parser.error("the following arguments are required: task")
+    if args.milestone_count is not None:
+        from .milestone_planner import MAX_MILESTONE_COUNT, MIN_MILESTONE_COUNT
+
+        if not MIN_MILESTONE_COUNT <= args.milestone_count <= MAX_MILESTONE_COUNT:
+            parser.error(
+                f"--milestone-count must be from {MIN_MILESTONE_COUNT} to {MAX_MILESTONE_COUNT}"
+            )
+        args.make_milestones = True
 
     task = None
     if args.task is not None:

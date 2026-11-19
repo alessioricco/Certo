@@ -159,6 +159,7 @@ class RunManager:
         milestones_file: str | None = None,
         from_milestone: int | None = None,
         make_milestones: bool = False,
+        milestone_count: int | None = None,
         require_verification: bool = False,
     ) -> Run:
         """Prepare and start a run; raises `ConfigError` or `UsageError`
@@ -168,12 +169,24 @@ class RunManager:
         `milestones_file`, the task is that file's milestones, from
         milestone `from_milestone` when given. With `make_milestones`, a
         model first splits `task` into milestones, in the run's thread (it
-        takes a model call), as `certo --make-milestones` does."""
+        takes a model call), as `certo --make-milestones` does; with
+        `milestone_count` (which turns it on), into exactly that many."""
         cfg = resolve_config(options, load=self._load)
         workspace = os.path.abspath(cfg.workspace)
         planner = None
+        if milestone_count is not None:
+            from .milestone_planner import MAX_MILESTONE_COUNT, MIN_MILESTONE_COUNT
+
+            if not MIN_MILESTONE_COUNT <= milestone_count <= MAX_MILESTONE_COUNT:
+                raise UsageError(
+                    f"milestone_count must be from {MIN_MILESTONE_COUNT} to {MAX_MILESTONE_COUNT}"
+                )
+            make_milestones = True
         if make_milestones:
-            planner = self._planner(cfg, options, task, resume, milestones_file, from_milestone)
+            planner_cfg, how = self._planner(
+                cfg, options, task, resume, milestones_file, from_milestone
+            )
+            planner = (planner_cfg, how, milestone_count)
         with self._lock:
             other = self._busy.get(workspace)
             if other is not None:
@@ -268,7 +281,7 @@ class RunManager:
         plan: RunPlan,
         instruction: str | None,
         task: str | None,
-        planner: tuple[Config, str] | None = None,
+        planner: tuple[Config, str, int | None] | None = None,
     ) -> None:
         from .cancel import RunCancelled
         from .milestones import clear_state
@@ -397,7 +410,7 @@ class RunManager:
         self,
         run: Run,
         cfg: Config,
-        planner: tuple[Config, str],
+        planner: tuple[Config, str, int | None],
         task: str,
         say: Callable[[str], None],
     ) -> tuple[RunPlan, str]:
@@ -407,12 +420,14 @@ class RunManager:
         from .milestone_planner import plan_milestones, save_plan
         from .milestones import clear_state
 
-        planner_cfg, how = planner
+        planner_cfg, how, count = planner
         say(f"Planning milestones with {planner_cfg.model} ({how})...")
-        planned = plan_milestones(task, planner_cfg)
+        planned = plan_milestones(task, planner_cfg, count=count)
         if planned.text is None:
             say(f"Certo: {planned.reason}. The task runs as one, as it is.")
             return RunPlan(), task
+        if planned.note:
+            say(f"Certo: {planned.note}.")
         path = save_plan(cfg.workspace, planned.text)
         cost = f", ${planned.cost:.4f}" if planned.cost else ""
         titles = "\n".join(f"  {n}. {t}" for n, t in enumerate(planned.titles, start=1))
