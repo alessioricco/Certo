@@ -30,8 +30,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from certo.bench_tasks import BUILTIN_TASKS_DIR, BenchTask, load_tasks, prepare_workspace
-from certo.catalog_check import load_checked_catalog
-from certo.config import load_config
+from certo.config import ConfigError, load_config
 from certo.independent_tests import (
     IndependentTestsResult,
     WrittenTests,
@@ -39,7 +38,7 @@ from certo.independent_tests import (
     run_independent_tests,
     write_tests,
 )
-from certo.model_selection import config_for_entry
+from certo.model_selection import config_for_named_model
 
 _IGNORE = shutil.ignore_patterns(".venv", "venv", "node_modules", "__pycache__")
 _lock = threading.Lock()
@@ -387,11 +386,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--write-only", action="store_true")
     args = parser.parse_args(argv)
 
-    catalog = {e.name: e for e in load_checked_catalog().models}
-    if args.model not in catalog:
-        print(f"{args.model} isn't enabled in your models.yaml", file=sys.stderr)
+    try:
+        # The model files the settings name; a ladder problem doesn't stop it.
+        cfg = config_for_named_model(load_config(), args.model, "--model")
+    except ConfigError as exc:
+        print(exc, file=sys.stderr)
         return 1
-    cfg = config_for_entry(load_config(), catalog[args.model])
     tasks = [t for t in load_tasks(BUILTIN_TASKS_DIR) if not args.tasks or t.name in args.tasks]
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
