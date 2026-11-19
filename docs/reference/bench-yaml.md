@@ -32,7 +32,7 @@ arms:
 | `arms` | **required** | A non-empty list of arms (below). |
 | `tasks` | `all` | `all`, or a list of task names. `certo bench --list-tasks` shows the names. |
 | `repeats` | `1` | Runs per task per arm, a whole number of at least 1. Results vary between runs, so more repeats give a fairer comparison. |
-| `models_file` | looked up | Your personal `models.yaml`. Without it: `./models.yaml`, else `~/.config/certo/models.yaml`. `CERTO_MODELS_FILE` is not read. |
+| `models_file` | looked up | Your personal `models.yaml`. Without it: `./models.yaml`, else `~/.config/certo/models.yaml`. `CERTO_MODELS_FILE` is not read. A key written as `"${NAME}"` comes from your shell, the `.env` in the current folder or your user settings file, as for a run; a run's other settings never come from them. |
 | `models_list_file` | looked up | The model catalog, `models_list.yaml`, the same way. `CERTO_MODELS_LIST_FILE` is not read. |
 | `escalation_file` | looked up | `escalation.yaml`, the same way (but not when the file names its own `models_file`), for the `cost_axis` and `max_rungs` of a derived `escalate` arm. Optional: without one, the defaults apply. `CERTO_ESCALATION_FILE` is not read. |
 | `task_profiles_file` | looked up | `task_profiles.yaml`, the same way as `escalation_file`, for `auto` arms: how a task is classified and which ratings count. Optional: without one, every task gets the `default` profile. `CERTO_TASK_PROFILES_FILE` is not read. |

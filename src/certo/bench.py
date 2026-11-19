@@ -45,6 +45,7 @@ from .bench_report import (
 )
 from .independent_tests import failing_tests
 from .bench_strategies import STRATEGIES, AttemptResult, RunContext, auto_catalog, run_config
+from .config import load_settings_files
 from .bench_tasks import (
     BUILTIN_TASKS_DIR,
     BenchTask,
@@ -1120,6 +1121,12 @@ def bench_main(
 ) -> int:
     args = build_bench_parser().parse_args(argv)
     on_terminal = sys.stdin.isatty() if interactive is None else interactive
+    # As for every command: the settings files fill the environment, so a
+    # `${NAME}` key in the models file can come from the folder's `.env` or
+    # the user settings file, here and when a run loads a named model (the
+    # test writer, the planner). A run's own settings still come only from
+    # its catalog entry (bench_strategies.run_config).
+    load_settings_files()
     try:
         if args.list_tasks:
             return _list_tasks(_tasks_dir_from(args.config or DEFAULT_BENCH_FILE))

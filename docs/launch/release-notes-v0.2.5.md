@@ -99,6 +99,12 @@ budget. See [Run a task in milestones](../guides/run-in-milestones.md#write-the-
 
 ## Fixed
 
+- **`certo bench` and keys from a `.env` file.** A key written as
+  `${NAME}` in the benchmark's models file was read only from the
+  shell, so a key kept in `.env` or the user settings file left the
+  model out ("isn't set in your settings file or the environment"). Now
+  `certo bench` reads the settings files first, as every other command
+  does.
 - **The benchmark's cost per model** charged the model that writes
   independent tests, and the planner, to the arm's model. Each now has
   its own row. In a run where GPT-6 Luna built and Haiku wrote the

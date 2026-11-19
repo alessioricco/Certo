@@ -1357,3 +1357,26 @@ def test_slow_test_note_false_reaches_the_run_config(tmp_path):
                 tmp_path, "  - {name: m, strategy: single, model: cloud-a, slow_test_note: 1}\n"
             )
         )
+
+
+def test_a_key_named_in_the_models_file_can_come_from_the_folder_env(tmp_path, monkeypatch, capsys):
+    """`${NAME}` in the models file: the folder's `.env` fills it, as for a
+    run, so a key kept under another name in the shell still works."""
+    from certo.bench import bench_main
+
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
+    monkeypatch.delenv("BENCH_TEST_KEY", raising=False)
+    monkeypatch.delenv("BENCH_TEST_KEY_LOCAL", raising=False)
+    monkeypatch.setenv("BENCH_TEST_KEY_LOCAL", "sk-from-shell")
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / ".env").write_text("BENCH_TEST_KEY=${BENCH_TEST_KEY_LOCAL}\n")
+    config = Path(_bench_file(tmp_path, ONE_ARM))
+    models = next(tmp_path.glob("models.yaml"))
+    models.write_text(models.read_text().replace("sk-a", "${BENCH_TEST_KEY}"))
+
+    code = bench_main(["--config", str(config)], interactive=False)
+
+    out = capsys.readouterr()
+    assert "Configuration error" not in out.err
+    assert "Benchmark plan" in out.out
+    assert code == 1  # not a terminal: shown, not started
