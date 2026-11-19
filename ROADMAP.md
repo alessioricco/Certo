@@ -54,26 +54,23 @@ working agreements in `CLAUDE.md`.
 - **Honest output.** A verdict never claims more than its checks prove;
   docs never show output that wasn't produced by a real run.
 
-## Where we are (October 2026)
+## Where we are (November 2026)
 
-- Every milestone of the original build plan is done, including the live
-  provider-swap proof: one task, verified on an OpenAI and an Anthropic
-  model with only the model id changed.
-- Certo verifies Python, Node, Go, Rust and Java projects, with
-  escalation between models, automatic model choice, resume, Docker and
-  server modes, and a benchmark. 0.1.19 is on PyPI.
-- Published runs: baselines for 0.1.13 and 0.1.15 (135 runs, Certo fooled
-  3 times), escalation in 0.1.17 (a local-then-cloud ladder solved all 9
-  tasks, 7 of them on the local model), and a local baseline for 0.1.18
-  that chose the default local model. The tasks are too small to separate
-  a good local model from a cloud one; escalation has only climbed past a
-  model that did no work, and automatic model choice has never been
-  measured.
+- 0.2.4 is on PyPI (2026-11-19). Certo verifies Python, Node, Go, Rust
+  and Java projects, with escalation between models, automatic model
+  choice, milestones (also planned by Certo), an interactive session, an
+  MCP server, resume, Docker and server modes, and a benchmark.
+- Model ratings are computed from public benchmark data, prices and the
+  user's own runs. On the 13 bundled tasks, a ladder from a free local
+  model to a cloud one solved 12 for $0.51, 10 of them on the local
+  model; automatic model choice solved 12 too.
+- Certo was fooled once in those 13 runs: the agent's own tests missed a
+  case the task described, and its checks passed. The tasks still don't
+  separate the cloud models from each other.
 
-The main risk: Certo is broader than it is proven. Several features have
-never run outside unit tests, and "verified" mostly means "passes the
-agent's own tests". So the next phase favours proof and depth over new
-breadth.
+The main risk: "verified" still mostly means "passes the agent's own
+tests", and several features have run live only once. So the next phase
+favours proof and depth over new breadth.
 
 ## Themes
 
@@ -171,11 +168,18 @@ worse than the rules.
 command with no YAML written by hand; no key is stored in a model file;
 the proposed strategy's cost estimate is within the measured range.
 
+*Mostly reached* (0.2.3 and 0.2.4): ratings computed from public data
+and the user's runs, profiles that say what a task needs, layered files,
+and a command that moves keys out of model files. What's left (the live
+benchmark of the needs rule, measured speed, a model drafting the
+profiles, the router mode) is in `TODO.md`.
+
 ## Now, next, later
 
-- **Now:** 0.2, which starts the MCP server with every Certo command
-  (0.1.27, with milestone mode, was released on 2026-11-01).
-- **Next:** independent tests from the spec; the pull-request CI; more
+- **Now:** 0.2.5: independent tests from the spec, measured on the
+  benchmark first (0.2.4, with model configuration, Certo-planned
+  milestones and the interactive session, was released on 2026-11-19).
+- **Next:** the remaining commands over MCP; the pull-request CI; more
   "make it verifiable" skills; the simple first run.
 - **Later:** run-the-app verification, new ecosystems, the GitHub Action,
   local-model tuning.
