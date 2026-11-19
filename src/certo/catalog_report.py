@@ -26,6 +26,7 @@ from .model_catalog import (
     load_model_catalog,
     fit_note,
     rank_for_profile,
+    reads_computed_ratings,
     task_title,
 )
 from .model_files import (
@@ -206,7 +207,7 @@ def _print_ratings_source(out: TextIO, list_path: str) -> None:
     names, read as written."""
     from .computed_ratings import age_notes, read_ratings_file, shipped_data, today
 
-    if not is_built_in(layers_of(list_path)[0]):
+    if not reads_computed_ratings(list_path):
         print("  Ratings: as written in the list", file=out)
         return
     found = read_ratings_file()
@@ -234,7 +235,7 @@ def _origin_lines(catalog: ModelCatalog) -> list[str]:
     """Per active model, where its ratings come from."""
     from .computed_ratings import origin, read_ratings_file
 
-    found = read_ratings_file()
+    found = read_ratings_file() if catalog.computed_ratings else None
     if found is None:
         return []
     active = [m for m in catalog.models if m.activated]

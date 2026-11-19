@@ -466,12 +466,6 @@ database).
 
 ## Smaller bugs
 
-- **`certo check` says "computed" ratings under `replace: true`**
-  (found 2026-11-18). `catalog_report._print_ratings_source` looks only
-  at the lowest layer, but `_read_mapping` applies computed ratings only
-  when Certo's own list is read, so a user list with `replace: true`
-  gets the line wrong. Done when the line says the ratings are as
-  written in that list, with a test.
 - **Slow test suites eat the milestone budget** (a user's milestone project, M7,
   2026-11-14; the Author: Certo must take the decision, not the task
   file). The project's Playwright suite took 9 minutes (82 tests on 2

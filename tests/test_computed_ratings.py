@@ -290,3 +290,32 @@ def test_certo_check_says_where_the_ratings_come_from(tmp_path, monkeypatch):
     out = io.StringIO()
     _print_ratings_source(out, str(tmp_path / "pinned.yaml"))
     assert out.getvalue() == "  Ratings: as written in the list\n"
+
+
+def test_a_list_with_replace_true_says_its_ratings_are_as_written(tmp_path):
+    # Found 2026-11-18: certo check said "computed" for a user list with
+    # `replace: true`, which hides Certo's list and so the refreshed ratings.
+    from certo.catalog_report import _origin_lines, _print_ratings_source
+    from certo.model_files import LayeredPath
+
+    mine = tmp_path / "models_list.yaml"
+    mine.write_text(
+        "replace: true\nmodels:\n"
+        "- {name: claude-haiku-5-5, model: anthropic/claude-haiku-5-5, ratings: {code: 2}}\n",
+        encoding="utf-8",
+    )
+    layered = LayeredPath([certo_file("models_list.yaml"), str(mine)])
+    path = _write_ratings()
+    try:
+        out = io.StringIO()
+        _print_ratings_source(out, layered)
+        assert out.getvalue() == "  Ratings: as written in the list\n"
+        catalog = load_model_catalog(layered, _models_yaml(tmp_path))
+        assert not catalog.computed_ratings
+        assert catalog.models[0].ratings["code"] == 2
+        assert _origin_lines(catalog) == []
+        # Without replace, Certo's list is read and the refresh applies.
+        mine.write_text(mine.read_text().replace("replace: true\n", ""), encoding="utf-8")
+        assert load_model_catalog(layered, _models_yaml(tmp_path)).computed_ratings
+    finally:
+        os.remove(path)

@@ -136,6 +136,9 @@ class ModelCatalog:
     # Things to tell the user that don't stop a run, such as a section of
     # models_list.yaml that now belongs in its own file.
     load_warnings: tuple[str, ...] = ()
+    # Whether `certo models refresh`'s ratings were put on the models
+    # (reads_computed_ratings).
+    computed_ratings: bool = False
 
 
 _DEFAULT_PROFILE = TaskProfile(name="default", triggers=(), weights={})
@@ -497,6 +500,24 @@ def _is_certos_list(path: str, is_built_in: Any) -> bool:
     return Path(path).name == LIST_FILE and is_built_in(path)
 
 
+def reads_computed_ratings(list_path: str) -> bool:
+    """Whether reading `list_path` puts `certo models refresh`'s ratings on
+    the models: only when Certo's own list is the lowest layer read, not
+    hidden by a layer with `replace: true` and not swapped for a list a
+    setting names."""
+    from .model_files import is_built_in
+
+    layers = getattr(list_path, "layers", None) or (list_path,)
+    start = 0
+    for i, layer in enumerate(layers):
+        try:
+            if _read_one(layer, empty_ok=True).get("replace") is True:
+                start = i
+        except ModelCatalogError:
+            pass
+    return _is_certos_list(layers[start], is_built_in)
+
+
 def _computed_on_certos(raw: dict, mine: dict) -> dict:
     from .computed_ratings import apply_computed
 
@@ -756,6 +777,7 @@ def load_model_catalog(
         escalation=escalation,
         load_problems=tuple(problems),
         load_warnings=tuple(warnings),
+        computed_ratings=reads_computed_ratings(list_path),
     )
 
 
