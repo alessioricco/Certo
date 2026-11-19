@@ -60,6 +60,7 @@ Every arm can also have:
 | Key | Meaning |
 |---|---|
 | `independent_tests` | Optional, `true` or `false` (default). With `true`, each run writes [independent tests](../guides/independent-tests.md) before the build, as `--independent-tests` does, and records their result. Report only: the verdict and the score don't change. Their writing isn't in the plan's cost estimate. |
+| `independent_tests_model` | Optional, with `independent_tests: true`: the model, by its name in `models.yaml`, that writes the tests, as `CERTO_INDEPENDENT_TESTS_MODEL` does. Without it, the arm's model writes them (an `escalate` arm's first rung). |
 | `condense` | Optional, `true` (default) or `false`. With `false`, the run doesn't summarize older steps when the context window nearly fills (`CERTO_CONDENSE=no`), to measure what condensing changes. Each run's record counts its condensations. |
 | `max_task_seconds` | Optional, any strategy: each run's time budget in seconds, as `CERTO_MAX_TASK_SECONDS` (default 1800, 30 minutes). Give a slow local model more time without changing it for the cloud arms. For an `escalate` arm it is one budget for all the rungs together, and each rung but the last gets half of the time left when it starts ([Each rung gets a share](../guides/escalate-between-models.md#what-makes-certo-climb)). |
 | `tool_call_reminders` | Optional, any strategy: how many times in a row a run that ends on a tool call written as text is sent back, as `CERTO_TOOL_CALL_REMINDERS` (default 3). `0` turns it off, to measure what the reminders change. |

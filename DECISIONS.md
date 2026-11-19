@@ -2274,3 +2274,12 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   model choice and budget, as `certo --resume` does. `run_status`'s
   `passed` is the CLI's exit code as a boolean; the verdict lists moved
   to `result.py` so both read the same ones.
+- **The independent tests' writer can be a different model**
+  (2026-11-19, 0.2.5). `CERTO_INDEPENDENT_TESTS_MODEL` names it in
+  `models.yaml`, as `CERTO_PLANNER_MODEL` does. Why: with a local ladder
+  the first rung wrote them, and qwen3.8's tests caught 2 of 8 fooled
+  runs where Haiku's caught 7 of 8 (replay, 0.1.24); Haiku's caught the
+  ladder's fooled `semver-order` run in a replay (2026-11-19). A setting,
+  not a flag: it is a standing choice like the planner's. A wrong name
+  refuses the run in `resolve_config`, before the build, since a
+  report-only check silently missing would be worse than a stop.

@@ -1268,3 +1268,48 @@ def test_a_run_whose_folder_was_deleted_is_not_counted_and_runs_again(tmp_path, 
     model = FakeModel(project_venv)
     assert _run(path, out, model, "--resume") == 0
     assert len(model.calls) == 1
+
+
+def test_independent_tests_model_needs_independent_tests(tmp_path):
+    arms = "  - {name: m, strategy: single, model: cloud-a, independent_tests_model: cloud-b}\n"
+    with pytest.raises(
+        Exception, match="'independent_tests_model' works with 'independent_tests: true' only"
+    ):
+        load_bench_config(_bench_file(tmp_path, arms))
+
+
+def test_an_arms_independent_tests_model_writes_the_tests(tmp_path):
+    from certo.bench_strategies import RunContext, arm_config
+    from certo.model_selection import independent_tests_writer
+
+    arms = (
+        "  - {name: m, strategy: single, model: local-coder, independent_tests: true,"
+        " independent_tests_model: cloud-a}\n"
+    )
+    config = load_bench_config(_bench_file(tmp_path, arms))
+    (arm,) = config.arms
+    assert arm.params["independent_tests_model"] == "cloud-a"
+    ctx = RunContext(
+        "t",
+        str(tmp_path / "ws"),
+        config.catalog,
+        str(tmp_path / "iso"),
+        lambda *a, **k: None,
+        model_files=(config.models_file, config.models_list_file),
+    )
+    cfg = arm_config(config.catalog["local-coder"], ctx, arm.params)
+    writer = independent_tests_writer(cfg, cfg)
+    assert (cfg.model, writer.model, writer.api_key) == (
+        "ollama/qwen3-coder:30b",
+        "anthropic/test-model-a",
+        "sk-a",
+    )
+
+
+def test_an_unknown_independent_tests_model_is_refused(tmp_path):
+    arms = (
+        "  - {name: m, strategy: single, model: cloud-a, independent_tests: true,"
+        " independent_tests_model: nowhere}\n"
+    )
+    with pytest.raises(Exception, match="nowhere"):
+        load_bench_config(_bench_file(tmp_path, arms))

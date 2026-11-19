@@ -961,3 +961,47 @@ def test_rungs_are_not_asked_about_under_docker(tmp_path, fake_run, monkeypatch)
 
     assert asked == []
     assert [r.name for r in outcome.rungs] == ["local"]
+
+
+def test_a_named_independent_tests_model_writes_instead_of_rung_1(tmp_path, fake_run, monkeypatch):
+    from dataclasses import replace
+
+    from model_file_helpers import model_file_config
+
+    from certo.independent_tests import IndependentTestsResult, WrittenTests
+
+    writers = []
+
+    def fake_write(task, writer_cfg, scratch, *, project, usage_id, run_writer):
+        writers.append(writer_cfg.model)
+        folder = scratch / "new_tests"
+        folder.mkdir(parents=True)
+        return WrittenTests(
+            folder=folder, model=writer_cfg.model, files=("t.py",), language="python"
+        )
+
+    import certo.independent_tests as it
+
+    monkeypatch.setattr(it, "write_tests", fake_write)
+    monkeypatch.setattr(
+        it,
+        "run_independent_tests",
+        lambda written, workspace, runner=None: IndependentTestsResult("passed", "1 passed", ""),
+    )
+    fake_run.script[:] = [("verified", 0.01, {})]
+    (tmp_path / "files").mkdir()
+    files = model_file_config(
+        tmp_path / "files",
+        "models:\n  - name: writer\n    model: anthropic/writer\n    api_key: k\n",
+    )
+    cfg = replace(
+        _cfg(tmp_path),
+        independent_tests=True,
+        independent_tests_sets=1,
+        independent_tests_model="writer",
+        **files,
+    )
+
+    _run(tmp_path, _ladder(tmp_path), cfg=cfg)
+
+    assert writers == ["anthropic/writer"]

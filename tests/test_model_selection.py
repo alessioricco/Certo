@@ -5,6 +5,10 @@ network, no real Conversation.
 
 from __future__ import annotations
 
+from dataclasses import replace
+
+import pytest
+
 from certo.config import Config
 from certo.model_catalog import ModelCatalogEntry
 from certo.model_selection import ModelChain, llm_for_entry, write_model_decisions
@@ -344,3 +348,22 @@ def test_without_a_probe_nothing_is_skipped():
     chain.skip_unreachable()
 
     assert chain.current.name == "a"
+
+
+def test_the_independent_tests_writer_is_the_named_model_else_the_default(tmp_path):
+    from model_file_helpers import model_file_config
+
+    from certo.config import ConfigError
+    from certo.model_selection import independent_tests_writer
+
+    files = model_file_config(
+        tmp_path,
+        "models:\n  - name: cheap\n    model: openai/cheap\n    api_key: k\n"
+        "  - name: parked\n    model: openai/parked\n    api_key: k2\n    activated: false\n",
+    )
+    run = _cfg(**files)
+    assert independent_tests_writer(run, run) is run
+    writer = independent_tests_writer(replace(run, independent_tests_model="cheap"), run)
+    assert (writer.model, writer.api_key) == ("openai/cheap", "k")
+    with pytest.raises(ConfigError, match="isn't a model enabled"):
+        independent_tests_writer(replace(run, independent_tests_model="parked"), run)

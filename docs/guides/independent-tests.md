@@ -29,7 +29,8 @@ model, `--auto-model` and `--escalate`, on local runs.
 ## What happens
 
 1. **Before the build**, three separate, short conversations with the same
-   model (with `--escalate`, the first model on the ladder) each read the
+   model (with `--escalate`, the first model on the ladder; or the one
+   [you choose](#choose-the-model-that-writes-them)) each read the
    task and a copy of the project as it is before the agent starts. Each
    writes its own *set* of tests for what the task states, or none when
    the task doesn't say what to call (a function, a command, an endpoint)
@@ -124,6 +125,21 @@ In 39 live benchmark runs with Haiku building and writing the tests (see
   tests written from the task couldn't catch it.
 
 So read a failing independent test before you trust it either way.
+
+## Choose the model that writes them
+
+A weaker model writes weaker tests (see above). To have a stronger one
+write them while a cheaper or local model builds, name it, by its name in
+[`models.yaml`](../reference/models-yaml.md):
+
+```dotenv
+CERTO_INDEPENDENT_TESTS_MODEL=claude-haiku-5-5
+```
+
+It must be enabled there; a wrong name stops the run before it starts.
+Empty (the default), the run's own model writes them. In the
+benchmark, an arm takes `independent_tests_model` (see
+[the benchmark file](../reference/bench-yaml.md#arms)).
 
 ## Make them change the verdict
 

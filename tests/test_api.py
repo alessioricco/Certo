@@ -250,3 +250,16 @@ def test_an_old_record_keeps_todays_budget():
         _cfg(), _budgeted(0, 0), time_flag=False, steps_flag=False, environ={}
     )
     assert note is None and cfg == _cfg()
+
+
+def test_an_independent_tests_model_not_enabled_refuses_the_run(tmp_path):
+    from model_file_helpers import model_file_config
+
+    files = model_file_config(
+        tmp_path, "models:\n  - name: cheap\n    model: openai/cheap\n    api_key: k\n"
+    )
+    load = lambda **o: lambda: _cfg(independent_tests_model="nowhere", **files, **o)  # noqa: E731
+    with pytest.raises(ConfigError, match="CERTO_INDEPENDENT_TESTS_MODEL is 'nowhere'"):
+        resolve_config(RunOptions(independent_tests=True), load=load())
+    # Without independent tests the setting isn't looked at.
+    assert resolve_config(RunOptions(), load=load()).independent_tests is False

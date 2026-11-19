@@ -95,6 +95,7 @@ class BenchConfig:
 # it still match on --resume.
 _ARM_OPTIONS = (
     "independent_tests",
+    "independent_tests_model",
     "condense",
     "context_tokens",
     "max_task_seconds",
@@ -229,6 +230,15 @@ def _arms(raw: Any, catalog: dict[str, ModelCatalogEntry], where: str) -> list[A
                 f"{arm_where}: 'planner' works with 'make_milestones: true' only."
             )
         planner = model_name(item, "planner", catalog, arm_where) if "planner" in item else None
+        if "independent_tests_model" in item and not independent:
+            raise BenchConfigError(
+                f"{arm_where}: 'independent_tests_model' works with 'independent_tests: true' only."
+            )
+        writer = (
+            model_name(item, "independent_tests_model", catalog, arm_where)
+            if "independent_tests_model" in item
+            else None
+        )
         root_prompt = item.get("root_prompt", True)
         if not isinstance(root_prompt, bool):
             raise BenchConfigError(f"{arm_where}: 'root_prompt' must be true or false.")
@@ -243,6 +253,8 @@ def _arms(raw: Any, catalog: dict[str, ModelCatalogEntry], where: str) -> list[A
         params = STRATEGIES[strategy].parse(rest, catalog, arm_where)
         if independent:
             params["independent_tests"] = True
+        if writer:
+            params["independent_tests_model"] = writer
         if not condense:
             params["condense"] = False
         if context is not None:

@@ -282,6 +282,7 @@ def execute_run(
             isolation,
             recording_stream,
             model_catalog=cfg.model_catalog,
+            model_files=(cfg.models_file, cfg.models_list_file),
         )
 
     try:

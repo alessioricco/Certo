@@ -160,6 +160,11 @@ def resolve_config(
         cfg = replace(cfg, workspace=resolve_project_dir(cfg.projects_dir, options.project))
     elif options.workspace is not None:
         cfg = replace(cfg, workspace=options.workspace)
+    if cfg.independent_tests and cfg.independent_tests_model:
+        from .model_selection import independent_tests_writer
+
+        # Refused before the run starts, not after the build.
+        independent_tests_writer(cfg, cfg)
     return cfg
 
 

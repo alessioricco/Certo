@@ -1003,3 +1003,9 @@ def test_tool_call_reminders_default_to_3_and_0_turns_them_off():
     assert load_config(_base_env(CERTO_TOOL_CALL_REMINDERS="0")).tool_call_reminders == 0
     with pytest.raises(ConfigError, match="TOOL_CALL_REMINDERS"):
         load_config(_base_env(CERTO_TOOL_CALL_REMINDERS="-1"))
+
+
+def test_the_independent_tests_model_is_read():
+    assert load_config(_base_env()).independent_tests_model == ""
+    cfg = load_config(_base_env(CERTO_INDEPENDENT_TESTS_MODEL="claude-haiku-5-5"))
+    assert cfg.independent_tests_model == "claude-haiku-5-5"

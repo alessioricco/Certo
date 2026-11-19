@@ -125,6 +125,7 @@ from .model_selection import (
     ModelDecisionRecord,
     OnModelChoice,
     config_for_entry,
+    independent_tests_writer,
     llm_for_entry,
     write_model_decisions,
 )
@@ -2231,7 +2232,9 @@ def _stream_task(
         _emit_notice(emit, f"Certo: {switch_note}")
 
     # Before the build: the writer sees the project as it is now.
-    written = _write_independent_tests(task, agent_cfg, cfg, emit, resuming=resume_from is not None)
+    written = _write_independent_tests(
+        task, independent_tests_writer(cfg, agent_cfg), cfg, emit, resuming=resume_from is not None
+    )
     _checkpoint(cfg, "before the resumed run" if resume_from is not None else "before the agent")
 
     trusted = _trusted_skills(cfg, task, emit)
@@ -3161,7 +3164,7 @@ def _stream_escalation(
     # Written once, before the first rung, with its model; they judge the
     # final result, whichever rung produced it.
     first_cfg = _rung_config(cfg, ladder.rungs[0])
-    written = _write_independent_tests(task, first_cfg, cfg, io.emit)
+    written = _write_independent_tests(task, independent_tests_writer(cfg, first_cfg), cfg, io.emit)
     # CERTO_ESCALATION_HANDOFF=restart: every later rung starts from these
     # files, so they are always kept, even when checkpoints are off.
     restart_from = (

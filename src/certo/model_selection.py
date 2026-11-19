@@ -297,3 +297,13 @@ def _milestone_sections(path: str) -> list[tuple[int, str]]:
         (int(m.group(1)), text[m.start() : starts[i + 1].start() if i + 1 < len(starts) else None])
         for i, m in enumerate(starts)
     ]
+
+
+def independent_tests_writer(cfg: Config, default: Config) -> Config:
+    """The config whose model writes the independent tests: the model
+    CERTO_INDEPENDENT_TESTS_MODEL names, else `default` (the run's model,
+    or a ladder's first rung). Raises ConfigError when the name isn't a
+    model enabled in models.yaml."""
+    if not cfg.independent_tests_model:
+        return default
+    return config_for_named_model(cfg, cfg.independent_tests_model, "CERTO_INDEPENDENT_TESTS_MODEL")

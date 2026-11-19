@@ -225,6 +225,10 @@ class Config:
     # tests failed (most sets) ends `independent_failed` instead. Turns the
     # tests on.
     independent_tests_strict: bool = False
+    # CERTO_INDEPENDENT_TESTS_MODEL: the models.yaml model that writes the
+    # independent tests. Blank: the run's model (with --escalate, the first
+    # rung's).
+    independent_tests_model: str = ""
     # CERTO_CREDITS: in a project Certo created, a "Generated with Certo"
     # line in README.md and a generator meta tag in index.html (credits.py).
     credits: bool = True
@@ -763,6 +767,7 @@ def load_config(
     escalation_ladder = _get(env, "ESCALATION_LADDER") or ""
     planner_model = _get(env, "PLANNER_MODEL") or ""
     ask_model = _get(env, "ASK_MODEL") or ""
+    independent_tests_model = _get(env, "INDEPENDENT_TESTS_MODEL") or ""
     escalation_handoff = _parse_choice(
         env, "ESCALATION_HANDOFF", default="continue", choices=ESCALATION_HANDOFFS
     )
@@ -811,6 +816,7 @@ def load_config(
         independent_tests=independent_tests,
         independent_tests_sets=independent_tests_sets,
         independent_tests_strict=independent_tests_strict,
+        independent_tests_model=independent_tests_model,
         checkpoints=checkpoints,
         credits=credits,
         condense=condense,

@@ -49,6 +49,9 @@ class RunContext:
     # The whole catalog, with task profiles and escalation settings, for
     # strategies that build a ladder.
     model_catalog: ModelCatalog | None = None
+    # The benchmark's models.yaml and models_list.yaml, for a run that looks
+    # a model up by name (an arm's `independent_tests_model`).
+    model_files: tuple[str, str] = ("", "")
 
 
 @dataclass(frozen=True)
@@ -116,8 +119,8 @@ def run_config(entry: ModelCatalogEntry, workspace: str, isolation_dir: str) -> 
 
 def arm_config(entry: ModelCatalogEntry, ctx: RunContext, params: Mapping[str, Any]) -> Config:
     """run_config, plus the arm's own options (`independent_tests`,
-    `condense`, `context_tokens`, `max_task_seconds`,
-    `tool_call_reminders`, `skills_off`, `root_prompt`, `skills_dir`;
+    `independent_tests_model`, `condense`, `context_tokens`,
+    `max_task_seconds`, `tool_call_reminders`, `skills_off`, `root_prompt`, `skills_dir`;
     bench_config._ARM_OPTIONS). With `skills_dir`, the run's empty global
     skills folder becomes a copy of it, once per run, so no run changes
     the original or sees another run's changes."""
@@ -126,6 +129,14 @@ def arm_config(entry: ModelCatalogEntry, ctx: RunContext, params: Mapping[str, A
         copy_fresh(params["skills_dir"], cfg.global_skills_dir, symlinks=True)
     if params.get("independent_tests"):
         cfg = replace(cfg, independent_tests=True)
+    if params.get("independent_tests_model"):
+        models_file, models_list_file = ctx.model_files
+        cfg = replace(
+            cfg,
+            independent_tests_model=params["independent_tests_model"],
+            models_file=models_file,
+            models_list_file=models_list_file,
+        )
     if params.get("condense") is False:
         cfg = replace(cfg, condense=False)
     if params.get("context_tokens"):
