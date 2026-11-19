@@ -19,3 +19,11 @@ Run them with `tasks_dir: app-tasks` in a bench file.
   four smaller milestones: entries, totals, JSON files and a command
   line. Hidden test names start with their milestone (`test_m1_` to
   `test_m4_`). Added in `apps-2`.
+- `job-runner`: an existing project to extend, a job runner in Python
+  (`starter/`), in three milestones: priorities, retries and cancelling
+  jobs. Its own test suite runs real jobs and takes about 2.5 minutes,
+  like a real project's slow suite; the task doesn't say so. It is for
+  measuring how a run spends its budget on a slow suite (the slow-test
+  note, 0.2.5). The hidden tests are fast. Hidden test names start with
+  their milestone (`test_m1_` to `test_m3_`; `test_m1_starter_` is what
+  the starter already did). Added in `apps-3`.

@@ -74,7 +74,9 @@ or narrow a test that fails on a timeout before running the suite again.
 In one user's milestone project a browser test suite took 9 minutes of a
 30-minute budget, and the agent ran it more than once per milestone. The
 note names only the command the agent ran. Not measured yet in the
-benchmark.
+benchmark; the app tasks gain one to measure it with, `job-runner`
+(task set `apps-3`): an existing project whose own test suite takes
+about 2.5 minutes, extended in three milestones.
 
 ## New: turn an official skill off
 

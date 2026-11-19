@@ -2354,3 +2354,12 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   run Certo names a Markdown plan the agent created or changed and the
   command to run it; it never switches a reply ("go ahead") into
   milestone mode by itself.
+- **`job-runner`, a slow suite on purpose** (2026-11-19, `apps-3`). To
+  measure the slow-test note, the task starts from a project (`starter/`)
+  whose own suite runs real jobs with real sleeps, about 2.5 minutes:
+  slow the way a real project's integration suite is, not because the
+  task asks for slow tests. The task text never mentions speed (Certo
+  decides, not the task). 2.5 minutes is a tenth of the budget or more up
+  to 25 minutes per milestone, so the note can fire on cloud (15 min)
+  and local (20 min) budgets. Hidden tests are fast, so grading stays
+  quick; the starter's behaviour counts as milestone 1 (`test_m1_starter_`).

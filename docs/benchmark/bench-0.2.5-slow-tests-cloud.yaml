@@ -1,0 +1,15 @@
+# The slow-test note (Certo 0.2.5): when one of the agent's own test runs
+# takes a tenth of the time budget or more, Certo tells it once to run only
+# the tests for what it changed and the whole suite once at the end. The
+# job-runner app task starts from a project whose own suite takes about
+# 2.5 minutes, 16% of the 15-minute budget per milestone here, so the note
+# fires on the agent's first full run. The "no-note" arm turns it off.
+#   certo bench --config docs/benchmark/bench-0.2.5-slow-tests-cloud.yaml --parallel 3 --max-cost 3
+models_file: docs/benchmark/models-0.2.4-ratings.yaml
+models_list_file: docs/benchmark/models_list-0.2.4-computed.yaml
+tasks_dir: app-tasks
+tasks: [job-runner]
+repeats: 3
+arms:
+  - {name: haiku-note, strategy: single, model: claude-haiku-5-5, milestones: true, max_task_seconds: 900}
+  - {name: haiku-no-note, strategy: single, model: claude-haiku-5-5, milestones: true, max_task_seconds: 900, slow_test_note: false}

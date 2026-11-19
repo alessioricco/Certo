@@ -297,7 +297,8 @@ def test_milestone_counts_read_pytests_report_of_every_test():
 
 
 @pytest.mark.parametrize(
-    ("name", "milestones", "tests"), [("spreadsheet", 5, 111), ("expenses", 4, 80)]
+    ("name", "milestones", "tests"),
+    [("spreadsheet", 5, 111), ("expenses", 4, 80), ("job-runner", 3, 23)],
 )
 def test_a_task_in_milestones_is_graded_per_milestone(
     tmp_path, project_venv, name, milestones, tests

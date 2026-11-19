@@ -1,0 +1,13 @@
+# The slow-test note on a local model (Certo 0.2.5), as the cloud file
+# (bench-0.2.5-slow-tests-cloud.yaml) but on qwen3.8 with 20 minutes per
+# milestone: the suite's 2.5 minutes are 12% of it. A night slot, one run
+# at a time:
+#   caffeinate -i certo bench --config docs/benchmark/bench-0.2.5-slow-tests-local.yaml --pause-between 600 --yes
+models_file: docs/benchmark/models-0.2.4-ratings.yaml
+models_list_file: docs/benchmark/models_list-0.2.4-computed.yaml
+tasks_dir: app-tasks
+tasks: [job-runner]
+repeats: 2
+arms:
+  - {name: qwen-note, strategy: single, model: qwen3.8-27b-local, milestones: true, max_task_seconds: 1200}
+  - {name: qwen-no-note, strategy: single, model: qwen3.8-27b-local, milestones: true, max_task_seconds: 1200, slow_test_note: false}

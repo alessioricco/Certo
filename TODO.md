@@ -455,9 +455,11 @@ database).
   only the tests for what it changed and the full suite once at the end;
   from a user's milestone project, 2026-11-14, a 9-minute browser suite
   run repeatedly in a 30-minute budget). Bench it as two arms,
-  `slow_test_note: false` and the default, on a local and a cloud model,
-  with a milestone task that has a slow e2e suite (none of the bundled
-  tasks has one yet: add it). Not yet tried: a built-in skill on test
+  `slow_test_note: false` and the default, on a local and a cloud model:
+  `docs/benchmark/bench-0.2.5-slow-tests-cloud.yaml` (Haiku, 15 min per
+  milestone) and `-local.yaml` (qwen3.8, 20 min, a night slot), on
+  `app-tasks/job-runner`, whose starter suite takes about 2.5 minutes.
+  Not yet tried: a built-in skill on test
   speed (short default timeouts, run a browser project only where it
   matters). Done when the bench shows less of the budget spent on
   repeated full runs and no milestone `budget_exhausted` for that
