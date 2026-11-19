@@ -46,3 +46,12 @@ seconds and $0.001 at `high`. `CERTO_PLANNER_REASONING_EFFORT` changes
 it (`max`, or `default` for the model's own). A model that refuses the
 effort, as GPT-6 Luna refuses `max`, plans at its own, and Certo says
 so. Whether the plans are better is still to be measured.
+
+## Fixed
+
+- **The benchmark's cost per model** charged the model that writes
+  independent tests, and the planner, to the arm's model. Each now has
+  its own row. In a run where GPT-6 Luna built and Haiku wrote the
+  tests, Haiku's tests were $0.0169 of the run's $0.0214 and Luna's
+  build $0.0044; the old table charged all of it to Luna. Totals were
+  right.

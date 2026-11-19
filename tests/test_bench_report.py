@@ -367,3 +367,65 @@ def test_hidden_tests_per_milestone_add_up_each_arms_runs():
 
 def test_no_milestone_section_without_counts():
     assert "per milestone" not in render_markdown(META, RECORDS)
+
+
+def test_cost_by_model_gives_the_test_writer_and_planner_their_own_rows():
+    from certo.bench_report import cost_summary
+
+    run = _record("local", "slugify", 1, verdict="verified", passed=True, cost=0.07)
+    run["cost_by_model"] = [
+        {"name": "qwen", "model": "ollama/qwen3-coder:30b", "reasoning_effort": None, "cost": 0.0},
+        {
+            "name": "haiku",
+            "model": "anthropic/claude-haiku-5-5",
+            "reasoning_effort": "high",
+            "cost": 0.05,
+        },
+        {
+            "name": "sonnet",
+            "model": "anthropic/claude-sonnet-5-5",
+            "reasoning_effort": "xhigh",
+            "cost": 0.02,
+        },
+    ]
+    rows = {row["name"]: row for row in cost_summary(META, [run])["per_model"]}
+
+    assert rows["haiku"]["cost"] == 0.05 and rows["sonnet"]["cost"] == 0.02
+    assert rows["qwen"]["cost"] == 0.0 and rows["qwen"]["runs"] == 1
+    assert round(sum(row["cost"] for row in rows.values()), 6) == run["cost"]
+
+
+def test_the_run_records_cost_by_model_with_the_planner():
+    from types import SimpleNamespace
+
+    from certo.bench import _cost_by_model
+    from certo.run_summary import ModelUsage, RunSummary
+
+    summary = RunSummary(
+        duration_seconds=1.0,
+        models=(
+            ModelUsage(model="ollama/qwen3.8:27b", cost=0.0),
+            ModelUsage(model="anthropic/claude-haiku-5-5", cost=0.04, reasoning_effort="high"),
+        ),
+    )
+    catalog = {
+        "qwen": SimpleNamespace(model="ollama/qwen3.8:27b"),
+        "haiku": SimpleNamespace(model="anthropic/claude-haiku-5-5"),
+    }
+    planning = {"planner": "haiku", "effort": "xhigh", "cost": 0.003}
+
+    assert _cost_by_model(summary, planning, catalog) == [
+        {"name": "qwen", "model": "ollama/qwen3.8:27b", "reasoning_effort": None, "cost": 0.0},
+        {
+            "name": "haiku",
+            "model": "anthropic/claude-haiku-5-5",
+            "reasoning_effort": "high",
+            "cost": 0.04,
+        },
+        {
+            "name": "haiku",
+            "model": "anthropic/claude-haiku-5-5",
+            "reasoning_effort": "xhigh",
+            "cost": 0.003,
+        },
+    ]

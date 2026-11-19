@@ -24,7 +24,7 @@ import sys
 import tempfile
 import threading
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -413,6 +413,9 @@ def execute_run(
             (summary.total_cost if summary else 0.0) + (planning["cost"] if planning else 0.0), 6
         ),
         "cost_known": summary.cost_complete if summary else True,
+        # What each model spent: the builders, and also the independent
+        # tests' writer and the planner, which aren't rungs.
+        "cost_by_model": _cost_by_model(summary, planning, cfg.catalog, names),
         "retries_used": attempt.retries_used if attempt else 0,
         # How often the agent wrote a tool call as text instead of making it,
         # or ended on a sentence of plans
@@ -441,6 +444,48 @@ def execute_run(
     }
     _write_json(out_dir / "runs" / f"{planned.run_id}.json", record)
     return record
+
+
+def _cost_by_model(
+    summary: Any,
+    planning: dict[str, Any] | None,
+    catalog: dict[str, Any],
+    run_models: Sequence[str] = (),
+) -> list[dict[str, Any]]:
+    """The run's cost per model and effort, from its summary's per-model
+    usage, plus the planner's call. Each is named as in the models file:
+    by its model id, with or without the provider prefix (LiteLLM may
+    report either); an id that matches none is the run's own model when
+    it has only one."""
+    names: dict[str, tuple[str, str]] = {}
+    for name, entry in catalog.items():
+        names.setdefault(entry.model, (name, entry.model))
+        names.setdefault(entry.model.split("/", 1)[-1], (name, entry.model))
+    own = [(n, catalog[n].model) for n in run_models if n in catalog]
+    rows = []
+    for usage in summary.models if summary else ():
+        name, model = names.get(usage.model) or (
+            own[0] if len(own) == 1 else (usage.model, usage.model)
+        )
+        rows.append(
+            {
+                "name": name,
+                "model": model,
+                "reasoning_effort": usage.reasoning_effort,
+                "cost": round(usage.cost, 6),
+            }
+        )
+    if planning and planning.get("cost"):
+        planner = catalog.get(planning["planner"])
+        rows.append(
+            {
+                "name": planning["planner"],
+                "model": planner.model if planner else "",
+                "reasoning_effort": planning.get("effort"),
+                "cost": planning["cost"],
+            }
+        )
+    return rows
 
 
 def _independent_record(result: Any) -> dict[str, Any] | None:

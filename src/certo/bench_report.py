@@ -137,7 +137,19 @@ def cost_summary(meta: dict[str, Any], records: list[dict[str, Any]]) -> dict[st
         row["complete"] = row["complete"] and known
 
     for r in records:
-        if r.get("rungs"):
+        if r.get("cost_by_model") is not None:
+            # Since 0.2.5: what each model spent, the test writer and the
+            # planner included.
+            for row in r["cost_by_model"]:
+                if row["cost"] or row["model"]:
+                    add(
+                        row["name"],
+                        row["model"],
+                        row.get("reasoning_effort"),
+                        row["cost"],
+                        _known(r),
+                    )
+        elif r.get("rungs"):
             for rung in r["rungs"]:
                 add(
                     rung.get("name", ""),

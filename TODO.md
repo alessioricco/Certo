@@ -467,13 +467,6 @@ database).
 
 ## Smaller bugs
 
-- **The benchmark's cost per model leaves out the test writer** (found
-  2026-11-19). A run's cost includes the independent tests' writer (it
-  is in the run summary), but `cost.json` and the "Cost" table in
-  `results.md` put the whole run under the arm's models, so with
-  `independent_tests_model` the writer's cost shows as the builder's.
-  Totals are right. Done when the writer has its own row, from the run
-  summary's per-model usage, with a test.
 - **Slow test suites eat the milestone budget** (a user's milestone project, M7,
   2026-11-14; the Author: Certo must take the decision, not the task
   file). The project's Playwright suite took 9 minutes (82 tests on 2

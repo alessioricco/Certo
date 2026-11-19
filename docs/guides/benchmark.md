@@ -295,8 +295,11 @@ script first installs what the project declares (`uv.lock`,
 **The real cost.** The **Cost** section of `results.md` (and `cost.json`)
 gives what the benchmark really spent, from the recorded runs, next to what
 the plan estimated, and one row per model: its runs, its cost, and its
-average per run. An escalation run is split by rung, so each model is
-charged only for what it ran. The same total is printed at the end:
+average per run. Each model is charged only for what it ran: the rungs
+of an escalation, and also the model that writes independent tests or
+plans the milestones, each in its own row (since 0.2.5; results from
+before charged those to the arm's model). The same total is printed at
+the end:
 
 ```text
 Total cost: $1.5000 (the plan estimated at most ~$9.00, likely ~$3.50), for 3 of 12 runs
