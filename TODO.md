@@ -368,6 +368,14 @@ cut that first run's output from 2,949 lines to 1,021.)
   the settings file for now. Later, read them from the system keychain
   or a secret manager (1Password, Bitwarden, a cloud vault) instead.
   Decide which, and how a key is named, when someone asks for it.
+- **`certo mcp --settings FILE`** (the Author, 2026-11-19): a `.env`
+  file read in place of the user settings file, for that server only,
+  so the MCP server can have its own model, budget and limits without
+  changing the terminal's. Today: `-e NAME=value` in the client's
+  registration (works, setting by setting, but keys don't belong there)
+  or `XDG_CONFIG_HOME` (a whole profile, but the agent's git and uv lose
+  their `~/.config` settings). Done when the flag works, its file's
+  `${NAME}` references resolve, and the MCP guide shows it.
 - **MCP tools for `certo skills remove` and `disable`** (on request
   only). They only take skills away, so a tool is safe, with
   `rollback`'s confirm step; nobody has asked. Every other command has
