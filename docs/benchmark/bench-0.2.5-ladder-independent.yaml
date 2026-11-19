@@ -1,0 +1,15 @@
+# The derived ladder of bench-0.2.4-ladder-computed.yaml (qwen3.8 ->
+# Terra -> Sonnet, 60 minutes per task), with independent tests written
+# by claude-haiku-5-5 (CERTO_INDEPENDENT_TESTS_MODEL, 0.2.5): three sets
+# from the task before each build, run on the work after the verdict.
+# Report only, so the verdicts compare with the run without them
+# (docs/benchmark/ladder-computed-0.2.4.md: 12/13, fooled once on
+# semver-order, which Haiku's tests caught in a replay).
+# A night slot, under caffeinate -i, with the fan on turing:
+#   caffeinate -i .venv/bin/certo bench --config docs/benchmark/bench-0.2.5-ladder-independent.yaml --pause-between 900 --yes
+models_file: docs/benchmark/models-0.2.4-ratings.yaml
+models_list_file: docs/benchmark/models_list-0.2.4-computed.yaml
+tasks: all
+repeats: 1
+arms:
+  - {name: ladder-haiku-tests, strategy: escalate, max_task_seconds: 3600, independent_tests: true, independent_tests_model: claude-haiku-5-5}
