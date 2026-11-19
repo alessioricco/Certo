@@ -172,6 +172,20 @@ def test_a_planner_model_not_enabled_is_refused(tmp_path, name):
         choose_planner(cfg)
 
 
+_BROKEN_LADDER = "escalation:\n  ladders:\n    hard:\n      - model: nowhere\n"
+
+
+def test_a_broken_ladder_does_not_stop_the_planner_setting(tmp_path):
+    cfg = _cfg(planner_model="cheap", **_files(tmp_path, _CATALOG + _BROKEN_LADDER))
+    assert choose_planner(cfg)[0].model == "openai/cheap"
+
+
+def test_a_broken_ladder_does_not_stop_the_planning_profile(tmp_path):
+    cfg = _cfg(model_selection="escalate", **_files(tmp_path, _CATALOG + _BROKEN_LADDER))
+    planner, how = choose_planner(cfg)
+    assert (planner.model, how) == ("anthropic/thinker", "the 'planning' task profile")
+
+
 def test_an_unreachable_local_planner_is_passed_over(tmp_path, monkeypatch):
     monkeypatch.setattr(
         "certo.model_reachability.unreachable_reason",

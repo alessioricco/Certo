@@ -180,6 +180,7 @@ def choose_planner(cfg: Config) -> tuple[Config, str]:
             cfg.models_list_file,
             task_profiles_file=cfg.task_profiles_file,
             escalation_file=cfg.escalation_file,
+            mode="auto",
             project_dir=cfg.workspace,
         )
     except ModelCatalogError:

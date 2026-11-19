@@ -466,12 +466,6 @@ database).
 
 ## Smaller bugs
 
-- **One bad ladder stops `certo ask` and the planner.** They need one
-  named model (`CERTO_ASK_MODEL`, `CERTO_PLANNER_MODEL`), but
-  `config_for_named_model` loads the full checked catalog, so a ladder in
-  `escalation.yaml` naming a model that isn't listed or enabled refuses
-  them (seen 2026-11-18 with the bench's model files). Done when only the
-  named model must be valid and ladder problems are warnings there.
 - **`certo check` says "computed" ratings under `replace: true`**
   (found 2026-11-18). `catalog_report._print_ratings_source` looks only
   at the lowest layer, but `_read_mapping` applies computed ratings only

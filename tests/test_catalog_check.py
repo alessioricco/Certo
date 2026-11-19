@@ -213,9 +213,25 @@ def test_a_broken_profile_still_stops_auto_model(tmp_path):
     assert not report.ok
 
 
+def test_a_named_model_is_stopped_by_neither_ladders_nor_profiles(tmp_path):
+    # Seen live 2026-11-18: a ladder naming an unlisted model stopped
+    # CERTO_ASK_MODEL, which no ladder chooses.
+    report = _mode_report(tmp_path, "named", _BROKEN_LADDER, models=_BROKEN_PROFILE)
+    assert report.ok
+    assert (
+        "Ladder 'x' has no usable rung: none of its models is enabled in models.yaml. "
+        "A setting names the model, so ladders don't matter here." in report.warnings
+    )
+    assert any(
+        w.startswith("Task profile 'debugging': there is no model named 'stronk'.")
+        and w.endswith("A setting names the model, so task profiles don't matter here.")
+        for w in report.warnings
+    )
+
+
 def test_a_problem_both_modes_share_stops_either(tmp_path):
     duplicated = _MODELS.replace("name: mid", "name: local")
-    for mode in ("auto", "escalate", None):
+    for mode in ("auto", "escalate", "named", None):
         (tmp_path / str(mode)).mkdir()
         assert not _mode_report(tmp_path / str(mode), mode, models=duplicated).ok
 

@@ -5,7 +5,8 @@ it: `--auto-model`, `--escalate`, `certo bench` and `certo check`.
 model, ladder or profile. Errors stop the command; warnings are printed and
 the command runs. A problem only one mode cares about (a ladder for
 `--escalate`, a profile's `model:` for `--auto-model`) is a warning in the
-other mode, so a broken ladder never stops an `--auto-model` run. `load_checked_catalog` is the one way commands load the
+other mode, so a broken ladder never stops an `--auto-model` run, nor a
+model a setting names (`certo ask`, the milestone planner). `load_checked_catalog` is the one way commands load the
 file. Pure: no SDK, no network.
 """
 
@@ -48,16 +49,25 @@ def _names(models: list[ModelCatalogEntry]) -> str:
 
 
 # What each mode doesn't use, and the note its problems get there.
-_UNUSED_BY_MODE = {
-    "auto": ("escalation", "Only --escalate uses ladders, so this run goes on."),
-    "escalate": ("profiles", "Only --auto-model uses task profiles, so this run goes on."),
+_LADDERS_UNUSED = "Only --escalate uses ladders, so this run goes on."
+_PROFILES_UNUSED = "Only --auto-model uses task profiles, so this run goes on."
+_UNUSED_BY_MODE: dict[str, dict[str, str]] = {
+    "auto": {"escalation": _LADDERS_UNUSED},
+    "escalate": {"profiles": _PROFILES_UNUSED},
+    # One model named by a setting (CERTO_ASK_MODEL, CERTO_PLANNER_MODEL):
+    # neither ladders nor profiles choose it.
+    "named": {
+        "escalation": "A setting names the model, so ladders don't matter here.",
+        "profiles": "A setting names the model, so task profiles don't matter here.",
+    },
 }
 
 
 def check_catalog(catalog: ModelCatalog, *, mode: str | None = None) -> CatalogReport:
     """Every problem in the model files. `mode` is the run's model
-    selection ("auto" or "escalate"): problems in the part of the files the
-    mode doesn't use become warnings. None (certo check, certo bench) keeps
+    selection ("auto" or "escalate", or "named" for one model a setting
+    names): problems in the part of the files the mode doesn't use become
+    warnings. None (certo check, certo bench) keeps
     them all errors."""
     report = CatalogReport()
     errors, warnings = report.errors, report.warnings
@@ -151,10 +161,10 @@ def check_catalog(catalog: ModelCatalog, *, mode: str | None = None) -> CatalogR
                 "profile use the model its needs (or weights) rank first."
             )
 
-    unused, note = _UNUSED_BY_MODE.get(mode, (None, ""))
+    unused = _UNUSED_BY_MODE.get(mode or "", {})
     for part, problems in (("escalation", ladder_errors), ("profiles", profile_errors)):
-        if part == unused:
-            warnings.extend(f"{problem} {note}" for problem in problems)
+        if part in unused:
+            warnings.extend(f"{problem} {unused[part]}" for problem in problems)
         else:
             errors.extend(problems)
 

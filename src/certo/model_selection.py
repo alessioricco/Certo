@@ -201,7 +201,8 @@ def config_for_named_model(cfg: Config, name: str, setting: str) -> Config:
     """`cfg` with the model `models.yaml` enables under `name`, for a setting
     that names one (`CERTO_PLANNER_MODEL`, `CERTO_ASK_MODEL`). Raises
     ConfigError, saying `setting`, when the files can't be read or the
-    model isn't enabled."""
+    model isn't enabled. Problems in ladders or task profiles don't stop
+    it: neither chooses this model."""
     from .catalog_check import load_checked_catalog
     from .config import ConfigError
     from .model_catalog import ModelCatalogError
@@ -212,6 +213,7 @@ def config_for_named_model(cfg: Config, name: str, setting: str) -> Config:
             cfg.models_list_file,
             task_profiles_file=cfg.task_profiles_file,
             escalation_file=cfg.escalation_file,
+            mode="named",
             project_dir=cfg.workspace,
         )
     except ModelCatalogError as exc:

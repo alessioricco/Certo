@@ -410,7 +410,11 @@ Errors:
 A problem in a part that the run doesn't use is a warning instead, and
 the run goes on: an `--auto-model` run doesn't stop for a ladder or
 `escalation.cost_axis` problem, and an `--escalate` run doesn't stop for
-a task profile's `model`. `certo check` and `certo bench` report them all
+a task profile's `model`. A model named by `CERTO_ASK_MODEL` or
+`CERTO_PLANNER_MODEL` stops for neither: only that model must be
+listed and enabled. Without `CERTO_PLANNER_MODEL`, the milestone planner
+uses the `planning` task profile, so a ladder problem doesn't stop it
+either. `certo check` and `certo bench` report them all
 as errors.
 
 Warnings:
