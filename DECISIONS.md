@@ -2363,3 +2363,10 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   to 25 minutes per milestone, so the note can fire on cloud (15 min)
   and local (20 min) budgets. Hidden tests are fast, so grading stays
   quick; the starter's behaviour counts as milestone 1 (`test_m1_starter_`).
+- **`cli-entry-points`, a keyword skill, on before measurement**
+  (2026-11-19, 0.2.5; the Author asked for it). Fires on cli, command
+  line, command-line, argparse, exit code; not on "script", "stdout" or
+  "terminal" (the last is `testable-interactive-apps`'). Language-neutral
+  text with Python's `__main__` as one example, since `todo-deps` (Rust)
+  matches. On by default like every official skill; measured with
+  `skills_off` as the other arm before the release (TODO).

@@ -36,6 +36,17 @@ the interactive session, `milestone_count` over MCP and in the
 benchmark. See
 [Choose how many](../guides/run-in-milestones.md#choose-how-many).
 
+## New: an official skill for command-line programs
+
+`cli-entry-points` fires when a task mentions a command line (cli,
+command line, command-line, argparse, exit code). It tells the agent to
+make a program that tests can run unattended: one entry point that
+takes its arguments (in Python, the `__main__` block last), no prompts
+and no waiting for input that may not come, `--help`, results and
+errors on their own streams with the task's exit codes, and tests that
+run the command line itself. Not measured yet in the benchmark. See
+[Manage skills](../guides/manage-skills.md#official-skills).
+
 ## Changed: the planner thinks harder
 
 The planning call of `--make-milestones` now runs at reasoning effort

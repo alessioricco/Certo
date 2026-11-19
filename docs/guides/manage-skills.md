@@ -433,7 +433,7 @@ task:
 | `documentation-and-operational-readiness` | api, config, configuration, setup, install, deploy, cli, endpoint | Keep the README, setup steps and configuration docs in step with the change. |
 | `completion-and-release-readiness` | release, deploy, production, ship, launch, pull request, PR | A final review before finishing; never claim success while a check fails. |
 
-And seven more:
+And eight more:
 
 - `pytest-conventions`, `commit-conventions` and `fastapi-conventions`;
 - `pin-dependencies`, which fires when the agent edits `pyproject.toml`
@@ -447,6 +447,11 @@ And seven more:
   sync: dependencies are declared in the project's file, each with a
   version range, and installed from it, into the project's own
   environment, with test tools as development dependencies;
+- `cli-entry-points`, which fires on cli, command line, command-line,
+  argparse or exit code: one entry point that takes its arguments (in
+  Python, the `__main__` block last), no prompts and no waiting for
+  input, `--help`, results and errors on their own streams with the
+  task's exit codes, and tests that run the command line itself;
 - `node-project-setup`, which fires on node, node.js, nodejs, npm,
   javascript or typescript: a real `test` script, a `build` script when
   there is a build step, the lockfile kept, and scaffolders run without

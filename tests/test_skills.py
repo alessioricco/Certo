@@ -282,3 +282,20 @@ def test_python_environment_carries_the_version_range_rule_and_new_tool_words():
     for task in ("Manage it with poetry", "Add httpx with uv add", "Run uv sync first"):
         assert skill.match_trigger(task) is not None, task
     assert skill.match_trigger("A todo list with dependencies between tasks") is None
+
+
+def test_cli_entry_points_fires_on_command_line_tasks_only():
+    skill = _real_catalog()["cli-entry-points"]
+
+    tasks = Path(certo.__file__).parent / "benchmark_tasks"
+    fired = {t.parent.name for t in tasks.glob("*/task.md") if skill.match_trigger(t.read_text())}
+    assert fired == {"todo-deps"}
+    apps = Path(certo.__file__).resolve().parents[2] / "app-tasks"
+    fired_apps = {
+        t.parent.name for t in apps.glob("*/task.md") if skill.match_trigger(t.read_text())
+    }
+    assert fired_apps == {"expenses", "spreadsheet"}
+    assert skill.match_trigger("Write a CLI that reads a CSV") is not None
+    assert skill.match_trigger("Add a slugify function with tests") is None
+    # Short: it costs context a small local model can't spare.
+    assert len(skill.content) < 1600

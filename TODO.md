@@ -404,14 +404,16 @@ Rules for every new skill: short and narrowly triggered (prefer `paths:`
 triggers; every skill that fires costs context a 32K local model can't
 spare); measured with `certo bench` on a local and a cloud model before
 release; authored for Certo in the legacy `triggers:`/`paths:` format.
-Today there are 15 (eight `lifecycle/`, `git/commit-conventions`,
+Today there are 16 (eight `lifecycle/`, `git/commit-conventions`,
 `python-web/fastapi-conventions` and `pin-dependencies`,
 `testing/pytest-conventions` and `testable-interactive-apps`,
-`python/python-environment`, `node/node-project-setup`).
+`python/python-environment`, `node/node-project-setup`,
+`cli/cli-entry-points`).
 
 **Make a project verifiable** (first; suggested order: the first two):
-- `cli-entry-points`: `__main__` guard last, a closed stdin doesn't hang,
-  `--help` and non-interactive flags work.
+- *Measure `cli-entry-points`* (0.2.5, built, unmeasured): it fires on
+  `todo-deps` and the `expenses`/`spreadsheet` app tasks; bench with
+  `skills_off: [cli-entry-points]` as the other arm, local and cloud.
 - `test-oracles`: derive expected values independently, never from the
   implementation's output; check a suspicious test against its own setup
   before re-editing correct code. Maybe a section of
