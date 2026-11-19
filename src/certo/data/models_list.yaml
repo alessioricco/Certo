@@ -55,8 +55,8 @@
 #
 # The three capability axes are meant to be comparable ACROSS providers:
 # a 4 in `code` means the same thing for every model. 5 is the frontier as
-# of the date below (Claude Opus 5.5 / Fable 5.1, GPT-6 Astra, Gemini 4
-# Argon). When a new frontier ships, everything else may need to move down.
+# of the date below (Claude Fable 5.2 / Opus 5.5, GPT-6.2 Astra, Gemini 4
+# Carbon). When a new frontier ships, everything else may need to move down.
 #
 #   code       5  Terminal-Bench 4.0 >= ~55%  or  SWE-Bench Pro >= ~80%
 #              4  Terminal-Bench 4.0 ~35-54%  or  SWE-Bench Pro ~64-79%
@@ -108,7 +108,7 @@
 # Ollama server really uses a large enough window (e.g. start it with
 # OLLAMA_CONTEXT_LENGTH=32768); otherwise prompts are silently truncated.
 #
-# Prices, model ids and benchmark numbers checked on 2026-11-07. They
+# Prices, model ids and benchmark numbers checked on 2026-11-19. They
 # change often — re-check provider pricing pages and LiteLLM's docs before
 # relying on one (see CLAUDE.md's "Model ID strings ... change over time").
 #
@@ -313,12 +313,13 @@ models:
     timeout_seconds: 600
     description: >
       Balanced tier: $2 in / $10 out per 1M (cached input $0.10).
-      Terminal-Bench 4.0 58.2% (public leaderboard, max effort), level with
-      GPT-6 Astra (58.2% there). OpenAI reports it matches Astra on DeepSWE
+      Terminal-Bench 4.0 60.9% (public leaderboard, max effort), above
+      GPT-6 Astra (60.3% there). OpenAI reports it matches Astra on DeepSWE
       v1.1 and comes within ~2 points of it on OSWorld 2.0, at about
       one-fifth of Astra's price. AA Intelligence Index 55 (max). Replaces
       GPT-6 Sol (same price, Terminal-Bench 4.0 49.4%), which is left out
-      of this catalog.
+      of this catalog. GPT-6.2 Sol (same price) scores slightly higher;
+      measure before switching.
     ratings: {reasoning: 4, precision: 5, code: 5, writing: 5, speed: 4, cost: 3.0}
 
   - name: gpt-6.1-terra
@@ -327,9 +328,9 @@ models:
     timeout_seconds: 600
     description: >
       Mid tier, October 2026: $1 in / $5 out per 1M (cached input $0.05),
-      1.05M context. Terminal-Bench 4.0 50.3% at max effort (vendor; not on
-      the leaderboard yet). No DeepSWE, SWE-Bench Pro or GPQA number found,
-      so reasoning and precision are estimates. Replaces GPT-5.6 Terra
+      1.05M context. Terminal-Bench 4.0 50.3% at max effort (vendor), 53.3%
+      on the public leaderboard; AA Intelligence Index 51 (max). No DeepSWE,
+      SWE-Bench Pro or GPQA number found, so precision is an estimate. Replaces GPT-5.6 Terra
       (Terminal-Bench 4.0 21.5%) at half the price.
     ratings: {reasoning: 3, precision: 3, code: 4, writing: 3, speed: 4, cost: 3.5}
 
@@ -341,10 +342,36 @@ models:
       OpenAI flagship: $10 in / $50 out per 1M. Terminal-Bench 4.0 57.9%,
       DeepSWE v1.1 74.1%, GPQA Diamond 96.0%, FrontierMath Tier 4 97.6%,
       MRCR 256K-512K 100%, internal hallucination rate 4.2% vs 12.2% for
-      GPT-5.6 Sol (OpenAI launch table); 58.2% on the public Terminal-Bench
-      4.0 leaderboard. GPT-6.1 Sol now codes as well at a fifth of the
-      price. Use when correctness matters more than cost.
+      GPT-5.6 Sol (OpenAI launch table); 60.3% on the public Terminal-Bench
+      4.0 leaderboard. AA Intelligence Index 57. Superseded by
+      gpt-6.2-astra: cheaper ($8 / $40) and AA Index 62.
     ratings: {reasoning: 5, precision: 5, code: 5, writing: 5, speed: 3, cost: 1.8}
+
+  - name: gpt-6.2-sol
+    model: openai/gpt-6.2-sol
+    reasoning_effort: "high"
+    timeout_seconds: 600
+    description: >
+      November 2026: $2 in / $10 out per 1M, the price of GPT-6.1 Sol.
+      Terminal-Bench 4.0 61.5% (public leaderboard), AA Intelligence Index
+      57 (6.1 Sol: 60.9% and 55). Launch reports say Artificial Analysis'
+      coding-agent index fell 3 points against 6.1 Sol (not on its public
+      page), so measure before switching. OpenAI's launch post couldn't be
+      read; precision is carried over from 6.1 Sol, an estimate.
+    ratings: {reasoning: 4, precision: 5, code: 5, writing: 5, speed: 4, cost: 3.0}
+
+  - name: gpt-6.2-astra
+    model: openai/gpt-6.2-astra
+    reasoning_effort: "high"
+    timeout_seconds: 600
+    description: >
+      OpenAI flagship since 17 Nov 2026: $8 in / $40 out per 1M (cached
+      input $0.40). Terminal-Bench 4.0 62.1% on the public leaderboard
+      (64.1% in Artificial Analysis' run), AA Intelligence Index 62. No
+      SWE-Bench Pro or GPQA number found; OpenAI's launch post couldn't be
+      read, so precision is an estimate. Replaces GPT-6 Astra at a lower
+      price.
+    ratings: {reasoning: 5, precision: 5, code: 5, writing: 5, speed: 3, cost: 2.0}
 
   # ===========================================================================
   # OPENAI — PREVIOUS GENERATIONS (kept for fallback / comparison)
@@ -481,7 +508,8 @@ models:
     timeout_seconds: 600
     description: >
       $4 in / $20 out per 1M. Artificial Analysis Intelligence Index 59 at
-      max effort (57 xhigh, 52 high), second only to Gemini 4 Carbon (60).
+      max effort (57 xhigh, 52 high), behind Fable 5.2 (65), GPT-6.2
+      Astra (62), Gemini 4 Neon (61) and Carbon (60).
       Terminal-Bench 4.0 66.4% at xhigh, 64.8% at max (about 60% in AA's
       run), SWE-Bench Pro 89.9%. Anthropic's recommended default ("start
       with Claude Opus 5.5 for most workloads"); cheaper than Opus 5 and
@@ -499,8 +527,23 @@ models:
       Artificial Analysis scores it 50 (xhigh) against Opus 5.5's 59, and
       Opus 5.5 posts higher numbers on the benchmarks both report, at less
       than half the price — so it is rated below Opus 5.5 on reasoning and
-      precision. Try it when Opus 5.5 falls short.
+      precision. Superseded by claude-fable-5-2, which is cheaper ($8 /
+      $40) and better on every row both report.
     ratings: {reasoning: 4, precision: 4, code: 5, writing: 4, speed: 3, cost: 1.8}
+
+  - name: claude-fable-5-2
+    model: anthropic/claude-fable-5-2
+    reasoning_effort: "high"
+    timeout_seconds: 600
+    description: >
+      $8 in / $40 out per 1M, released 9 Nov 2026. Terminal-Bench 4.0
+      65.8% on the public leaderboard (max effort), tied first; AA
+      Intelligence Index 65 (max), 62 (high), the top of the index. HLE
+      with tools 74.2%, OSWorld 2.1 89.3%, FrontierSWE v2 69.9%
+      (Anthropic). No SWE-Bench Pro or GPQA number from Anthropic;
+      precision is an estimate. Twice Opus 5.5's price: try it when Opus
+      5.5 falls short.
+    ratings: {reasoning: 5, precision: 5, code: 5, writing: 5, speed: 3, cost: 2.0}
 
   # ===========================================================================
   # ANTHROPIC — PREVIOUS GENERATIONS (legacy, still available)
@@ -575,7 +618,8 @@ models:
       4.0 only 19.1% (OpenAI comparison table; not re-checked 2026-11-07).
       AA Intelligence Index 31 (high) on the current scale. Strong
       reasoner on paper, middling terminal agent. `gemini-3.7-flash` now
-      routes here.
+      routes here. Gemini 4 Hydrogen costs the same from 1 Jan 2027 and is
+      far stronger.
     ratings: {reasoning: 4, precision: 3, code: 3, writing: 4, speed: 5, cost: 3.7}
 
   - name: gemini-4-argon
@@ -586,11 +630,38 @@ models:
       Google's flagship, generally available since 13 Oct 2026. $4 in /
       $20 out per 1M from 1 Dec 2026 ($2 / $10 until then; rated at the
       new price). Terminal-Bench 4.0 57.4%, DeepSWE v1.1 77.9% (Google
-      model card); AA Intelligence Index 50. LiteLLM supports it on the
+      model card), 55.5% on the public leaderboard; AA Intelligence Index
+      50. Superseded by gemini-4-carbon at the same price. LiteLLM supports it on the
       normal chat path and maps reasoning_effort to its thinking_level.
       Output is capped at 32,768 tokens a request (65,536 streaming).
       Thinks heavily at high effort.
     ratings: {reasoning: 5, precision: 4, code: 5, writing: 5, speed: 3, cost: 2.5}
+
+  - name: gemini-4-carbon
+    model: gemini/gemini-4-carbon
+    reasoning_effort: "high"
+    timeout_seconds: 600
+    description: >
+      Google's flagship, generally available since 10 Nov 2026. $4 in /
+      $20 out per 1M from 1 Dec 2026 ($2 / $10 until then; rated at the
+      new price, as gemini-4-argon). Terminal-Bench 4.0 65.2% in
+      Artificial Analysis' run (Google model card), 64.5% on the public
+      leaderboard; FrontierSWE 2 61.2%, GraphWalks 256K-1M 96.2%; AA
+      Intelligence Index 60 (high). Precision carried over from Argon, an
+      estimate.
+    ratings: {reasoning: 5, precision: 4, code: 5, writing: 5, speed: 3, cost: 2.5}
+
+  - name: gemini-4-hydrogen
+    model: gemini/gemini-4-hydrogen
+    reasoning_effort: "high"
+    timeout_seconds: 300
+    description: >
+      Google's fast tier, generally available since 12 Nov 2026: $1.50 in /
+      $7.50 out per 1M. Terminal-Bench 4.0 56.4% on the public leaderboard
+      (54% in Artificial Analysis' run, so code is on the 5/4 line);
+      Terminal-Bench 4.1 57.0% (Google model card); AA Intelligence Index
+      54 (xhigh). Precision and speed are estimates.
+    ratings: {reasoning: 4, precision: 3, code: 5, writing: 4, speed: 4, cost: 3.2}
 
   # ===========================================================================
   # DEEPSEEK (cloud; open weights but far too large to run locally)
@@ -632,8 +703,9 @@ models:
     timeout_seconds: 600
     description: >
       Moonshot's current model (23 Oct 2026), 1M context. $2 in / $10 out
-      per 1M. Terminal-Bench 4.0 65.7% (vendor; an outside run reportedly
-      67.2%), AA Intelligence Index 46. No DeepSWE, GPQA or SWE-Bench Pro
+      per 1M. Terminal-Bench 4.0 65.7% (vendor), 67.2% in Artificial
+      Analysis' run, 59.7% on the public leaderboard; AA Intelligence Index
+      46. No DeepSWE, GPQA or SWE-Bench Pro
       number from an official source yet. Replaces Kimi K2.7 Code, which
       is closed to new users and retires by the end of 2026.
     ratings: {reasoning: 4, precision: 3, code: 5, writing: 4, speed: 4, cost: 3.0}

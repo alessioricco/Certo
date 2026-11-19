@@ -139,7 +139,7 @@ models retire, new ones ship. Since 0.2.3 it is every user's lowest layer
 (Certo reads it from the package), so its ratings follow the rubric at its
 top; `tests/test_model_catalog.py` checks `cost` against the price and
 `code` against the benchmark numbers in each description. Check it about once a month and before a
-release. The last full check was 2026-11-07.
+release. The last full check was 2026-11-19.
 
 1. **Prices and ids, by command.** Upgrade LiteLLM to the version the
    release will pin, then run
