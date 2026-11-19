@@ -204,7 +204,8 @@ outside: True Error executing tool run_task: /etc is outside the folders t
 
 - **The server has no login.** Over stdio only the client that started
   it can reach it. There is no HTTP mode yet: it will come with
-  authentication.
+  authentication. To use Certo on another machine, let SSH carry the
+  stdio: see [Use Certo's MCP server on another machine](use-certo-mcp-on-another-machine.md).
 - **Runs live as long as the server.** When the client closes, the
   server stops and a run still going stops with it. Its state is in the
   project's `.certo/` folder, so `run_resume` (next time) or
@@ -222,4 +223,5 @@ outside: True Error executing tool run_task: /etc is outside the folders t
 - [Commands](../reference/commands.md#certo-mcp)
 - [The JSON result](../reference/json-result.md)
 - [Resume an interrupted run](resume-a-run.md)
+- [Use Certo's MCP server on another machine](use-certo-mcp-on-another-machine.md) (over SSH)
 - [Run as a server](run-as-a-server.md) (HTTP, for scripts and dashboards)
