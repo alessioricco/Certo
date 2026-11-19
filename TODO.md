@@ -207,18 +207,10 @@ first item is the suggested next one.
 ## 4. Models and strategies
 
 **Model configuration you can trust** (ROADMAP theme 7, the Author's
-request 2026-11-14). In this order: 1 (done but for the Author's own
-file), B, C, then 5a and 5b. Steps 2 (`certo models choose`) and A
-(folder layers) are done.
+request 2026-11-14). In this order: B, C, then 5a and 5b. Steps 1
+(keys out of `models.yaml`), 2 (`certo models choose`) and A (folder
+layers) are done.
 
-- **1. Keys out of `models.yaml`.** `${NAME}` already works, but keys
-  written out in full go unnoticed (the Author's file had 8). A command
-  moves each into the user `.env` under the provider's usual name and
-  writes `"${NAME}"` in its place, never printing a key; `certo check`
-  warns about a key written in full; `certo init models` writes `${NAME}`.
-  Done when the Author's file holds no key and the check warns on one.
-  *Progress (0.2.3):* `certo models secure` and the warning are built;
-  left: the Author runs it on their own file.
 - **B. Fit-based auto-model.** A profile says what a task needs
   (`needs: {code: 4}`, minimums per axis, plus `slow_ok`/speed), not
   weights: Certo keeps the models that meet the needs and starts with the
