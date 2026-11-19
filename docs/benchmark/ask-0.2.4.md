@@ -114,6 +114,47 @@ Model: anthropic/claude-haiku-5-5 · docs: checkout · 30 questions
 
 Total: right 30 · 2.9 minutes · $0.0262
 
-## Not yet
+## On a local model
 
-A local model (`qwen3.8`, at night) on the same set: see TODO.md.
+The same question set on `ollama/qwen3.8:27b` (Ollama 0.40.15 on another
+machine), on 2026-11-19 from a checkout of 0.2.4 (`149af84`), after the
+fix above: **30 / 30 right**, no answer made up, in 17.1 minutes for
+$0. Each answer took 16 to 67 seconds, about six times as long as on
+Haiku.
+
+Model: ollama/qwen3.8:27b · docs: checkout · 30 questions
+
+| Question | Result | Pages cited | Time |
+|---|---|---|---|
+| time-budget | right | reference/commands.md, reference/configuration.md | 45s |
+| time-budget-p | right | reference/configuration.md | 34s |
+| step-limit | right | concepts/safety.md, reference/configuration.md | 39s |
+| cost-limit | right | guides/run-records-and-costs.md | 29s |
+| resume | right | guides/resume-a-run.md | 34s |
+| resume-p | right | guides/resume-a-run.md | 33s |
+| no-progress | right | concepts/how-verification-works.md, reference/verdicts.md | 37s |
+| inconclusive-no-tests | right | guides/after-the-verdict.md, reference/verdicts.md | 34s |
+| verify-only | right | guides/verify-in-ci.md, reference/commands.md | 36s |
+| undo | right | guides/checkpoints.md, guides/review-the-agents-work.md, reference/commands.md | 31s |
+| undo-p | right | guides/checkpoints.md, guides/review-the-agents-work.md, reference/commands.md | 35s |
+| checkpoints-need | right | guides/checkpoints.md, reference/commands.md | 27s |
+| json | right | guides/verify-in-ci.md, reference/json-result.md | 37s |
+| verbose | right | reference/commands.md | 47s |
+| update-check | right | reference/configuration.md | 29s |
+| projects-dir | right | guides/work-on-an-existing-project.md, reference/commands.md, reference/configuration.md | 35s |
+| python-version | right | getting-started.md | 27s |
+| milestones-format | right | guides/build-an-app-in-several-tasks.md, guides/contribute-a-benchmark-task.md, guides/run-in-milestones.md | 45s |
+| make-milestones | right | guides/run-in-milestones.md | 29s |
+| escalate | right | guides/escalate-between-models.md, guides/keep-costs-down.md | 38s |
+| auto-model | right | concepts/auto-model-or-escalation.md, guides/pick-models-automatically.md, reference/commands.md | 50s |
+| independent-tests | right | guides/independent-tests.md, questions-and-answers.md | 67s |
+| report | right | guides/run-records-and-costs.md | 35s |
+| keys-where | right | concepts/safety.md, guides/openai-claude-gemini.md | 37s |
+| kubernetes | right | - | 31s |
+| fortran | right | - | 32s |
+| gpu | right | - | 19s |
+| vscode-theme | right | - | 23s |
+| sla | right | - | 16s |
+| price | right | - | 16s |
+
+Total: right 30 · 17.1 minutes · $0.0000

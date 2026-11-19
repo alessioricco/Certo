@@ -357,14 +357,6 @@ the first task, Wordle, ended `verified` in 11m 49s. What got in the way
 is in the first item and in "Smaller bugs". (The quieter run, 0.1.21,
 cut that first run's output from 2,949 lines to 1,021.)
 
-- **`certo ask`: what's left** (built in 0.2.4: the question set in
-  `docs/benchmark/ask-questions-0.2.4.yaml`, `docs.zip` on each release,
-  the table of contents plus keyword hits, answers that cite sections;
-  DECISIONS.md "certo ask"; `--mine` since 2026-11-18). Left: the
-  question set on a local model (qwen3.8, at night) with
-  `scripts/ask_eval.py`, recorded next to the cloud run in
-  `docs/benchmark/ask-0.2.4.md`. Done when the question
-  set passes on a local and a cloud model with no made-up answer.
 - **A first run in minutes, with one model.** No catalog, no ladders:
   `certo init`, then a first verified project. Getting started shows only
   that path. Measured 2026-10-19 in an empty home folder: 88.5s from
