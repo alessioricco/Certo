@@ -253,3 +253,55 @@ def test_a_retry_that_cant_be_read_keeps_the_first_plan():
     answers = [_plan_of(3), "Sorry, I can't."]
     planned = plan_milestones(_TASK, _cfg(), lambda c, p: (answers.pop(0), 0.0), count=4)
     assert len(planned.titles) == 3 and "you asked for 4" in planned.note
+
+
+def test_the_planning_call_uses_a_higher_reasoning_effort():
+    complete, seen = _answer(_PLAN)
+    planned = plan_milestones(_TASK, _cfg(reasoning_effort="high"), complete)
+    assert seen["cfg"].reasoning_effort == "xhigh"  # the default
+    assert planned.effort == "xhigh" and planned.note == ""
+
+
+def test_default_keeps_the_planners_own_effort():
+    complete, seen = _answer(_PLAN)
+    cfg = _cfg(reasoning_effort="high", planner_reasoning_effort="default")
+    assert plan_milestones(_TASK, cfg, complete).effort == "high"
+    assert seen["cfg"].reasoning_effort == "high"
+
+
+def test_a_local_planner_is_raised_too():
+    complete, seen = _answer(_PLAN)
+    plan_milestones(_TASK, _cfg(model="ollama/qwen3.8:27b", reasoning_effort=""), complete)
+    assert seen["cfg"].reasoning_effort == "xhigh"
+
+
+def test_a_refused_effort_plans_again_at_the_models_own():
+    efforts = []
+
+    def complete(cfg, prompt):
+        efforts.append(cfg.reasoning_effort)
+        if cfg.reasoning_effort == "max":
+            raise ValueError("unsupported reasoning_effort")
+        return _plan_of(3), 0.001
+
+    cfg = _cfg(reasoning_effort="high", planner_reasoning_effort="max")
+    planned = plan_milestones(_TASK, cfg, complete, count=3)
+
+    assert efforts == ["max", "high"]
+    assert planned.effort == "high" and len(planned.titles) == 3
+    assert planned.note == (
+        "anthropic/claude-haiku-5-5 didn't take reasoning effort 'max' (ValueError), "
+        "so it planned at its own"
+    )
+
+
+def test_a_count_retry_keeps_the_effort_that_answered():
+    efforts = []
+    answers = [_plan_of(2), _plan_of(3)]
+
+    def complete(cfg, prompt):
+        efforts.append(cfg.reasoning_effort)
+        return answers.pop(0), 0.0
+
+    plan_milestones(_TASK, _cfg(reasoning_effort="high"), complete, count=3)
+    assert efforts == ["xhigh", "xhigh"]

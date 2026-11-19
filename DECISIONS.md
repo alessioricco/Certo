@@ -2291,3 +2291,12 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   note (the Author chose this over stopping or running as one task). A
   separate flag, not `--make-milestones N`, so `certo --make-milestones
   task.md` can't read the task file as the number.
+- **The planning call runs at reasoning effort `xhigh`** (2026-11-19,
+  0.2.5, the Author: "increase the reasoning just for this task", local
+  models included, since a better split may matter most for them).
+  `CERTO_PLANNER_REASONING_EFFORT`, for the planning call only. `xhigh`
+  rather than `max`: measured on the library-loans task, Haiku took 12 s
+  / $0.0012 at `high`, 26 s / $0.0027 at `xhigh`, 220 s / $0.0254 at
+  `max`; GPT-6 Luna refuses `max`. A refused effort is asked again at the
+  model's own, with a note, instead of a list of which provider takes
+  what. Plan quality at a higher effort is not measured yet.

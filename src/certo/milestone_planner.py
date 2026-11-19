@@ -24,7 +24,7 @@ import os
 import re
 import time
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from .config import Config
 from .milestones import MilestoneError, _take_acceptance, parse_milestones
@@ -91,6 +91,8 @@ class PlannedTask:
     # Something to tell the user about a plan that runs anyway, such as a
     # count other than the one asked for.
     note: str = ""
+    # The reasoning effort the plan was written at ("" for the model's own).
+    effort: str = ""
 
 
 # (planner config, prompt) -> (reply text, cost in US dollars)
@@ -149,8 +151,9 @@ def plan_milestones(
     started = time.monotonic()
     prompt = planner_prompt(task, count)
     call = complete or _complete
+    notes: list[str] = []
     try:
-        reply, cost = call(cfg, prompt)
+        reply, cost, cfg = _first_call(call, cfg, prompt, notes)
         got = _count(task, reply)
         if count and got != count:
             again, more = call(cfg, prompt + RETRY.format(got=got, count=count))
@@ -162,9 +165,12 @@ def plan_milestones(
         reason = f"the planner ({cfg.model}) failed: {type(exc).__name__}: {exc}"
         return PlannedTask(None, _one_line(reason), cfg.model, time.monotonic() - started)
     seconds = time.monotonic() - started
+    effort = cfg.reasoning_effort or ""
 
     def one_task(reason: str) -> PlannedTask:
-        return PlannedTask(None, reason, cfg.model, seconds, cost)
+        return PlannedTask(
+            None, reason, cfg.model, seconds, cost, note="; ".join(notes), effort=effort
+        )
 
     if reply.strip().upper().startswith(ONE_MILESTONE):
         return one_task("the planner kept it as one milestone: small enough to build in one go")
@@ -182,12 +188,36 @@ def plan_milestones(
     if len(plan) > limit:
         return one_task(f"the planner wrote {len(plan)} milestones, more than {limit}")
     titles = tuple(m.label for m in plan.milestones)
-    note = ""
     if count and len(plan) != count:
-        note = (
+        notes.append(
             f"you asked for {count} milestones; the planner wrote {len(plan)}, which run as written"
         )
-    return PlannedTask(text, "", cfg.model, seconds, cost, titles, note)
+    return PlannedTask(text, "", cfg.model, seconds, cost, titles, "; ".join(notes), effort)
+
+
+def _first_call(
+    call: Complete, cfg: Config, prompt: str, notes: list[str]
+) -> tuple[str, float, Config]:
+    """The planner's first answer, at CERTO_PLANNER_REASONING_EFFORT when
+    it differs from the model's own (one call, so more reasoning costs
+    little); a provider that refuses that effort is asked again at the
+    model's own, with a note. Returns the config that answered, for any
+    later call."""
+    wanted = cfg.planner_reasoning_effort
+    if not wanted or wanted == "default" or wanted == cfg.reasoning_effort:
+        reply, cost = call(cfg, prompt)
+        return reply, cost, cfg
+    raised = replace(cfg, reasoning_effort=wanted)
+    try:
+        reply, cost = call(raised, prompt)
+        return reply, cost, raised
+    except Exception as exc:  # noqa: BLE001 - the model's own effort is tried next
+        notes.append(
+            f"{cfg.model} didn't take reasoning effort {wanted!r} ({type(exc).__name__}), "
+            "so it planned at its own"
+        )
+    reply, cost = call(cfg, prompt)
+    return reply, cost, cfg
 
 
 def _count(task: str, reply: str) -> int:

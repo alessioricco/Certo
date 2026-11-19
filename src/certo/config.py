@@ -38,6 +38,7 @@ DEFAULT_CONFIRM_MODE = "never"
 DEFAULT_EXECUTION = "local"
 DEFAULT_PROJECTS_DIR = "./projects"
 MAX_INDEPENDENT_TESTS_SETS = 5
+DEFAULT_PLANNER_REASONING_EFFORT = "xhigh"
 # First-party catalog shipped inside the package, so it loads from any cwd
 # and from an installed wheel, not only from a repo checkout.
 BUILTIN_SKILLS_DIR = str(Path(__file__).resolve().parent / "builtin_skills")
@@ -285,6 +286,11 @@ class Config:
     # task profile's first model under --auto-model or --escalate, else the
     # run's own model.
     planner_model: str = ""
+    # CERTO_PLANNER_REASONING_EFFORT: the reasoning effort of the planning
+    # call only (one call, so a higher effort costs little). "default"
+    # keeps the planner model's own. A provider that refuses it gets the
+    # model's own instead (milestone_planner.py).
+    planner_reasoning_effort: str = DEFAULT_PLANNER_REASONING_EFFORT
     # CERTO_ASK_MODEL: the models.yaml model `certo ask` answers with.
     # Blank: the configured model.
     ask_model: str = ""
@@ -766,6 +772,10 @@ def load_config(
     escalation_file = _get(env, "ESCALATION_FILE") or ""
     escalation_ladder = _get(env, "ESCALATION_LADDER") or ""
     planner_model = _get(env, "PLANNER_MODEL") or ""
+    planner_reasoning_effort = (
+        _clean_reasoning_effort(_get(env, "PLANNER_REASONING_EFFORT"))
+        or DEFAULT_PLANNER_REASONING_EFFORT
+    )
     ask_model = _get(env, "ASK_MODEL") or ""
     independent_tests_model = _get(env, "INDEPENDENT_TESTS_MODEL") or ""
     escalation_handoff = _parse_choice(
@@ -833,6 +843,7 @@ def load_config(
         escalation_ladder=escalation_ladder,
         escalation_handoff=escalation_handoff,
         planner_model=planner_model,
+        planner_reasoning_effort=planner_reasoning_effort,
         ask_model=ask_model,
         max_task_cost=max_task_cost,
         artifacts_dir=artifacts_dir,

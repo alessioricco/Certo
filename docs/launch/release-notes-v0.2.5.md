@@ -35,3 +35,14 @@ it runs as written, and Certo says so. Also `/make-milestones 5 TASK` in
 the interactive session, `milestone_count` over MCP and in the
 benchmark. See
 [Choose how many](../guides/run-in-milestones.md#choose-how-many).
+
+## Changed: the planner thinks harder
+
+The planning call of `--make-milestones` now runs at reasoning effort
+`xhigh`, whatever the planner model's own effort, local models
+included: one call, so a better split costs little. Planning the same
+five-part task, Haiku took 26 seconds and $0.003 at `xhigh` against 12
+seconds and $0.001 at `high`. `CERTO_PLANNER_REASONING_EFFORT` changes
+it (`max`, or `default` for the model's own). A model that refuses the
+effort, as GPT-6 Luna refuses `max`, plans at its own, and Certo says
+so. Whether the plans are better is still to be measured.

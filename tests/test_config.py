@@ -1009,3 +1009,11 @@ def test_the_independent_tests_model_is_read():
     assert load_config(_base_env()).independent_tests_model == ""
     cfg = load_config(_base_env(CERTO_INDEPENDENT_TESTS_MODEL="claude-haiku-5-5"))
     assert cfg.independent_tests_model == "claude-haiku-5-5"
+
+
+def test_the_planner_reasoning_effort_defaults_to_xhigh():
+    assert load_config(_base_env()).planner_reasoning_effort == "xhigh"
+    cfg = load_config(_base_env(CERTO_PLANNER_REASONING_EFFORT="xhigh"))
+    assert cfg.planner_reasoning_effort == "xhigh"
+    cfg = load_config(_base_env(CERTO_PLANNER_REASONING_EFFORT="default"))
+    assert cfg.planner_reasoning_effort == "default"

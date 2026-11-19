@@ -95,6 +95,10 @@ Edit it and run it again any time: certo --milestones /home/me/certo-projects/pr
   answers with one milestone, with more than 8, with a plan Certo can't
 read, or fails,
   Certo says so and runs the task as it is.
+- The model plans at reasoning effort `xhigh`, for this one call only
+  (`CERTO_PLANNER_REASONING_EFFORT`; `default` keeps the model's own): a
+  better split for a few more seconds and a fraction of a cent. A model
+  that doesn't accept that effort plans at its own, and Certo says so.
 - The plan has no acceptance blocks: if the model writes one, Certo
   takes it out. Add your own when you edit the file.
 - `certo --resume` continues the plan, as for any milestone file. To run

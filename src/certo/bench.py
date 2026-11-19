@@ -308,6 +308,7 @@ def execute_run(
                 )
                 planning = {
                     "planner": params["planner"],
+                    "effort": made.effort or None,
                     "titles": list(made.titles),
                     "reason": made.reason or None,
                     "seconds": round(made.seconds, 1),

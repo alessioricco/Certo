@@ -868,6 +868,8 @@ def _make_milestones(
     planned = plan_milestones(task, planner, count=args.milestone_count)
     cost = f", ${planned.cost:.4f}" if planned.cost else ""
     if planned.text is None:
+        if planned.note:
+            print(f"Certo: {planned.note}.")
         print(f"Certo: {planned.reason}. The task runs as one, as it is.")
         return task
     if planned.note:
