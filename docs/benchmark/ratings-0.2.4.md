@@ -90,7 +90,8 @@ passed.
   26 to 30 minutes each; two of them used up the 30-minute budget.
 - **Auto-model doesn't retry on a bigger model.** A run that ends
   `budget_exhausted` on `qwen3.8` stays there; only an escalation ladder
-  would hand it on.
+  would hand it on ([the ladder benchmark](ladder-computed-0.2.4.md)
+  does).
 - **The two harder tasks went to Terra instead of Sonnet**, both
   verified, for $0.21 instead of $0.46. Their profile needs
   `reasoning: 4` and `code: 4`; Terra's hand reasoning (3) kept it out,

@@ -48,8 +48,10 @@ first item is the suggested next one.
   [#3](https://github.com/alessioricco/certo/issues/3).
 - **Escalation after a `failed` rung is unmeasured.** The 0.1.17
   escalation run climbed 10 times, all past a model that did no work.
-  Climbing after a failed verification, the handoff of half-done work and
-  derived-ladder ordering are still unmeasured as a benchmark; one
+  A derived ladder (qwen3.8 → Terra → Sonnet) was benched on 2026-11-18
+  (`docs/benchmark/ladder-computed-0.2.4.md`): 3 climbs, all after
+  qwen3.8 used its 30 minutes. Climbing after a failed verification and
+  the handoff of half-done work are still unmeasured as a benchmark; one
   recorded run of a half-done handoff exists
   (`docs/benchmark/escalation-handoff-0.1.23.md`, tests in the folder
   from the start). Needs task set v2. Candidate ladder from the
@@ -464,6 +466,12 @@ database).
 
 ## Smaller bugs
 
+- **One bad ladder stops `certo ask` and the planner.** They need one
+  named model (`CERTO_ASK_MODEL`, `CERTO_PLANNER_MODEL`), but
+  `config_for_named_model` loads the full checked catalog, so a ladder in
+  `escalation.yaml` naming a model that isn't listed or enabled refuses
+  them (seen 2026-11-18 with the bench's model files). Done when only the
+  named model must be valid and ladder problems are warnings there.
 - **`certo check` says "computed" ratings under `replace: true`**
   (found 2026-11-18). `catalog_report._print_ratings_source` looks only
   at the lowest layer, but `_read_mapping` applies computed ratings only
