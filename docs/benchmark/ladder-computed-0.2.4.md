@@ -82,6 +82,18 @@ Sonnet, the last rung, was never needed.
 - **Small sample:** one run per task. The ladder and auto-model both
   solved 12 of 13, and which task failed differs. That can be chance.
 
+## Would independent tests have caught it?
+
+Yes, on this one. On 2026-11-19, `scripts/replay_independent_tests.py`
+had `claude-haiku-5-5` write tests from the `semver-order` task three
+times, as [`--independent-tests`](../guides/independent-tests.md) does
+before a build, and ran them on qwen3.8's saved project. All 3 sets
+failed it, each on a test that `1.0.0+` must throw (pass 13, fail 1),
+and all 3 passed the task's reference solution. Writing them cost
+$0.020. With `--independent-tests-strict`, the run would have ended
+`independent_failed` instead of `verified`. One task, one project: the
+guide has the larger measurements.
+
 ## What it doesn't show
 
 Whether a shorter first share (for example 15 minutes on qwen3.8) would
