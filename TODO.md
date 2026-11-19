@@ -87,9 +87,6 @@ first item is the suggested next one.
     ahead", and the whole plan ran as one task on one budget of 50
     steps. Certo could spot such a plan file and offer to run it
     milestone by milestone, or the planner could rewrite it.
-  - *Level-1 headings after the milestones* (`# Definition of done`,
-    `# Begin`) belong to the last milestone's text; they could go to
-    every milestone, as context.
   - *Run `star-swarm.md` once* (the sample from a user's milestone task,
     10 milestones) and add it to `milestone-samples-0.2.3.md`.
   Done when the benchmark shows planned milestones no worse than one go

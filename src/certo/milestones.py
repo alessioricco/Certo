@@ -7,7 +7,9 @@ Numbering starts at 1, or at 0 (a plan step first); the milestones are
 then numbered by position from 1, and the title keeps the written name
 (`M0 — Plan`) so the agent and the user see the file's own words. The
 text before
-the first one is context every milestone gets. A milestone may hold one
+the first one is context every milestone gets, and so are sections after
+the last milestone that start at a level-1 heading (`# Definition of
+done`), after the milestone's own text. A milestone may hold one
 fenced `acceptance` block, the same JSON array as `--acceptance-checks`.
 The block is Certo's, never the agent's: it is taken out of the text the
 agent gets.
@@ -67,6 +69,9 @@ class Milestone:
 class MilestonePlan:
     context: str
     milestones: tuple[Milestone, ...]
+    # Sections after the last milestone that start at a level-1 heading
+    # (`# Definition of done`): every milestone gets them, after its own text.
+    closing: str = ""
 
     def __len__(self) -> int:
         return len(self.milestones)
@@ -157,6 +162,7 @@ def parse_milestones(text: str) -> MilestonePlan:
             f"milestones must be numbered 1, 2, 3... (or 0, 1, 2...) in order; found {found}."
         )
     zero_based = numbers[0] == 0
+    closing = _take_closing(sections[-1][3])
     context_text, context_blocks = _take_acceptance("\n".join(context))
     if context_blocks:
         raise MilestoneError(
@@ -173,7 +179,37 @@ def parse_milestones(text: str) -> MilestonePlan:
             raise MilestoneError(f"{name} has no text: say what it should do.")
         acceptance = _parse_block(name, blocks[0]) if blocks else ()
         milestones.append(Milestone(position, title, body, acceptance))
-    return MilestonePlan(context_text, tuple(milestones))
+    closing_text, closing_blocks = _take_acceptance(closing)
+    if closing_blocks:
+        raise MilestoneError(
+            "an acceptance block must be inside a milestone, not after the last one's "
+            "level-1 heading."
+        )
+    return MilestonePlan(context_text, tuple(milestones), closing_text.strip())
+
+
+# A level-1 heading: `# Definition of done`, not `## ...`.
+_LEVEL_ONE = re.compile(r"^#(?!#)\s+\S")
+
+
+def _take_closing(lines: list[str]) -> str:
+    """The last milestone's lines from its first level-1 heading outside a
+    code fence on, taken out of `lines`: the file's closing sections, which
+    belong to every milestone, not only the last."""
+    fence: str | None = None
+    for index, line in enumerate(lines):
+        match = _FENCE.match(line)
+        if match:
+            if fence is None:
+                fence = match.group(1)
+            elif match.group(1).startswith(fence[0]) and len(match.group(1)) >= len(fence):
+                fence = None
+            continue
+        if fence is None and _LEVEL_ONE.match(line):
+            closing = "\n".join(lines[index:])
+            del lines[index:]
+            return closing
+    return ""
 
 
 def _take_acceptance(text: str) -> tuple[str, list[str]]:
@@ -244,6 +280,8 @@ def milestone_task(plan: MilestonePlan, number: int, handover: str | None = None
     # MODEL_DECISIONS.md files its choices under it
     # (model_catalog.current_milestone): keep its shape in step.
     parts.append(f"## Now: milestone {number} of {total}: {milestone.label}\n\n{milestone.text}")
+    if plan.closing:
+        parts.append(plan.closing)
     if number < total:
         parts.append(
             "Do only this milestone: the later ones come in their own runs. When you "
@@ -347,6 +385,8 @@ def whole_task(plan: MilestonePlan) -> str:
     for m in plan.milestones:
         heading = f"## Milestone {m.number}" + (f": {m.title}" if m.title else "")
         parts.append(f"{heading}\n\n{m.text}")
+    if plan.closing:
+        parts.append(plan.closing)
     return "\n\n".join(parts)
 
 
@@ -356,6 +396,8 @@ def plain_task(plan: MilestonePlan) -> str:
     block, for a planner to split again (`certo bench`, `make_milestones`)."""
     parts = [plan.context] if plan.context else []
     parts.extend(m.text for m in plan.milestones if m.text)
+    if plan.closing:
+        parts.append(plan.closing)
     return "\n\n".join(parts)
 
 

@@ -14,11 +14,13 @@ from certo.milestones import (
     load_state,
     milestone_task,
     parse_milestones,
+    plain_task,
     reopen,
     save_state,
     status_lines,
     written_in_milestones,
     summary_lines,
+    whole_task,
 )
 from types import SimpleNamespace
 
@@ -417,3 +419,64 @@ def test_skipped_milestones_have_one_label_everywhere(tmp_path):
     assert state.rows()[0]["skipped"] is True
     assert summary_lines(state)[0] == "1. storage: skipped (--from-milestone)"
     assert "1. storage: skipped (--from-milestone)" in status_lines(workspace)
+
+
+_CLOSING = """# Ledger
+
+A CLI that records expenses.
+
+## Milestone 1: Record
+Add `add(amount)`.
+
+# Phase two
+
+## Milestone 2: Totals
+Add `total()`.
+
+```python
+# a comment in a code block, not a heading
+```
+
+# Definition of done
+Every command has a test.
+
+# Begin
+Start with milestone 1.
+"""
+
+
+def test_level_one_sections_after_the_last_milestone_go_to_every_milestone():
+    plan = parse_milestones(_CLOSING)
+
+    assert (
+        plan.closing
+        == "# Definition of done\nEvery command has a test.\n\n# Begin\nStart with milestone 1."
+    )
+    last = plan.get(2).text
+    assert "Definition of done" not in last
+    assert "# a comment in a code block" in last  # inside a fence: kept
+    # A level-1 heading between milestones stays with the one before it.
+    assert "# Phase two" in plan.get(1).text
+    for number in (1, 2):
+        task = milestone_task(plan, number)
+        assert "Every command has a test." in task
+        assert task.index("## Now: milestone") < task.index("# Definition of done")
+
+
+def test_whole_and_plain_task_keep_the_closing_sections():
+    plan = parse_milestones(_CLOSING)
+    assert whole_task(plan).endswith("# Begin\nStart with milestone 1.")
+    assert plain_task(plan).endswith("# Begin\nStart with milestone 1.")
+
+
+def test_a_file_without_closing_sections_is_unchanged():
+    plan = parse_milestones("## Milestone 1: a\nDo a.\n\n## Milestone 2: b\nDo b.\n")
+    assert plan.closing == "" and plan.get(2).text == "Do b."
+
+
+def test_an_acceptance_block_after_the_closing_heading_is_refused():
+    text = (
+        "## Milestone 1: a\nDo a.\n\n## Milestone 2: b\nDo b.\n\n# Done\n```acceptance\n[]\n```\n"
+    )
+    with pytest.raises(MilestoneError, match="not after the last one's level-1 heading"):
+        parse_milestones(text)

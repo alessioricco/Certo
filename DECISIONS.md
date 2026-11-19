@@ -1814,7 +1814,7 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   separator or nothing after the number ("## M16 rifle" is not one), and
   automatic detection still needs two headings in order. A level-1
   heading after the milestones (`# Definition of done`) still belongs to
-  the last milestone: left as it is for now.
+  the last milestone: left as it is for now (superseded 2026-11-19, below).
 - **A bench run that couldn't reach the model server isn't counted**
   (0.2.3, 2026-11-10). The Ollama machine shut down at 23:00 and the 14
   runs after it failed in 2.5 minutes each, counted as failed hidden
@@ -2300,3 +2300,13 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   `max`; GPT-6 Luna refuses `max`. A refused effort is asked again at the
   model's own, with a note, instead of a list of which provider takes
   what. Plan quality at a higher effort is not measured yet.
+- **Sections after the last milestone go to every milestone**
+  (2026-11-19, 0.2.5; supersedes "left as it is" in the 0.2.3 headings
+  entry). From the first level-1 heading after the last milestone
+  heading (outside code fences), the rest of the file is a closing part
+  every milestone gets after its own text: a `# Definition of done` is
+  about the whole task, not the last milestone. Only after the last
+  milestone, so a `#` heading between two milestones (`# Phase two`)
+  stays with the one before it and no milestone loses text. An
+  acceptance block in the closing part is refused: its milestone would
+  be a guess.

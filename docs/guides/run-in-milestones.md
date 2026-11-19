@@ -17,6 +17,9 @@ first planning step: Certo then counts the milestones from 1 (`Milestone
 1 of 10`) and keeps your own name in the title (`M0 — Plan`). The text
 before the first heading is the context that
 every milestone gets: what the project is, its language, its rules.
+Sections after the last milestone that start with a level-1 heading
+(`# Definition of done`) go to every milestone too, after its own text.
+A `#` heading between two milestones stays with the milestone before it.
 This example is [a file in the repository](../benchmark/milestones-temperature.task.md):
 
 ````markdown

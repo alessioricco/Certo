@@ -47,6 +47,14 @@ it (`max`, or `default` for the model's own). A model that refuses the
 effort, as GPT-6 Luna refuses `max`, plans at its own, and Certo says
 so. Whether the plans are better is still to be measured.
 
+## Changed: closing sections reach every milestone
+
+In a task file written in milestones, sections after the last milestone
+that start with a level-1 heading, such as `# Definition of done`, used
+to belong to the last milestone only. Now every milestone gets them,
+after its own text. A `#` heading between two milestones stays with the
+one before it. See [Run a task in milestones](../guides/run-in-milestones.md).
+
 ## Fixed
 
 - **The benchmark's cost per model** charged the model that writes
