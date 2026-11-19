@@ -1,0 +1,79 @@
+#!/bin/sh
+# Start Certo's MCP server with settings of its own, for one MCP client
+# (an editor, an agent, a service) that starts it. Setup and usage:
+# examples/README.md and docs/guides/use-certo-over-mcp.md.
+#
+#   cp examples/certo-mcp-launcher.sh.example ~/bin/certo-mcp-local-model
+#   chmod +x ~/bin/certo-mcp-local-model
+#   # edit the settings between the two "# ----" markers, then give the
+#   # client this file as its MCP command, with no arguments.
+#
+# Why a launcher: an MCP client starts `certo mcp` itself, so you can't
+# type options for it. Every setting exported here comes before Certo's
+# settings files (the `.env` in the current folder and
+# ~/.config/certo/.env), for this server only. Your other Certo commands
+# keep their own settings. A setting you don't export here still comes
+# from those files.
+#
+# Two rules:
+# - Print nothing on standard output: it is the MCP connection, and any
+#   other text breaks it. Messages go to standard error (>&2).
+# - Keep keys out of this file: a cloud model's key stays in
+#   ~/.config/certo/.env, where Certo finds it (a local model needs none).
+set -eu
+
+# ---- settings for this server ------------------------------------------
+
+# The one folder this server may work in: tasks and checks run there, in
+# a project by name (<folder>/NAME) or in any folder inside it. It must
+# exist. A full path.
+WORKSPACE="$HOME/certo-mcp-workspace"
+
+# The model, as CERTO_LLM_MODEL takes it: provider/model. Here a model
+# served by Ollama on another machine of your network.
+export CERTO_LLM_MODEL="ollama/qwen3.8:27b"
+
+# Where that model answers. For Ollama on another machine, that machine's
+# address and port 11434 (its Ollama must listen on the network, for
+# example with OLLAMA_HOST=0.0.0.0). For Ollama on this computer:
+# http://localhost:11434. For a cloud model, delete this line.
+export CERTO_LLM_BASE_URL="http://gpu-box.local:11434"
+
+# How long one model call may take, in seconds. Local models are slow:
+# `certo init` writes 1200 for Ollama. 0 means no limit.
+export CERTO_LLM_TIMEOUT_SECONDS=1200
+
+# The time budget for each task, in seconds (milestone mode: for each
+# milestone). Certo's default is 1800.
+export CERTO_MAX_TASK_SECONDS=3600
+
+# Optional: how hard the model thinks (low, medium, high), for models
+# that support it. Unset, the model decides.
+# export CERTO_LLM_REASONING_EFFORT=high
+
+# How to start Certo. `certo` when it is on the PATH the client gives
+# (clients often start commands with a short PATH: use the full path,
+# for example "$HOME/.local/bin/certo"), or "uvx certo" to run the
+# version on PyPI without installing it.
+CERTO_BIN="${CERTO_BIN:-certo}"
+
+# ---- end of settings ----------------------------------------------------
+
+# Projects by name go in the same folder, so the server uses only one.
+# Unset, they would go in ~/projects, a second folder it could use.
+export CERTO_PROJECTS_DIR="$WORKSPACE"
+
+if [ ! -d "$WORKSPACE" ]; then
+  echo "certo-mcp launcher: $WORKSPACE is not a folder; make it first (mkdir -p \"$WORKSPACE\")." >&2
+  exit 1
+fi
+first_word=${CERTO_BIN%% *}
+if ! command -v "$first_word" >/dev/null 2>&1; then
+  echo "certo-mcp launcher: '$first_word' not found on PATH ($PATH). Set CERTO_BIN to its full path." >&2
+  exit 1
+fi
+
+# exec: Certo replaces this shell, so the client talks to Certo directly.
+# Extra arguments (another --root, for example) are passed on.
+# shellcheck disable=SC2086  # CERTO_BIN may be two words ("uvx certo")
+exec $CERTO_BIN mcp --root "$WORKSPACE" "$@"

@@ -68,6 +68,84 @@ and the
 [Python SDK's list of deprecated features](https://py.sdk.modelcontextprotocol.io/v2/deprecated/)),
 so Certo doesn't use it.
 
+## One server with its own settings
+
+The client starts `certo mcp` itself, so there is no terminal to type
+options in, and by default the server uses the same settings as your
+other Certo commands. To give one server its own model, time budget or
+folder, start it from a small launcher script that exports those
+settings and then starts Certo. A setting exported this way comes
+before Certo's settings files, for that server only.
+
+Certo ships one to copy, `examples/certo-mcp-launcher.sh.example`
+(macOS and Linux). It sets a model served by Ollama on another machine,
+but any setting from [Configuration](../reference/configuration.md)
+works the same way.
+
+**1. Copy it** somewhere outside the projects it will work on:
+
+```bash
+cp examples/certo-mcp-launcher.sh.example ~/bin/certo-mcp-local-model
+chmod +x ~/bin/certo-mcp-local-model
+```
+
+Without a copy of the repository, download it from
+[GitHub](https://github.com/alessioricco/certo/blob/main/examples/certo-mcp-launcher.sh.example).
+
+**2. Edit the settings** between the two `# ----` markers:
+
+| Line | What to put there |
+|---|---|
+| `WORKSPACE` | The one folder this server may work in, as a full path. Make it first (`mkdir -p`). It is both the `--root` and the projects folder, so a project named `shop` is `<WORKSPACE>/shop`. |
+| `CERTO_LLM_MODEL` | The model, as `provider/model`, for example `ollama/qwen3.8:27b`. |
+| `CERTO_LLM_BASE_URL` | Where it answers. Ollama on another machine: `http://THAT-MACHINE:11434`, and its Ollama must listen on the network (`OLLAMA_HOST=0.0.0.0` there). Ollama here: `http://localhost:11434`. A cloud model: delete the line. |
+| `CERTO_LLM_TIMEOUT_SECONDS` | How long one model call may take. `1200` suits a local model. |
+| `CERTO_MAX_TASK_SECONDS` | The time budget per task (per milestone in milestone mode). |
+| `CERTO_LLM_REASONING_EFFORT` | Optional: `low`, `medium` or `high`, for models that think. |
+| `CERTO_BIN` | How to start Certo. Clients often start commands with a short `PATH`, so a full path is safest (`$HOME/.local/bin/certo`); `uvx certo` runs the version on PyPI. |
+
+Keep keys out of the launcher: a cloud model's key stays in
+`~/.config/certo/.env`, where Certo finds it. A local model needs none.
+
+**3. Check it in a terminal.** Run the launcher: it prints nothing and
+waits for a client, which means it started (press Ctrl-C). A problem
+is said on the spot, for example
+`certo-mcp launcher: /home/you/certo-mcp-workspace is not a folder; make it first`.
+Run `certo check` with the same settings to test the model first:
+
+```bash
+CERTO_LLM_MODEL=ollama/qwen3.8:27b CERTO_LLM_BASE_URL=http://gpu-box.local:11434 certo check
+```
+
+**4. Give it to the client** as its command, with no arguments:
+
+```bash
+claude mcp add certo-local-model -- ~/bin/certo-mcp-local-model
+```
+
+```json
+{
+  "mcpServers": {
+    "certo-local-model": {
+      "command": "/home/you/bin/certo-mcp-local-model"
+    }
+  }
+}
+```
+
+Once connected, the client's `check_model` tool makes one small call to
+the model and reports its answer time and context window; `list_models`
+shows `configured_model`, the model the launcher set.
+
+Two things the script takes care of, worth knowing if you write your
+own: nothing may be printed on standard output, which is the MCP
+connection (messages go to standard error), and it ends with `exec`, so
+the client talks to Certo itself, not to a shell in between.
+
+Arguments after the command are passed on to `certo mcp`, so a client
+can add another `--root`. Several launchers, one per model or per
+service, can sit side by side; each server has only its own settings.
+
 ## The tools
 
 | Tool | What it does |

@@ -47,6 +47,15 @@ errors on their own streams with the task's exit codes, and tests that
 run the command line itself. Not measured yet in the benchmark. See
 [Manage skills](../guides/manage-skills.md#official-skills).
 
+## New: a launcher for the MCP server's own settings
+
+`examples/certo-mcp-launcher.sh.example` starts `certo mcp` for one
+client with its own model, time budget and folder, for example a model
+served by Ollama on another machine, without changing your other Certo
+commands. See [One server with its own settings](../guides/use-certo-over-mcp.md#one-server-with-its-own-settings).
+Certo on another machine, over SSH, has its own guide:
+[Use Certo's MCP server on another machine](../guides/use-certo-mcp-on-another-machine.md).
+
 ## Changed: the planner thinks harder
 
 The planning call of `--make-milestones` now runs at reasoning effort
