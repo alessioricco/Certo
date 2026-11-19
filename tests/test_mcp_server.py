@@ -852,3 +852,14 @@ def test_a_milestone_count_out_of_range_is_refused(tmp_path):
         _server(tmp_path), "run_task", {"task": "x", "project": "a", "milestone_count": 30}
     )
     assert error and "milestone_count must be from 2 to 20" in text
+
+
+def test_a_root_that_is_the_projects_folder_is_listed_once(tmp_path):
+    from certo.mcp_server import Folders, UsageError
+
+    work = tmp_path / "workspace"
+    work.mkdir()
+    folders = Folders(str(work), [str(work), str(work)])
+    with pytest.raises(UsageError) as exc:
+        folders.options(None, str(tmp_path))
+    assert str(exc.value).endswith(f"may use: {os.path.realpath(work)}")

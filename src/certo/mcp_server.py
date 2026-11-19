@@ -160,6 +160,10 @@ class Folders:
     def __init__(self, projects_dir: str, roots: Sequence[str]) -> None:
         self.projects_dir = os.path.realpath(projects_dir)
         self.roots = [os.path.realpath(r) for r in roots]
+        # Each folder once, the projects folder first: a root that is the
+        # projects folder (CERTO_PROJECTS_DIR=DIR with --root DIR) or a
+        # repeated --root adds nothing to the list an error shows.
+        self.allowed = list(dict.fromkeys([self.projects_dir, *self.roots]))
 
     def options(self, project: str | None, folder: str | None) -> dict[str, Any]:
         """The `RunOptions` fields for a tool's `project` or `folder`."""
@@ -175,7 +179,7 @@ class Folders:
         path = os.path.realpath(folder)
         if not os.path.isabs(folder) or not os.path.isdir(path):
             raise UsageError(f"folder must be the full path of an existing folder: {folder!r}")
-        allowed = [self.projects_dir, *self.roots]
+        allowed = self.allowed
         if not any(_inside(path, root) for root in allowed):
             raise UsageError(
                 f"{folder} is outside the folders this server may use: " + ", ".join(allowed)
@@ -188,7 +192,7 @@ class Folders:
         real = os.path.realpath(path)
         if not os.path.isabs(path) or not os.path.isfile(real):
             raise UsageError(f"{what} must be the full path of an existing file: {path!r}")
-        allowed = [self.projects_dir, *self.roots]
+        allowed = self.allowed
         if not any(_inside(real, root) for root in allowed):
             raise UsageError(
                 f"{path} is outside the folders this server may use: " + ", ".join(allowed)

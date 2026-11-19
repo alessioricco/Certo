@@ -122,6 +122,10 @@ dependency file.
 
 ## Fixed
 
+- **`certo mcp` named a folder twice** when it refused one outside the
+  folders it may use and the projects folder was also a `--root`
+  (`CERTO_PROJECTS_DIR=DIR` with `--root DIR`). Each folder is now
+  listed once.
 - **`certo bench` and keys from a `.env` file.** A key written as
   `${NAME}` in the benchmark's models file was read only from the
   shell, so a key kept in `.env` or the user settings file left the
