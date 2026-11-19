@@ -155,6 +155,8 @@ def arm_config(entry: ModelCatalogEntry, ctx: RunContext, params: Mapping[str, A
         cfg = replace(cfg, created_note=False)
     if "scratch_folder" in params:
         cfg = replace(cfg, scratch_folder=params["scratch_folder"])
+    if params.get("slow_test_note") is False:
+        cfg = replace(cfg, slow_test_note=False)
     return cfg
 
 

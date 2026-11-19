@@ -1341,3 +1341,19 @@ def test_scratch_folder_false_reaches_the_run_config(tmp_path):
                 tmp_path, "  - {name: m, strategy: single, model: cloud-a, scratch_folder: 1}\n"
             )
         )
+
+
+def test_slow_test_note_false_reaches_the_run_config(tmp_path):
+    from certo.bench_strategies import RunContext, arm_config
+
+    arms = "  - {name: m, strategy: single, model: cloud-a, slow_test_note: false}\n"
+    config = load_bench_config(_bench_file(tmp_path, arms))
+    (arm,) = config.arms
+    ctx = RunContext("t", str(tmp_path / "ws"), config.catalog, str(tmp_path / "iso"), print)
+    assert arm_config(config.catalog["cloud-a"], ctx, arm.params).slow_test_note is False
+    with pytest.raises(Exception, match="'slow_test_note' must be true or false"):
+        load_bench_config(
+            _bench_file(
+                tmp_path, "  - {name: m, strategy: single, model: cloud-a, slow_test_note: 1}\n"
+            )
+        )

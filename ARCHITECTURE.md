@@ -307,6 +307,15 @@ given design was chosen.
   due; the loop then sends `take_due_message()` (which re-evaluates the
   acceptance checks) once and runs again. No wrap-up when the margin is
   not shorter than the budget.
+- **`slow_tests.py`**: a `SlowTestWatch` is one of the conversation's
+  callbacks (`_with_guard(guard, on_event, slow_watch)`, direct run and
+  each rung, the rung timed against its share). It only records: SDK
+  callbacks run holding the state lock, so it can't pause. It times a
+  terminal `ActionEvent` that looks like a test run to its
+  `ObservationEvent` (`action_id`). `pause_for_slow_tests` polls it and
+  pauses between steps; `_run_conversation_once` then sends
+  `take_note()` once, or drops it if the wrap-up was already sent and
+  runs on (`run()` resumes from PAUSED).
 - **Fit ranking** (`model_catalog.rank_by_fit`, `meets`, `shortfall`,
   `fit_note`): a profile with `needs` ranks the least costly fitting model
   first (highest `cost`; tie: more capable on the needed axes, then file

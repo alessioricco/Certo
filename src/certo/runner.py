@@ -46,7 +46,10 @@ from .credits import add_credits
 from .worktree import was_created_by_certo
 from .leftovers import describe as describe_leftovers
 from .leftovers import stop_leftovers
-from .wrap_up import acceptance_brief, pause_for_wrap_up, take_due_message
+from .slow_tests import SlowTestWatch, new_watch, pause_for_slow_tests
+from .slow_tests import attach as attach_slow_tests
+from .slow_tests import take_note as take_slow_test_note
+from .wrap_up import acceptance_brief, pause_for_wrap_up, take_due_message, wrap_up_for
 from .wrap_up import register as register_wrap_up
 from .agent import build_agent, project_root
 from .artifacts import resolve_run_artifacts_dir, write_run_artifacts
@@ -404,10 +407,23 @@ def _root_guard(
     return RootGuard(project_root(cfg), emit=said)
 
 
-def _with_guard(guard: RootGuard | None, on_event: Callable[[Any], None]) -> list:
+def _with_guard(
+    guard: RootGuard | None,
+    on_event: Callable[[Any], None],
+    slow_tests: SlowTestWatch | None = None,
+) -> list:
     """The conversation's callbacks: the guard first, so it marks an action
-    before anything else sees it."""
-    return [guard, on_event] if guard is not None else [on_event]
+    before anything else sees it; then the test-run timer (slow_tests.py)."""
+    callbacks: list = [guard] if guard is not None else []
+    if slow_tests is not None:
+        callbacks.append(slow_tests)
+    return [*callbacks, on_event]
+
+
+def _slow_test_watch(cfg: Config, budget_seconds: float) -> SlowTestWatch | None:
+    """The timer for the agent's own test runs, unless a benchmark arm
+    turned the note off (`slow_test_note: false`)."""
+    return new_watch(budget_seconds) if cfg.slow_test_note else None
 
 
 def _run_verification(working_dir: str, runner: CommandRunner | None = None) -> VerificationRun:
@@ -1021,6 +1037,7 @@ def _run_conversation_once(
             with (
                 stop_at_deadline(conversation, deadline),
                 pause_for_wrap_up(conversation),
+                pause_for_slow_tests(conversation),
                 pause_at_cost_limit(conversation),
                 stop_when_cancelled(conversation),
                 report_progress(conversation),
@@ -1037,6 +1054,20 @@ def _run_conversation_once(
                         "to finish what is open.",
                     )
                     conversation.send_message(wrap_message)
+                    continue
+                # Or for the note on a slow test run (slow_tests.py), unless
+                # the wrap-up already told the agent to stop long runs.
+                slow_note = take_slow_test_note(conversation, deadline)
+                if slow_note is not None:
+                    wrap = wrap_up_for(conversation)
+                    if wrap is None or not wrap.sent:
+                        _emit_notice(
+                            emit,
+                            "Certo: one of the agent's test runs took a large part of the "
+                            "time budget, so the agent was asked to run only the tests it "
+                            "needs while it works.",
+                        )
+                        conversation.send_message(slow_note)
                     continue
             found = cost_limit(conversation)
             if found is not None and not found.announced and found.reached(conversation):
@@ -2249,6 +2280,7 @@ def _stream_task(
         _warn_small_window(agent_cfg, emit)
 
         guard = _root_guard(cfg, emit, blocked)
+        slow_watch = _slow_test_watch(cfg, cfg.max_task_seconds)
 
         def new_conversation(**persistence: Any) -> Conversation:
             return Conversation(
@@ -2263,7 +2295,7 @@ def _stream_task(
                     ),
                     trusted_skills=trusted,
                 ),
-                callbacks=_with_guard(guard, on_event),
+                callbacks=_with_guard(guard, on_event, slow_watch),
                 workspace=workspace,
                 visualizer=visualizer_for(agent_cfg),
                 # Previously unset (SDK default 500), so CERTO_MAX_ITERATIONS
@@ -2295,6 +2327,7 @@ def _stream_task(
         metrics_before = _per_model_metrics(conversation) if resume_from is not None else {}
         if guard is not None:
             guard.conversation = conversation
+        attach_slow_tests(conversation, slow_watch)
         if cfg.confirm_mode == "always":
             # Previously parsed/validated in config.py but never attached to
             # an actual ConfirmationPolicyBase, so it was a silent no-op —
@@ -3218,11 +3251,14 @@ def _stream_escalation(
                 _warn_small_window(rung_cfg, io.emit)
 
                 guard = _root_guard(cfg, io.emit, io.blocked)
+                # Slow against this rung's share of the time.
+                slow_watch = _slow_test_watch(cfg, rung_stop - now)
 
                 def new_conversation(
                     rung_cfg: Config = rung_cfg,
                     usage_id: str = usage_id,
                     guard: RootGuard | None = guard,
+                    slow_watch: SlowTestWatch | None = slow_watch,
                     **persistence: Any,
                 ) -> Conversation:
                     return Conversation(
@@ -3237,7 +3273,7 @@ def _stream_escalation(
                             ),
                             trusted_skills=trusted,
                         ),
-                        callbacks=_with_guard(guard, io.on_event),
+                        callbacks=_with_guard(guard, io.on_event, slow_watch),
                         workspace=workspace,
                         visualizer=visualizer_for(rung_cfg),
                         max_iteration_per_run=rung_cfg.max_iterations,
@@ -3260,6 +3296,7 @@ def _stream_escalation(
                     conversation = new_conversation()
                 if guard is not None:
                     guard.conversation = conversation
+                attach_slow_tests(conversation, slow_watch)
                 if cfg.confirm_mode == "always":
                     conversation.set_confirmation_policy(AlwaysConfirm())
                 # One cost limit for every rung together (cost_limit.py).

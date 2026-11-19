@@ -2321,4 +2321,16 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   benchmark arm sets `scratch_folder` to measure it; on by default before
   that measurement because it only says where files go. Not a folder
   outside the project: the root guard blocks the agent there.
-
+- **A note when the agent's own test run is slow** (2026-11-19, 0.2.5;
+  from a user's milestone project where a 9-minute suite was run more
+  than once per 30-minute milestone). Certo, not the task file, decides:
+  it times each terminal command that looks like a test run and, once
+  per conversation, when one takes a tenth of the budget or more (at
+  least a minute), sends a note between steps. A note rather than a line
+  in every first message: it costs nothing on projects with fast tests.
+  Once, not on every slow run, so it can't become noise. Dropped after
+  the wrap-up, which already says not to start long runs. Matched by
+  common test words, not by the detected verification command, so it
+  also catches the agent's narrower or differently spelled runs. On by
+  default before measurement because it fires only on slow runs; a
+  benchmark arm turns it off (`slow_test_note: false`).

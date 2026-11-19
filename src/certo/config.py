@@ -126,6 +126,10 @@ class Config:
     # message before the time budget ends (wrap_up.py). Only a `certo
     # bench` arm sets it (`wrap_up: false`), to measure what they change.
     wrap_up: bool = True
+    # False: no note when one of the agent's own test runs takes a large
+    # part of the time budget (slow_tests.py). Only a `certo bench` arm
+    # sets it (`slow_test_note: false`), to measure what the note changes.
+    slow_test_note: bool = True
     # False: a fix message doesn't point out the files created during the
     # run that a failing check names (runner.created_files_named). Only a
     # `certo bench` arm sets it (`created_note: false`).

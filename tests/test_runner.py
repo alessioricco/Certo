@@ -4149,13 +4149,14 @@ def test_a_terminal_run_prints_the_progress_line_after_checks_and_at_each_fix_at
 
 def test_the_root_guard_watches_the_conversation(monkeypatch, tmp_path):
     from certo.root_guard import RootGuard
+    from certo.slow_tests import SlowTestWatch
 
     _stub_for_state_tests(monkeypatch)
     seen = {}
 
     def fake_phases(conversation, cfg, emit, task, *args, **_kwargs):
-        guard, _callback = conversation.kwargs["callbacks"]
-        seen.update(guard=guard, conversation=conversation)
+        guard, watch, _callback = conversation.kwargs["callbacks"]
+        seen.update(guard=guard, watch=watch, conversation=conversation)
         return _verified_outcome()
 
     monkeypatch.setattr(runner, "_run_stream_task_phases", fake_phases)
@@ -4164,6 +4165,14 @@ def test_the_root_guard_watches_the_conversation(monkeypatch, tmp_path):
     assert isinstance(seen["guard"], RootGuard)
     assert seen["guard"].root == os.path.realpath(tmp_path)
     assert seen["guard"].conversation is seen["conversation"]
+    # The test-run timer comes after the guard (slow_tests.py).
+    assert isinstance(seen["watch"], SlowTestWatch)
+
+
+def test_no_test_run_timer_when_an_arm_turns_the_note_off():
+    cfg = _cfg(slow_test_note=False)
+    assert runner._slow_test_watch(cfg, 1800) is None
+    assert runner._slow_test_watch(_cfg(), 1800).budget_seconds == 1800
 
 
 def test_docker_needs_no_root_guard():

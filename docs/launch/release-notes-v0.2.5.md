@@ -65,6 +65,17 @@ the project's lint. The folder is git-ignored with the rest of `.certo/`.
 Runs that keep no state in `.certo/` (the Python library's default, the
 benchmark) don't get it.
 
+## Changed: a note when the agent's own test run is slow
+
+When one of the agent's test runs takes a tenth of the time budget or
+more (at least a minute), Certo tells it once: while working, run only
+the tests for what changed, run the whole suite once at the end, and fix
+or narrow a test that fails on a timeout before running the suite again.
+In one user's milestone project a browser test suite took 9 minutes of a
+30-minute budget, and the agent ran it more than once per milestone. The
+note names only the command the agent ran. Not measured yet in the
+benchmark.
+
 ## Fixed
 
 - **The benchmark's cost per model** charged the model that writes
