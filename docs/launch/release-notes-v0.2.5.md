@@ -99,6 +99,16 @@ milestone. In one user's project the agent wrote such a `PLAN.md`, the
 user replied "go ahead", and the whole plan ran as one task on one
 budget. See [Run a task in milestones](../guides/run-in-milestones.md#write-the-task-file).
 
+## Changed: version ranges for dependencies added from the terminal
+
+The rule to give each new Python dependency a version range was only in
+`pin-dependencies`, which fires when the agent edits `pyproject.toml` or
+`requirements*.txt` with the file editor, never for `pip install` or
+`uv add` in the terminal. It is now in `python-environment` too, which
+also fires on poetry, uv add and uv sync. A task that names none of the
+trigger words still gets the rule only when the agent edits the
+dependency file.
+
 ## Fixed
 
 - **`certo bench` and keys from a `.env` file.** A key written as

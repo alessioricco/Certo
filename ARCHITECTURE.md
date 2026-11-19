@@ -876,7 +876,11 @@ given design was chosen.
   path-triggered `node-project-setup` fired in 0 of 9 Haiku runs on the
   Node tasks (the agent read `package.json` with `cat` and never edited
   it), so it became keyword-triggered. `pin-dependencies` has the same
-  gap for `pip install`.
+  gap for `pip install`; since 0.2.5 its rule is also in the
+  keyword-triggered `python-environment` (pip, venv, pyproject.toml,
+  poetry, uv add...). A task that names none of those still gets it only
+  when the agent edits the dependency file: keyword triggers read the
+  task's words, never the agent's commands.
 - **`update_check.py`** — stdlib only. `cli.main` wraps `_main`: it
   starts `update_check.start()` before the command (not for `bench`;
   `certo-server` and `certo-admin` don't call it) and prints

@@ -443,10 +443,10 @@ And seven more:
   apart from its input and output, and has the agent test both, even
   when the task doesn't ask for tests;
 - `python-environment`, which fires on pip, venv, virtualenv, pypi,
-  pyproject.toml, requirements.txt or third-party: dependencies are
-  declared in the project's file and installed from it, into the
-  project's own environment, with test tools as development
-  dependencies;
+  pyproject.toml, requirements.txt, third-party, poetry, uv add or uv
+  sync: dependencies are declared in the project's file, each with a
+  version range, and installed from it, into the project's own
+  environment, with test tools as development dependencies;
 - `node-project-setup`, which fires on node, node.js, nodejs, npm,
   javascript or typescript: a real `test` script, a `build` script when
   there is a build step, the lockfile kept, and scaffolders run without

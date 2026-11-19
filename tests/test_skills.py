@@ -270,3 +270,15 @@ def test_node_project_setup_fires_on_the_node_tasks_only():
     # A known false match, kept on purpose (DECISIONS.md).
     assert skill.match_trigger("A tree with one root node per file") is not None
     assert skill.match_trigger("Add a slugify function with pytest tests") is None
+
+
+def test_python_environment_carries_the_version_range_rule_and_new_tool_words():
+    """pin-dependencies fires only on a file edit (ARCHITECTURE.md): its
+    rule is in python-environment too, for installs from the terminal."""
+    skill = _real_catalog()["python-environment"]
+
+    assert "version range" in skill.content
+    assert "uv add X" in skill.content
+    for task in ("Manage it with poetry", "Add httpx with uv add", "Run uv sync first"):
+        assert skill.match_trigger(task) is not None, task
+    assert skill.match_trigger("A todo list with dependencies between tasks") is None

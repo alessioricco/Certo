@@ -409,12 +409,6 @@ Today there are 15 (eight `lifecycle/`, `git/commit-conventions`,
 `testing/pytest-conventions` and `testable-interactive-apps`,
 `python/python-environment`, `node/node-project-setup`).
 
-**`pin-dependencies` fires only when the file editor edits a dependency
-file** (2026-10-31, ARCHITECTURE.md): a `pip install` or `uv add` in the
-terminal never fires it. Decide whether it becomes keyword-triggered
-too, or folds into `python-environment`. Done when its rule reaches the
-agent before a dependency is added from the terminal.
-
 **Make a project verifiable** (first; suggested order: the first two):
 - `cli-entry-points`: `__main__` guard last, a closed stdin doesn't hang,
   `--help` and non-interactive flags work.
