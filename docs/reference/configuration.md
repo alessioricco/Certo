@@ -19,7 +19,28 @@ places, in this order, and uses the first value it finds:
   `CERTO_LLM_MODEL` and still get `CERTO_LLM_API_KEY` from the user file.
 - An empty value (`CERTO_LLM_API_KEY=`) counts as not set, so it doesn't
   hide a value from a later place.
-- `${VAR}` inside either file is replaced with the value of `VAR`.
+- `${VAR}` inside either file is replaced with the value of `VAR`, from
+  your shell or from a line above it. This lets you keep a key in your
+  shell under a name that other tools don't read, and give it to Certo
+  under the name it expects:
+
+  ```bash
+  # in your shell profile
+  export ANTHROPIC_API_KEY_LOCAL=...
+  ```
+
+  ```dotenv
+  # in .env
+  CERTO_LLM_API_KEY=${ANTHROPIC_API_KEY_LOCAL}
+  ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY_LOCAL}
+  ```
+
+  The variables a `.env` file sets exist only inside Certo's own
+  process, so other programs, such as an assistant that switches to
+  paid API use when it sees `ANTHROPIC_API_KEY`, don't see them. The
+  second line covers [`models.yaml`](models-yaml.md) entries that use
+  `${ANTHROPIC_API_KEY}`. A value already exported in your shell wins
+  over the file's.
 - `certo check` shows where each LLM setting came from.
 - `certo verify` reads no settings at all.
 
