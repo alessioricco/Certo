@@ -48,7 +48,7 @@ with `ssh-copy-id`, which adds the key with no limits). The line is
 the options, then the whole content of `certo_remote.pub`:
 
 ```text
-restrict,command="env PATH=/home/you/.local/bin:/usr/local/bin:/usr/bin:/bin CERTO_PROJECTS_DIR=/home/you/certo-workspace/projects /home/you/.local/bin/certo mcp --root /home/you/certo-workspace" ssh-ed25519 AAAA... certo-mcp
+restrict,command="env PATH=/home/you/.local/bin:/usr/local/bin:/usr/bin:/bin CERTO_PROJECTS_DIR=/home/you/certo-workspace /home/you/.local/bin/certo mcp --root /home/you/certo-workspace" ssh-ed25519 AAAA... certo-mcp
 ```
 
 - `command="..."`: whatever the client asks for, this key runs only
@@ -56,11 +56,17 @@ restrict,command="env PATH=/home/you/.local/bin:/usr/local/bin:/usr/bin:/bin CER
 - `restrict`: no terminal, no port, agent or X11 forwarding.
 - `env PATH=...`: a forced command doesn't read your shell profile, and
   Certo and the agent need `uv`, `git` and `python` on the `PATH`.
-- `--root`: the folder the tools may work in, with every folder inside
-  it.
-- `CERTO_PROJECTS_DIR`: the tools may also work in Certo's projects
-  folder (`~/projects` by default). Setting it inside the root keeps
-  the server in one folder.
+- `CERTO_PROJECTS_DIR` and `--root`: the one folder the server may use.
+  The server allows two kinds of folder: Certo's projects folder, where
+  a tool's `project: "shop"` works (`<projects folder>/shop`), and the
+  `--root` folders, which a tool names by path (`folder:`). Unset, the
+  projects folder is `~/projects`, a second folder the server may use.
+  Set to the root, as here, there is only one: a project named `shop`
+  is `~/certo-workspace/shop`.
+
+You can put `CERTO_PROJECTS_DIR` in the settings file of step 1 instead:
+then it applies to every Certo command on that machine, the ones you
+run in a terminal too. Keep it in one of the two places, not both.
 
 Keep the line on one line, with plain `"` quotes: an editor that
 changes them to curly quotes, or splits the line, makes SSH skip it.
@@ -114,7 +120,7 @@ shows are the other machine's. A folder outside the root is refused,
 as on your own computer:
 
 ```text
-Error executing tool verify: /etc is outside the folders this server may use: /home/you/certo-workspace/projects, /home/you/certo-workspace
+Error executing tool verify: /etc is outside the folders this server may use: /home/you/certo-workspace
 ```
 
 To see that the key is limited, ask it for another command:
