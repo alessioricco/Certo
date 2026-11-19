@@ -212,3 +212,116 @@ def test_project_dot_is_the_current_folder(home, monkeypatch):
 
     code, out = _run(["list", "--project", "."])
     assert code == 0 and "  my-style: when the task says: snake" in out
+
+
+# --- official skills turned off ------------------------------------------------------
+
+
+def _run_skills(home, **overrides):
+    """The official skills a run in the `demo` project gets."""
+    from certo.config import Config
+
+    settings = {"workspace": str(home / "projects" / "demo"), **overrides}
+    cfg = Config(
+        model="openai/x",
+        api_key="k",
+        base_url=None,
+        max_iterations=5,
+        confirm_mode="never",
+        execution="local",
+        projects_dir=str(home / "projects"),
+        **settings,
+    )
+    return {s.name for s in lib.collect(cfg, cfg.workspace, own=False).skills} & {
+        s.name for s in lib.official_skills()
+    }
+
+
+def test_an_official_skill_turned_off_globally_leaves_every_run(home):
+    assert "security-review" in _run_skills(home)
+
+    code, out = _run(["disable", "security-review", "--global"])
+
+    assert code == 0
+    assert "The official skill 'security-review' is off for every project" in out
+    assert "certo skills enable security-review --global" in out
+    assert "security-review" not in _run_skills(home)
+    assert lib.official_off(lib.global_dir()) == ["security-review"]
+    # A run says so, as it does for a skill of yours replacing an official one.
+    from certo.config import Config
+
+    cfg = Config(
+        model="openai/x",
+        api_key="k",
+        base_url=None,
+        workspace=str(home),
+        max_iterations=5,
+        confirm_mode="never",
+        execution="local",
+    )
+    assert lib.collect(cfg, None).notices == (
+        "Certo: the official skill 'security-review' is off (for every project; "
+        "certo skills enable security-review --global).",
+    )
+    _, listing = _run(["list"])
+    assert (
+        "security-review: off (for every project; turn it on with: "
+        "certo skills enable security-review --global)" in listing
+    )
+
+    code, out = _run(["enable", "security-review", "--global"])
+
+    assert code == 0
+    assert "is on again for every project" in out
+    assert "security-review" in _run_skills(home)
+    assert not (lib.global_dir() / lib.OFF_FILE).exists()
+
+
+def test_an_official_skill_turned_off_for_one_project(home, tmp_path):
+    code, out = _run(["disable", "commit-conventions", "--project", "demo"])
+
+    assert code == 0
+    assert "is off for the project demo" in out
+    assert "commit-conventions" not in _run_skills(home)
+    # Inside the project's ignored state folder, never in git.
+    assert (home / "projects" / "demo" / ".certo" / ".gitignore").is_file()
+    _, listing = _run(["list", "--project", "demo"])
+    assert "commit-conventions: off (for this project" in listing
+    # Another project still gets it.
+    (home / "projects" / "other").mkdir()
+    other = _run_skills(home, workspace=str(home / "projects" / "other"))
+    assert "commit-conventions" in other
+
+
+def test_enabling_for_a_project_says_when_it_is_off_globally(home):
+    _run(["disable", "security-review", "--global"])
+
+    code, out = _run(["enable", "security-review", "--project", "demo"])
+
+    assert code == 0
+    assert "is off for every project, not just this one" in out
+    assert "certo skills enable security-review --global" in out
+
+
+def test_disable_twice_and_enable_when_on_say_so(home):
+    _run(["disable", "security-review", "--global"])
+    _, out = _run(["disable", "security-review", "--global"])
+    assert "was already off for every project" in out
+    _, out = _run(["enable", "commit-conventions", "--global"])
+    assert "is already on for every project" in out
+
+
+def test_a_third_party_skill_of_the_same_name_is_the_one_disable_means(home):
+    _run(["add", str(_skill_file(home, "security-review")), "--global"])
+
+    code, _out = _run(["disable", "security-review", "--global"])
+
+    # Added from a file: always on, as before; the official one isn't touched.
+    assert code == 1
+    assert lib.official_off(lib.global_dir()) == []
+
+
+def test_an_unreadable_off_file_turns_nothing_off(home):
+    lib.global_dir().mkdir(parents=True)
+    (lib.global_dir() / lib.OFF_FILE).write_text("{not json")
+    assert "security-review" in _run_skills(home)

@@ -2334,3 +2334,13 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   also catches the agent's narrower or differently spelled runs. On by
   default before measurement because it fires only on slow runs; a
   benchmark arm turns it off (`slow_test_note: false`).
+- **Official skills can be turned off, globally or per project**
+  (2026-11-19, 0.2.5; agreed 2026-10-22). Through the existing
+  `certo skills disable`/`enable` with `--global`/`--project`, not new
+  commands; the list lives in the same third-party folder
+  (`official-off.json`), so a project's goes with its ignored `.certo/`.
+  A skill of yours with the same name in that folder is the one the
+  command means (it already replaces the official one). Off anywhere
+  wins: a project can't turn on what is off globally, so one rule
+  explains every case. An unreadable list turns nothing off, so a run
+  never stops on it. Each run prints a line per skill that is off.

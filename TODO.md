@@ -474,9 +474,6 @@ database).
   and unset, on a local and a cloud model, with milestone tasks (where
   the 38 stray logs were seen, a user's project, 2026-11-14). Done when
   it shows no loss and fewer files left at the project's top.
-- **`certo skills`: turn an official skill off**, globally or for one
-  project (later, agreed 2026-10-22). Today a third-party skill can only
-  replace one.
 - **Plugins with safeguards** (agreed 2026-10-24, after the independent
   tests bench arm; DECISIONS.md "Plugins: chosen by Certo, copied into the
   project"). Steps: (1) verify-first: that hooks can't fire during

@@ -17,7 +17,9 @@ A third-party folder holds, at its top level only, `<name>.md` files and
 `<name>/SKILL.md` folders. A skill added from a file or folder is on as
 soon as it is there; a skill downloaded from git is listed in the folder's
 `skills.lock.json` and stays off until enabled, with its license and hash
-checked (`third_party_skills.py`). Names starting with a dot (the git
+checked (`third_party_skills.py`). The folder's `official-off.json` lists
+the official skills turned off there (`certo skills disable NAME`): for
+every project in the global folder, for one in a project's. Names starting with a dot (the git
 cache, staging) are never skills. Nothing here is loaded recursively: a
 git cache holds whole repositories.
 
@@ -27,6 +29,7 @@ escaped and its `.mcp.json` ignored, as for downloaded skills.
 
 from __future__ import annotations
 
+import json
 import os
 from collections.abc import Iterable
 from dataclasses import dataclass, replace
@@ -42,6 +45,7 @@ from .project_state import state_dir
 from .skills import load_skill_catalog
 
 LOCK_FILE = "skills.lock.json"
+OFF_FILE = "official-off.json"
 
 OFFICIAL = "official"
 GLOBAL = "global"
@@ -91,6 +95,34 @@ def _inside(skill: Skill, root: Path) -> bool:
 
 def lock_path(root: Path) -> Path:
     return root / LOCK_FILE
+
+
+def official_off(root: Path) -> list[str]:
+    """The official skills turned off in one third-party folder. A file
+    that can't be read turns nothing off: a run never stops on it."""
+    try:
+        names = json.loads((root / OFF_FILE).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    if not isinstance(names, list):
+        return []
+    return sorted({n for n in names if isinstance(n, str)})
+
+
+def set_official_off(root: Path, name: str, off: bool) -> bool:
+    """Turn the official skill `name` off (or back on) in `root`; False
+    when it already was. The file goes once nothing is off."""
+    names = set(official_off(root))
+    if (name in names) == off:
+        return False
+    names = names | {name} if off else names - {name}
+    path = root / OFF_FILE
+    if names:
+        root.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(sorted(names), indent=2) + "\n", encoding="utf-8")
+    else:
+        path.unlink(missing_ok=True)
+    return True
 
 
 @dataclass(frozen=True)
@@ -217,9 +249,27 @@ def collect(
     replaces what. `workspace` None: no project (no project layers).
     `own` False leaves out the project's own skills, which a run doesn't
     need: the SDK loads them itself."""
-    official = [SkillRow(s.name, OFFICIAL, BUILTIN_SKILLS_DIR, s) for s in official_skills()]
     notices: list[str] = []
     global_root = Path(cfg.global_skills_dir) if cfg.global_skills_dir else global_dir()
+    off = {name: "--global" for name in official_off(global_root)}
+    if workspace is not None:
+        scope = f"--project {project_name}" if project_name else "--project NAME"
+        for name in official_off(project_dir(workspace)):
+            off.setdefault(name, scope)
+    official = [
+        SkillRow(s.name, OFFICIAL, BUILTIN_SKILLS_DIR, s)
+        if s.name not in off
+        else SkillRow(
+            s.name,
+            OFFICIAL,
+            BUILTIN_SKILLS_DIR,
+            state=(
+                f"off ({'for every project' if off[s.name] == '--global' else 'for this project'}; "
+                f"turn it on with: certo skills enable {s.name} {off[s.name]})"
+            ),
+        )
+        for s in official_skills()
+    ]
     rows = official + load_folder(global_root, GLOBAL, "--global")
     if workspace is not None:
         scope = f"--project {project_name}" if project_name else "--project NAME"
@@ -227,6 +277,12 @@ def collect(
         if own:
             rows += _own_rows(Path(workspace), cfg.projects_dir)
     rows = _mark_replaced(rows)
+    for name, where in sorted(off.items()):
+        notices.append(
+            f"Certo: the official skill '{name}' is off "
+            f"({'for every project' if where == '--global' else 'for this project'}; "
+            f"certo skills enable {name} {where})."
+        )
     for row in rows:
         if row.layer == OFFICIAL and row.replaced_by in THIRD_PARTY:
             notices.append(

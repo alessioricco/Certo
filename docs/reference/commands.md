@@ -642,8 +642,8 @@ lock-file entry). Official skills can't be removed.
 certo skills enable NAME (--global | --project NAME) [--accept-unknown-license]
 ```
 
-Turn on a skill downloaded from git. Its files must still match their
-recorded hash.
+Turn on a skill downloaded from git (its files must still match their
+recorded hash), or an official skill you turned off with `disable`.
 
 | Flag | Effect |
 |---|---|
@@ -655,7 +655,12 @@ recorded hash.
 certo skills disable NAME (--global | --project NAME)
 ```
 
-Turn off a skill downloaded from git. The files stay.
+Turn off a skill downloaded from git (the files stay), or an official
+skill: with `--global` for every project, with `--project NAME` for that
+project only. When the folder has a skill of yours with that name, the
+command acts on yours, not the official one. A run prints a line for
+each official skill that is off, and `certo skills list` shows it as
+`off`.
 
 ### `certo skills update`
 

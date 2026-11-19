@@ -1,6 +1,8 @@
 """`certo skills`: see, add and remove the skills a run gets.
 
-Official skills (Certo's own) are only listed: a release changes them.
+Official skills (Certo's own) are changed only by a release, but `disable`
+and `enable` turn one off and on again, for every project (`--global`) or
+one (`--project NAME`): a list in that folder (`skill_library.OFF_FILE`).
 Third-party skills are added to one of two folders, never anywhere git
 sees them: `--global` (`~/.config/certo/skills/`, every project) or
 `--project NAME` (`<project>/.certo/skills/`). One of the two is always
@@ -89,7 +91,9 @@ def build_parser() -> argparse.ArgumentParser:
     remove.add_argument("name")
     _scope(remove)
 
-    enable = sub.add_parser("enable", help="Turn on a skill downloaded from git.")
+    enable = sub.add_parser(
+        "enable", help="Turn on a skill downloaded from git, or an official skill you turned off."
+    )
     enable.add_argument("name")
     enable.add_argument(
         "--accept-unknown-license",
@@ -98,7 +102,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _scope(enable)
 
-    disable = sub.add_parser("disable", help="Turn off a skill downloaded from git.")
+    disable = sub.add_parser(
+        "disable", help="Turn off a skill downloaded from git, or an official skill."
+    )
     disable.add_argument("name")
     _scope(disable)
 
@@ -191,6 +197,10 @@ def skills_main(
             return _remove(args.name, root, scope, prompter)
         if args.command == "assess":
             return _assess(root, scope, prompter)
+        if args.command in ("enable", "disable"):
+            switched = _official_switch(args, root, scope, prompter)
+            if switched is not None:
+                return switched
         return _downloaded_command(args, root, scope, prompter)
     except (SkillsError, tps.ThirdPartySkillError, ConfigError, SourcesError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
@@ -461,6 +471,44 @@ def _remove(name: str, root: Path, scope: str, prompter: Prompter) -> int:
 
 
 # --- downloaded skills: enable, disable, update, sync ---------------------------------------
+
+
+def _official_switch(
+    args: argparse.Namespace, root: Path, scope: str, prompter: Prompter
+) -> int | None:
+    """`enable`/`disable` of an official skill; None when NAME is a
+    third-party skill in this folder (that one is meant) or not official."""
+    name = args.name
+    if _existing(root, name) or name not in {s.name for s in lib.official_skills()}:
+        if args.command == "enable" and lib.set_official_off(root, name, False):
+            prompter.say(f"'{name}' is on again.")  # a name off from an older release
+            return 0
+        return None
+    where = "every project" if scope == "--global" else f"the project {args.project}"
+    if args.command == "disable":
+        if scope.startswith("--project"):
+            ensure_state_dir(str(root.parent.parent))
+        if lib.set_official_off(root, name, True):
+            prompter.say(
+                f"The official skill '{name}' is off for {where}. "
+                f"To turn it on again: certo skills enable {name} {scope}"
+            )
+        else:
+            prompter.say(f"The official skill '{name}' was already off for {where}.")
+        return 0
+    if lib.set_official_off(root, name, False):
+        prompter.say(f"The official skill '{name}' is on again for {where}.")
+        if scope != "--global" and name in lib.official_off(lib.global_dir()):
+            prompter.say(f"It is still off for every project: certo skills enable {name} --global")
+        return 0
+    if scope != "--global" and name in lib.official_off(lib.global_dir()):
+        prompter.say(
+            f"The official skill '{name}' is off for every project, not just this one. "
+            f"To turn it on: certo skills enable {name} --global"
+        )
+        return 0
+    prompter.say(f"The official skill '{name}' is already on for {where}.")
+    return 0
 
 
 def _downloaded_command(

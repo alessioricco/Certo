@@ -76,6 +76,14 @@ In one user's milestone project a browser test suite took 9 minutes of a
 note names only the command the agent ran. Not measured yet in the
 benchmark.
 
+## New: turn an official skill off
+
+`certo skills disable NAME --global` turns an official skill off for every
+project, `--project NAME` for one project; `certo skills enable` turns it
+on again. Runs print a line for each official skill that is off. Before,
+the only way to stop one was to replace it with a skill of your own. See
+[Manage skills](../guides/manage-skills.md#turn-an-official-skill-off).
+
 ## Fixed
 
 - **The benchmark's cost per model** charged the model that writes

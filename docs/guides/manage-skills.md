@@ -455,6 +455,25 @@ And seven more:
 The agent is also told to apply the lifecycle skills when they fit even if
 no trigger word appears, and to skip them for trivial changes.
 
+### Turn an official skill off
+
+If an official skill gets in the way, turn it off, for every project or
+for one:
+
+```bash
+certo skills disable commit-conventions --global
+certo skills disable security-review --project shop
+```
+
+Runs then leave it out and print a line saying so, for example
+`Certo: the official skill 'commit-conventions' is off (for every
+project; certo skills enable commit-conventions --global).` To turn it
+on again, use `enable` with the same scope. A skill that is off for
+every project can't be turned on for just one: turn it on with
+`--global`, then off with `--project` where you don't want it. To change
+what an official skill says instead, add a skill of yours with the same
+name (see [Official and third-party skills](#official-and-third-party-skills)).
+
 ## Moving from the old folders
 
 Until version 0.1.22, your skills lived in `./skills` (`CERTO_SKILLS_DIR`)

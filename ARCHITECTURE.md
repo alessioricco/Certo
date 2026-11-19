@@ -795,6 +795,12 @@ given design was chosen.
   never with `load_skills_from_dir`: its `rglob` would load the git cache
   (`.cache/`, whole repositories). Downloaded skills reuse
   `third_party_skills.py` with the folder's own `skills.lock.json`.
+  The folder's `official-off.json` (`official_off`, `set_official_off`)
+  lists official skills turned off there; `collect()` gives them a row
+  with no skill (so `.skills` leaves them out) and a notice.
+  `skills_cmd._official_switch` handles `enable`/`disable` of an
+  official name before the downloaded-skill path, unless the folder
+  holds a third-party skill of that name.
   `certo skills` loads config under `defer_llm_check()`: it needs no model.
 - **`independent_tests.py`** — Phase 1.5's test writer and runner, wired
   into `stream_task` by `runner._write_independent_tests` (before the
