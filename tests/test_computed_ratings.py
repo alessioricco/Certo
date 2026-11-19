@@ -207,7 +207,8 @@ def test_refresh_writes_the_ratings_and_shows_them_with_prices(tmp_path, monkeyp
     try:
         code, out = _refresh([], opener)
         assert code == 0
-        assert "Model data of 2026-11-16, from this Certo version" in out
+        shipped = cr.shipped_data().generated
+        assert f"Model data of {shipped}, from this Certo version" in out
         assert "Prices: LiteLLM's current list." in out
         assert "claude-haiku-5-5" in out and "$0.1/$0.5" in out
         assert "flint-40b-local" in out and "(no data)" in out
