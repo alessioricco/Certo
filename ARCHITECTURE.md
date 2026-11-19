@@ -482,6 +482,13 @@ given design was chosen.
 - **`milestones.py`** + `certo --milestones` — stdlib only. Parses a task
   file into a `MilestonePlan` (`## Milestone N: title` headings outside
   code fences; ` ```acceptance ` blocks taken out of the agent's text).
+  Two heading patterns: `_HEADING` (Milestone/Step/Phase/Stage/M N),
+  which `written_in_milestones` uses for the automatic switch, and
+  `_NUMBERED` (`## 1. Title`), which `parse_milestones` falls back to
+  only when the file has no `_HEADING` one; `parse_milestones` is only
+  reached when milestones were asked for (flag, `/milestones`, resume,
+  bench). `plan_hint` reads the run's created/modified `.md` files for
+  `cli._plan_hint`'s end-of-run line.
   The loop is `cli._run_milestones`, not the runner: one ordinary
   `run_task` per milestone, so each gets a fresh conversation, the usual
   limits and `.certo/run.json` (always the current milestone's run);

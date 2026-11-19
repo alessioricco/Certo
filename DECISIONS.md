@@ -2344,3 +2344,13 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   wins: a project can't turn on what is off globally, so one rule
   explains every case. An unreadable list turns nothing off, so a run
   never stops on it. Each run prints a line per skill that is off.
+- **A plan the agent wrote: more headings, and a hint, not a switch**
+  (2026-11-19, 0.2.5; the Author chose "read + hint"). `## Step/Phase/Stage
+  N` count like `## Milestone N` everywhere: the words say steps of a
+  plan. Plain numbered `## 1. Title` headings count only when milestones
+  are asked for (`--milestones`, `/milestones`, a resume), never for the
+  automatic "written in milestones" check, because ordinary task files
+  number their sections and would be split silently. At the end of a
+  run Certo names a Markdown plan the agent created or changed and the
+  command to run it; it never switches a reply ("go ahead") into
+  milestone mode by itself.

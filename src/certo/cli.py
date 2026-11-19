@@ -1345,11 +1345,42 @@ def _run_task_command(
     elif milestone_state is not None and milestone_state.next_number() is not None:
         # Stopped between milestones, as the user asked: the rest is kept.
         print(f"\nThe next milestones are kept. Continue with: {_continue_hint(resume_hint)}")
+    plan = _plan_hint(cfg.workspace, outcome, args) if milestone_state is None else None
+    if plan:
+        print(f"\n{plan}")
     if save_state and cfg.checkpoints:
         hint = _checkpoints_hint(cfg.workspace)
         if hint:
             print(hint)
     return 1 if failing else 0
+
+
+def _plan_hint(workspace: str, outcome, args: argparse.Namespace) -> str | None:
+    """One line when the run left a plan in milestones (a Markdown file it
+    created or changed): run as one task, a plan the user then approves
+    goes on as one task on one budget (milestones.plan_hint)."""
+    from .milestones import plan_hint
+
+    changes = outcome.files_changed
+    if changes is None:
+        return None
+    try:
+        found = plan_hint(workspace, [*changes.created, *changes.modified])
+    except Exception:  # noqa: BLE001 - a hint, never the run's outcome
+        return None
+    if found is None:
+        return None
+    rel, needs_flag = found
+    path = shlex.quote(_short_path(os.path.join(workspace, rel)))
+    if _in_session():
+        command = f"/milestones {path}"
+    else:
+        project = f"--project {shlex.quote(args.project)} " if args.project else ""
+        command = f"certo {project}{'--milestones ' if needs_flag else ''}{path}"
+    return (
+        f"The agent wrote a plan in milestones in {rel}. To run it milestone by "
+        f"milestone, each checked and with its own time budget: {command}"
+    )
 
 
 def _short_path(path: str) -> str:

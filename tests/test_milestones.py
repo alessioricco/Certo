@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 import pytest
 
 from certo.milestones import (
@@ -480,3 +482,76 @@ def test_an_acceptance_block_after_the_closing_heading_is_refused():
     )
     with pytest.raises(MilestoneError, match="not after the last one's level-1 heading"):
         parse_milestones(text)
+
+
+# --- plans with other headings (Step/Phase/Stage, numbered) --------------------------
+
+AGENT_PLAN = """# Plan for the shop
+
+Build it in order.
+
+## 1. Data model
+Products and orders.
+
+## 2. API
+REST endpoints.
+
+## 3. Tests
+End-to-end tests.
+"""
+
+
+def test_step_phase_and_stage_headings_are_milestones():
+    from certo.milestones import parse_milestones, written_in_milestones
+
+    for word in ("Step", "Phase", "Stage"):
+        text = f"Intro.\n\n## {word} 1: Models\nDo A.\n\n## {word} 2 - API\nDo B.\n"
+        assert written_in_milestones(text) == 2
+        plan = parse_milestones(text)
+        assert [m.title for m in plan.milestones] == ["Models", "API"]
+    zero = parse_milestones("## Phase 0: Plan\nThink.\n\n## Phase 1: Build\nDo it.\n")
+    assert [m.title for m in zero.milestones] == ["Phase 0 — Plan", "Phase 1 — Build"]
+
+
+def test_a_numbered_plan_is_read_when_milestones_are_asked_for_only():
+    from certo.milestones import numbered_plan, parse_milestones, written_in_milestones
+
+    # Never on its own: many task files number their sections.
+    assert written_in_milestones(AGENT_PLAN) == 0
+    assert numbered_plan(AGENT_PLAN) == 3
+    plan = parse_milestones(AGENT_PLAN)  # what --milestones and /milestones do
+    assert [m.title for m in plan.milestones] == ["Data model", "API", "Tests"]
+    assert plan.context.strip().startswith("# Plan for the shop")
+    assert plan.get(2).text.strip() == "REST endpoints."
+
+
+def test_milestone_headings_win_over_numbered_ones():
+    from certo.milestones import numbered_plan, parse_milestones
+
+    text = "## Milestone 1: A\n## 1. Inside\nx\n\n## Milestone 2: B\ny\n"
+    assert numbered_plan(text) == 0
+    assert [m.title for m in parse_milestones(text).milestones] == ["A", "B"]
+
+
+def test_numbered_headings_out_of_order_or_alone_are_no_plan():
+    from certo.milestones import numbered_plan
+
+    assert numbered_plan("## 1. Only one\nx\n") == 0
+    assert numbered_plan("## 2. Two\nx\n## 3. Three\ny\n") == 0
+    assert numbered_plan("## 1.5 Release\nx\n## 2. Next\ny\n") == 0
+
+
+def test_plan_hint_finds_the_plan_the_run_wrote(tmp_path):
+    from certo.milestones import plan_hint
+
+    (tmp_path / "PLAN.md").write_text(AGENT_PLAN)
+    (tmp_path / "NOTES.md").write_text("# Notes\n\n## 1. Only one\n")
+    (tmp_path / "MILESTONES.md").write_text("## Milestone 1: A\nx\n\n## Milestone 2: B\ny\n")
+    (tmp_path / ".certo").mkdir()
+    (tmp_path / ".certo" / "plan.md").write_text(AGENT_PLAN)
+
+    assert plan_hint(str(tmp_path), ["NOTES.md", "src/app.py"]) is None
+    assert plan_hint(str(tmp_path), [os.path.join(".certo", "plan.md")]) is None
+    assert plan_hint(str(tmp_path), ["NOTES.md", "PLAN.md"]) == ("PLAN.md", True)
+    assert plan_hint(str(tmp_path), ["MILESTONES.md"]) == ("MILESTONES.md", False)
+    assert plan_hint(str(tmp_path), ["gone.md"]) is None

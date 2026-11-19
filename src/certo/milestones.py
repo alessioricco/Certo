@@ -1,8 +1,13 @@
 """Milestone mode: a task file split into milestones, run and verified one
 at a time (`certo --milestones task.md`; see DECISIONS.md, 2026-10-29).
 
-A milestone starts at a `## Milestone N: title` heading, or a short one
-such as `## M1 — title` (`:`, `-`, `—`, `–` or `.` after the number).
+A milestone starts at a `## Milestone N: title` heading (or `## Step N`,
+`## Phase N`, `## Stage N`), or a short one such as `## M1 — title` (`:`,
+`-`, `—`, `–` or `.` after the number). A file with none of those, whose
+`##` headings are only numbered (`## 1. Data model`, as a plan an agent
+writes), is read by those when milestones are asked for (`--milestones`,
+`/milestones`, a resume), never to decide on its own that a file is
+written in milestones: many task files number their sections.
 Numbering starts at 1, or at 0 (a plan step first); the milestones are
 then numbered by position from 1, and the title keeps the written name
 (`M0 — Plan`) so the agent and the user see the file's own words. The
@@ -40,8 +45,13 @@ _PLAN_FILE = "milestones.json"
 # The short form needs a separator or nothing after the number, so a
 # heading like "## M16 rifle" isn't one.
 _HEADING = re.compile(
-    r"^##\s+(milestone\s+|m)(\d+)\s*(?:[:.\-\u2013\u2014]\s*(.*?))?\s*$", re.IGNORECASE
+    r"^##\s+(milestone\s+|step\s+|phase\s+|stage\s+|m)(\d+)\s*"
+    r"(?:[:.\-\u2013\u2014]\s*(.*?))?\s*$",
+    re.IGNORECASE,
 )
+# `## 1. Data model`, `## 2) Tests`: a number, a separator, a title. Only
+# when milestones are asked for (see the module docstring).
+_NUMBERED = re.compile(r"^##\s+()(\d+)\s*[.):\-\u2013\u2014]\s+(\S.*?)\s*$")
 _FENCE = re.compile(r"^\s*(```+|~~~+)\s*(\S*)")
 
 
@@ -80,7 +90,7 @@ class MilestonePlan:
         return self.milestones[number - 1]
 
 
-def _heading_numbers(text: str) -> list[int]:
+def _heading_numbers(text: str, heading_re: re.Pattern[str] = _HEADING) -> list[int]:
     """The numbers of the `## Milestone N` headings outside code fences, in
     the order they appear: the same reading `parse_milestones` does."""
     numbers: list[int] = []
@@ -93,7 +103,7 @@ def _heading_numbers(text: str) -> list[int]:
             elif match.group(1).startswith(fence[0]) and len(match.group(1)) >= len(fence):
                 fence = None
             continue
-        heading = _HEADING.match(line) if fence is None else None
+        heading = heading_re.match(line) if fence is None else None
         if heading:
             numbers.append(int(heading.group(2)))
     return numbers
@@ -113,9 +123,13 @@ def _title(prefix: str, number: int, rest: str, zero_based: bool) -> str:
     name (`M0`, `Milestone 0`) in front when Certo's number differs from it
     or the heading uses the short form."""
     rest = rest.strip()
-    if not zero_based and prefix.lower().startswith("milestone"):
+    word = prefix.strip().lower()
+    if not word:  # `## 1. Title`: the title alone, or the number
+        return rest if not zero_based else f"{number} \u2014 {rest}"
+    long_form = word != "m"
+    if not zero_based and long_form:
         return rest
-    name = f"Milestone {number}" if prefix.lower().startswith("milestone") else f"M{number}"
+    name = f"{word.capitalize()} {number}" if long_form else f"M{number}"
     return f"{name} \u2014 {rest}" if rest else name
 
 
@@ -131,8 +145,41 @@ def written_in_milestones(text: str) -> int:
     return 0
 
 
+def numbered_plan(text: str) -> int:
+    """How many milestones a file holds when read by its numbered `##`
+    headings only (`## 1. Title`): at least two, in order, and no
+    `## Milestone N` heading. 0 otherwise."""
+    if _heading_numbers(text):
+        return 0
+    numbers = _heading_numbers(text, _NUMBERED)
+    return len(numbers) if len(numbers) >= 2 and _in_order(numbers) else 0
+
+
+def plan_hint(workspace: str, paths: Sequence[str]) -> tuple[str, bool] | None:
+    """The first Markdown file in `paths` (relative to `workspace`: the
+    files a run created or changed) that is a plan in milestones, and
+    whether it needs `--milestones` (numbered headings only). None when
+    there is none. A file can't be read: not a plan."""
+    for rel in paths:
+        if not rel.lower().endswith(".md") or rel.split(os.sep)[0] == STATE_DIR:
+            continue
+        try:
+            with open(os.path.join(workspace, rel), encoding="utf-8") as fh:
+                text = fh.read()
+        except (OSError, UnicodeDecodeError):
+            continue
+        if written_in_milestones(text):
+            return rel, False
+        if numbered_plan(text):
+            return rel, True
+    return None
+
+
 def parse_milestones(text: str) -> MilestonePlan:
-    """Split a task file into its milestones, or raise `MilestoneError`."""
+    """Split a task file into its milestones, or raise `MilestoneError`.
+    A file with no `## Milestone N` heading is read by its numbered `##`
+    headings (`## 1. Title`), if it has some."""
+    heading_re = _NUMBERED if not _heading_numbers(text) and numbered_plan(text) else _HEADING
     context: list[str] = []
     sections: list[tuple[int, str, str, list[str]]] = []
     fence: str | None = None
@@ -143,7 +190,7 @@ def parse_milestones(text: str) -> MilestonePlan:
                 fence = match.group(1)
             elif match.group(1).startswith(fence[0]) and len(match.group(1)) >= len(fence):
                 fence = None
-        heading = _HEADING.match(line) if fence is None and not match else None
+        heading = heading_re.match(line) if fence is None and not match else None
         if heading:
             sections.append((int(heading.group(2)), heading.group(1), heading.group(3) or "", []))
         elif sections:
@@ -153,7 +200,8 @@ def parse_milestones(text: str) -> MilestonePlan:
     if not sections:
         raise MilestoneError(
             "no milestone found: with --milestones, each milestone starts with a "
-            "heading like '## Milestone 1: title'."
+            "heading like '## Milestone 1: title' (or '## Step 1', '## Phase 1', "
+            "'## 1. title')."
         )
     numbers = [number for number, _, _, _ in sections]
     if not _in_order(numbers):

@@ -3590,3 +3590,29 @@ def test_a_milestone_count_out_of_range_is_refused(monkeypatch, tmp_path, capsys
     with pytest.raises(SystemExit):
         cli.main(["--milestone-count", count, "Build a ledger"])
     assert "--milestone-count must be from 2 to 20" in capsys.readouterr().err
+
+
+def test_the_end_of_a_run_names_a_plan_in_milestones_the_agent_wrote(tmp_path, monkeypatch):
+    import argparse
+    from types import SimpleNamespace
+
+    from certo.escalation import FileChanges
+
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "PLAN.md").write_text("## 1. Model\nA.\n\n## 2. API\nB.\n")
+    (tmp_path / "STEPS.md").write_text("## Step 1: Model\nA.\n\n## Step 2: API\nB.\n")
+    args = argparse.Namespace(project=None)
+
+    def outcome(*created):
+        return SimpleNamespace(files_changed=FileChanges(created=created))
+
+    assert cli._plan_hint(str(tmp_path), outcome("PLAN.md"), args) == (
+        "The agent wrote a plan in milestones in PLAN.md. To run it milestone by "
+        "milestone, each checked and with its own time budget: certo --milestones PLAN.md"
+    )
+    assert cli._plan_hint(str(tmp_path), outcome("STEPS.md"), args).endswith(": certo STEPS.md")
+    named = cli._plan_hint(str(tmp_path), outcome("STEPS.md"), argparse.Namespace(project="shop"))
+    assert named.endswith(": certo --project shop STEPS.md")
+    assert cli._plan_hint(str(tmp_path), SimpleNamespace(files_changed=None), args) is None
+    monkeypatch.setattr(cli, "_asker", object())  # inside the session
+    assert cli._plan_hint(str(tmp_path), outcome("PLAN.md"), args).endswith(": /milestones PLAN.md")

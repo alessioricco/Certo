@@ -11,7 +11,8 @@ it works, but hasn't been benchmarked yet.
 ## Write the task file
 
 Start each milestone with a `## Milestone N: title` heading, numbered
-1, 2, 3 in order. The short form `## M1 — title` works too, and so do
+1, 2, 3 in order. `## Step N`, `## Phase N` and `## Stage N` work the
+same way. The short form `## M1 — title` works too, and so do
 `-`, `—`, `–` or `.` instead of `:`. Numbering may start at 0, for a
 first planning step: Certo then counts the milestones from 1 (`Milestone
 1 of 10`) and keeps your own name in the title (`M0 — Plan`). The text
@@ -39,6 +40,21 @@ with tests.
 Add `c_to_k(c)` and `k_to_c(k)`. A temperature below absolute zero
 (below 0 K) raises `ValueError`. With tests.
 ````
+
+**A plan with numbered headings.** A file whose `##` headings are only
+numbered, like `## 1. Data model` and `## 2. API`, runs in milestones
+when you ask for it with `--milestones` (or `/milestones FILE` in the
+[session](interactive-mode.md)). Without the flag such a file runs whole,
+because many task files number their sections. This is the kind of plan
+an agent writes when you ask it for one. When a run ends and the agent
+created or changed a Markdown file that is a plan in milestones, Certo
+names it and the command that runs it milestone by milestone. A plan you
+approve by replying "go ahead" would otherwise run as one task, on one
+time budget:
+
+```text
+The agent wrote a plan in milestones in PLAN.md. To run it milestone by milestone, each checked and with its own time budget: certo --milestones PLAN.md
+```
 
 A milestone may hold one ` ```acceptance ` block: a list of file checks,
 in the same format as [acceptance checks](acceptance-checks.md). Certo

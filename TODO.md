@@ -81,12 +81,6 @@ first item is the suggested next one.
     default on only after it shows no loss on either model.
   - *Planner-written acceptance checks:* left out for now (they can be
     wrong, as independent tests can); try them report-only once measured.
-  - *A plan the agent wrote:* live 2026-11-10 (a user's milestone
-    project), the agent wrote a `PLAN.md` in milestones (`## 1. ...`
-    headings, not `## Milestone N:`), the user approved it with "go
-    ahead", and the whole plan ran as one task on one budget of 50
-    steps. Certo could spot such a plan file and offer to run it
-    milestone by milestone, or the planner could rewrite it.
   - *Run `star-swarm.md` once* (the sample from a user's milestone task,
     10 milestones) and add it to `milestone-samples-0.2.3.md`.
   Done when the benchmark shows planned milestones no worse than one go

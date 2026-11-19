@@ -84,6 +84,19 @@ on again. Runs print a line for each official skill that is off. Before,
 the only way to stop one was to replace it with a skill of your own. See
 [Manage skills](../guides/manage-skills.md#turn-an-official-skill-off).
 
+## Changed: plans the agent writes run in milestones
+
+`## Step N`, `## Phase N` and `## Stage N` headings now start a milestone,
+like `## Milestone N`, so a file written that way runs in milestones on
+its own. With `--milestones` (or `/milestones` in the session), a file
+whose `##` headings are only numbered (`## 1. Data model`) is split at
+them; without the flag it still runs whole, since many task files number
+their sections. When a run ends and the agent wrote or changed a plan in
+milestones, Certo names it and the command that runs it milestone by
+milestone. In one user's project the agent wrote such a `PLAN.md`, the
+user replied "go ahead", and the whole plan ran as one task on one
+budget. See [Run a task in milestones](../guides/run-in-milestones.md#write-the-task-file).
+
 ## Fixed
 
 - **The benchmark's cost per model** charged the model that writes
