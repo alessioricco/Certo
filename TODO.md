@@ -141,9 +141,13 @@ first item is the suggested next one.
   about doubled). The writer's wrong sums are fixed (0.1.25: it writes
   the calculation in the test; `docs/benchmark/writer-arithmetic-0.1.25.md`).
   Left: (1) tests that misread the task still turn up in some runs (0
-  to 7 of 65 sets); (2) measure the writer setting
-  (`CERTO_INDEPENDENT_TESTS_MODEL`, 0.2.5) on the benchmark: a local
-  ladder with Haiku writing. (A 2-of-3
+  to 7 of 65 sets); (2) a fooled run caught live: the writer setting
+  (`CERTO_INDEPENDENT_TESTS_MODEL`, 0.2.5) was benched with the derived
+  ladder and Haiku writing (`docs/benchmark/ladder-independent-0.2.5.md`:
+  13/13, no false alarms, $0.026 per task), but no run was fooled, so
+  the `semver-order` catch is still replay-only. Done when a live run
+  that fools Certo's checks fails the vote (e.g. `semver-order` on
+  qwen3.8 with a few repeats, at night). (A 2-of-3
   failure changes the verdict only with `--independent-tests-strict`,
   0.1.25.) The `qwen3.8` replay
   (2026-10-25) caught 2 of 8 fooled runs with the vote (Haiku: 7 of 8),
