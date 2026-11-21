@@ -141,6 +141,10 @@ Empty (the default), the run's own model writes them. In the
 benchmark, an arm takes `independent_tests_model` (see
 [the benchmark file](../reference/bench-yaml.md#arms)).
 
+Measured: with a ladder that starts on a local model and Haiku writing,
+13 tasks had no false alarms, for about $0.026 per task
+([the benchmark](../benchmark/ladder-independent-0.2.5.md)).
+
 ## Make them change the verdict
 
 ```bash

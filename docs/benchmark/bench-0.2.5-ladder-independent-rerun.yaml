@@ -1,0 +1,12 @@
+# The 9 tasks of bench-0.2.5-ladder-independent.yaml that ran on Terra
+# alone on 2026-11-19 (turing shut down during task 4, so the ladder's
+# reachability probe skipped qwen3.8 for the rest). Same arm, qwen3.8
+# reachable this time; semver-order is the one Haiku's tests should catch.
+# A night slot, under caffeinate -i, with the fan on turing:
+#   caffeinate -i .venv/bin/certo bench --config docs/benchmark/bench-0.2.5-ladder-independent-rerun.yaml --pause-between 900 --stop-at 02:00 --yes
+models_file: docs/benchmark/models-0.2.4-ratings.yaml
+models_list_file: docs/benchmark/models_list-0.2.4-computed.yaml
+tasks: [page-ranges, pedestrian-crossing, room-bookings, semver-order, slugify, temperature-table, todo-deps, token-bucket, wordle-score]
+repeats: 1
+arms:
+  - {name: ladder-haiku-tests, strategy: escalate, max_task_seconds: 3600, independent_tests: true, independent_tests_model: claude-haiku-5-5}

@@ -18,6 +18,9 @@ CERTO_INDEPENDENT_TESTS_MODEL=claude-haiku-5-5
 A wrong name stops the run before it starts. In the benchmark, an arm
 takes `independent_tests_model`. See
 [Choose the model that writes them](../guides/independent-tests.md#choose-the-model-that-writes-them).
+On the benchmark, with a ladder that starts on `qwen3.8` and Haiku writing, all 13
+tasks passed with no false alarms, for about $0.026 per task
+([the benchmark](../benchmark/ladder-independent-0.2.5.md)).
 
 ## New: choose how many milestones
 
