@@ -1,8 +1,8 @@
 {
  "format": 1,
  "scale": "2026-11-16",
- "generated": "2026-11-19",
- "lmarena_published": "2026-11-18",
+ "generated": "2026-11-22",
+ "lmarena_published": "2026-11-20",
  "sources": [
   {
    "id": "lmarena",
@@ -70,7 +70,7 @@
     "Amazon Nova 2 Lite"
    ],
    "scores": {
-    "lmarena_text_factuality": 1379.34
+    "lmarena_text_factuality": 1379.45
    },
    "cost_per_task": null,
    "litellm": null,
@@ -86,7 +86,7 @@
     "amazon-nova-experimental-chat (26-02-10)"
    ],
    "scores": {
-    "lmarena_text_factuality": 1451.63
+    "lmarena_text_factuality": 1451.76
    },
    "cost_per_task": null,
    "litellm": null,
@@ -98,7 +98,7 @@
     "Baichuan2-13B"
    ],
    "scores": {
-    "epoch_eci": 91.59
+    "epoch_eci": 91.75
    },
    "cost_per_task": null,
    "litellm": null,
@@ -110,7 +110,7 @@
     "Baichuan 2-7B"
    ],
    "scores": {
-    "epoch_eci": 83.25
+    "epoch_eci": 83.6
    },
    "cost_per_task": null,
    "litellm": null,
@@ -122,7 +122,7 @@
     "Beam 1.0"
    ],
    "scores": {
-    "epoch_eci": 150.87
+    "epoch_eci": 150.84
    },
    "cost_per_task": null,
    "litellm": "baseten/reflection/Beam-1.0",
@@ -134,8 +134,8 @@
     "Beam 1.0 501B A23B"
    ],
    "scores": {
-    "lmarena_text_factuality": 1440.23,
-    "lmarena_webdev": 1437.09
+    "lmarena_text_factuality": 1440.18,
+    "lmarena_webdev": 1436.77
    },
    "cost_per_task": null,
    "litellm": "wandb/reflection/Beam-1.0-501B-A23B",
@@ -147,7 +147,7 @@
     "Cerebras-GPT-13B"
    ],
    "scores": {
-    "epoch_eci": 48.59
+    "epoch_eci": 48.88
    },
    "cost_per_task": null,
    "litellm": null,
@@ -159,7 +159,7 @@
     "chatglm2-6b"
    ],
    "scores": {
-    "epoch_eci": 73.4
+    "epoch_eci": 73.74
    },
    "cost_per_task": null,
    "litellm": null,
@@ -171,7 +171,7 @@
     "ChatGPT-4o Latest (20250326)"
    ],
    "scores": {
-    "lmarena_text_factuality": 1443.77
+    "lmarena_text_factuality": 1443.78
    },
    "cost_per_task": null,
    "litellm": null,
@@ -183,7 +183,7 @@
     "Claude 2"
    ],
    "scores": {
-    "epoch_eci": 117.12
+    "epoch_eci": 117.17
    },
    "cost_per_task": null,
    "litellm": null,
@@ -195,7 +195,7 @@
     "Claude 3.5 Haiku"
    ],
    "scores": {
-    "epoch_eci": 124.75
+    "epoch_eci": 124.77
    },
    "cost_per_task": null,
    "litellm": "vertex_ai/claude-3-5-haiku",
@@ -208,7 +208,7 @@
     "Claude 3.5 Sonnet (October 2024)"
    ],
    "scores": {
-    "epoch_eci": 133.34
+    "epoch_eci": 133.36
    },
    "cost_per_task": null,
    "litellm": "snowflake/claude-3-5-sonnet",
@@ -220,7 +220,7 @@
     "Claude 3.7 Sonnet"
    ],
    "scores": {
-    "epoch_eci": 141.05
+    "epoch_eci": 141.03
    },
    "cost_per_task": null,
    "litellm": "snowflake/claude-3-7-sonnet",
@@ -232,7 +232,7 @@
     "Claude 3 Haiku"
    ],
    "scores": {
-    "epoch_eci": 117.79
+    "epoch_eci": 117.8
    },
    "cost_per_task": null,
    "litellm": "vertex_ai/claude-3-haiku",
@@ -244,7 +244,7 @@
     "Claude 3 Opus"
    ],
    "scores": {
-    "epoch_eci": 125.58
+    "epoch_eci": 125.59
    },
    "cost_per_task": null,
    "litellm": "vercel_ai_gateway/anthropic/claude-3-opus",
@@ -256,7 +256,7 @@
     "Claude 3 Sonnet"
    ],
    "scores": {
-    "epoch_eci": 119.65
+    "epoch_eci": 119.66
    },
    "cost_per_task": null,
    "litellm": "vertex_ai/claude-3-sonnet",
@@ -269,9 +269,9 @@
     "Claude Fable 5 (High)"
    ],
    "scores": {
-    "epoch_eci": 164.21,
-    "lmarena_text_factuality": 1483.23,
-    "lmarena_webdev": 1625.9
+    "epoch_eci": 164.18,
+    "lmarena_text_factuality": 1483.28,
+    "lmarena_webdev": 1625.88
    },
    "cost_per_task": 3.590077,
    "litellm": "claude-fable-5",
@@ -284,9 +284,9 @@
     "Claude Fable 5.1 (Max)"
    ],
    "scores": {
-    "epoch_eci": 167.09,
-    "lmarena_text_factuality": 1498.57,
-    "lmarena_webdev": 1741.4
+    "epoch_eci": 167.06,
+    "lmarena_text_factuality": 1498.69,
+    "lmarena_webdev": 1741.88
    },
    "cost_per_task": 7.77187025,
    "litellm": "claude-fable-5-1",
@@ -300,8 +300,9 @@
     "Claude Fable 5.2 (xHigh)"
    ],
    "scores": {
-    "epoch_eci": 173.5,
-    "lmarena_webdev": 1823.83
+    "epoch_eci": 173.4,
+    "lmarena_text_factuality": 1483.08,
+    "lmarena_webdev": 1823.64
    },
    "cost_per_task": 9.1616391,
    "litellm": "claude-fable-5-2",
@@ -314,9 +315,9 @@
     "Claude Haiku 4.5 (20251001)"
    ],
    "scores": {
-    "epoch_eci": 142.76,
+    "epoch_eci": 142.74,
     "lmarena_text_factuality": 1418.2,
-    "lmarena_webdev": 1330.29
+    "lmarena_webdev": 1330.22
    },
    "cost_per_task": null,
    "litellm": "claude-haiku-4-5",
@@ -329,9 +330,9 @@
     "Claude Haiku 5.5 (High)"
    ],
    "scores": {
-    "epoch_eci": 160.29,
-    "lmarena_text_factuality": 1423.73,
-    "lmarena_webdev": 1595.6
+    "epoch_eci": 160.33,
+    "lmarena_text_factuality": 1424.39,
+    "lmarena_webdev": 1595.38
    },
    "cost_per_task": 0.09300591,
    "litellm": "claude-haiku-5-5",
@@ -343,7 +344,7 @@
     "Claude Instant"
    ],
    "scores": {
-    "epoch_eci": 114.0
+    "epoch_eci": 114.03
    },
    "cost_per_task": null,
    "litellm": null,
@@ -355,7 +356,7 @@
     "Claude Opus 4"
    ],
    "scores": {
-    "epoch_eci": 142.88
+    "epoch_eci": 142.85
    },
    "cost_per_task": null,
    "litellm": "gmi/anthropic/claude-opus-4",
@@ -369,9 +370,9 @@
     "Claude Opus 4.1 (Thinking 16K, 20250805)"
    ],
    "scores": {
-    "epoch_eci": 144.77,
-    "lmarena_text_factuality": 1434.9,
-    "lmarena_webdev": 1390.22
+    "epoch_eci": 144.76,
+    "lmarena_text_factuality": 1434.95,
+    "lmarena_webdev": 1390.37
    },
    "cost_per_task": null,
    "litellm": "vercel_ai_gateway/anthropic/claude-opus-4.1",
@@ -385,9 +386,9 @@
     "Claude Opus 4.5 (High, 32K, 20251101)"
    ],
    "scores": {
-    "epoch_eci": 151.88,
+    "epoch_eci": 151.87,
     "lmarena_text_factuality": 1459.25,
-    "lmarena_webdev": 1493.71
+    "lmarena_webdev": 1493.64
    },
    "cost_per_task": null,
    "litellm": "claude-opus-4-5",
@@ -400,9 +401,9 @@
     "Claude Opus 4.6 (High)"
    ],
    "scores": {
-    "epoch_eci": 156.35,
-    "lmarena_text_factuality": 1492.6,
-    "lmarena_webdev": 1546.57
+    "epoch_eci": 156.33,
+    "lmarena_text_factuality": 1492.7,
+    "lmarena_webdev": 1546.37
    },
    "cost_per_task": null,
    "litellm": "claude-opus-4-6",
@@ -415,9 +416,9 @@
     "Claude Opus 4.7 (High)"
    ],
    "scores": {
-    "epoch_eci": 157.5,
-    "lmarena_text_factuality": 1477.98,
-    "lmarena_webdev": 1557.18
+    "epoch_eci": 157.49,
+    "lmarena_text_factuality": 1478.12,
+    "lmarena_webdev": 1557.43
    },
    "cost_per_task": null,
    "litellm": "claude-opus-4-7",
@@ -430,9 +431,9 @@
     "Claude Opus 4.8 (High)"
    ],
    "scores": {
-    "epoch_eci": 159.91,
-    "lmarena_text_factuality": 1470.28,
-    "lmarena_webdev": 1555.31
+    "epoch_eci": 159.9,
+    "lmarena_text_factuality": 1470.26,
+    "lmarena_webdev": 1555.49
    },
    "cost_per_task": null,
    "litellm": "claude-opus-4-8",
@@ -446,9 +447,9 @@
     "Claude Opus 5 (Max)"
    ],
    "scores": {
-    "epoch_eci": 164.74,
-    "lmarena_text_factuality": 1487.67,
-    "lmarena_webdev": 1691.5
+    "epoch_eci": 164.72,
+    "lmarena_text_factuality": 1487.79,
+    "lmarena_webdev": 1691.57
    },
    "cost_per_task": 4.57542475,
    "litellm": "claude-opus-5",
@@ -462,9 +463,9 @@
     "Claude Opus 5.5 (Max)"
    ],
    "scores": {
-    "epoch_eci": 168.7,
-    "lmarena_text_factuality": 1505.42,
-    "lmarena_webdev": 1818.4
+    "epoch_eci": 168.67,
+    "lmarena_text_factuality": 1504.85,
+    "lmarena_webdev": 1819.04
    },
    "cost_per_task": 1.9732442,
    "litellm": "claude-opus-5-5",
@@ -476,7 +477,7 @@
     "Claude Sonnet 4"
    ],
    "scores": {
-    "epoch_eci": 141.88
+    "epoch_eci": 141.84
    },
    "cost_per_task": null,
    "litellm": "gmi/anthropic/claude-sonnet-4",
@@ -490,9 +491,9 @@
     "Claude Sonnet 4.5 (High, 32K, 20250929)"
    ],
    "scores": {
-    "epoch_eci": 147.59,
-    "lmarena_text_factuality": 1448.67,
-    "lmarena_webdev": 1393.85
+    "epoch_eci": 147.56,
+    "lmarena_text_factuality": 1448.73,
+    "lmarena_webdev": 1393.95
    },
    "cost_per_task": null,
    "litellm": "claude-sonnet-4-5",
@@ -504,8 +505,8 @@
     "Claude Sonnet 4.6"
    ],
    "scores": {
-    "epoch_eci": 152.86,
-    "lmarena_text_factuality": 1460.79,
+    "epoch_eci": 152.85,
+    "lmarena_text_factuality": 1460.75,
     "lmarena_webdev": 1521.92
    },
    "cost_per_task": null,
@@ -520,8 +521,8 @@
    ],
    "scores": {
     "epoch_eci": 156.9,
-    "lmarena_text_factuality": 1451.59,
-    "lmarena_webdev": 1539.26
+    "lmarena_text_factuality": 1451.42,
+    "lmarena_webdev": 1539.44
    },
    "cost_per_task": 0.9133875,
    "litellm": "claude-sonnet-5",
@@ -536,9 +537,9 @@
     "Claude Sonnet 5.5 (xHigh)"
    ],
    "scores": {
-    "epoch_eci": 166.59,
-    "lmarena_text_factuality": 1473.72,
-    "lmarena_webdev": 1773.04
+    "epoch_eci": 166.6,
+    "lmarena_text_factuality": 1473.27,
+    "lmarena_webdev": 1772.0
    },
    "cost_per_task": 0.801544,
    "litellm": "claude-sonnet-5-5",
@@ -550,7 +551,7 @@
     "CodeQwen1.5-7B"
    ],
    "scores": {
-    "epoch_eci": 74.53
+    "epoch_eci": 74.81
    },
    "cost_per_task": null,
    "litellm": null,
@@ -562,7 +563,7 @@
     "Command A (03-2025)"
    ],
    "scores": {
-    "lmarena_text_factuality": 1362.76
+    "lmarena_text_factuality": 1362.79
    },
    "cost_per_task": null,
    "litellm": "vercel_ai_gateway/cohere/command-a",
@@ -574,7 +575,7 @@
     "DeepSeek Coder 33B"
    ],
    "scores": {
-    "epoch_eci": 75.93
+    "epoch_eci": 76.3
    },
    "cost_per_task": null,
    "litellm": null,
@@ -586,7 +587,7 @@
     "DeepSeek Coder 6.7B"
    ],
    "scores": {
-    "epoch_eci": 67.02
+    "epoch_eci": 67.45
    },
    "cost_per_task": null,
    "litellm": "llamagate/deepseek-coder-6.7b",
@@ -598,7 +599,7 @@
     "DeepSeek-Coder-V2-Lite-Base"
    ],
    "scores": {
-    "epoch_eci": 99.31
+    "epoch_eci": 99.41
    },
    "cost_per_task": null,
    "litellm": "fireworks_ai/accounts/fireworks/models/deepseek-coder-v2-lite-base",
@@ -611,7 +612,7 @@
     "DeepSeek-R1 (May 2025)"
    ],
    "scores": {
-    "epoch_eci": 140.75
+    "epoch_eci": 140.73
    },
    "cost_per_task": null,
    "litellm": "kyma/deepseek-r1",
@@ -623,7 +624,7 @@
     "DeepSeek-V2 (MoE-236B, May 2024)"
    ],
    "scores": {
-    "epoch_eci": 120.76
+    "epoch_eci": 120.82
    },
    "cost_per_task": null,
    "litellm": null,
@@ -636,7 +637,7 @@
     "DeepSeek-V3 (Mar 2025)"
    ],
    "scores": {
-    "epoch_eci": 135.28
+    "epoch_eci": 135.25
    },
    "cost_per_task": null,
    "litellm": "kyma/deepseek-v3",
@@ -648,7 +649,7 @@
     "DeepSeek-V3.1"
    ],
    "scores": {
-    "epoch_eci": 140.8
+    "epoch_eci": 140.88
    },
    "cost_per_task": null,
    "litellm": "azure_ai/deepseek-v3.1",
@@ -662,8 +663,8 @@
    ],
    "scores": {
     "epoch_eci": 146.26,
-    "lmarena_text_factuality": 1436.75,
-    "lmarena_webdev": 1362.72
+    "lmarena_text_factuality": 1436.83,
+    "lmarena_webdev": 1362.48
    },
    "cost_per_task": null,
    "litellm": "deepseek.v3.2",
@@ -677,8 +678,8 @@
    ],
    "scores": {
     "epoch_eci": 144.39,
-    "lmarena_text_factuality": 1446.75,
-    "lmarena_webdev": 1271.67
+    "lmarena_text_factuality": 1446.67,
+    "lmarena_webdev": 1271.39
    },
    "cost_per_task": null,
    "litellm": "gmi/deepseek-ai/DeepSeek-V3.2-Exp",
@@ -693,9 +694,9 @@
     "DeepSeek-V4.1-Flash-20261017 (Max)"
    ],
    "scores": {
-    "epoch_eci": 159.4,
-    "lmarena_text_factuality": 1467.77,
-    "lmarena_webdev": 1658.67
+    "epoch_eci": 159.41,
+    "lmarena_text_factuality": 1467.6,
+    "lmarena_webdev": 1658.0
    },
    "cost_per_task": 0.14232805800000004,
    "litellm": "deepseek-flash",
@@ -711,8 +712,8 @@
    ],
    "scores": {
     "epoch_eci": 154.43,
-    "lmarena_text_factuality": 1439.14,
-    "lmarena_webdev": 1581.47
+    "lmarena_text_factuality": 1439.11,
+    "lmarena_webdev": 1582.11
    },
    "cost_per_task": null,
    "litellm": "deepseek-v4-flash",
@@ -726,9 +727,9 @@
     "DeepSeek-V4-Pro Preview (High)"
    ],
    "scores": {
-    "epoch_eci": 150.21,
-    "lmarena_text_factuality": 1454.89,
-    "lmarena_webdev": 1580.71
+    "epoch_eci": 150.19,
+    "lmarena_text_factuality": 1454.96,
+    "lmarena_webdev": 1580.66
    },
    "cost_per_task": null,
    "litellm": "deepseek-v4-pro",
@@ -752,7 +753,7 @@
     "Devstral 2"
    ],
    "scores": {
-    "lmarena_webdev": 1195.53
+    "lmarena_webdev": 1195.54
    },
    "cost_per_task": null,
    "litellm": null,
@@ -764,7 +765,7 @@
     "Devstral Medium (2507)"
    ],
    "scores": {
-    "lmarena_webdev": 1071.99
+    "lmarena_webdev": 1071.97
    },
    "cost_per_task": null,
    "litellm": "mistral/devstral-medium-latest",
@@ -776,7 +777,7 @@
     "Dola Seed 2.0 Pro"
    ],
    "scores": {
-    "lmarena_text_factuality": 1420.87
+    "lmarena_text_factuality": 1421.01
    },
    "cost_per_task": null,
    "litellm": null,
@@ -788,7 +789,7 @@
     "Dolly 2.0-12b"
    ],
    "scores": {
-    "epoch_eci": 55.1
+    "epoch_eci": 55.52
    },
    "cost_per_task": null,
    "litellm": null,
@@ -802,7 +803,7 @@
     "ERNIE-5.0-Preview (1203)"
    ],
    "scores": {
-    "lmarena_text_factuality": 1445.27
+    "lmarena_text_factuality": 1445.35
    },
    "cost_per_task": null,
    "litellm": null,
@@ -814,7 +815,7 @@
     "ERNIE 5.1"
    ],
    "scores": {
-    "lmarena_text_factuality": 1456.44
+    "lmarena_text_factuality": 1456.48
    },
    "cost_per_task": null,
    "litellm": "aihubmix/ernie-5.1",
@@ -826,7 +827,7 @@
     "Falcon-180B"
    ],
    "scores": {
-    "epoch_eci": 106.92
+    "epoch_eci": 107.04
    },
    "cost_per_task": null,
    "litellm": null,
@@ -838,7 +839,7 @@
     "Falcon 2 11B"
    ],
    "scores": {
-    "epoch_eci": 99.01
+    "epoch_eci": 99.24
    },
    "cost_per_task": null,
    "litellm": null,
@@ -850,7 +851,7 @@
     "Falcon-40B"
    ],
    "scores": {
-    "epoch_eci": 90.42
+    "epoch_eci": 90.67
    },
    "cost_per_task": null,
    "litellm": null,
@@ -862,7 +863,7 @@
     "Falcon-7B"
    ],
    "scores": {
-    "epoch_eci": 72.84
+    "epoch_eci": 73.09
    },
    "cost_per_task": null,
    "litellm": null,
@@ -875,7 +876,7 @@
     "Gemini 1.5 Flash (Sep 2024)"
    ],
    "scores": {
-    "epoch_eci": 126.96
+    "epoch_eci": 126.98
    },
    "cost_per_task": null,
    "litellm": null,
@@ -912,7 +913,7 @@
     "Gemini 2.0 Flash Thinking (Jan 2025)"
    ],
    "scores": {
-    "epoch_eci": 133.61
+    "epoch_eci": 133.63
    },
    "cost_per_task": null,
    "litellm": null,
@@ -924,7 +925,7 @@
     "Gemini 2.0 Pro"
    ],
    "scores": {
-    "epoch_eci": 135.41
+    "epoch_eci": 135.4
    },
    "cost_per_task": null,
    "litellm": null,
@@ -941,8 +942,8 @@
     "Gemini 2.5 Flash Preview (09-2025)"
    ],
    "scores": {
-    "epoch_eci": 141.94,
-    "lmarena_text_factuality": 1436.13
+    "epoch_eci": 141.88,
+    "lmarena_text_factuality": 1436.17
    },
    "cost_per_task": null,
    "litellm": "gemini-2.5-flash",
@@ -955,8 +956,8 @@
     "Gemini 2.5 Flash-Lite Preview (Non-Thinking, 09-2025)"
    ],
    "scores": {
-    "epoch_eci": 133.05,
-    "lmarena_text_factuality": 1406.42
+    "epoch_eci": 133.04,
+    "lmarena_text_factuality": 1406.41
    },
    "cost_per_task": null,
    "litellm": "gemini-2.5-flash-lite",
@@ -971,9 +972,9 @@
     "Gemini 2.5 Pro (May 2025)"
    ],
    "scores": {
-    "epoch_eci": 144.91,
-    "lmarena_text_factuality": 1461.87,
-    "lmarena_webdev": 1226.54
+    "epoch_eci": 144.88,
+    "lmarena_text_factuality": 1461.83,
+    "lmarena_webdev": 1226.55
    },
    "cost_per_task": null,
    "litellm": "gemini-2.5-pro",
@@ -986,9 +987,9 @@
     "Gemini 3.1 Flash-Lite Preview"
    ],
    "scores": {
-    "epoch_eci": 145.03,
-    "lmarena_text_factuality": 1432.95,
-    "lmarena_webdev": 1255.95
+    "epoch_eci": 144.97,
+    "lmarena_text_factuality": 1433.05,
+    "lmarena_webdev": 1255.8
    },
    "cost_per_task": null,
    "litellm": "gemini-3.1-flash-lite",
@@ -1002,8 +1003,8 @@
    ],
    "scores": {
     "epoch_eci": 156.25,
-    "lmarena_text_factuality": 1471.59,
-    "lmarena_webdev": 1446.29
+    "lmarena_text_factuality": 1471.6,
+    "lmarena_webdev": 1446.34
    },
    "cost_per_task": 0.5820329,
    "litellm": "gemini-3.1-pro-preview",
@@ -1017,9 +1018,9 @@
     "Gemini 3.5 Flash (Medium)"
    ],
    "scores": {
-    "epoch_eci": 155.35,
-    "lmarena_text_factuality": 1478.2,
-    "lmarena_webdev": 1499.69
+    "epoch_eci": 155.34,
+    "lmarena_text_factuality": 1478.29,
+    "lmarena_webdev": 1499.75
    },
    "cost_per_task": null,
    "litellm": "gemini-3.5-flash",
@@ -1031,9 +1032,9 @@
     "Gemini 3.5 Flash-Lite"
    ],
    "scores": {
-    "epoch_eci": 145.65,
-    "lmarena_text_factuality": 1446.64,
-    "lmarena_webdev": 1431.81
+    "epoch_eci": 145.63,
+    "lmarena_text_factuality": 1446.62,
+    "lmarena_webdev": 1433.4
    },
    "cost_per_task": null,
    "litellm": "gemini-3.5-flash-lite",
@@ -1047,8 +1048,8 @@
    ],
    "scores": {
     "epoch_eci": 155.24,
-    "lmarena_text_factuality": 1472.07,
-    "lmarena_webdev": 1537.84
+    "lmarena_text_factuality": 1472.1,
+    "lmarena_webdev": 1537.79
    },
    "cost_per_task": null,
    "litellm": "gemini-3.6-flash",
@@ -1061,9 +1062,9 @@
     "Gemini 3.7 Flash (High)"
    ],
    "scores": {
-    "epoch_eci": 158.38,
-    "lmarena_text_factuality": 1475.94,
-    "lmarena_webdev": 1588.26
+    "epoch_eci": 158.4,
+    "lmarena_text_factuality": 1476.09,
+    "lmarena_webdev": 1588.7
    },
    "cost_per_task": 0.53528915,
    "litellm": "gemini-3.7-flash",
@@ -1076,9 +1077,9 @@
     "Gemini 3.8 Flash (High)"
    ],
    "scores": {
-    "epoch_eci": 158.83,
-    "lmarena_text_factuality": 1469.17,
-    "lmarena_webdev": 1584.64
+    "epoch_eci": 158.81,
+    "lmarena_text_factuality": 1469.07,
+    "lmarena_webdev": 1584.17
    },
    "cost_per_task": 0.7692444375,
    "litellm": "gemini-3.8-flash",
@@ -1091,9 +1092,9 @@
     "Gemini 3 Flash (Minimal)"
    ],
    "scores": {
-    "epoch_eci": 152.34,
-    "lmarena_text_factuality": 1467.94,
-    "lmarena_webdev": 1440.3
+    "epoch_eci": 152.35,
+    "lmarena_text_factuality": 1468.0,
+    "lmarena_webdev": 1440.15
    },
    "cost_per_task": null,
    "litellm": "gemini-3-flash-preview",
@@ -1106,8 +1107,8 @@
    ],
    "scores": {
     "epoch_eci": 153.04,
-    "lmarena_text_factuality": 1481.51,
-    "lmarena_webdev": 1440.98
+    "lmarena_text_factuality": 1481.54,
+    "lmarena_webdev": 1441.13
    },
    "cost_per_task": null,
    "litellm": "vertex_ai/gemini-3-pro-preview",
@@ -1120,9 +1121,9 @@
     "Gemini 4 Argon (High)"
    ],
    "scores": {
-    "epoch_eci": 166.57,
-    "lmarena_text_factuality": 1493.52,
-    "lmarena_webdev": 1680.59
+    "epoch_eci": 166.53,
+    "lmarena_text_factuality": 1492.26,
+    "lmarena_webdev": 1682.44
    },
    "cost_per_task": 0.6637951999999999,
    "litellm": "kyma/gemini-4-argon",
@@ -1135,9 +1136,9 @@
     "Gemini 4 Carbon (High)"
    ],
    "scores": {
-    "epoch_eci": 169.78,
-    "lmarena_text_factuality": 1521.38,
-    "lmarena_webdev": 1768.52
+    "epoch_eci": 169.68,
+    "lmarena_text_factuality": 1522.23,
+    "lmarena_webdev": 1768.73
    },
    "cost_per_task": 1.3340182,
    "litellm": "gemini/gemini-4-carbon",
@@ -1146,11 +1147,13 @@
   },
   "gemini4hydrogen": {
    "names": [
+    "Gemini 4 Hydrogen",
     "Gemini 4 Hydrogen (High)"
    ],
    "scores": {
-    "lmarena_text_factuality": 1493.34,
-    "lmarena_webdev": 1702.86
+    "epoch_eci": 166.81,
+    "lmarena_text_factuality": 1493.59,
+    "lmarena_webdev": 1700.63
    },
    "cost_per_task": 1.5040870499999999,
    "litellm": "gemini/gemini-4-hydrogen",
@@ -1162,8 +1165,8 @@
     "Gemini 4 Neon (High)"
    ],
    "scores": {
-    "lmarena_text_factuality": 1517.57,
-    "lmarena_webdev": 1763.9
+    "lmarena_text_factuality": 1509.28,
+    "lmarena_webdev": 1764.89
    },
    "cost_per_task": 2.6002560999999993,
    "litellm": "gemini/gemini-4-neon",
@@ -1175,7 +1178,7 @@
     "Gemma 2 27B"
    ],
    "scores": {
-    "epoch_eci": 118.61
+    "epoch_eci": 118.64
    },
    "cost_per_task": null,
    "litellm": null,
@@ -1187,7 +1190,7 @@
     "Gemma 2 9B"
    ],
    "scores": {
-    "epoch_eci": 112.28
+    "epoch_eci": 112.42
    },
    "cost_per_task": null,
    "litellm": "vercel_ai_gateway/google/gemma-2-9b",
@@ -1199,7 +1202,7 @@
     "Gemma 2B"
    ],
    "scores": {
-    "epoch_eci": 75.36
+    "epoch_eci": 75.71
    },
    "cost_per_task": null,
    "litellm": null,
@@ -1211,7 +1214,7 @@
     "Gemma 3 27B"
    ],
    "scores": {
-    "epoch_eci": 127.5
+    "epoch_eci": 127.56
    },
    "cost_per_task": null,
    "litellm": null,
@@ -1223,7 +1226,7 @@
     "Gemma 3 27B IT"
    ],
    "scores": {
-    "lmarena_text_factuality": 1379.27
+    "lmarena_text_factuality": 1379.39
    },
    "cost_per_task": null,
    "litellm": "gemini/gemma-3-27b-it",
@@ -1235,9 +1238,9 @@
     "Gemma 4 26B A4B"
    ],
    "scores": {
-    "epoch_eci": 141.58,
-    "lmarena_text_factuality": 1444.41,
-    "lmarena_webdev": 1357.76
+    "epoch_eci": 141.56,
+    "lmarena_text_factuality": 1444.52,
+    "lmarena_webdev": 1357.6
    },
    "cost_per_task": null,
    "litellm": "empiriolabs/gemma-4-26b-a4b",
@@ -1249,8 +1252,8 @@
     "Gemma 4 31B"
    ],
    "scores": {
-    "lmarena_text_factuality": 1449.23,
-    "lmarena_webdev": 1370.26
+    "lmarena_text_factuality": 1449.07,
+    "lmarena_webdev": 1370.24
    },
    "cost_per_task": null,
    "litellm": "kyma/gemma-4-31b",
@@ -1274,7 +1277,7 @@
     "Gemma 7B"
    ],
    "scores": {
-    "epoch_eci": 102.87
+    "epoch_eci": 103.15
    },
    "cost_per_task": null,
    "litellm": "fireworks_ai/accounts/fireworks/models/gemma-7b",
@@ -1286,7 +1289,7 @@
     "GLM-4.5-Air"
    ],
    "scores": {
-    "lmarena_text_factuality": 1394.18
+    "lmarena_text_factuality": 1394.12
    },
    "cost_per_task": null,
    "litellm": "zai/glm-4.5-air",
@@ -1298,8 +1301,8 @@
     "GLM-4.6"
    ],
    "scores": {
-    "lmarena_text_factuality": 1447.03,
-    "lmarena_webdev": 1341.96
+    "lmarena_text_factuality": 1447.11,
+    "lmarena_webdev": 1341.95
    },
    "cost_per_task": null,
    "litellm": "zai/glm-4.6",
@@ -1311,7 +1314,7 @@
     "GLM-4.6V"
    ],
    "scores": {
-    "lmarena_text_factuality": 1391.09
+    "lmarena_text_factuality": 1391.19
    },
    "cost_per_task": null,
    "litellm": "novita/zai-org/glm-4.6v",
@@ -1323,9 +1326,9 @@
     "GLM-4.7"
    ],
    "scores": {
-    "epoch_eci": 143.36,
-    "lmarena_text_factuality": 1443.86,
-    "lmarena_webdev": 1435.85
+    "epoch_eci": 143.34,
+    "lmarena_text_factuality": 1443.9,
+    "lmarena_webdev": 1435.86
    },
    "cost_per_task": null,
    "litellm": "zai/glm-4.7",
@@ -1337,7 +1340,7 @@
     "GLM-4.7-Flash"
    ],
    "scores": {
-    "lmarena_text_factuality": 1369.49
+    "lmarena_text_factuality": 1369.46
    },
    "cost_per_task": null,
    "litellm": "zai/glm-4.7-flash",
@@ -1349,9 +1352,9 @@
     "GLM-5"
    ],
    "scores": {
-    "epoch_eci": 146.54,
-    "lmarena_text_factuality": 1451.96,
-    "lmarena_webdev": 1434.98
+    "epoch_eci": 146.53,
+    "lmarena_text_factuality": 1451.97,
+    "lmarena_webdev": 1434.88
    },
    "cost_per_task": null,
    "litellm": "zai/glm-5",
@@ -1363,9 +1366,9 @@
     "GLM-5.1"
    ],
    "scores": {
-    "epoch_eci": 150.73,
-    "lmarena_text_factuality": 1456.17,
-    "lmarena_webdev": 1508.14
+    "epoch_eci": 150.71,
+    "lmarena_text_factuality": 1456.22,
+    "lmarena_webdev": 1508.07
    },
    "cost_per_task": null,
    "litellm": "zai/glm-5.1",
@@ -1378,9 +1381,9 @@
     "GLM-5.2 (Max)"
    ],
    "scores": {
-    "epoch_eci": 153.04,
-    "lmarena_text_factuality": 1462.61,
-    "lmarena_webdev": 1607.54
+    "epoch_eci": 153.07,
+    "lmarena_text_factuality": 1462.59,
+    "lmarena_webdev": 1607.51
    },
    "cost_per_task": 0.86012768,
    "litellm": "zai/glm-5.2",
@@ -1394,8 +1397,8 @@
    ],
    "scores": {
     "epoch_eci": 157.1,
-    "lmarena_text_factuality": 1468.56,
-    "lmarena_webdev": 1622.44
+    "lmarena_text_factuality": 1468.68,
+    "lmarena_webdev": 1622.66
    },
    "cost_per_task": 0.93685128,
    "litellm": "zai/glm-5.3",
@@ -1407,9 +1410,9 @@
     "GLM-5.3-Flash"
    ],
    "scores": {
-    "epoch_eci": 153.78,
-    "lmarena_text_factuality": 1461.25,
-    "lmarena_webdev": 1610.22
+    "epoch_eci": 153.77,
+    "lmarena_text_factuality": 1461.24,
+    "lmarena_webdev": 1610.48
    },
    "cost_per_task": 0.14728795999999997,
    "litellm": "zai/glm-5.3-flash",
@@ -1423,7 +1426,7 @@
     "GPT-3.5 Turbo (Nov 2023)"
    ],
    "scores": {
-    "epoch_eci": 112.77
+    "epoch_eci": 112.88
    },
    "cost_per_task": null,
    "litellm": "gpt-3.5-turbo",
@@ -1436,7 +1439,7 @@
     "GPT-4 (Mar 2023)"
    ],
    "scores": {
-    "epoch_eci": 121.58
+    "epoch_eci": 121.61
    },
    "cost_per_task": null,
    "litellm": "gpt-4",
@@ -1449,8 +1452,8 @@
     "GPT-4.1 (2025-04-14)"
    ],
    "scores": {
-    "epoch_eci": 136.18,
-    "lmarena_text_factuality": 1407.45
+    "epoch_eci": 136.14,
+    "lmarena_text_factuality": 1407.57
    },
    "cost_per_task": null,
    "litellm": "gpt-4.1",
@@ -1462,7 +1465,7 @@
     "GPT-4.1 mini"
    ],
    "scores": {
-    "epoch_eci": 134.27
+    "epoch_eci": 134.24
    },
    "cost_per_task": null,
    "litellm": "gpt-4.1-mini",
@@ -1474,7 +1477,7 @@
     "GPT-4.1 nano"
    ],
    "scores": {
-    "epoch_eci": 126.81
+    "epoch_eci": 126.79
    },
    "cost_per_task": null,
    "litellm": "gpt-4.1-nano",
@@ -1486,7 +1489,7 @@
     "GPT-4.5"
    ],
    "scores": {
-    "epoch_eci": 136.5
+    "epoch_eci": 136.47
    },
    "cost_per_task": null,
    "litellm": null,
@@ -1512,7 +1515,7 @@
     "GPT-4o mini"
    ],
    "scores": {
-    "epoch_eci": 123.75
+    "epoch_eci": 123.81
    },
    "cost_per_task": null,
    "litellm": "gpt-4o-mini",
@@ -1540,7 +1543,7 @@
    ],
    "scores": {
     "epoch_eci": 150.0,
-    "lmarena_text_factuality": 1420.66,
+    "lmarena_text_factuality": 1420.56,
     "lmarena_webdev": 1417.54
    },
    "cost_per_task": null,
@@ -1555,9 +1558,9 @@
     "GPT-5.1 (Medium)"
    ],
    "scores": {
-    "epoch_eci": 150.97,
-    "lmarena_text_factuality": 1458.0,
-    "lmarena_webdev": 1397.39
+    "epoch_eci": 150.93,
+    "lmarena_text_factuality": 1458.05,
+    "lmarena_webdev": 1397.25
    },
    "cost_per_task": null,
    "litellm": "gpt-5.1",
@@ -1569,7 +1572,7 @@
     "GPT-5.1-Codex"
    ],
    "scores": {
-    "lmarena_webdev": 1338.31
+    "lmarena_webdev": 1338.02
    },
    "cost_per_task": null,
    "litellm": "gpt-5.1-codex",
@@ -1581,7 +1584,7 @@
     "GPT-5.1-Codex-Mini"
    ],
    "scores": {
-    "lmarena_webdev": 1243.5
+    "lmarena_webdev": 1243.52
    },
    "cost_per_task": null,
    "litellm": "gpt-5.1-codex-mini",
@@ -1594,9 +1597,9 @@
     "GPT-5.2 (High)"
    ],
    "scores": {
-    "epoch_eci": 154.52,
-    "lmarena_text_factuality": 1441.38,
-    "lmarena_webdev": 1418.99
+    "epoch_eci": 154.53,
+    "lmarena_text_factuality": 1441.34,
+    "lmarena_webdev": 1418.96
    },
    "cost_per_task": null,
    "litellm": "gpt-5.2",
@@ -1608,7 +1611,7 @@
     "GPT-5.2 Chat (20260210)"
    ],
    "scores": {
-    "lmarena_text_factuality": 1450.47
+    "lmarena_text_factuality": 1450.37
    },
    "cost_per_task": null,
    "litellm": "gpt-5.2-chat-latest",
@@ -1620,7 +1623,7 @@
     "GPT-5.2-Codex"
    ],
    "scores": {
-    "lmarena_webdev": 1338.72
+    "lmarena_webdev": 1338.74
    },
    "cost_per_task": null,
    "litellm": "gpt-5.2-codex",
@@ -1632,7 +1635,7 @@
     "GPT-5.2 Pro"
    ],
    "scores": {
-    "epoch_eci": 157.31
+    "epoch_eci": 157.35
    },
    "cost_per_task": null,
    "litellm": "gpt-5.2-pro",
@@ -1644,7 +1647,7 @@
     "GPT-5.3 Chat"
    ],
    "scores": {
-    "lmarena_text_factuality": 1417.52
+    "lmarena_text_factuality": 1417.6
    },
    "cost_per_task": null,
    "litellm": "gpt-5.3-chat-latest",
@@ -1656,7 +1659,7 @@
     "GPT-5.3-Codex (Codex Harness)"
    ],
    "scores": {
-    "lmarena_webdev": 1406.11
+    "lmarena_webdev": 1406.09
    },
    "cost_per_task": null,
    "litellm": "gpt-5.3-codex",
@@ -1671,9 +1674,9 @@
     "GPT-5.4 (Medium, Codex Harness)"
    ],
    "scores": {
-    "epoch_eci": 157.87,
-    "lmarena_text_factuality": 1484.28,
-    "lmarena_webdev": 1461.49
+    "epoch_eci": 157.89,
+    "lmarena_text_factuality": 1484.4,
+    "lmarena_webdev": 1461.54
    },
    "cost_per_task": null,
    "litellm": "gpt-5.4",
@@ -1686,8 +1689,8 @@
     "GPT-5.4 mini (High)"
    ],
    "scores": {
-    "epoch_eci": 149.35,
-    "lmarena_text_factuality": 1446.41,
+    "epoch_eci": 149.37,
+    "lmarena_text_factuality": 1446.4,
     "lmarena_webdev": 1398.18
    },
    "cost_per_task": null,
@@ -1701,8 +1704,8 @@
     "GPT-5.4 nano (High)"
    ],
    "scores": {
-    "epoch_eci": 146.33,
-    "lmarena_text_factuality": 1416.13
+    "epoch_eci": 146.36,
+    "lmarena_text_factuality": 1416.09
    },
    "cost_per_task": null,
    "litellm": "gpt-5.4-nano",
@@ -1714,7 +1717,7 @@
     "GPT-5.4 Pro"
    ],
    "scores": {
-    "epoch_eci": 160.32
+    "epoch_eci": 160.31
    },
    "cost_per_task": null,
    "litellm": "gpt-5.4-pro",
@@ -1731,8 +1734,8 @@
    ],
    "scores": {
     "epoch_eci": 160.19,
-    "lmarena_text_factuality": 1485.32,
-    "lmarena_webdev": 1512.46
+    "lmarena_text_factuality": 1485.2,
+    "lmarena_webdev": 1512.38
    },
    "cost_per_task": null,
    "litellm": "gpt-5.5",
@@ -1744,7 +1747,7 @@
     "GPT-5.5 Instant"
    ],
    "scores": {
-    "lmarena_text_factuality": 1443.02
+    "lmarena_text_factuality": 1442.86
    },
    "cost_per_task": null,
    "litellm": null,
@@ -1756,7 +1759,7 @@
     "GPT-5.5 Pro"
    ],
    "scores": {
-    "epoch_eci": 162.77
+    "epoch_eci": 162.78
    },
    "cost_per_task": null,
    "litellm": "gpt-5.5-pro",
@@ -1770,9 +1773,9 @@
     "GPT-5.6 Luna (xHigh, Codex Harness)"
    ],
    "scores": {
-    "epoch_eci": 156.7,
-    "lmarena_text_factuality": 1460.1,
-    "lmarena_webdev": 1519.13
+    "epoch_eci": 156.72,
+    "lmarena_text_factuality": 1460.02,
+    "lmarena_webdev": 1519.08
    },
    "cost_per_task": null,
    "litellm": "gpt-5.6-luna",
@@ -1786,9 +1789,9 @@
     "GPT-5.6 Sol (xHigh, Codex Harness)"
    ],
    "scores": {
-    "epoch_eci": 163.05,
-    "lmarena_text_factuality": 1476.23,
-    "lmarena_webdev": 1615.5
+    "epoch_eci": 163.02,
+    "lmarena_text_factuality": 1476.18,
+    "lmarena_webdev": 1615.43
    },
    "cost_per_task": 1.4947744,
    "litellm": "gpt-5.6-sol",
@@ -1802,9 +1805,9 @@
     "GPT-5.6 Terra (xHigh, Codex Harness)"
    ],
    "scores": {
-    "epoch_eci": 160.78,
-    "lmarena_text_factuality": 1469.29,
-    "lmarena_webdev": 1520.13
+    "epoch_eci": 160.8,
+    "lmarena_text_factuality": 1469.36,
+    "lmarena_webdev": 1520.39
    },
    "cost_per_task": 0.5715922,
    "litellm": "gpt-5.6-terra",
@@ -1816,7 +1819,7 @@
     "GPT-5 Chat"
    ],
    "scores": {
-    "lmarena_text_factuality": 1421.74
+    "lmarena_text_factuality": 1421.8
    },
    "cost_per_task": null,
    "litellm": "gpt-5-chat",
@@ -1829,8 +1832,8 @@
     "GPT-5 mini (High)"
    ],
    "scores": {
-    "epoch_eci": 146.01,
-    "lmarena_text_factuality": 1394.16
+    "epoch_eci": 146.04,
+    "lmarena_text_factuality": 1394.22
    },
    "cost_per_task": null,
    "litellm": "gpt-5-mini",
@@ -1842,7 +1845,7 @@
     "GPT-5 nano"
    ],
    "scores": {
-    "epoch_eci": 139.09
+    "epoch_eci": 139.07
    },
    "cost_per_task": null,
    "litellm": "gpt-5-nano",
@@ -1854,7 +1857,7 @@
     "GPT-5 Pro"
    ],
    "scores": {
-    "epoch_eci": 151.27
+    "epoch_eci": 151.3
    },
    "cost_per_task": null,
    "litellm": "gpt-5-pro",
@@ -1868,9 +1871,9 @@
     "GPT-6.1 Sol (Medium)"
    ],
    "scores": {
-    "epoch_eci": 168.63,
-    "lmarena_text_factuality": 1469.48,
-    "lmarena_webdev": 1744.07
+    "epoch_eci": 168.61,
+    "lmarena_text_factuality": 1469.83,
+    "lmarena_webdev": 1743.36
    },
    "cost_per_task": 1.0431488999999998,
    "litellm": "gpt-6.1-sol",
@@ -1884,8 +1887,9 @@
     "GPT-6.1 Terra (Medium)"
    ],
    "scores": {
-    "epoch_eci": 167.72,
-    "lmarena_webdev": 1682.48
+    "epoch_eci": 167.71,
+    "lmarena_text_factuality": 1455.44,
+    "lmarena_webdev": 1685.43
    },
    "cost_per_task": 0.15650935,
    "litellm": "gpt-6.1-terra",
@@ -1898,8 +1902,9 @@
     "GPT-6.2 Astra (Max)"
    ],
    "scores": {
-    "epoch_eci": 174.17,
-    "lmarena_webdev": 1780.61
+    "epoch_eci": 172.82,
+    "lmarena_text_factuality": 1439.15,
+    "lmarena_webdev": 1766.18
    },
    "cost_per_task": 3.1085364,
    "litellm": "gpt-6.2-astra",
@@ -1911,7 +1916,8 @@
     "GPT-6.2 Sol (Max)"
    ],
    "scores": {
-    "lmarena_webdev": 1756.71
+    "lmarena_text_factuality": 1443.28,
+    "lmarena_webdev": 1754.04
    },
    "cost_per_task": 0.9605573000000001,
    "litellm": "gpt-6.2-sol",
@@ -1924,9 +1930,9 @@
     "GPT-6 Astra (Max)"
    ],
    "scores": {
-    "epoch_eci": 169.2,
-    "lmarena_text_factuality": 1467.05,
-    "lmarena_webdev": 1762.54
+    "epoch_eci": 169.21,
+    "lmarena_text_factuality": 1467.85,
+    "lmarena_webdev": 1763.96
    },
    "cost_per_task": 4.909754500000001,
    "litellm": "gpt-6-astra",
@@ -1941,9 +1947,9 @@
     "GPT-6 Luna (Medium)"
    ],
    "scores": {
-    "epoch_eci": 156.39,
-    "lmarena_text_factuality": 1466.18,
-    "lmarena_webdev": 1577.91
+    "epoch_eci": 156.45,
+    "lmarena_text_factuality": 1466.04,
+    "lmarena_webdev": 1578.32
    },
    "cost_per_task": 0.082118245,
    "litellm": "gpt-6-luna",
@@ -1956,9 +1962,9 @@
     "GPT-6 Sol (Max)"
    ],
    "scores": {
-    "epoch_eci": 163.82,
-    "lmarena_text_factuality": 1441.0,
-    "lmarena_webdev": 1674.1
+    "epoch_eci": 163.83,
+    "lmarena_text_factuality": 1441.82,
+    "lmarena_webdev": 1674.43
    },
    "cost_per_task": 1.8911452,
    "litellm": "gpt-6-sol",
@@ -1970,8 +1976,8 @@
     "gpt-oss-120b"
    ],
    "scores": {
-    "epoch_eci": 140.23,
-    "lmarena_text_factuality": 1384.6
+    "epoch_eci": 140.21,
+    "lmarena_text_factuality": 1384.48
    },
    "cost_per_task": null,
    "litellm": "kyma/gpt-oss-120b",
@@ -1983,7 +1989,7 @@
     "gpt-oss-20b"
    ],
    "scores": {
-    "epoch_eci": 134.88
+    "epoch_eci": 134.89
    },
    "cost_per_task": null,
    "litellm": "ovhcloud/gpt-oss-20b",
@@ -1995,8 +2001,8 @@
     "Granite 4.1 8B"
    ],
    "scores": {
-    "lmarena_text_factuality": 1311.08,
-    "lmarena_webdev": 1192.63
+    "lmarena_text_factuality": 1310.92,
+    "lmarena_webdev": 1192.79
    },
    "cost_per_task": null,
    "litellm": "wandb/ibm-granite/granite-4.1-8b",
@@ -2008,7 +2014,7 @@
     "Granite 4.2 30B"
    ],
    "scores": {
-    "lmarena_text_factuality": 1375.7
+    "lmarena_text_factuality": 1375.41
    },
    "cost_per_task": null,
    "litellm": null,
@@ -2020,7 +2026,7 @@
     "Granite 4.2 3B"
    ],
    "scores": {
-    "lmarena_text_factuality": 1323.21
+    "lmarena_text_factuality": 1323.48
    },
    "cost_per_task": null,
    "litellm": null,
@@ -2032,7 +2038,7 @@
     "Granite 4.2 8B"
    ],
    "scores": {
-    "lmarena_text_factuality": 1341.69
+    "lmarena_text_factuality": 1341.36
    },
    "cost_per_task": null,
    "litellm": "wandb/ibm-granite/granite-4.2-8b",
@@ -2044,7 +2050,7 @@
     "Grok-2 (Dec 2024)"
    ],
    "scores": {
-    "epoch_eci": 129.75
+    "epoch_eci": 129.79
    },
    "cost_per_task": null,
    "litellm": "vercel_ai_gateway/xai/grok-2",
@@ -2056,7 +2062,7 @@
     "Grok 3"
    ],
    "scores": {
-    "epoch_eci": 137.59
+    "epoch_eci": 137.55
    },
    "cost_per_task": null,
    "litellm": "azure_ai/grok-3",
@@ -2068,7 +2074,7 @@
     "Grok-3 mini"
    ],
    "scores": {
-    "epoch_eci": 139.95
+    "epoch_eci": 139.88
    },
    "cost_per_task": null,
    "litellm": "azure_ai/grok-3-mini",
@@ -2081,8 +2087,8 @@
     "Grok 4 (0709)"
    ],
    "scores": {
-    "epoch_eci": 146.96,
-    "lmarena_text_factuality": 1418.01
+    "epoch_eci": 146.91,
+    "lmarena_text_factuality": 1418.04
    },
    "cost_per_task": null,
    "litellm": "azure_ai/grok-4",
@@ -2095,8 +2101,8 @@
     "Grok 4.1 (Thinking)"
    ],
    "scores": {
-    "lmarena_text_factuality": 1434.56,
-    "lmarena_webdev": 1216.0
+    "lmarena_text_factuality": 1434.6,
+    "lmarena_webdev": 1216.01
    },
    "cost_per_task": null,
    "litellm": null,
@@ -2108,8 +2114,8 @@
     "Grok 4.1 Fast (Reasoning)"
    ],
    "scores": {
-    "lmarena_text_factuality": 1413.69,
-    "lmarena_webdev": 1241.72
+    "lmarena_text_factuality": 1413.66,
+    "lmarena_webdev": 1241.7
    },
    "cost_per_task": null,
    "litellm": null,
@@ -2121,7 +2127,7 @@
     "Grok 4.20"
    ],
    "scores": {
-    "epoch_eci": 152.3
+    "epoch_eci": 152.26
    },
    "cost_per_task": null,
    "litellm": "xai/grok-4.20",
@@ -2133,8 +2139,8 @@
     "Grok 4.20 Beta (Reasoning, 0309)"
    ],
    "scores": {
-    "lmarena_text_factuality": 1455.96,
-    "lmarena_webdev": 1376.05
+    "lmarena_text_factuality": 1456.0,
+    "lmarena_webdev": 1376.38
    },
    "cost_per_task": null,
    "litellm": "xai/grok-4.20-beta",
@@ -2146,7 +2152,7 @@
     "Grok 4.20 Beta 1"
    ],
    "scores": {
-    "lmarena_text_factuality": 1452.63
+    "lmarena_text_factuality": 1452.6
    },
    "cost_per_task": null,
    "litellm": null,
@@ -2158,7 +2164,7 @@
     "Grok 4.20 Multi-Agent Beta (0309)"
    ],
    "scores": {
-    "lmarena_text_factuality": 1457.55
+    "lmarena_text_factuality": 1457.58
    },
    "cost_per_task": null,
    "litellm": "xai/grok-4.20-multi-agent-beta-latest",
@@ -2170,8 +2176,8 @@
     "Grok 4.3"
    ],
    "scores": {
-    "lmarena_text_factuality": 1426.41,
-    "lmarena_webdev": 1357.37
+    "lmarena_text_factuality": 1426.33,
+    "lmarena_webdev": 1357.51
    },
    "cost_per_task": null,
    "litellm": "xai/grok-4.3",
@@ -2183,7 +2189,7 @@
     "Grok 4.3 Beta"
    ],
    "scores": {
-    "epoch_eci": 149.91
+    "epoch_eci": 149.92
    },
    "cost_per_task": null,
    "litellm": null,
@@ -2195,9 +2201,9 @@
     "Grok 4.5"
    ],
    "scores": {
-    "epoch_eci": 154.97,
-    "lmarena_text_factuality": 1464.68,
-    "lmarena_webdev": 1552.35
+    "epoch_eci": 154.98,
+    "lmarena_text_factuality": 1464.71,
+    "lmarena_webdev": 1552.39
    },
    "cost_per_task": null,
    "litellm": "xai/grok-4.5",
@@ -2213,7 +2219,7 @@
    "scores": {
     "epoch_eci": 157.82,
     "lmarena_text_factuality": 1451.28,
-    "lmarena_webdev": 1618.0
+    "lmarena_webdev": 1617.95
    },
    "cost_per_task": 1.370276,
    "litellm": "xai/grok-4.6",
@@ -2227,8 +2233,8 @@
    ],
    "scores": {
     "epoch_eci": 156.43,
-    "lmarena_text_factuality": 1438.06,
-    "lmarena_webdev": 1639.02
+    "lmarena_text_factuality": 1438.83,
+    "lmarena_webdev": 1638.92
    },
    "cost_per_task": 3.3538260000000015,
    "litellm": "xai/grok-4.7",
@@ -2241,9 +2247,9 @@
     "Grok 4 Fast (Reasoning)"
    ],
    "scores": {
-    "epoch_eci": 144.35,
-    "lmarena_text_factuality": 1417.19,
-    "lmarena_webdev": 1158.51
+    "epoch_eci": 144.32,
+    "lmarena_text_factuality": 1416.98,
+    "lmarena_webdev": 1159.05
    },
    "cost_per_task": null,
    "litellm": null,
@@ -2255,7 +2261,7 @@
     "Grok Code Fast 1"
    ],
    "scores": {
-    "lmarena_webdev": 1165.91
+    "lmarena_webdev": 1165.88
    },
    "cost_per_task": null,
    "litellm": "xai/grok-code-fast-1",
@@ -2268,8 +2274,8 @@
     "Hy3 preview"
    ],
    "scores": {
-    "lmarena_text_factuality": 1447.14,
-    "lmarena_webdev": 1505.39
+    "lmarena_text_factuality": 1447.31,
+    "lmarena_webdev": 1505.79
    },
    "cost_per_task": 0.079262182,
    "litellm": "kyma/hy3",
@@ -2282,7 +2288,7 @@
     "Hy4 preview"
    ],
    "scores": {
-    "lmarena_webdev": 1631.47
+    "lmarena_webdev": 1650.48
    },
    "cost_per_task": 0.4161911322,
    "litellm": "tencent/hy4",
@@ -2294,9 +2300,9 @@
     "Inkling"
    ],
    "scores": {
-    "epoch_eci": 148.43,
-    "lmarena_text_factuality": 1451.92,
-    "lmarena_webdev": 1414.24
+    "epoch_eci": 148.39,
+    "lmarena_text_factuality": 1451.77,
+    "lmarena_webdev": 1414.05
    },
    "cost_per_task": 0.239491595,
    "litellm": "baseten/thinkingmachines/inkling",
@@ -2308,8 +2314,8 @@
     "Inkling 2 Small"
    ],
    "scores": {
-    "lmarena_text_factuality": 1424.25,
-    "lmarena_webdev": 1643.76
+    "lmarena_text_factuality": 1424.11,
+    "lmarena_webdev": 1642.65
    },
    "cost_per_task": 0.24346280999999997,
    "litellm": "nebius/thinkingmachines/Inkling-2-Small",
@@ -2321,9 +2327,9 @@
     "Inkling-Small"
    ],
    "scores": {
-    "epoch_eci": 150.78,
-    "lmarena_text_factuality": 1426.06,
-    "lmarena_webdev": 1407.8
+    "epoch_eci": 150.77,
+    "lmarena_text_factuality": 1426.14,
+    "lmarena_webdev": 1407.7
    },
    "cost_per_task": 0.16081718,
    "litellm": "baseten/thinkingmachines/inkling-small",
@@ -2335,7 +2341,7 @@
     "INTELLECT-1"
    ],
    "scores": {
-    "epoch_eci": 83.09
+    "epoch_eci": 83.35
    },
    "cost_per_task": null,
    "litellm": null,
@@ -2347,7 +2353,7 @@
     "INTELLECT-3"
    ],
    "scores": {
-    "lmarena_text_factuality": 1373.14
+    "lmarena_text_factuality": 1372.78
    },
    "cost_per_task": null,
    "litellm": null,
@@ -2359,7 +2365,7 @@
     "internlm-20b"
    ],
    "scores": {
-    "epoch_eci": 98.79
+    "epoch_eci": 98.9
    },
    "cost_per_task": null,
    "litellm": null,
@@ -2371,7 +2377,7 @@
     "internlm-7b"
    ],
    "scores": {
-    "epoch_eci": 84.31
+    "epoch_eci": 84.56
    },
    "cost_per_task": null,
    "litellm": null,
@@ -2383,7 +2389,7 @@
     "KAT-Coder-Pro V1"
    ],
    "scores": {
-    "lmarena_webdev": 1257.25
+    "lmarena_webdev": 1257.37
    },
    "cost_per_task": null,
    "litellm": null,
@@ -2396,8 +2402,8 @@
     "Kimi K2 Preview (0905)"
    ],
    "scores": {
-    "epoch_eci": 141.25,
-    "lmarena_text_factuality": 1401.87
+    "epoch_eci": 141.27,
+    "lmarena_text_factuality": 1401.91
    },
    "cost_per_task": null,
    "litellm": "vercel_ai_gateway/moonshotai/kimi-k2",
@@ -2411,9 +2417,9 @@
     "Kimi K2.5 (Thinking)"
    ],
    "scores": {
-    "epoch_eci": 148.8,
-    "lmarena_text_factuality": 1445.01,
-    "lmarena_webdev": 1436.41
+    "epoch_eci": 148.79,
+    "lmarena_text_factuality": 1444.94,
+    "lmarena_webdev": 1436.37
    },
    "cost_per_task": null,
    "litellm": "azure_ai/kimi-k2.5",
@@ -2425,9 +2431,9 @@
     "Kimi K2.6"
    ],
    "scores": {
-    "epoch_eci": 151.62,
+    "epoch_eci": 151.6,
     "lmarena_text_factuality": 1456.4,
-    "lmarena_webdev": 1509.12
+    "lmarena_webdev": 1509.14
    },
    "cost_per_task": null,
    "litellm": "kyma/kimi-k2.6",
@@ -2439,8 +2445,8 @@
     "Kimi K2.7 Code"
    ],
    "scores": {
-    "epoch_eci": 151.15,
-    "lmarena_webdev": 1474.75
+    "epoch_eci": 151.17,
+    "lmarena_webdev": 1474.89
    },
    "cost_per_task": null,
    "litellm": "kyma/kimi-k2.7-code",
@@ -2452,7 +2458,7 @@
     "Kimi K2 Thinking"
    ],
    "scores": {
-    "epoch_eci": 145.48
+    "epoch_eci": 145.46
    },
    "cost_per_task": null,
    "litellm": "azure_ai/kimi-k2-thinking",
@@ -2465,7 +2471,7 @@
    ],
    "scores": {
     "lmarena_text_factuality": 1423.02,
-    "lmarena_webdev": 1321.83
+    "lmarena_webdev": 1321.79
    },
    "cost_per_task": null,
    "litellm": null,
@@ -2478,9 +2484,9 @@
     "Kimi K3 (Max)"
    ],
    "scores": {
-    "epoch_eci": 158.6,
-    "lmarena_text_factuality": 1470.09,
-    "lmarena_webdev": 1657.91
+    "epoch_eci": 158.61,
+    "lmarena_text_factuality": 1470.53,
+    "lmarena_webdev": 1659.15
    },
    "cost_per_task": 0.9090770499999999,
    "litellm": "kyma/kimi-k3",
@@ -2493,9 +2499,9 @@
     "Kimi K3.1 Pro (Max)"
    ],
    "scores": {
-    "epoch_eci": 161.36,
-    "lmarena_text_factuality": 1480.61,
-    "lmarena_webdev": 1684.46
+    "epoch_eci": 161.2,
+    "lmarena_text_factuality": 1478.82,
+    "lmarena_webdev": 1682.95
    },
    "cost_per_task": 1.1470413,
    "litellm": "kyma/kimi-k3.1-pro",
@@ -2507,7 +2513,7 @@
     "Laguna M.1"
    ],
    "scores": {
-    "lmarena_webdev": 1349.9
+    "lmarena_webdev": 1350.08
    },
    "cost_per_task": null,
    "litellm": null,
@@ -2519,7 +2525,7 @@
     "Laguna XS.2"
    ],
    "scores": {
-    "lmarena_webdev": 1303.94
+    "lmarena_webdev": 1303.97
    },
    "cost_per_task": null,
    "litellm": null,
@@ -2531,7 +2537,7 @@
     "LLaMA-13B"
    ],
    "scores": {
-    "epoch_eci": 84.95
+    "epoch_eci": 85.23
    },
    "cost_per_task": null,
    "litellm": null,
@@ -2543,7 +2549,7 @@
     "Llama 2-13B"
    ],
    "scores": {
-    "epoch_eci": 96.28
+    "epoch_eci": 96.48
    },
    "cost_per_task": null,
    "litellm": "ollama/llama2:13b",
@@ -2555,7 +2561,7 @@
     "Llama 2-34B"
    ],
    "scores": {
-    "epoch_eci": 93.69
+    "epoch_eci": 93.89
    },
    "cost_per_task": null,
    "litellm": null,
@@ -2567,7 +2573,7 @@
     "Llama 2-70B"
    ],
    "scores": {
-    "epoch_eci": 105.64
+    "epoch_eci": 105.73
    },
    "cost_per_task": null,
    "litellm": "ollama/llama2:70b",
@@ -2579,7 +2585,7 @@
     "Llama 2-7B"
    ],
    "scores": {
-    "epoch_eci": 82.8
+    "epoch_eci": 83.23
    },
    "cost_per_task": null,
    "litellm": "ollama/llama2:7b",
@@ -2591,7 +2597,7 @@
     "Llama 3.1-405B"
    ],
    "scores": {
-    "epoch_eci": 127.87
+    "epoch_eci": 127.92
    },
    "cost_per_task": null,
    "litellm": "snowflake/llama3.1-405b",
@@ -2603,7 +2609,7 @@
     "Llama 3.1-70B"
    ],
    "scores": {
-    "epoch_eci": 124.72
+    "epoch_eci": 124.7
    },
    "cost_per_task": null,
    "litellm": "cerebras/llama-3.1-70b",
@@ -2615,7 +2621,7 @@
     "Llama 3.1-8B"
    ],
    "scores": {
-    "epoch_eci": 110.78
+    "epoch_eci": 110.9
    },
    "cost_per_task": null,
    "litellm": "cerebras/llama3.1-8b",
@@ -2627,7 +2633,7 @@
     "Llama 3.2 90B"
    ],
    "scores": {
-    "epoch_eci": 122.89
+    "epoch_eci": 122.92
    },
    "cost_per_task": null,
    "litellm": "vercel_ai_gateway/meta/llama-3.2-90b",
@@ -2639,7 +2645,7 @@
     "Llama 3.3 70B"
    ],
    "scores": {
-    "epoch_eci": 126.16
+    "epoch_eci": 126.18
    },
    "cost_per_task": null,
    "litellm": "kyma/llama-3.3-70b",
@@ -2651,7 +2657,7 @@
     "LLaMA-33B"
    ],
    "scores": {
-    "epoch_eci": 96.37
+    "epoch_eci": 96.51
    },
    "cost_per_task": null,
    "litellm": null,
@@ -2663,7 +2669,7 @@
     "Llama 3-70B"
    ],
    "scores": {
-    "epoch_eci": 121.34
+    "epoch_eci": 121.33
    },
    "cost_per_task": null,
    "litellm": "ollama/llama3:70b",
@@ -2675,7 +2681,7 @@
     "Llama 3-8B"
    ],
    "scores": {
-    "epoch_eci": 109.0
+    "epoch_eci": 109.12
    },
    "cost_per_task": null,
    "litellm": "ollama/llama3:8b",
@@ -2687,7 +2693,7 @@
     "Llama 4 Maverick"
    ],
    "scores": {
-    "epoch_eci": 132.24
+    "epoch_eci": 132.19
    },
    "cost_per_task": null,
    "litellm": "kyma/llama-4-maverick",
@@ -2699,7 +2705,7 @@
     "Llama 4 Scout"
    ],
    "scores": {
-    "epoch_eci": 127.77
+    "epoch_eci": 127.75
    },
    "cost_per_task": null,
    "litellm": "vercel_ai_gateway/meta/llama-4-scout",
@@ -2711,7 +2717,7 @@
     "LLaMA-65B"
    ],
    "scores": {
-    "epoch_eci": 101.38
+    "epoch_eci": 101.51
    },
    "cost_per_task": null,
    "litellm": null,
@@ -2723,7 +2729,7 @@
     "LLaMA-7B"
    ],
    "scores": {
-    "epoch_eci": 76.96
+    "epoch_eci": 77.28
    },
    "cost_per_task": null,
    "litellm": null,
@@ -2735,7 +2741,7 @@
     "LongCat-Flash-Chat Exp (2602)"
    ],
    "scores": {
-    "lmarena_text_factuality": 1428.4
+    "lmarena_text_factuality": 1428.51
    },
    "cost_per_task": null,
    "litellm": null,
@@ -2747,7 +2753,7 @@
     "Mercury"
    ],
    "scores": {
-    "lmarena_text_factuality": 1303.88
+    "lmarena_text_factuality": 1304.05
    },
    "cost_per_task": null,
    "litellm": null,
@@ -2760,7 +2766,7 @@
    ],
    "scores": {
     "lmarena_text_factuality": 1367.48,
-    "lmarena_webdev": 1170.59
+    "lmarena_webdev": 1170.56
    },
    "cost_per_task": null,
    "litellm": "inception/mercury-2",
@@ -2772,8 +2778,8 @@
     "MiMo-V2.5"
    ],
    "scores": {
-    "lmarena_text_factuality": 1438.69,
-    "lmarena_webdev": 1437.83
+    "lmarena_text_factuality": 1438.76,
+    "lmarena_webdev": 1437.87
    },
    "cost_per_task": null,
    "litellm": "kyma/mimo-v2.5",
@@ -2785,8 +2791,8 @@
     "MiMo-V2.5-Pro"
    ],
    "scores": {
-    "lmarena_text_factuality": 1464.25,
-    "lmarena_webdev": 1479.33
+    "lmarena_text_factuality": 1464.28,
+    "lmarena_webdev": 1479.34
    },
    "cost_per_task": null,
    "litellm": "opencode_go/mimo-v2.5-pro",
@@ -2798,8 +2804,8 @@
     "MiMo-V2.6-Flash"
    ],
    "scores": {
-    "lmarena_text_factuality": 1449.71,
-    "lmarena_webdev": 1636.48
+    "lmarena_text_factuality": 1449.77,
+    "lmarena_webdev": 1637.5
    },
    "cost_per_task": 0.07918356319999999,
    "litellm": "kyma/mimo-v2.6-flash",
@@ -2811,8 +2817,8 @@
     "MiMo-V2.6-Pro"
    ],
    "scores": {
-    "lmarena_text_factuality": 1485.24,
-    "lmarena_webdev": 1622.84
+    "lmarena_text_factuality": 1485.76,
+    "lmarena_webdev": 1622.06
    },
    "cost_per_task": 0.162749411,
    "litellm": "kyma/mimo-v2.6-pro",
@@ -2825,8 +2831,8 @@
     "MiMo-V2-Flash (Thinking)"
    ],
    "scores": {
-    "lmarena_text_factuality": 1422.09,
-    "lmarena_webdev": 1331.8
+    "lmarena_text_factuality": 1422.14,
+    "lmarena_webdev": 1331.63
    },
    "cost_per_task": null,
    "litellm": "novita/xiaomimimo/mimo-v2-flash",
@@ -2838,7 +2844,7 @@
     "MiMo-V2-Omni"
    ],
    "scores": {
-    "lmarena_text_factuality": 1434.94
+    "lmarena_text_factuality": 1435.0
    },
    "cost_per_task": null,
    "litellm": "aihubmix/mimo-v2-omni",
@@ -2850,8 +2856,8 @@
     "MiMo-V2-Pro"
    ],
    "scores": {
-    "lmarena_text_factuality": 1443.79,
-    "lmarena_webdev": 1434.65
+    "lmarena_text_factuality": 1443.88,
+    "lmarena_webdev": 1434.78
    },
    "cost_per_task": null,
    "litellm": "aihubmix/mimo-v2-pro",
@@ -2863,7 +2869,7 @@
     "MiniMax-M1"
    ],
    "scores": {
-    "lmarena_text_factuality": 1369.48
+    "lmarena_text_factuality": 1369.63
    },
    "cost_per_task": null,
    "litellm": null,
@@ -2875,8 +2881,8 @@
     "MiniMax-M2"
    ],
    "scores": {
-    "lmarena_text_factuality": 1359.85,
-    "lmarena_webdev": 1298.99
+    "lmarena_text_factuality": 1359.82,
+    "lmarena_webdev": 1298.95
    },
    "cost_per_task": null,
    "litellm": "minimax/MiniMax-M2",
@@ -2888,8 +2894,8 @@
     "MiniMax-M2.1 Preview"
    ],
    "scores": {
-    "lmarena_text_factuality": 1410.43,
-    "lmarena_webdev": 1384.12
+    "lmarena_text_factuality": 1410.55,
+    "lmarena_webdev": 1384.23
    },
    "cost_per_task": null,
    "litellm": "minimax/MiniMax-M2.1",
@@ -2901,8 +2907,8 @@
     "MiniMax-M2.5"
    ],
    "scores": {
-    "lmarena_text_factuality": 1385.09,
-    "lmarena_webdev": 1385.74
+    "lmarena_text_factuality": 1384.93,
+    "lmarena_webdev": 1385.88
    },
    "cost_per_task": null,
    "litellm": "kyma/minimax-m2.5",
@@ -2914,8 +2920,8 @@
     "MiniMax-M2.7"
    ],
    "scores": {
-    "lmarena_text_factuality": 1421.95,
-    "lmarena_webdev": 1398.07
+    "lmarena_text_factuality": 1421.78,
+    "lmarena_webdev": 1398.04
    },
    "cost_per_task": null,
    "litellm": "kyma/minimax-m2.7",
@@ -2927,9 +2933,9 @@
     "MiniMax-M3"
    ],
    "scores": {
-    "epoch_eci": 147.9,
-    "lmarena_text_factuality": 1433.04,
-    "lmarena_webdev": 1484.24
+    "epoch_eci": 147.84,
+    "lmarena_text_factuality": 1433.01,
+    "lmarena_webdev": 1484.35
    },
    "cost_per_task": 0.3612341399999999,
    "litellm": "kyma/minimax-m3",
@@ -2941,7 +2947,7 @@
     "MiniMax-M3.1-Flash"
    ],
    "scores": {
-    "lmarena_webdev": 1581.54
+    "lmarena_webdev": 1581.43
    },
    "cost_per_task": 0.20717878499999998,
    "litellm": "kyma/minimax-m3.1-flash",
@@ -2953,7 +2959,7 @@
     "Mistral 7B v0.1"
    ],
    "scores": {
-    "epoch_eci": 102.56
+    "epoch_eci": 102.72
    },
    "cost_per_task": null,
    "litellm": "replicate/mistralai/mistral-7b-v0.1",
@@ -2965,7 +2971,7 @@
     "Mistral Large"
    ],
    "scores": {
-    "epoch_eci": 119.96
+    "epoch_eci": 119.97
    },
    "cost_per_task": null,
    "litellm": "azure/mistral-large-latest",
@@ -2977,7 +2983,7 @@
     "Mistral Large 2 (Jul 2024)"
    ],
    "scores": {
-    "epoch_eci": 126.42
+    "epoch_eci": 126.4
    },
    "cost_per_task": null,
    "litellm": "snowflake/mistral-large2",
@@ -2989,8 +2995,8 @@
     "Mistral Large 3"
    ],
    "scores": {
-    "lmarena_text_factuality": 1434.54,
-    "lmarena_webdev": 1232.66
+    "lmarena_text_factuality": 1434.58,
+    "lmarena_webdev": 1232.6
    },
    "cost_per_task": null,
    "litellm": "mistral/mistral-large-3",
@@ -3003,9 +3009,9 @@
     "Mistral Large 4 Preview"
    ],
    "scores": {
-    "epoch_eci": 154.56,
-    "lmarena_text_factuality": 1421.1,
-    "lmarena_webdev": 1568.19
+    "epoch_eci": 154.57,
+    "lmarena_text_factuality": 1420.96,
+    "lmarena_webdev": 1573.17
    },
    "cost_per_task": 0.26110504000000007,
    "litellm": "mistral/mistral-large-4",
@@ -3017,7 +3023,7 @@
     "Mistral Medium 3"
    ],
    "scores": {
-    "epoch_eci": 132.81
+    "epoch_eci": 132.8
    },
    "cost_per_task": null,
    "litellm": "mistral/mistral-medium-3",
@@ -3029,7 +3035,7 @@
     "Mistral Medium 3.1 (2508)"
    ],
    "scores": {
-    "lmarena_text_factuality": 1428.86
+    "lmarena_text_factuality": 1428.93
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3041,9 +3047,9 @@
     "Mistral Medium 3.5"
    ],
    "scores": {
-    "epoch_eci": 141.57,
-    "lmarena_text_factuality": 1429.76,
-    "lmarena_webdev": 1263.36
+    "epoch_eci": 141.58,
+    "lmarena_text_factuality": 1429.81,
+    "lmarena_webdev": 1263.39
    },
    "cost_per_task": 0.32934805,
    "litellm": "mistral/mistral-medium-3-5",
@@ -3055,7 +3061,7 @@
     "Mistral NeMo"
    ],
    "scores": {
-    "epoch_eci": 113.81
+    "epoch_eci": 113.87
    },
    "cost_per_task": null,
    "litellm": "azure_ai/mistral-nemo",
@@ -3067,7 +3073,7 @@
     "Mixtral 8x22B"
    ],
    "scores": {
-    "epoch_eci": 118.66
+    "epoch_eci": 118.71
    },
    "cost_per_task": null,
    "litellm": "fireworks_ai/accounts/fireworks/models/mixtral-8x22b",
@@ -3079,7 +3085,7 @@
     "Mixtral 8x7B"
    ],
    "scores": {
-    "epoch_eci": 113.1
+    "epoch_eci": 113.19
    },
    "cost_per_task": null,
    "litellm": "fireworks_ai/accounts/fireworks/models/mixtral-8x7b",
@@ -3091,7 +3097,7 @@
     "MPT-30B"
    ],
    "scores": {
-    "epoch_eci": 84.95
+    "epoch_eci": 85.19
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3103,7 +3109,7 @@
     "MPT-7B"
    ],
    "scores": {
-    "epoch_eci": 73.18
+    "epoch_eci": 73.39
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3115,7 +3121,7 @@
     "Muse Ember (Max)"
    ],
    "scores": {
-    "lmarena_webdev": 1608.39
+    "lmarena_webdev": 1608.29
    },
    "cost_per_task": 0.02003074,
    "litellm": null,
@@ -3127,8 +3133,8 @@
     "Muse Glimmer"
    ],
    "scores": {
-    "lmarena_text_factuality": 1402.22,
-    "lmarena_webdev": 1353.43
+    "lmarena_text_factuality": 1402.33,
+    "lmarena_webdev": 1353.0
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3140,8 +3146,8 @@
     "Muse Spark"
    ],
    "scores": {
-    "epoch_eci": 153.16,
-    "lmarena_text_factuality": 1468.04
+    "epoch_eci": 153.15,
+    "lmarena_text_factuality": 1468.09
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3153,9 +3159,9 @@
     "Muse Spark 1.1"
    ],
    "scores": {
-    "epoch_eci": 154.92,
-    "lmarena_text_factuality": 1463.63,
-    "lmarena_webdev": 1541.43
+    "epoch_eci": 154.94,
+    "lmarena_text_factuality": 1463.64,
+    "lmarena_webdev": 1541.25
    },
    "cost_per_task": null,
    "litellm": "kyma/muse-spark-1.1",
@@ -3168,9 +3174,9 @@
     "Muse Spark 1.2 (xHigh)"
    ],
    "scores": {
-    "epoch_eci": 155.06,
+    "epoch_eci": 155.02,
     "lmarena_text_factuality": 1478.86,
-    "lmarena_webdev": 1533.67
+    "lmarena_webdev": 1533.33
    },
    "cost_per_task": 0.407062875,
    "litellm": "kyma/muse-spark-1.2",
@@ -3184,9 +3190,9 @@
     "Muse Spark 1.3 (xHigh)"
    ],
    "scores": {
-    "epoch_eci": 158.25,
-    "lmarena_text_factuality": 1480.67,
-    "lmarena_webdev": 1654.36
+    "epoch_eci": 158.24,
+    "lmarena_text_factuality": 1481.37,
+    "lmarena_webdev": 1652.97
    },
    "cost_per_task": 0.44848544999999995,
    "litellm": "kyma/muse-spark-1.3",
@@ -3199,8 +3205,8 @@
     "Muse Spark Open (Max)"
    ],
    "scores": {
-    "epoch_eci": 155.45,
-    "lmarena_webdev": 1526.51
+    "epoch_eci": 155.47,
+    "lmarena_webdev": 1527.34
    },
    "cost_per_task": null,
    "litellm": "kyma/muse-spark-open",
@@ -3214,8 +3220,8 @@
    ],
    "scores": {
     "epoch_eci": 161.74,
-    "lmarena_text_factuality": 1493.35,
-    "lmarena_webdev": 1647.95
+    "lmarena_text_factuality": 1493.67,
+    "lmarena_webdev": 1647.02
    },
    "cost_per_task": 1.0919016,
    "litellm": "kyma/muse-wonder",
@@ -3227,7 +3233,7 @@
     "Muse Wonder Full (Max)"
    ],
    "scores": {
-    "lmarena_webdev": 1723.21
+    "lmarena_webdev": 1722.63
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3239,7 +3245,7 @@
     "Nemotron 3 Ultra"
    ],
    "scores": {
-    "epoch_eci": 147.0
+    "epoch_eci": 147.02
    },
    "cost_per_task": 0.1362219,
    "litellm": null,
@@ -3251,7 +3257,7 @@
     "Nemotron-4 15B"
    ],
    "scores": {
-    "epoch_eci": 98.97
+    "epoch_eci": 99.14
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3263,7 +3269,7 @@
     "NVIDIA-Nemotron-3.5-Lightning-30B-A3B (NVFP4)"
    ],
    "scores": {
-    "lmarena_text_factuality": 1368.88
+    "lmarena_text_factuality": 1368.76
    },
    "cost_per_task": null,
    "litellm": "wandb/nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B",
@@ -3275,20 +3281,20 @@
     "NVIDIA-Nemotron-3.5-Super-VL-120B-A12B (NVFP4)"
    ],
    "scores": {
-    "lmarena_text_factuality": 1426.07,
-    "lmarena_webdev": 1401.96
+    "lmarena_text_factuality": 1426.2,
+    "lmarena_webdev": 1400.66
    },
    "cost_per_task": null,
    "litellm": "wandb/nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B",
    "price_in": 0.15,
-   "price_out": 0.5
+   "price_out": 0.47
   },
   "nvidianemotron3nano30ba3b": {
    "names": [
     "NVIDIA-Nemotron-3-Nano-30B-A3B (BF16)"
    ],
    "scores": {
-    "lmarena_text_factuality": 1362.18
+    "lmarena_text_factuality": 1362.17
    },
    "cost_per_task": null,
    "litellm": "nebius/nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
@@ -3300,7 +3306,7 @@
     "NVIDIA-Nemotron-3-Super-120B-A12B"
    ],
    "scores": {
-    "lmarena_text_factuality": 1389.38
+    "lmarena_text_factuality": 1389.46
    },
    "cost_per_task": null,
    "litellm": "deepinfra/nvidia/NVIDIA-Nemotron-3-Super-120B-A12B",
@@ -3312,7 +3318,7 @@
     "NVIDIA-Nemotron-3-Ultra-550B-A55B (NVFP4)"
    ],
    "scores": {
-    "lmarena_text_factuality": 1432.05
+    "lmarena_text_factuality": 1432.26
    },
    "cost_per_task": null,
    "litellm": "wandb/nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B",
@@ -3325,7 +3331,7 @@
     "o1-preview"
    ],
    "scores": {
-    "epoch_eci": 141.18
+    "epoch_eci": 141.16
    },
    "cost_per_task": null,
    "litellm": "o1",
@@ -3337,7 +3343,7 @@
     "o1-mini"
    ],
    "scores": {
-    "epoch_eci": 135.28
+    "epoch_eci": 135.27
    },
    "cost_per_task": null,
    "litellm": "azure/o1-mini",
@@ -3350,8 +3356,8 @@
     "o3 (2025-04-16)"
    ],
    "scores": {
-    "epoch_eci": 147.05,
-    "lmarena_text_factuality": 1404.39
+    "epoch_eci": 147.02,
+    "lmarena_text_factuality": 1404.53
    },
    "cost_per_task": null,
    "litellm": "o3",
@@ -3363,7 +3369,7 @@
     "o3-mini"
    ],
    "scores": {
-    "epoch_eci": 140.65
+    "epoch_eci": 140.63
    },
    "cost_per_task": null,
    "litellm": "o3-mini",
@@ -3375,7 +3381,7 @@
     "o3-pro"
    ],
    "scores": {
-    "epoch_eci": 147.46
+    "epoch_eci": 147.47
    },
    "cost_per_task": null,
    "litellm": "o3-pro",
@@ -3388,8 +3394,8 @@
     "o4-mini (2025-04-16)"
    ],
    "scores": {
-    "epoch_eci": 145.22,
-    "lmarena_text_factuality": 1367.49
+    "epoch_eci": 145.21,
+    "lmarena_text_factuality": 1367.51
    },
    "cost_per_task": null,
    "litellm": "o4-mini",
@@ -3401,7 +3407,7 @@
     "Olmo 3.1 32B Instruct"
    ],
    "scores": {
-    "lmarena_text_factuality": 1341.31
+    "lmarena_text_factuality": 1341.29
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3413,7 +3419,7 @@
     "Olmo 3.1 32B Think"
    ],
    "scores": {
-    "lmarena_text_factuality": 1299.53
+    "lmarena_text_factuality": 1299.63
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3425,7 +3431,7 @@
     "Olmo 3 32B Think"
    ],
    "scores": {
-    "lmarena_text_factuality": 1318.41
+    "lmarena_text_factuality": 1318.36
    },
    "cost_per_task": null,
    "litellm": "publicai/allenai/Olmo-3-32B-Think",
@@ -3437,7 +3443,7 @@
     "open_llama_7b"
    ],
    "scores": {
-    "epoch_eci": 63.91
+    "epoch_eci": 64.37
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3449,7 +3455,7 @@
     "PaLM 2-L"
    ],
    "scores": {
-    "epoch_eci": 113.71
+    "epoch_eci": 113.98
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3461,7 +3467,7 @@
     "PaLM 2-M"
    ],
    "scores": {
-    "epoch_eci": 97.77
+    "epoch_eci": 97.86
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3473,7 +3479,7 @@
     "PaLM 2-S"
    ],
    "scores": {
-    "epoch_eci": 93.62
+    "epoch_eci": 93.84
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3485,7 +3491,7 @@
     "Phi-1.5"
    ],
    "scores": {
-    "epoch_eci": 68.17
+    "epoch_eci": 68.37
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3497,7 +3503,7 @@
     "Phi-2"
    ],
    "scores": {
-    "epoch_eci": 95.94
+    "epoch_eci": 96.21
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3509,7 +3515,7 @@
     "phi-3-medium 14B"
    ],
    "scores": {
-    "epoch_eci": 114.01
+    "epoch_eci": 114.07
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3521,7 +3527,7 @@
     "phi-3-mini 3.8B"
    ],
    "scores": {
-    "epoch_eci": 110.4
+    "epoch_eci": 110.45
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3533,7 +3539,7 @@
     "phi-3-small 7.4B"
    ],
    "scores": {
-    "epoch_eci": 116.26
+    "epoch_eci": 116.3
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3557,7 +3563,7 @@
     "Qwen-14B"
    ],
    "scores": {
-    "epoch_eci": 101.61
+    "epoch_eci": 101.76
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3569,7 +3575,7 @@
     "Qwen-1_8B"
    ],
    "scores": {
-    "epoch_eci": 59.23
+    "epoch_eci": 59.62
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3581,7 +3587,7 @@
     "Qwen2.5-72B"
    ],
    "scores": {
-    "epoch_eci": 127.21
+    "epoch_eci": 127.23
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3594,7 +3600,7 @@
     "Qwen2.5-Coder (7B)"
    ],
    "scores": {
-    "epoch_eci": 107.45
+    "epoch_eci": 107.42
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3606,7 +3612,7 @@
     "Qwen2.5-Coder-0.5B"
    ],
    "scores": {
-    "epoch_eci": 67.95
+    "epoch_eci": 68.08
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3618,7 +3624,7 @@
     "Qwen2.5-Coder-14B"
    ],
    "scores": {
-    "epoch_eci": 113.72
+    "epoch_eci": 113.74
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3630,7 +3636,7 @@
     "Qwen2.5-Coder-32B"
    ],
    "scores": {
-    "epoch_eci": 118.74
+    "epoch_eci": 118.73
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3642,7 +3648,7 @@
     "Qwen2.5-Coder-3B"
    ],
    "scores": {
-    "epoch_eci": 96.63
+    "epoch_eci": 96.75
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3666,7 +3672,7 @@
     "Qwen2-72B"
    ],
    "scores": {
-    "epoch_eci": 122.33
+    "epoch_eci": 122.35
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3678,7 +3684,7 @@
     "Qwen3-14B"
    ],
    "scores": {
-    "epoch_eci": 136.08
+    "epoch_eci": 136.06
    },
    "cost_per_task": null,
    "litellm": "nebius/Qwen/Qwen3-14B",
@@ -3690,7 +3696,7 @@
     "Qwen3-235B-A22B"
    ],
    "scores": {
-    "epoch_eci": 138.43
+    "epoch_eci": 138.4
    },
    "cost_per_task": null,
    "litellm": "nebius/Qwen/Qwen3-235B-A22B",
@@ -3703,8 +3709,8 @@
     "Qwen3-235B-A22B-Instruct (Jul 2025)"
    ],
    "scores": {
-    "epoch_eci": 138.07,
-    "lmarena_text_factuality": 1430.86
+    "epoch_eci": 138.03,
+    "lmarena_text_factuality": 1430.91
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3716,7 +3722,7 @@
     "Qwen3-235B-A22B-Thinking (Jul 2025)"
    ],
    "scores": {
-    "epoch_eci": 143.27
+    "epoch_eci": 143.23
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3728,7 +3734,7 @@
     "Qwen3-30B-A3B"
    ],
    "scores": {
-    "epoch_eci": 134.18
+    "epoch_eci": 134.16
    },
    "cost_per_task": null,
    "litellm": "gmi/Qwen/Qwen3-30B-A3B",
@@ -3740,7 +3746,7 @@
     "Qwen3-30B-A3B-Instruct (Jul 2025)"
    ],
    "scores": {
-    "epoch_eci": 134.83
+    "epoch_eci": 134.87
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3752,7 +3758,7 @@
     "Qwen3-30B-A3B-Thinking (Jul 2025)"
    ],
    "scores": {
-    "epoch_eci": 138.35
+    "epoch_eci": 138.32
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3764,7 +3770,7 @@
     "Qwen3-32B"
    ],
    "scores": {
-    "epoch_eci": 136.84
+    "epoch_eci": 136.85
    },
    "cost_per_task": null,
    "litellm": "kyma/qwen-3-32b",
@@ -3776,7 +3782,7 @@
     "Qwen3.5-122B-A10B"
    ],
    "scores": {
-    "lmarena_text_factuality": 1427.77,
+    "lmarena_text_factuality": 1427.79,
     "lmarena_webdev": 1360.21
    },
    "cost_per_task": null,
@@ -3789,8 +3795,8 @@
     "Qwen3.5-27B"
    ],
    "scores": {
-    "lmarena_text_factuality": 1419.38,
-    "lmarena_webdev": 1356.99
+    "lmarena_text_factuality": 1419.22,
+    "lmarena_webdev": 1357.02
    },
    "cost_per_task": null,
    "litellm": "empiriolabs/qwen3-5-27b",
@@ -3802,9 +3808,9 @@
     "Qwen3.5-35B-A3B"
    ],
    "scores": {
-    "epoch_eci": 144.08,
-    "lmarena_text_factuality": 1407.28,
-    "lmarena_webdev": 1253.16
+    "epoch_eci": 144.05,
+    "lmarena_text_factuality": 1407.32,
+    "lmarena_webdev": 1253.36
    },
    "cost_per_task": null,
    "litellm": "empiriolabs/qwen3-5-35b-a3b",
@@ -3817,9 +3823,9 @@
     "Qwen3.5-397B-A17B"
    ],
    "scores": {
-    "epoch_eci": 147.95,
-    "lmarena_text_factuality": 1444.32,
-    "lmarena_webdev": 1399.92
+    "epoch_eci": 147.96,
+    "lmarena_text_factuality": 1444.4,
+    "lmarena_webdev": 1399.95
    },
    "cost_per_task": null,
    "litellm": "aihubmix/qwen3.5-397b-a17b",
@@ -3831,7 +3837,7 @@
     "Qwen3.5-9B"
    ],
    "scores": {
-    "epoch_eci": 139.48
+    "epoch_eci": 139.5
    },
    "cost_per_task": null,
    "litellm": "empiriolabs/qwen3-5-9b",
@@ -3844,9 +3850,9 @@
     "Qwen3.5-Flash"
    ],
    "scores": {
-    "epoch_eci": 143.87,
-    "lmarena_text_factuality": 1413.74,
-    "lmarena_webdev": 1243.48
+    "epoch_eci": 143.83,
+    "lmarena_text_factuality": 1413.69,
+    "lmarena_webdev": 1243.47
    },
    "cost_per_task": null,
    "litellm": "empiriolabs/qwen3-5-flash",
@@ -3858,7 +3864,7 @@
     "Qwen3.5-Max-Preview"
    ],
    "scores": {
-    "lmarena_text_factuality": 1475.39
+    "lmarena_text_factuality": 1475.42
    },
    "cost_per_task": null,
    "litellm": null,
@@ -3870,7 +3876,7 @@
     "Qwen 3.5 Plus (hosted 397B-A17B)"
    ],
    "scores": {
-    "epoch_eci": 147.3
+    "epoch_eci": 147.29
    },
    "cost_per_task": null,
    "litellm": "empiriolabs/qwen3-5-plus",
@@ -3882,7 +3888,7 @@
     "Qwen3.6 27B"
    ],
    "scores": {
-    "epoch_eci": 146.78
+    "epoch_eci": 146.72
    },
    "cost_per_task": null,
    "litellm": "aihubmix/qwen3.6-27b",
@@ -3894,7 +3900,7 @@
     "Qwen 3.6 35B-A3B"
    ],
    "scores": {
-    "epoch_eci": 144.11
+    "epoch_eci": 144.07
    },
    "cost_per_task": null,
    "litellm": "zerogpu/qwen3.6-35b-a3b",
@@ -3906,7 +3912,7 @@
     "Qwen 3.6 Flash"
    ],
    "scores": {
-    "epoch_eci": 143.76
+    "epoch_eci": 143.73
    },
    "cost_per_task": null,
    "litellm": "empiriolabs/qwen3-6-flash",
@@ -3919,9 +3925,9 @@
     "Qwen3.6-Max-Preview"
    ],
    "scores": {
-    "epoch_eci": 149.88,
-    "lmarena_text_factuality": 1452.33,
-    "lmarena_webdev": 1481.63
+    "epoch_eci": 149.86,
+    "lmarena_text_factuality": 1452.28,
+    "lmarena_webdev": 1481.35
    },
    "cost_per_task": null,
    "litellm": "aihubmix/qwen3.6-max-preview",
@@ -3934,9 +3940,9 @@
     "Qwen3.6-Plus"
    ],
    "scores": {
-    "epoch_eci": 148.91,
-    "lmarena_text_factuality": 1437.55,
-    "lmarena_webdev": 1461.43
+    "epoch_eci": 148.87,
+    "lmarena_text_factuality": 1437.52,
+    "lmarena_webdev": 1461.89
    },
    "cost_per_task": null,
    "litellm": "kyma/qwen-3.6-plus",
@@ -3950,9 +3956,9 @@
     "Qwen3.7-Max-Preview"
    ],
    "scores": {
-    "epoch_eci": 154.58,
-    "lmarena_text_factuality": 1479.85,
-    "lmarena_webdev": 1515.59
+    "epoch_eci": 154.57,
+    "lmarena_text_factuality": 1479.68,
+    "lmarena_webdev": 1515.69
    },
    "cost_per_task": 0.27160160750000006,
    "litellm": "kyma/qwen-3.7-max",
@@ -3964,7 +3970,7 @@
     "Qwen3.7-Plus"
    ],
    "scores": {
-    "epoch_eci": 147.95,
+    "epoch_eci": 147.92,
     "lmarena_text_factuality": 1452.26
    },
    "cost_per_task": 0.187190784,
@@ -3978,9 +3984,9 @@
     "Qwen3.8-27B"
    ],
    "scores": {
-    "epoch_eci": 152.65,
-    "lmarena_text_factuality": 1435.78,
-    "lmarena_webdev": 1589.31
+    "epoch_eci": 152.63,
+    "lmarena_text_factuality": 1436.16,
+    "lmarena_webdev": 1589.53
    },
    "cost_per_task": 0.40971872000000004,
    "litellm": "kyma/qwen3.8-27b",
@@ -3992,7 +3998,7 @@
     "Qwen3-8B"
    ],
    "scores": {
-    "epoch_eci": 132.08
+    "epoch_eci": 132.07
    },
    "cost_per_task": null,
    "litellm": "llamagate/qwen3-8b",
@@ -4004,7 +4010,7 @@
     "Qwen3.8-Flash-Next"
    ],
    "scores": {
-    "lmarena_webdev": 1625.77
+    "lmarena_webdev": 1625.72
    },
    "cost_per_task": 0.22934415,
    "litellm": null,
@@ -4019,9 +4025,9 @@
     "Qwen3.8-Max (0902)"
    ],
    "scores": {
-    "epoch_eci": 157.59,
-    "lmarena_text_factuality": 1473.55,
-    "lmarena_webdev": 1674.77
+    "epoch_eci": 157.55,
+    "lmarena_text_factuality": 1473.3,
+    "lmarena_webdev": 1673.64
    },
    "cost_per_task": 1.1560240999999998,
    "litellm": "kyma/qwen-3.8-max",
@@ -4033,8 +4039,8 @@
     "Qwen3-Coder-480B-A35B-Instruct"
    ],
    "scores": {
-    "lmarena_text_factuality": 1399.79,
-    "lmarena_webdev": 1274.4
+    "lmarena_text_factuality": 1399.94,
+    "lmarena_webdev": 1274.38
    },
    "cost_per_task": null,
    "litellm": "novita/qwen/qwen3-coder-480b-a35b-instruct",
@@ -4047,8 +4053,8 @@
     "Qwen3-Max-Preview"
    ],
    "scores": {
-    "epoch_eci": 142.44,
-    "lmarena_text_factuality": 1441.79
+    "epoch_eci": 142.43,
+    "lmarena_text_factuality": 1441.93
    },
    "cost_per_task": null,
    "litellm": "novita/qwen/qwen3-max",
@@ -4060,7 +4066,7 @@
     "Qwen3-Next-80B-A3B-Instruct"
    ],
    "scores": {
-    "lmarena_text_factuality": 1418.48
+    "lmarena_text_factuality": 1418.55
    },
    "cost_per_task": null,
    "litellm": "dashscope/qwen3-next-80b-a3b-instruct",
@@ -4072,7 +4078,7 @@
     "Qwen3-VL-235B-A22B-Instruct"
    ],
    "scores": {
-    "lmarena_text_factuality": 1414.39
+    "lmarena_text_factuality": 1414.59
    },
    "cost_per_task": null,
    "litellm": "dashscope/qwen3-vl-235b-a22b-instruct",
@@ -4084,7 +4090,7 @@
     "Qwen4-Max (xHigh)"
    ],
    "scores": {
-    "lmarena_webdev": 1750.02
+    "lmarena_webdev": 1750.9
    },
    "cost_per_task": 1.4373019500000002,
    "litellm": "dashscope/qwen4-max",
@@ -4096,7 +4102,7 @@
     "Qwen-7B"
    ],
    "scores": {
-    "epoch_eci": 88.87
+    "epoch_eci": 89.14
    },
    "cost_per_task": null,
    "litellm": null,
@@ -4108,7 +4114,7 @@
     "QwQ-32B"
    ],
    "scores": {
-    "epoch_eci": 136.48
+    "epoch_eci": 136.44
    },
    "cost_per_task": null,
    "litellm": "nebius/Qwen/QwQ-32B",
@@ -4120,7 +4126,7 @@
     "RedPajama-INCITE-7B-Base"
    ],
    "scores": {
-    "epoch_eci": 57.17
+    "epoch_eci": 57.7
    },
    "cost_per_task": null,
    "litellm": null,
@@ -4132,7 +4138,7 @@
     "Seed2.1 Pro Preview"
    ],
    "scores": {
-    "lmarena_webdev": 1519.22
+    "lmarena_webdev": 1518.3
    },
    "cost_per_task": null,
    "litellm": null,
@@ -4144,8 +4150,8 @@
     "Solar Pro 4"
    ],
    "scores": {
-    "lmarena_text_factuality": 1414.58,
-    "lmarena_webdev": 1369.31
+    "lmarena_text_factuality": 1414.63,
+    "lmarena_webdev": 1369.23
    },
    "cost_per_task": 0.046010862,
    "litellm": null,
@@ -4157,7 +4163,7 @@
     "Spark-X2.6"
    ],
    "scores": {
-    "lmarena_webdev": 1484.97
+    "lmarena_webdev": 1485.74
    },
    "cost_per_task": 0.082670388,
    "litellm": null,
@@ -4169,7 +4175,7 @@
     "Stable Beluga 2"
    ],
    "scores": {
-    "epoch_eci": 109.29
+    "epoch_eci": 109.4
    },
    "cost_per_task": null,
    "litellm": null,
@@ -4181,7 +4187,7 @@
     "StarCoder 2 15B"
    ],
    "scores": {
-    "epoch_eci": 96.04
+    "epoch_eci": 96.09
    },
    "cost_per_task": null,
    "litellm": "fireworks_ai/accounts/fireworks/models/starcoder2-15b",
@@ -4193,7 +4199,7 @@
     "StarCoder 2 3B"
    ],
    "scores": {
-    "epoch_eci": 66.21
+    "epoch_eci": 66.64
    },
    "cost_per_task": null,
    "litellm": "fireworks_ai/accounts/fireworks/models/starcoder2-3b",
@@ -4205,7 +4211,7 @@
     "StarCoder 2 7B"
    ],
    "scores": {
-    "epoch_eci": 72.14
+    "epoch_eci": 72.4
    },
    "cost_per_task": null,
    "litellm": "fireworks_ai/accounts/fireworks/models/starcoder2-7b",
@@ -4217,7 +4223,7 @@
     "Step-3.5-Flash"
    ],
    "scores": {
-    "lmarena_text_factuality": 1415.94
+    "lmarena_text_factuality": 1416.03
    },
    "cost_per_task": null,
    "litellm": "empiriolabs/step-3-5-flash",
@@ -4230,8 +4236,8 @@
     "Step 5 Preview (High)"
    ],
    "scores": {
-    "lmarena_text_factuality": 1448.65,
-    "lmarena_webdev": 1570.97
+    "lmarena_text_factuality": 1448.86,
+    "lmarena_webdev": 1570.11
    },
    "cost_per_task": 0.5787840999999999,
    "litellm": "kyma/step-5-preview",
@@ -4255,8 +4261,8 @@
     "Trinity Large Thinking"
    ],
    "scores": {
-    "lmarena_text_factuality": 1370.03,
-    "lmarena_webdev": 1236.41
+    "lmarena_text_factuality": 1369.88,
+    "lmarena_webdev": 1236.58
    },
    "cost_per_task": null,
    "litellm": null,
@@ -4268,7 +4274,7 @@
     "U2 Flash"
    ],
    "scores": {
-    "lmarena_webdev": 1609.17
+    "lmarena_webdev": 1609.37
    },
    "cost_per_task": null,
    "litellm": null,
@@ -4280,7 +4286,7 @@
     "vicuna-13b-v1.1"
    ],
    "scores": {
-    "epoch_eci": 75.78
+    "epoch_eci": 76.11
    },
    "cost_per_task": null,
    "litellm": null,
@@ -4292,7 +4298,7 @@
     "XGen-7B"
    ],
    "scores": {
-    "epoch_eci": 69.95
+    "epoch_eci": 70.29
    },
    "cost_per_task": null,
    "litellm": null,
@@ -4304,7 +4310,7 @@
     "Yi 6B"
    ],
    "scores": {
-    "epoch_eci": 94.06
+    "epoch_eci": 94.27
    },
    "cost_per_task": null,
    "litellm": "fireworks_ai/accounts/fireworks/models/yi-6b",
@@ -4316,7 +4322,7 @@
     "Yi-9B"
    ],
    "scores": {
-    "epoch_eci": 102.06
+    "epoch_eci": 102.18
    },
    "cost_per_task": null,
    "litellm": null,
