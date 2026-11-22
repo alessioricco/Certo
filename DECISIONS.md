@@ -2370,3 +2370,14 @@ considered and live-verification detail: `docs/history/ROADMAP.txt`.
   text with Python's `__main__` as one example, since `todo-deps` (Rust)
   matches. On by default like every official skill; measured with
   `skills_off` as the other arm before the release (TODO).
+- **0.2.5 ships the slow-test note on, unproven** (2026-11-22, the
+  Author). The bench (`docs/benchmark/slow-tests-0.2.5.md`) showed no
+  time saved and no harm on qwen3.8 or Haiku, on a task whose budget was
+  never short. Kept on because it targets a suite that eats the budget;
+  the TODO stays open for a task that shows it.
+- **0.2.5's release check is whole-release, not per change** (2026-11-22).
+  Haiku on the 13 bundled tasks ×3 against 0.2.2, and the derived ladder
+  (qwen3.8 first) against 0.2.4 (`docs/benchmark/release-check-0.2.5.md`).
+  The scratch folder and `cli-entry-points` ship on without their own
+  two-arm bench; those measurements wait for 0.2.6 (TODO). Supersedes the
+  "measured before the release" note in the `cli-entry-points` entry.

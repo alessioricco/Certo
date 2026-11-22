@@ -1,0 +1,12 @@
+# The 0.2.5 release check on a cloud model: the 13 bundled tasks, as the
+# haiku-high arm of bench-0.2.2-effort-cloud.yaml (39/39, $0.80), with
+# 0.2.5's agent changes on by default (slow-test note, scratch folder,
+# cli-entry-points skill, version-range rule). The local half is the
+# derived-ladder run (ladder-independent-0.2.5.md).
+#   certo bench --config docs/benchmark/bench-0.2.5-release-cloud.yaml --parallel 3 --max-cost 2
+models_file: docs/benchmark/models-0.2.2-effort.yaml
+models_list_file: docs/benchmark/models_list-0.2.2-effort.yaml
+tasks: all
+repeats: 3
+arms:
+  - {name: haiku-high, strategy: single, model: haiku-high}

@@ -96,10 +96,18 @@ the tests for what changed, run the whole suite once at the end, and fix
 or narrow a test that fails on a timeout before running the suite again.
 In one user's milestone project a browser test suite took 9 minutes of a
 30-minute budget, and the agent ran it more than once per milestone. The
-note names only the command the agent ran. Not measured yet in the
-benchmark; the app tasks gain one to measure it with, `job-runner`
-(task set `apps-3`): an existing project whose own test suite takes
-about 2.5 minutes, extended in three milestones.
+note names only the command the agent ran. The app tasks gain one to
+measure it with, `job-runner` (task set `apps-3`): an existing project
+whose own test suite takes about 2.5 minutes, extended in three
+milestones. Measured on it, the note saved no time: no milestone ran
+short of time with or without it, and Haiku already narrows its test
+runs by itself ([the benchmark](../benchmark/slow-tests-0.2.5.md)). It
+stays on: it did no harm, and it is meant for a suite that eats the
+budget, which this task doesn't.
+
+The whole release was checked against earlier versions on Haiku (39 of
+39 runs passed, as in 0.2.2) and on a ladder that starts on `qwen3.8`
+(13 of 13): [the release check](../benchmark/release-check-0.2.5.md).
 
 ## New: turn an official skill off
 

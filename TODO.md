@@ -467,7 +467,11 @@ database).
   `docs/benchmark/bench-0.2.5-slow-tests-cloud.yaml` (Haiku, 15 min per
   milestone) and `-local.yaml` (qwen3.8, 20 min, a night slot), on
   `app-tasks/job-runner`, whose starter suite takes about 2.5 minutes.
-  Not yet tried: a built-in skill on test
+  Measured 2026-11-22 (`docs/benchmark/slow-tests-0.2.5.md`): no time
+  saved, no harm, budget never short; Haiku narrows by itself, qwen3.8
+  narrowed to the one slow file. Kept on (the Author). Next: a task
+  whose suite eats the budget (or a shorter budget per milestone), and
+  maybe say "narrow by test name". Not yet tried: a built-in skill on test
   speed (short default timeouts, run a browser project only where it
   matters). Done when the bench shows less of the budget spent on
   repeated full runs and no milestone `budget_exhausted` for that
