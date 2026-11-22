@@ -1,6 +1,19 @@
 # Certo v0.2.5
 
-Not released yet.
+This release lets a stronger model write the independent tests while a
+cheaper or local one builds, gives you more control over milestones,
+and keeps the agent's working files tidier:
+
+- **`CERTO_INDEPENDENT_TESTS_MODEL`** names the model that writes the
+  independent tests. On the benchmark, with a ladder that starts on
+  `qwen3.8` and Haiku writing, all 13 tasks passed with no false alarms.
+- **`--milestone-count N`** asks for exactly N milestones, and the
+  planner thinks harder by default.
+- **Official skills:** a new one for command-line programs, and
+  `certo skills disable` / `enable` to turn one off.
+- **Tidier runs:** logs and throwaway scripts go in `.certo/scratch/`,
+  and the agent is told once when its own test suite is slow for the
+  time budget.
 
 ## New: choose the model that writes the independent tests
 
