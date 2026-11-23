@@ -1,0 +1,12 @@
+# semver-order on qwen3.8, repeated, with independent tests written by
+# claude-haiku-5-5 (report only). qwen3.8 was fooled on this task in the
+# 0.2.4 ladder run (ladder-computed-0.2.4.md) and not in the 0.2.5 one;
+# the goal is a live fooled run that the independent tests catch (TODO,
+# "Independent tests: the rest"). A night slot, with the fan on turing:
+#   caffeinate -i .venv/bin/certo bench --config docs/benchmark/bench-0.2.5-semver-independent-local.yaml --pause-between 300 --stop-at 03:00 --yes
+models_file: docs/benchmark/models-0.2.4-ratings.yaml
+models_list_file: docs/benchmark/models_list-0.2.4-computed.yaml
+tasks: [semver-order]
+repeats: 8
+arms:
+  - {name: qwen-haiku-tests, strategy: single, model: qwen3.8-27b-local, max_task_seconds: 3600, independent_tests: true, independent_tests_model: claude-haiku-5-5}

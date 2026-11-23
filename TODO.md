@@ -145,9 +145,11 @@ first item is the suggested next one.
   (`CERTO_INDEPENDENT_TESTS_MODEL`, 0.2.5) was benched with the derived
   ladder and Haiku writing (`docs/benchmark/ladder-independent-0.2.5.md`:
   13/13, no false alarms, $0.026 per task), but no run was fooled, so
-  the `semver-order` catch is still replay-only. Done when a live run
-  that fools Certo's checks fails the vote (e.g. `semver-order` on
-  qwen3.8 with a few repeats, at night). (A 2-of-3
+  the `semver-order` catch is still replay-only. 8 more `semver-order`
+  runs on qwen3.8 weren't fooled either (`docs/benchmark/semver-independent-0.2.5.md`:
+  8/8, 1 wrong set in 24, fooled 1 in 10 runs so far). Done when a live
+  run that fools Certo's checks fails the vote; next try a task qwen3.8
+  is fooled on more often, or a replay on saved fooled projects. (A 2-of-3
   failure changes the verdict only with `--independent-tests-strict`,
   0.1.25.) The `qwen3.8` replay
   (2026-10-25) caught 2 of 8 fooled runs with the vote (Haiku: 7 of 8),
