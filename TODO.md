@@ -147,7 +147,9 @@ first item is the suggested next one.
   13/13, no false alarms, $0.026 per task), but no run was fooled, so
   the `semver-order` catch is still replay-only. 8 more `semver-order`
   runs on qwen3.8 weren't fooled either (`docs/benchmark/semver-independent-0.2.5.md`:
-  8/8, 1 wrong set in 24, fooled 1 in 10 runs so far). Done when a live
+  8/8, 1 wrong set in 24, fooled 1 in 10 runs so far). A second fooled
+  run (`todo-deps` on qwen3.8) was caught in a replay, 3 of 3 sets
+  (`docs/benchmark/cli-entry-points-0.2.6.md`). Done when a live
   run that fools Certo's checks fails the vote; next try a task qwen3.8
   is fooled on more often, or a replay on saved fooled projects. (A 2-of-3
   failure changes the verdict only with `--independent-tests-strict`,
@@ -155,6 +157,11 @@ first item is the suggested next one.
   (2026-10-25) caught 2 of 8 fooled runs with the vote (Haiku: 7 of 8),
   and the Author keeps qwen away from high-effort work, so its own tests
   aren't the answer for local users.
+- **`todo-deps` hidden tests miss unknown options** (2026-11-24, replay
+  in `docs/benchmark/cli-entry-points-0.2.6.md`). The task says an
+  unknown option exits with code 2; 3 of 4 qwen3.8 programs accept
+  `todo list --bogus` and exit 0, and the hidden tests pass them. Add the
+  case with the next task-set change (it changes the hash).
 - **`room-bookings` hidden test is stricter than the task** (2026-10-25,
   live Haiku arm). A `204` sent with `Content-Type: application/json`
   and no body fails the hidden tests (they parse any JSON-marked
@@ -425,9 +432,12 @@ Today there are 16 (eight `lifecycle/`, `git/commit-conventions`,
 `cli/cli-entry-points`).
 
 **Make a project verifiable** (first; suggested order: the first two):
-- *Measure `cli-entry-points`* (0.2.5, built, unmeasured): it fires on
-  `todo-deps` and the `expenses`/`spreadsheet` app tasks; bench with
-  `skills_off: [cli-entry-points]` as the other arm, local and cloud.
+- *Measure `cli-entry-points` on app tasks* (0.2.5): on `todo-deps` it
+  made no measurable difference, local or cloud
+  (`docs/benchmark/cli-entry-points-0.2.6.md`). Left: the
+  `expenses`/`spreadsheet` app tasks with `skills_off: [cli-entry-points]`
+  as the other arm; and maybe a line on unknown options (qwen3.8 ignored
+  them with the skill too).
 - `test-oracles`: derive expected values independently, never from the
   implementation's output; check a suspicious test against its own setup
   before re-editing correct code. Maybe a section of

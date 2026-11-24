@@ -1,0 +1,11 @@
+# The cli-entry-points skill (0.2.5, unmeasured) on qwen3.8: todo-deps,
+# with and without the skill (TODO "Measure cli-entry-points"). Local
+# half; the cloud half runs by day. A night slot, with the fan on turing:
+#   caffeinate -i .venv/bin/certo bench --config docs/benchmark/bench-0.2.6-cli-entry-points-local.yaml --pause-between 600 --stop-at 03:00 --yes
+models_file: docs/benchmark/models-0.2.4-ratings.yaml
+models_list_file: docs/benchmark/models_list-0.2.4-computed.yaml
+tasks: [todo-deps]
+repeats: 2
+arms:
+  - {name: qwen-skill, strategy: single, model: qwen3.8-27b-local, max_task_seconds: 3600}
+  - {name: qwen-no-skill, strategy: single, model: qwen3.8-27b-local, max_task_seconds: 3600, skills_off: [cli-entry-points]}

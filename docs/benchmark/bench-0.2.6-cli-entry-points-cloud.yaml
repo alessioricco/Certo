@@ -1,0 +1,11 @@
+# The cli-entry-points skill (0.2.5, unmeasured) on a cloud model:
+# todo-deps with and without the skill (TODO "Measure cli-entry-points").
+# Cloud half; the local half is bench-0.2.6-cli-entry-points-local.yaml.
+#   certo bench --config docs/benchmark/bench-0.2.6-cli-entry-points-cloud.yaml --parallel 3 --max-cost 1.5
+models_file: docs/benchmark/models-0.2.2-effort.yaml
+models_list_file: docs/benchmark/models_list-0.2.2-effort.yaml
+tasks: [todo-deps]
+repeats: 5
+arms:
+  - {name: haiku-skill, strategy: single, model: haiku-high}
+  - {name: haiku-no-skill, strategy: single, model: haiku-high, skills_off: [cli-entry-points]}
