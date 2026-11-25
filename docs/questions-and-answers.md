@@ -78,6 +78,28 @@ one, an [issue](https://github.com/alessioricco/certo/issues) saying how
 it went helps. See [models.yaml](reference/models-yaml.md) and
 [Configuration](reference/configuration.md).
 
+### How much of the work stays on a local model?
+
+It depends on your models and your tasks: Certo keeps no count across
+users. It runs the cheapest model that fits first, and a local model is
+the cheapest, so a local model gets every task it is rated good enough
+for. A task moves to a hosted model only when the local model's work
+fails Certo's checks, the model gets stuck, runs out of its share of the
+time, or can't be reached. See
+[How does Certo decide a model can't finish?](#how-does-certo-decide-a-model-cant-finish)
+
+In our own benchmark with the ladder Certo derives from the ratings
+(`qwen3.8:27b` on Ollama → GPT-6.1 Terra → Claude Sonnet), 11 of the 13
+bundled tasks finished on `qwen3.8` alone and 2 moved up to Terra.
+Sonnet was never needed. All 13 passed the hidden tests, for $0.67 in
+all, of which $0.34 was Haiku writing the independent tests:
+[ladder-independent-0.2.5.md](benchmark/ladder-independent-0.2.5.md).
+The bundled tasks are small; on larger work, expect more climbs.
+
+To see where each of your tasks ran and why, read `MODEL_DECISIONS.md`
+in the project folder: see
+[Pick models automatically](guides/pick-models-automatically.md#see-what-was-chosen-and-why).
+
 ## Handing a task to another model
 
 ### How does Certo decide a model can't finish?
